@@ -1,0 +1,196 @@
+require 'spec_helper'
+
+describe MB::Config do
+  subject do
+    MB::Config.new.tap do |o|
+      o.chef_api_url = "https://api.opscode.com/organizations/vialstudio"
+      o.chef_api_client = "reset"
+      o.chef_api_key = "/Users/reset/.chef/reset.pem"
+      o.nexus_api_url = "http://nexus.riotgames.com/nexus/"
+      o.nexus_repository = "riot"
+      o.nexus_username = "test"
+      o.nexus_password = "test123"
+    end
+  end
+
+  describe "validations" do
+    context "given a valid configuration" do
+      it "should be valid" do
+        subject.should be_valid
+      end
+    end
+
+    it "is invalid if chef_api_url is blank" do
+      subject.chef_api_url = ''
+
+      subject.should_not be_valid
+    end
+
+    it "is invalid if chef_api_url is not a valid HTTP or HTTPS url" do
+      subject.chef_api_url = 'not_a_uri'
+
+      subject.should_not be_valid
+    end
+
+    it "is invalid if chef_api_client is blank" do
+      subject.chef_api_client = ''
+
+      subject.should_not be_valid
+    end
+
+    it "is invalid if chef_api_key is blank" do
+      subject.chef_api_key = ''
+
+      subject.should_not be_valid
+    end
+
+    it "is invalid if nexus_api_url is blank" do
+      subject.nexus_api_url = ''
+
+      subject.should_not be_valid
+    end
+
+    it "is invalid if nexus_api_url is not a valid HTTP or HTTPS url" do
+      subject.nexus_api_url = "ftp://asdf.com"
+
+      subject.should_not be_valid
+    end
+
+    it "is invalid if nexus_repository is blank" do
+      subject.nexus_repository = ''
+
+      subject.should_not be_valid
+    end
+
+    it "is invalid if the nexus_username is blank" do
+      subject.nexus_username = ''
+
+      subject.should_not be_valid
+    end
+
+    it "is invalid if the nexus_password is blank" do
+      subject.nexus_password = ''
+
+      subject.should_not be_valid
+    end
+  end
+
+  let(:json) do
+    %(
+      {
+        "chef_api_client": "reset"
+      }
+    )
+  end
+
+  describe "ClassMethods" do
+    subject { MB::Config }
+
+    describe "::from_json" do
+      it "returns an instance of MB::Config" do
+        subject.from_json(json).should be_a(MB::Config)
+      end
+    end
+
+    describe "::from_file" do
+      let(:file) { tmp_path.join("test-config.json") }
+
+      before(:each) do
+        File.write(file, json)
+      end
+
+      it "returns an instance of MB::Config" do
+        subject.from_file(file).should be_a(MB::Config)
+      end
+
+      it "sets the object's filepath to the path of the loaded file" do
+        subject.from_file(file).filepath.should eql(file)
+      end
+
+      context "given a file that does not exist" do
+        it "raises a MB::ConfigNotFound error" do
+          lambda {
+            subject.from_file(tmp_path.join("asdf.txt"))
+          }.should raise_error(Mixed::ConfigNotFound)
+        end
+      end
+    end
+
+    describe "::default_path" do
+      after(:each) do
+        ENV['MB_CONFIG'] = nil
+      end
+
+      it "returns the value of ENV['MB_CONFIG'] if the environment variable is set" do
+        ENV['MB_CONFIG'] = "/tmp/config.json"
+
+        subject.default_path.should eql("/tmp/config.json")
+      end
+
+      it "returns ~/.mb/config.json if ENV['MB_CONFIG'] is not set" do
+        subject.default_path.should eql("~/.mb/config.json")
+      end
+    end
+  end
+
+  describe "#from_json" do
+    it "sets the attributes found in the json" do
+      subject.from_json(json).chef_api_client.should eql("reset")
+    end
+
+    context "given JSON containing undefined attributes" do
+      let(:json) do
+        %(
+          {
+            "not_a_valid_attribute": "failure!"
+          }
+        )
+      end
+
+      it "ignores the additional configuration options" do
+        subject.from_json(json).should_not respond_to(:not_a_valid_attribute)
+      end
+    end
+
+    context "given malformed JSON" do
+      let(:json) do
+        %(
+          {
+            "firstkey": "firstval"
+            "missing": "a comma"
+          }
+        )
+      end
+
+      it "raises an InvalidConfiguration error" do
+        lambda {
+          subject.from_json(json).attributes
+        }.should raise_error(Mixed::InvalidConfig)
+      end
+    end
+  end
+
+  describe "#to_json" do
+    it "should not include the 'id' attribute" do
+      subject.to_json.should_not have_json_path('id')
+    end
+  end
+
+  describe "#save" do
+    let(:config_path) { tmp_path.join("config.json") }
+
+    before(:each) { subject.filepath = config_path }
+
+    it "creates a new file at the instance's filepath" do
+      subject.save
+
+      config_path.should exist
+    end
+
+    it "writes the evaluation of to_json as the content of the file" do
+      subject.save
+
+      File.read(config_path).should be_json_eql(subject.to_json)
+    end
+  end
+end

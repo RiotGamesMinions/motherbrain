@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+$:.push File.expand_path("../../lib", __FILE__)
+require 'motherbrain'
+
+# JW TODO: dynamically load plugins somehow
+require 'mb-pvpnet/commands'
+
+begin
+  MB::Cli.start
+rescue MB::MBError => e
+  MB.ui.say e, :red
+  exit e.status_code
+end
