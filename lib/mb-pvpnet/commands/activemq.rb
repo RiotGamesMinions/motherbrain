@@ -1,6 +1,7 @@
 module MotherBrain
   module Pvpnet
     class Commands < CliBase
+      # @author Jamie Winsor <jamie@vialstudios.com>
       class ActiveMQ < CliBase
         namespace :activemq
       end

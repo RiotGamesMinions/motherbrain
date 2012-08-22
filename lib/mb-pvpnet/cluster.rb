@@ -1,5 +1,6 @@
 module MotherBrain
   module Pvpnet
+    # @author Jamie Winsor <jamie@vialstudios.com>
     class Cluster < Struct.new(:name, :connection)
       def start
         self.name
