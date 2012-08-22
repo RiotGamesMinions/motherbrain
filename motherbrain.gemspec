@@ -14,8 +14,9 @@ Gem::Specification.new do |s|
   s.name          = "motherbrain"
   s.require_paths = ["lib"]
   s.version       = MotherBrain::VERSION
+  s.required_ruby_version = ">= 1.9.1"
 
-  s.add_runtime_dependency 'activemodel'
+  s.add_runtime_dependency 'ridley'
   s.add_runtime_dependency 'nexus_cli', '~> 0.3.0'
 
   s.add_development_dependency 'cucumber'
@@ -32,4 +33,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'coolline'
   s.add_development_dependency 'redcarpet'
   s.add_development_dependency 'json_spec'
+  s.add_development_dependency 'webmock'
 end

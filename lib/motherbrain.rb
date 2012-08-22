@@ -1,5 +1,6 @@
 require 'json'
 require 'pathname'
+require 'ridley'
 
 require 'mixed/json_config'
 

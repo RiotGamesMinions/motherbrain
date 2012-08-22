@@ -5,6 +5,7 @@ require 'spork'
 Spork.prefork do
   require 'rspec'
   require 'json_spec'
+  require 'webmock/rspec'
 
   Dir[File.join(File.expand_path("../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
 
