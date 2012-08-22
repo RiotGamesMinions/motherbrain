@@ -20,6 +20,10 @@ module MotherBrain
       banner: "PATH"
 
     no_tasks do
+      def ridley
+        @ridley ||= Ridley.connection(config.to_ridley)
+      end
+      
       def config_path
         File.expand_path(options[:config] || MB::Config.default_path)
       end
