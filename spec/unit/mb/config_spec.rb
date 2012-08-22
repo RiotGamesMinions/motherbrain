@@ -193,4 +193,57 @@ describe MB::Config do
       File.read(config_path).should be_json_eql(subject.to_json)
     end
   end
+
+  describe "#to_ridley", focus: true do
+    subject do
+      MB::Config.new.tap do |o|
+        o.chef_api_url = "https://api.opscode.com"
+        o.chef_api_client = "reset"
+        o.chef_api_key = "/Users/reset/.chef/reset.pem"
+        o.chef_organization = "vialstudios"
+      end
+    end
+
+    it "returns a hash with a 'server_url' key mapping to chef_api_url" do
+      obj = subject.to_ridley
+
+      obj.should have_key(:server_url)
+      obj[:server_url].should eql(subject.chef_api_url)
+    end
+
+    it "returns a hash with a 'client_name' key mapping to chef_api_client" do
+      obj = subject.to_ridley
+
+      obj.should have_key(:client_name)
+      obj[:client_name].should eql(subject.chef_api_client)
+    end
+
+    it "returns a hash with a 'client_key' key mapping to chef_api_key" do
+      obj = subject.to_ridley
+
+      obj.should have_key(:client_key)
+      obj[:client_key].should eql(subject.chef_api_key)
+    end
+
+    it "returns a hash with an 'organization' key mapping to chef_organization" do
+      obj = subject.to_ridley
+
+      obj.should have_key(:organization)
+      obj[:organization].should eql(subject.chef_organization)
+    end
+
+    context "given the config has no value for organization" do
+      subject do
+        MB::Config.new.tap do |o|
+          o.chef_api_url = "https://api.opscode.com"
+          o.chef_api_client = "reset"
+          o.chef_api_key = "/Users/reset/.chef/reset.pem"
+        end
+      end
+
+      it "returns a hash without an 'organization' key" do
+        subject.to_ridley.should_not have_key(:organization)
+      end
+    end
+  end
 end
