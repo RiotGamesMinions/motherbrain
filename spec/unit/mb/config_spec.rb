@@ -93,7 +93,7 @@ describe MB::Config do
     end
 
     describe "::from_file" do
-      let(:file) { tmp_path.join("test-config.json") }
+      let(:file) { tmp_path.join("test-config.json").to_s }
 
       before(:each) do
         File.write(file, json)
@@ -103,15 +103,15 @@ describe MB::Config do
         subject.from_file(file).should be_a(MB::Config)
       end
 
-      it "sets the object's filepath to the path of the loaded file" do
-        subject.from_file(file).filepath.should eql(file)
+      it "sets the object's path to the path of the loaded file" do
+        subject.from_file(file).path.should eql(file)
       end
 
       context "given a file that does not exist" do
         it "raises a MB::ConfigNotFound error" do
           lambda {
             subject.from_file(tmp_path.join("asdf.txt"))
-          }.should raise_error(Mixed::ConfigNotFound)
+          }.should raise_error(Chozo::Errors::ConfigNotFound)
         end
       end
     end
@@ -165,7 +165,7 @@ describe MB::Config do
       it "raises an InvalidConfiguration error" do
         lambda {
           subject.from_json(json).attributes
-        }.should raise_error(Mixed::InvalidConfig)
+        }.should raise_error(Chozo::Errors::InvalidConfig)
       end
     end
   end
@@ -179,9 +179,9 @@ describe MB::Config do
   describe "#save" do
     let(:config_path) { tmp_path.join("config.json") }
 
-    before(:each) { subject.filepath = config_path }
+    before(:each) { subject.path = config_path }
 
-    it "creates a new file at the instance's filepath" do
+    it "creates a new file at the instance's path" do
       subject.save
 
       config_path.should exist
@@ -194,7 +194,7 @@ describe MB::Config do
     end
   end
 
-  describe "#to_ridley", focus: true do
+  describe "#to_ridley" do
     subject do
       MB::Config.new.tap do |o|
         o.chef_api_url = "https://api.opscode.com"

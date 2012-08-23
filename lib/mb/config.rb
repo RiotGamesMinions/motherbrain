@@ -1,3 +1,5 @@
+require 'chozo/config'
+
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Config
@@ -7,9 +9,7 @@ module MotherBrain
       end
     end
 
-    include Mixed::JSONConfig
-
-    attr_accessor :filepath
+    include Chozo::Config::JSON
 
     attribute :chef_api_url, default: "http://localhost:8080"
     validates_presence_of :chef_api_url
@@ -35,18 +35,6 @@ module MotherBrain
 
     attribute :nexus_password
     validates_presence_of :nexus_password
-
-    def initialize(filepath = nil, attributes = {})
-      @filepath = filepath
-      self.attributes = attributes
-    end
-
-    def save
-      FileUtils.mkdir_p(File.dirname(filepath))
-      File.open(filepath, 'w+') do |f|
-        f.puts JSON.pretty_generate(self.as_json)
-      end
-    end
 
     # Returns a connection hash for Ridley from the instance's attributes
     #
