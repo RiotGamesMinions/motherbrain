@@ -34,7 +34,7 @@ module MotherBrain
       def load_config
         @config = begin
           load_config!
-        rescue Mixed::ConfigNotFound
+        rescue Chozo::Errors::ConfigNotFound
           MB::Config.new
         end
       end

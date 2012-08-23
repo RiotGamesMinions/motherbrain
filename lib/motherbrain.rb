@@ -2,8 +2,6 @@ require 'json'
 require 'pathname'
 require 'ridley'
 
-require 'mixed/json_config'
-
 require 'mb/version'
 require 'mb/errors'
 require 'mb/config'

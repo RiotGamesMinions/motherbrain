@@ -41,13 +41,13 @@ describe MB::CliBase do
     it "raises a ConfigNotFound error when the specified path does not exist" do
       lambda {
         cli = subject.new([], config: tmp_path.join("config.json"))
-      }.should raise_error(Mixed::ConfigNotFound)
+      }.should raise_error(Chozo::Errors::ConfigNotFound)
     end
 
     it "raises a ConfigNotFound error when the specified path is a directory" do
       lambda {
         cli = subject.new([], config: tmp_path)
-      }.should raise_error(Mixed::ConfigNotFound)
+      }.should raise_error(Chozo::Errors::ConfigNotFound)
     end
   end
 end
