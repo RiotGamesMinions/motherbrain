@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'guard-cucumber'
   s.add_development_dependency 'guard-spork'
   s.add_development_dependency 'guard-yard'
+  s.add_development_dependency 'guard-environment-factory'
   s.add_development_dependency 'coolline'
   s.add_development_dependency 'redcarpet'
   s.add_development_dependency 'json_spec'

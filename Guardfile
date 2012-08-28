@@ -16,7 +16,7 @@ guard 'rspec', version: 2, cli: "--color --drb --format Fuubar", all_on_start: f
   watch('spec/spec_helper.rb')       { "spec" }
 end
 
-guard 'cucumber', cli: "--drb --require features --format pretty --tags ~@wip", all_on_start: false, all_after_pass: false, notification: false do
+guard 'cucumber', cli: "--drb --require features --format pretty --tags @wip", all_on_start: false, all_after_pass: false, notification: false do
   watch(%r{^features/.+\.feature$})
   watch(%r{^features/support/.+$})                      { 'features' }
   watch(%r{^features/step_definitions/(.+)_steps\.rb$}) { |m| Dir[File.join("**/#{m[1]}.feature")][0] || 'features' }
@@ -24,3 +24,11 @@ guard 'cucumber', cli: "--drb --require features --format pretty --tags ~@wip", 
   watch(%r{^lib/mb/cli.rb})                             { 'features/core' }
   watch(%r{^lib/mb-pvpnet/commands.rb})                 { 'features/pvpnet' }
 end
+
+guard 'environment-factory',
+  name: 'mbtest',
+  pattern: 'ef_secondary',
+  api_keyfile: '/Users/reset/code/motherbrain/features/support/ef.token',
+  api_url: 'https://ef.riotgames.com',
+  override_attributes: Hash.new,
+  cookbook_versions: Hash.new
