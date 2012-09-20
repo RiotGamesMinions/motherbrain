@@ -13,6 +13,9 @@ module MotherBrain
   end
 
   class InternalError < MBError; status_code(99); end
+  class ArgumentError < InternalError; end
+  class DuplicateGroup < InternalError; end
+
   class ClusterBusy < MBError; status_code(10); end
   class ClusterNotFound < MBError; status_code(11); end
   class EnvironmentNotFound < MBError; status_code(12); end
