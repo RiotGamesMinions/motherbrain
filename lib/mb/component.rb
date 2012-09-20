@@ -10,6 +10,7 @@ module MotherBrain
       @groups = Hash.new
     end
 
+    # @param [#to_s] name
     def group(name, &block)
       unless block_given?
         raise ArgumentError, "You must supply a block"
@@ -22,6 +23,7 @@ module MotherBrain
       add_group Group.new(name, &block)
     end
 
+    # @return [Array<MB::Group>]
     def groups
       @groups.values
     end
@@ -31,12 +33,16 @@ module MotherBrain
       attr_reader :connection
       attr_reader :environment
 
+      # @param [MB::Group]
       def add_group(group)
         @groups[group.name.to_sym] = group
       end
 
+      # @param [#to_sym] name
+      #
+      # @return [Boolean]
       def has_group?(name)
-        @groups.has_key?(name)
+        @groups.has_key?(name.to_sym)
       end
   end
 end
