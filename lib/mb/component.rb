@@ -3,9 +3,11 @@ module MotherBrain
   class Component
     attr_reader :name
 
-    def initialize(name)
+    def initialize(name, &block)
       @name = name
       @groups = Hash.new
+
+      instance_eval(&block) if block_given?
     end
 
     # @return [Symbol]

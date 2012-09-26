@@ -23,10 +23,9 @@ module MotherBrain
         #
         # @return [Plugin]
         def from_proxy(proxy)
-          obj = new(proxy.attributes)
-          obj.components = proxy.components
-
-          obj
+          new(proxy.attributes) do |plugin|
+            plugin.components = proxy.components
+          end
         end
     end
 
@@ -40,13 +39,15 @@ module MotherBrain
     attr_writer :components
 
     # @param [Hash] attributes
-    def initialize(attributes = {})
+    def initialize(attributes = {}, &block)
       @name = attributes.fetch(:name)
       @version = attributes.fetch(:version)
 
       @description = attributes.fetch(:description, "")
       @author = attributes.fetch(:author, "")
       @email = attributes.fetch(:email, "")
+
+      instance_eval(&block) if block_given?
     end
 
     def components
