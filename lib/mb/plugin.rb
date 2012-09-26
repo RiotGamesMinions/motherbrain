@@ -23,7 +23,10 @@ module MotherBrain
         #
         # @return [Plugin]
         def from_proxy(proxy)
-          new(proxy.attributes)
+          obj = new(proxy.attributes)
+          obj.components = proxy.components
+
+          obj
         end
     end
 
@@ -34,6 +37,8 @@ module MotherBrain
     attr_accessor :author
     attr_accessor :email
 
+    attr_writer :components
+
     # @param [Hash] attributes
     def initialize(attributes = {})
       @name = attributes.fetch(:name)
@@ -42,6 +47,14 @@ module MotherBrain
       @description = attributes.fetch(:description, "")
       @author = attributes.fetch(:author, "")
       @email = attributes.fetch(:email, "")
+    end
+
+    def components
+      @components.values
+    end
+
+    def component(name)
+      @components.fetch(name, nil)
     end
 
     # A proxy object to bind the values specified in a DSL to. The attributes of the

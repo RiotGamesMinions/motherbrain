@@ -7,7 +7,7 @@ module MotherBrain
       end
 
       def component(name, &block)
-        obj = Component.new(self, name)
+        obj = Component.new(name)
         obj.instance_eval(&block)
 
         add(obj)

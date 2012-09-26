@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe MB::Component do
-  subject { MB::Component.new(double('plugin'), :bacon) }
+  subject { MB::Component.new(:bacon) }
 
   describe "#groups" do
     it "returns an array of Group objects" do
@@ -28,10 +28,12 @@ describe MB::Component do
     end
 
     context "when no block is given" do
-      it "raises MB::ArgumentError" do
-        lambda {
-          subject.group(:name)
-        }.should raise_error(MB::ArgumentError)
+      before(:each) do
+        subject.group(:reset) { }
+      end
+
+      it "returns the group matching the given name" do
+        subject.group(:reset).name.should eql("reset")
       end
     end
   end

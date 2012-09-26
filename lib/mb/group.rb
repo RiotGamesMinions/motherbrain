@@ -14,6 +14,10 @@ module MotherBrain
       instance_eval(&block) if block_given?
     end
 
+    def id
+      self.name.to_sym
+    end
+
     # @param [#to_s] value
     #
     # @return [Array<String>]
