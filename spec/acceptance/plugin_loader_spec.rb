@@ -13,6 +13,7 @@ describe "loading a plugin" do
         group :database do
           recipe "pvpnet::database"
           role "why_man_why"
+          attribute 'pvpnet.database.master', true
         end
       end
     EOH
@@ -43,6 +44,9 @@ describe "loading a plugin" do
 
       it { subject.roles.should have(1).item }
       it { subject.roles.should include("why_man_why") }
+
+      it { subject.attributes.should have(1).item }
+      it { subject.attributes.should include("pvpnet.database.master" => true) }
     end
   end
 end

@@ -14,8 +14,11 @@ module MotherBrain
 
   class InternalError < MBError; status_code(99); end
   class ArgumentError < InternalError; end
-  class ValidationFailed < InternalError; end
-  class DuplicateGroup < InternalError; end
+
+  class PluginSyntaxError < MBError; status_code(100); end
+  class DuplicateGroup < PluginSyntaxError; end
+  class DuplicateAttribute < PluginSyntaxError; end
+  class ValidationFailed < PluginSyntaxError; end
 
   class ClusterBusy < MBError; status_code(10); end
   class ClusterNotFound < MBError; status_code(11); end

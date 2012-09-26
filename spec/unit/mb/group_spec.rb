@@ -78,4 +78,24 @@ describe MB::Group do
       end
     end
   end
+
+  describe "#attribute" do
+    it "adds the given key value pair to the attributes" do
+      subject.attribute('pvpnet.database.master', true)
+
+      subject.attributes.should have(1).item
+      subject.attributes.should have_key('pvpnet.database.master')
+      subject.attributes['pvpnet.database.master'].should eql(true)
+    end
+
+    context "when an attribute with the same key has already been added" do
+      it "raises an error" do
+        subject.attribute('pvpnet.database.master', true)
+
+        lambda {
+          subject.attribute('pvpnet.database.master', false)
+        }.should raise_error(MB::DuplicateAttribute)
+      end
+    end
+  end
 end
