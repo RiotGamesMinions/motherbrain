@@ -14,6 +14,7 @@ module MotherBrain
 
   class InternalError < MBError; status_code(99); end
   class ArgumentError < InternalError; end
+  class ValidationFailed < InternalError; end
   class DuplicateGroup < InternalError; end
 
   class ClusterBusy < MBError; status_code(10); end
@@ -22,4 +23,5 @@ module MotherBrain
   class InvalidConfig < MBError; status_code(13); end
   class ConfigNotFound < MBError; status_code(14); end
   class ConfigExists < MBError; status_code(15); end
+  class InvalidPlugin < MBError; status_code(16); end
 end

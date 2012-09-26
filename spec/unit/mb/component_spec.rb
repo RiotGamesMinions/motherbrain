@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe MB::Component do
-  subject { MB::Component.new(:bacon, double('conn'), :dev) }
+  subject { MB::Component.new(double('plugin'), :bacon) }
 
   describe "#groups" do
     it "returns an array of Group objects" do

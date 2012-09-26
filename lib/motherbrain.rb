@@ -10,6 +10,9 @@ require 'mb/config'
 module MotherBrain
   autoload :CliBase, 'mb/cli_base'
   autoload :Cli, 'mb/cli'
+  autoload :Plugin, 'mb/plugin'
+  autoload :Component, 'mb/component'
+  autoload :Group, 'mb/group'
 
   class << self
     def ui

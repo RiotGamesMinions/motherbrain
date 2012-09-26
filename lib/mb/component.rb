@@ -1,13 +1,18 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Component
+    attr_reader :plugin
     attr_reader :name
 
-    def initialize(name, connection, environment)
+    def initialize(plugin, name)
+      @plugin = plugin
       @name = name
-      @connection = connection
-      @environment = environment
       @groups = Hash.new
+    end
+
+    # @return [Symbol]
+    def id
+      self.name.to_sym
     end
 
     # @param [#to_s] name
@@ -28,21 +33,16 @@ module MotherBrain
       @groups.values
     end
 
-    private
+    # @param [MB::Group]
+    def add_group(group)
+      @groups[group.name.to_sym] = group
+    end
 
-      attr_reader :connection
-      attr_reader :environment
-
-      # @param [MB::Group]
-      def add_group(group)
-        @groups[group.name.to_sym] = group
-      end
-
-      # @param [#to_sym] name
-      #
-      # @return [Boolean]
-      def has_group?(name)
-        @groups.has_key?(name.to_sym)
-      end
+    # @param [#to_sym] name
+    #
+    # @return [Boolean]
+    def has_group?(name)
+      @groups.has_key?(name.to_sym)
+    end
   end
 end
