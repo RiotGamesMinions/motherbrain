@@ -31,7 +31,7 @@ describe MB::Plugin do
           version '1.2.3'
         EOH
 
-        subject.load(data).version.should eql('1.2.3')
+        subject.load(data).version.to_s.should eql('1.2.3')
       end
 
       it "sets the evaluated value for description" do
@@ -99,17 +99,23 @@ describe MB::Plugin do
     end
 
     describe "#version" do
+      it "converts the string to a Solve::Version" do
+        subject.version("1.2.3")
+
+        subject.attributes[:version].should be_a(Solve::Version)
+      end
+
       it "sets the given value to the version attribute" do
         subject.version("1.2.3")
 
-        subject.attributes[:version].should eql("1.2.3")
+        subject.attributes[:version].to_s.should eql("1.2.3")
       end
 
-      context "when the given value is nil" do
+      context "when the given value is not a valid version string" do
         it "raises a MB::ValidationFailed error" do
           lambda {
-            subject.version(nil)
-          }.should raise_error(MB::ValidationFailed)
+            subject.version("123-321")
+          }.should raise_error(MB::ValidationFailed, "'123-321' did not contain a valid version string: 'x.y.z' or 'x.y'.")
         end
       end
     end

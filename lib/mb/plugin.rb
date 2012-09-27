@@ -95,7 +95,12 @@ module MotherBrain
 
       # @param [String] value
       def version(value)
-        set(:version, value, kind_of: String, required: true)
+        begin
+          value = Solve::Version.new(value)
+        rescue Solve::Errors::SolveError => e
+          raise ValidationFailed, e.message
+        end
+        set(:version, value, kind_of: Solve::Version, required: true)
       end
 
       # @param [String] value

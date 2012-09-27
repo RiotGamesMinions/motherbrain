@@ -50,7 +50,7 @@ describe "loading a plugin" do
   subject { @plugin }
 
   it { subject.name.should eql("pvpnet") }
-  it { subject.version.should eql("1.2.3") }
+  it { subject.version.to_s.should eql("1.2.3") }
   it { subject.description.should eql("whatever") }
   it { subject.author.should eql("Jamie Winsor") }
   it { subject.email.should eql("jamie@vialstudios.com") }
