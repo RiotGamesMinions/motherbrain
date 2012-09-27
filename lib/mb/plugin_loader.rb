@@ -3,7 +3,10 @@ module MotherBrain
   class PluginLoader
     class << self
       def default_paths
-        [ File.expand_path(File.join("~/", ".motherbrain", "plugins")) ]
+        [ 
+          File.expand_path(File.join("~/", ".motherbrain", "plugins")),
+          File.expand_path(File.join(".", ".motherbrain", "plugins"))
+        ]
       end
     end
 
