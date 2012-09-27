@@ -1,5 +1,6 @@
 require 'json'
 require 'pathname'
+require 'set'
 require 'ridley'
 require 'solve'
 
@@ -12,6 +13,7 @@ module MotherBrain
   autoload :CliBase, 'mb/cli_base'
   autoload :Cli, 'mb/cli'
   autoload :Plugin, 'mb/plugin'
+  autoload :PluginLoader, 'mb/plugin_loader'
   autoload :Component, 'mb/component'
   autoload :Command, 'mb/command'
   autoload :Group, 'mb/group'

@@ -20,6 +20,14 @@ module MotherBrain
         raise InvalidPlugin, e
       end
 
+      def from_file(path)
+        load(File.read(path))
+      end
+
+      def key_for(name, version)
+        "#{name}-#{version}".to_sym
+      end
+
       private
 
         # @param [DSLProxy] proxy
@@ -59,6 +67,11 @@ module MotherBrain
       @dependencies = Hash.new
 
       instance_eval(&block) if block_given?
+    end
+
+    # @return [Symbol]
+    def id
+      self.class.key_for(self.name, self.version).to_sym
     end
 
     def components

@@ -20,6 +20,9 @@ module MotherBrain
   class DuplicateAttribute < PluginSyntaxError; end
   class ValidationFailed < PluginSyntaxError; end
 
+  class PluginLoadError < MBError; status_code(101); end
+  class AlreadyLoaded < PluginLoadError; end
+
   class ClusterBusy < MBError; status_code(10); end
   class ClusterNotFound < MBError; status_code(11); end
   class EnvironmentNotFound < MBError; status_code(12); end
