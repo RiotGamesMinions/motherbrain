@@ -9,16 +9,39 @@ describe "loading a plugin" do
       author "Jamie Winsor"
       email "jamie@vialstudios.com"
 
+      # depends "pvpnet", "~> 1.2.3"
+      # depends "activemq", "= 4.2.1"
+
       command :start do
         component(:activemq).invoke(:start)
       end
 
-      component :pvpnet do
-        group :database do
-          recipe "pvpnet::database"
+      component :activemq do
+        group :master_broker do
+          recipe "activemq::broker"
           role "why_man_why"
-          attribute 'pvpnet.database.master', true
+          attribute 'activemq.broker.master', true
         end
+
+        # service :broker do
+        #   action :start do
+        #     set_attribute('activemq.broker.status', true)
+        #   end
+
+        #   action :stop do
+        #     set_attribute('activemq.broker.status', false)
+        #   end
+        # end
+
+        # command :start do
+        #   run do
+        #     service(:broker, :start).on(:master_broker)
+        #   end
+        # end
+
+        # command :stop do
+        #   run.service(:broker, :stop).on(:master_broker)
+        # end
       end
     EOH
   end
@@ -33,28 +56,28 @@ describe "loading a plugin" do
   it { subject.email.should eql("jamie@vialstudios.com") }
 
   it { subject.components.should have(1).item }
-  it { subject.component(:pvpnet).should_not be_nil }
+  it { subject.component(:activemq).should_not be_nil }
 
   it { subject.commands.should have(1).item }
   it { subject.command(:start).should_not be_nil }
 
   describe "component" do
-    subject { @plugin.component(:pvpnet) }
+    subject { @plugin.component(:activemq) }
 
     it { subject.groups.should have(1).item }
-    it { subject.group(:database).should_not be_nil }
+    it { subject.group(:master_broker).should_not be_nil }
 
     describe "group" do
-      subject { @plugin.component(:pvpnet).group(:database) }
+      subject { @plugin.component(:activemq).group(:master_broker) }
 
       it { subject.recipes.should have(1).item }
-      it { subject.recipes.should include("pvpnet::database") }
+      it { subject.recipes.should include("activemq::broker") }
 
       it { subject.roles.should have(1).item }
       it { subject.roles.should include("why_man_why") }
 
       it { subject.attributes.should have(1).item }
-      it { subject.attributes.should include("pvpnet.database.master" => true) }
+      it { subject.attributes.should include("activemq.broker.master" => true) }
     end
   end
 
