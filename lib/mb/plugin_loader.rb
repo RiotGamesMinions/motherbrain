@@ -1,6 +1,12 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class PluginLoader
+    class << self
+      def default_paths
+        [ File.expand_path(File.join("~/", ".motherbrain", "plugins")) ]
+      end
+    end
+
     # @return [Set<Pathname>]
     attr_reader :paths
 

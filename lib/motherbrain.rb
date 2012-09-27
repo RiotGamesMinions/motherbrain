@@ -6,10 +6,10 @@ require 'solve'
 
 require 'mb/version'
 require 'mb/errors'
-require 'mb/config'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
+  autoload :Config, 'mb/config'
   autoload :CliBase, 'mb/cli_base'
   autoload :Cli, 'mb/cli'
   autoload :Plugin, 'mb/plugin'

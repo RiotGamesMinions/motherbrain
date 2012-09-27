@@ -21,7 +21,7 @@ describe MB::CliBase do
       it "reads the configuration file as the Cli's configuration" do
         cli = subject.new([])
 
-        cli.config.chef_api_url.should be_nil
+        cli.config.chef_api_url.should eql("http://localhost:8080")
       end
     end
   end

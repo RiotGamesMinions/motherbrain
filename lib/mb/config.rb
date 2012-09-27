@@ -36,6 +36,8 @@ module MotherBrain
     attribute :nexus_password
     validates_presence_of :nexus_password
 
+    attribute :plugin_paths, default: PluginLoader.default_paths
+
     # Returns a connection hash for Ridley from the instance's attributes
     #
     # @example

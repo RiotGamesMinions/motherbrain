@@ -1,6 +1,24 @@
 require 'spec_helper'
 
 describe MB::Config do
+  describe "ClassMethods" do
+    subject { MB::Config }
+
+    describe "::new" do
+      before(:each) do
+        @config = subject.new
+      end
+
+      it "has a default value for chef_api_url" do
+        @config.chef_api_url.should eql("http://localhost:8080")
+      end
+
+      it "has a default value for plugin_paths equal to PluginLoader.default_paths" do
+        @config.plugin_paths.should eql(MB::PluginLoader.default_paths)
+      end
+    end
+  end
+
   subject do
     MB::Config.new.tap do |o|
       o.chef_api_url = "https://api.opscode.com/organizations/vialstudio"
