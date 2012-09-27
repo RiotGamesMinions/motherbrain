@@ -3,7 +3,7 @@ require 'spec_helper'
 describe "loading a plugin" do
   let(:dsl_content) do
     <<-EOH
-      name "reset"
+      name "pvpnet"
       version "1.2.3"
       description "whatever"
       author "Jamie Winsor"
@@ -49,7 +49,7 @@ describe "loading a plugin" do
   before(:each) { @plugin = MB::Plugin.load(dsl_content) }
   subject { @plugin }
 
-  it { subject.name.should eql("reset") }
+  it { subject.name.should eql("pvpnet") }
   it { subject.version.should eql("1.2.3") }
   it { subject.description.should eql("whatever") }
   it { subject.author.should eql("Jamie Winsor") }
