@@ -30,6 +30,3 @@ unless defined?(MB)
   # Alias for {MotherBrain}
   MB = MotherBrain
 end
-
-# JW TODO: dynamically load plugins somehow
-require 'mb-pvpnet'
