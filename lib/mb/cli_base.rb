@@ -23,6 +23,10 @@ module MotherBrain
       def chef_conn
         @chef_conn ||= Ridley.connection(config.to_ridley)
       end
+
+      def plugin_loader
+        @plugin_loader ||= PluginLoader.new(config.plugin_paths)
+      end
       
       def config_path
         File.expand_path(options[:config] || MB::Config.default_path)
