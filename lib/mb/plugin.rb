@@ -71,7 +71,7 @@ module MotherBrain
 
     # @return [Symbol]
     def id
-      self.class.key_for(self.name, self.version).to_sym
+      self.class.key_for(self.name, self.version)
     end
 
     def components
