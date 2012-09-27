@@ -9,8 +9,8 @@ describe "loading a plugin" do
       author "Jamie Winsor"
       email "jamie@vialstudios.com"
 
-      # depends "pvpnet", "~> 1.2.3"
-      # depends "activemq", "= 4.2.1"
+      depends "pvpnet", "~> 1.2.3"
+      depends "activemq", "= 4.2.1"
 
       command :start do
         component(:activemq).invoke(:start)
@@ -60,6 +60,20 @@ describe "loading a plugin" do
 
   it { subject.commands.should have(1).item }
   it { subject.command(:start).should_not be_nil }
+
+  it { subject.dependencies.should have(2).items }
+
+  describe "dependencies" do
+    subject { @plugin.dependencies }
+
+    it { subject.should have_key("pvpnet") }
+    it { subject["pvpnet"].should be_a(Solve::Constraint) }
+    it { subject["pvpnet"].to_s.should eql("~> 1.2.3") }
+
+    it { subject.should have_key("activemq") }
+    it { subject["activemq"].should be_a(Solve::Constraint) }
+    it { subject["activemq"].to_s.should eql("= 4.2.1") }
+  end
 
   describe "component" do
     subject { @plugin.component(:activemq) }

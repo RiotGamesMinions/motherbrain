@@ -1,6 +1,7 @@
 require 'json'
 require 'pathname'
 require 'ridley'
+require 'solve'
 
 require 'mb/version'
 require 'mb/errors'

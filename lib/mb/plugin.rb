@@ -5,6 +5,7 @@ module MotherBrain
   class Plugin
     autoload :Components, 'mb/plugin/components'
     autoload :Commands, 'mb/plugin/commands'
+    autoload :Dependencies, 'mb/plugin/dependencies'
 
     class << self
       # @param [String] content
@@ -28,6 +29,7 @@ module MotherBrain
           new(proxy.attributes) do |plugin|
             plugin.components = proxy.components
             plugin.commands = proxy.commands
+            plugin.dependencies = proxy.dependencies
           end
         end
     end
@@ -41,6 +43,7 @@ module MotherBrain
 
     attr_writer :components
     attr_writer :commands
+    attr_accessor :dependencies
 
     # @param [Hash] attributes
     def initialize(attributes = {}, &block)
@@ -53,6 +56,7 @@ module MotherBrain
 
       @components = Hash.new
       @commands = Hash.new
+      @dependencies = Hash.new
 
       instance_eval(&block) if block_given?
     end
@@ -82,6 +86,7 @@ module MotherBrain
       include Mixin::AttrSet
       include Plugin::Components
       include Plugin::Commands
+      include Plugin::Dependencies
 
       # @param [String] value
       def name(value)

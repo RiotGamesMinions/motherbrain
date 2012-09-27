@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
   s.version       = MotherBrain::VERSION
   s.required_ruby_version = ">= 1.9.1"
 
+  s.add_runtime_dependency 'solve', '>= 0.3.0'
   s.add_runtime_dependency 'ridley'
   s.add_runtime_dependency 'chozo'
   s.add_runtime_dependency 'nexus_cli', '~> 0.3.0'
