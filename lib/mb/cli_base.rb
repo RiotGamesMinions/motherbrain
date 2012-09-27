@@ -20,8 +20,8 @@ module MotherBrain
       banner: "PATH"
 
     no_tasks do
-      def ridley
-        @ridley ||= Ridley.connection(config.to_ridley)
+      def chef_conn
+        @chef_conn ||= Ridley.connection(config.to_ridley)
       end
       
       def config_path
