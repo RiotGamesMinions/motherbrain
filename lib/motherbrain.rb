@@ -12,6 +12,7 @@ module MotherBrain
   autoload :Cli, 'mb/cli'
   autoload :Plugin, 'mb/plugin'
   autoload :Component, 'mb/component'
+  autoload :Command, 'mb/command'
   autoload :Group, 'mb/group'
 
   class << self

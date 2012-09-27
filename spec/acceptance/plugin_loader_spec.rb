@@ -9,6 +9,10 @@ describe "loading a plugin" do
       author "Jamie Winsor"
       email "jamie@vialstudios.com"
 
+      command :start do
+        component(:activemq).invoke(:start)
+      end
+
       component :pvpnet do
         group :database do
           recipe "pvpnet::database"
@@ -27,8 +31,12 @@ describe "loading a plugin" do
   it { subject.description.should eql("whatever") }
   it { subject.author.should eql("Jamie Winsor") }
   it { subject.email.should eql("jamie@vialstudios.com") }
+
   it { subject.components.should have(1).item }
   it { subject.component(:pvpnet).should_not be_nil }
+
+  it { subject.commands.should have(1).item }
+  it { subject.command(:start).should_not be_nil }
 
   describe "component" do
     subject { @plugin.component(:pvpnet) }
@@ -48,5 +56,11 @@ describe "loading a plugin" do
       it { subject.attributes.should have(1).item }
       it { subject.attributes.should include("pvpnet.database.master" => true) }
     end
+  end
+
+  describe "commands" do
+    subject { @plugin.commands }
+
+    it { subject[0].should be_a(Proc) }
   end
 end

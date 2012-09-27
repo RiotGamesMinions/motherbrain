@@ -1,5 +1,6 @@
 module MotherBrain
   class Plugin
+    # @author Jamie Winsor <jamie@vialstudios.com>
     module Components
       # @return [Hash]
       def components
@@ -7,18 +8,18 @@ module MotherBrain
       end
 
       def component(name, &block)
-        add Component.new(name, &block)
+        add_component Component.new(name, &block)
       end
 
       private
 
         # @param [Component] component
-        def add(component)
+        def add_component(component)
           self.components[component.id] = component
         end
 
         # @param [Component] component
-        def get(component)
+        def get_component(component)
           self.components.fetch(component.id, nil)
         end
     end

@@ -1,9 +1,11 @@
 require 'mb/mixin/attr_set'
-require 'mb/plugin/components'
 
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Plugin
+    autoload :Components, 'mb/plugin/components'
+    autoload :Commands, 'mb/plugin/commands'
+
     class << self
       # @param [String] content
       #
@@ -25,6 +27,7 @@ module MotherBrain
         def from_proxy(proxy)
           new(proxy.attributes) do |plugin|
             plugin.components = proxy.components
+            plugin.commands = proxy.commands
           end
         end
     end
@@ -37,6 +40,7 @@ module MotherBrain
     attr_accessor :email
 
     attr_writer :components
+    attr_writer :commands
 
     # @param [Hash] attributes
     def initialize(attributes = {}, &block)
@@ -46,6 +50,9 @@ module MotherBrain
       @description = attributes.fetch(:description, "")
       @author = attributes.fetch(:author, "")
       @email = attributes.fetch(:email, "")
+
+      @components = Hash.new
+      @commands = Hash.new
 
       instance_eval(&block) if block_given?
     end
@@ -58,6 +65,14 @@ module MotherBrain
       @components.fetch(name, nil)
     end
 
+    def commands
+      @commands.values
+    end
+
+    def command(name)
+      @commands.fetch(name, nil)
+    end
+
     # A proxy object to bind the values specified in a DSL to. The attributes of the
     # proxy object can later be given to the initializer of Plugin to create a new
     # instance of Plugin.
@@ -65,7 +80,8 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     class DSLProxy
       include Mixin::AttrSet
-      include Components
+      include Plugin::Components
+      include Plugin::Commands
 
       # @param [String] value
       def name(value)
