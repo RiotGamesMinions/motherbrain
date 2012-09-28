@@ -42,18 +42,29 @@ describe MotherBrain::PluginLoader do
     end
 
     before(:each) do
-      paths.each { |path| subject.add_path(path) }
+      paths.each do |path|
+        generate_plugin(SecureRandom.hex(16), '1.0.0', File.join(path, 'plugin.rb'))
+
+        subject.add_path(path)
+      end
     end
 
-    it 'sends the load message to self with each path in the paths attribute' do
+    it 'sends a load message to self with each plugin found in the paths' do
       subject.should_receive(:load).with(anything).exactly(3).times
 
       subject.load_all
     end
+
+    it 'has a plugin for each plugin in the paths' do
+      subject.load_all
+
+      subject.plugins.should have(3).items
+      subject.plugins.should each be_a(MB::Plugin)
+    end
   end
 
   describe '#load' do
-    let(:path) { '/tmp/one' }
+    let(:path) { '/tmp/one/plugin.rb' }
     let(:plugin) { double('plugin', name: 'reset', version: '1.2.3', id: 'reset-1.2.3') }
 
     before(:each) do

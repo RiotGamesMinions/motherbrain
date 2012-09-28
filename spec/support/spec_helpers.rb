@@ -36,5 +36,15 @@ CONFIG
       FileUtils.mkdir_p(File.dirname(path))
       File.write(path, config)
     end
+
+    def generate_plugin(name, version, path)
+      FileUtils.mkdir_p(File.dirname(path))
+      File.open(path, 'w+') do |f|
+        f.write <<-EOH
+        name '#{name}'
+        version '#{version}'
+        EOH
+      end
+    end
   end
 end

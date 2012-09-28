@@ -36,7 +36,11 @@ module MotherBrain
 
     # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
     def load_all
-      self.paths.each { |path| self.load(path) }
+      self.paths.each do |path|
+        Pathname.glob(path.join('*.rb')).collect do |plugin|
+          self.load(plugin)
+        end
+      end
     end
 
     # @param [#to_s] path

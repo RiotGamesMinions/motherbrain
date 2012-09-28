@@ -1,4 +1,5 @@
 require 'json'
+require 'fileutils'
 require 'pathname'
 require 'set'
 require 'ridley'
