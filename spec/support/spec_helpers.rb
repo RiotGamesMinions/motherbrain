@@ -38,8 +38,10 @@ CONFIG
     end
 
     def generate_plugin(name, version, path)
-      FileUtils.mkdir_p(File.dirname(path))
-      File.open(path, 'w+') do |f|
+      FileUtils.mkdir_p(path)
+      file = "#{name}-#{version}.rb"
+
+      File.open(File.join(path, file), 'w+') do |f|
         f.write <<-EOH
         name '#{name}'
         version '#{version}'

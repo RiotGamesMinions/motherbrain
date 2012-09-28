@@ -6,6 +6,10 @@ Given /^a configuration file exists$/ do
   generate_config(mb_config_path)
 end
 
+Given /^a default MotherBrain configuration$/ do
+  generate_config(mb_config_path)
+end
+
 Then /^a MotherBrain config file should exist and contain:$/ do |table|
   config = MB::Config.from_file(ENV['MB_CONFIG'])
   table.raw.each do |key, value|

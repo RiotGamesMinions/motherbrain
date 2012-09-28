@@ -9,6 +9,7 @@ module MotherBrain
       super
       @options = options.dup # unfreeze frozen options Hash from Thor
       @options[:config] ? load_config! : load_config
+      plugin_loader.load_all
     end
 
     attr_reader :config

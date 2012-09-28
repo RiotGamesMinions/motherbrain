@@ -14,7 +14,7 @@ module MotherBrain
     attr_reader :paths
 
     # @param [Array<String>, Array<Pathname>] paths
-    def initialize(paths = Array.new)
+    def initialize(paths = self.class.default_paths)
       @paths = Set.new
       @plugins = Hash.new
 
@@ -35,12 +35,16 @@ module MotherBrain
     end
 
     # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
+    #
+    # @return [Array<MotherBrain::Plugin>]
     def load_all
       self.paths.each do |path|
         Pathname.glob(path.join('*.rb')).collect do |plugin|
           self.load(plugin)
         end
       end
+
+      self.plugins
     end
 
     # @param [#to_s] path
@@ -58,6 +62,13 @@ module MotherBrain
     # @param [Pathname] path
     def remove_path(path)
       self.paths.delete(path)
+    end
+
+    # Clear all previously set paths
+    #
+    # @return [Set]
+    def clear_paths!
+      @paths = Set.new
     end
 
     private

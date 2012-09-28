@@ -1,5 +1,5 @@
 When /^I run the "(.*?)" command$/ do |command|
-  pending # express the regexp above with the code you wish you had
+  run_simple(unescape("mb #{command}"))
 end
 
 When /^I run the "(.*?)" command interactively$/ do |command|
