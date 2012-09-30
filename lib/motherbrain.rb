@@ -4,6 +4,8 @@ require 'pathname'
 require 'set'
 require 'ridley'
 require 'solve'
+require 'thor'
+require 'thor/group'
 
 require 'mb/version'
 require 'mb/errors'

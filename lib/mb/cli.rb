@@ -1,5 +1,3 @@
-require 'mb/cli_base'
-
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Cli < CliBase

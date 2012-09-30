@@ -1,7 +1,3 @@
-require 'motherbrain'
-require 'thor'
-require 'thor/group'
-
 module MotherBrain 
   # @author Jamie Winsor <jamie@vialstudios.com>
   class CliBase < Thor
