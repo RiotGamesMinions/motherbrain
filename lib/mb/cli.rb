@@ -31,8 +31,8 @@ module MotherBrain
 
     desc "plugins", "Display all installed plugins and versions"
     def plugins
-      if plugin_loader.plugins.empty?
-        paths = plugin_loader.paths.to_a.collect { |path| "'#{path}'" }
+      if self.class.plugin_loader.plugins.empty?
+        paths = self.class.plugin_loader.paths.to_a.collect { |path| "'#{path}'" }
 
         MB.ui.say "No MotherBrain plugins found in any of your configured plugin paths!"
         MB.ui.say "\n"
@@ -40,7 +40,7 @@ module MotherBrain
         exit(0)
       end
 
-      plugin_loader.plugins.group_by(&:name).each do |name, plugins|
+      self.class.plugin_loader.plugins.group_by(&:name).each do |name, plugins|
         versions = plugins.collect(&:version).reverse!
         MB.ui.say "#{name}: #{versions.join(', ')}"
       end

@@ -14,6 +14,7 @@ module MotherBrain
   autoload :CliBase, 'mb/cli_base'
   autoload :Cli, 'mb/cli'
   autoload :Plugin, 'mb/plugin'
+  autoload :PluginCLI, 'mb/plugin_cli'
   autoload :PluginLoader, 'mb/plugin_loader'
   autoload :Component, 'mb/component'
   autoload :Command, 'mb/command'

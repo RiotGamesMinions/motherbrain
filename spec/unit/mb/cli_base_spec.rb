@@ -7,9 +7,11 @@ describe MB::CliBase do
     describe "default configuration path" do
       context "when the value of ENV['MB_CONFIG'] specifies a config file that exists" do
         before(:each) do
-          set_mb_config_path(mb_config_path)
+          set_mb_config_path(mb_config_path.join('config.json'))
           generate_config(ENV['MB_CONFIG'])
         end
+
+        after(:each) { FileUtils.rm(ENV['MB_CONFIG']) }
 
         it "reads the configuration file as the Cli's configuration" do
           cli = subject.new([])
@@ -19,6 +21,10 @@ describe MB::CliBase do
       end
 
       context "when a config.json is not found in the directory contained in ENV['MB_CONFIG']" do
+        before(:each) do
+          FileUtils.rm(ENV['MB_CONFIG'])
+        end
+
         it "reads the configuration file as the Cli's configuration" do
           cli = subject.new([])
 
@@ -53,15 +59,16 @@ describe MB::CliBase do
     end
   end
 
-  subject { MB::CliBase.new }
+  before(:each) do
+    set_mb_config_path(mb_config_path.join('config.json'))
+    generate_config(ENV['MB_CONFIG'])
+  end
 
-  describe "#plugin_loader" do
-    it "returns an instance of PluginLoader" do
-      subject.plugin_loader.should be_a(MB::PluginLoader)
-    end
+  subject { MB::CliBase.new([], config: ENV['MB_CONFIG']) }
 
-    it "has the same paths as the config.plugin_paths value" do
-      subject.plugin_loader.paths.to_a.collect(&:to_s).should eql(subject.config.plugin_paths)
+  describe "#chef_conn" do
+    it "returns an instance of Ridley::Connection" do
+      subject.chef_conn.should be_a(Ridley::Connection)
     end
   end
 end
