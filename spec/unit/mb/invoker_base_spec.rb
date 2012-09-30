@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MB::CliBase do
+describe MB::InvokerBase do
   describe "ClassMethods" do
-    subject { MB::CliBase }
+    subject { MB::InvokerBase }
 
     describe "default configuration path" do
       context "when the value of ENV['MB_CONFIG'] specifies a config file that exists" do
@@ -13,10 +13,10 @@ describe MB::CliBase do
 
         after(:each) { FileUtils.rm(ENV['MB_CONFIG']) }
 
-        it "reads the configuration file as the Cli's configuration" do
-          cli = subject.new([])
+        it "reads the configuration file as the Invoker's configuration" do
+          invoker = subject.new([])
 
-          cli.config.chef_api_url.should_not be_nil
+          invoker.config.chef_api_url.should_not be_nil
         end
       end
 
@@ -25,10 +25,10 @@ describe MB::CliBase do
           FileUtils.rm(ENV['MB_CONFIG'])
         end
 
-        it "reads the configuration file as the Cli's configuration" do
-          cli = subject.new([])
+        it "reads the configuration file as the Invoker's configuration" do
+          invoker = subject.new([])
 
-          cli.config.chef_api_url.should eql("http://localhost:8080")
+          invoker.config.chef_api_url.should eql("http://localhost:8080")
         end
       end
     end
@@ -40,20 +40,20 @@ describe MB::CliBase do
       end
 
       it "loads the specified config file when the specified file exists" do
-        cli = subject.new([], config: ENV['MB_CONFIG'])
+        invoker = subject.new([], config: ENV['MB_CONFIG'])
 
-        cli.config.chef_api_url.should_not be_nil
+        invoker.config.chef_api_url.should_not be_nil
       end
 
       it "raises a ConfigNotFound error when the specified path does not exist" do
         lambda {
-          cli = subject.new([], config: tmp_path.join("config.json"))
+          invoker = subject.new([], config: tmp_path.join("config.json"))
         }.should raise_error(Chozo::Errors::ConfigNotFound)
       end
 
       it "raises a ConfigNotFound error when the specified path is a directory" do
         lambda {
-          cli = subject.new([], config: tmp_path)
+          invoker = subject.new([], config: tmp_path)
         }.should raise_error(Chozo::Errors::ConfigNotFound)
       end
     end
@@ -64,7 +64,7 @@ describe MB::CliBase do
     generate_config(ENV['MB_CONFIG'])
   end
 
-  subject { MB::CliBase.new([], config: ENV['MB_CONFIG']) }
+  subject { MB::InvokerBase.new([], config: ENV['MB_CONFIG']) }
 
   describe "#chef_conn" do
     it "returns an instance of Ridley::Connection" do

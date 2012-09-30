@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Cli < CliBase
+  class Invoker < InvokerBase
     method_option :force,
       type: :boolean,
       default: false,

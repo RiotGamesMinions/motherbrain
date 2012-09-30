@@ -13,10 +13,10 @@ require 'mb/errors'
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
   autoload :Config, 'mb/config'
-  autoload :CliBase, 'mb/cli_base'
-  autoload :Cli, 'mb/cli'
+  autoload :InvokerBase, 'mb/invoker_base'
+  autoload :Invoker, 'mb/invoker'
   autoload :Plugin, 'mb/plugin'
-  autoload :PluginCLI, 'mb/plugin_cli'
+  autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
   autoload :Component, 'mb/component'
   autoload :Command, 'mb/command'

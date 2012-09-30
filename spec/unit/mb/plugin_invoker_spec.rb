@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MotherBrain::PluginCLI do
+describe MotherBrain::PluginInvoker do
   describe "ClassMethods" do
-    subject { MB::PluginCLI }
+    subject { MB::PluginInvoker }
 
     let(:plugin) do
       double('plugin', name: 'pvpnet')

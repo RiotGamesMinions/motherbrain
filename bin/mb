@@ -3,7 +3,7 @@ $:.push File.expand_path("../../lib", __FILE__)
 require 'motherbrain'
 
 begin
-  MB::Cli.start
+  MB::Invoker.start
 rescue MB::MBError => e
   MB.ui.say e, :red
   exit e.status_code

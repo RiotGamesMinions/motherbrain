@@ -1,6 +1,6 @@
 module MotherBrain 
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class CliBase < Thor
+  class InvokerBase < Thor
     class << self
       attr_reader :plugin_loader
 
@@ -22,7 +22,7 @@ module MotherBrain
         self.plugin_loader.load_all
 
         self.plugin_loader.plugins.each do |plugin|
-          self.register_plugin MB::PluginCLI.fabricate(plugin)
+          self.register_plugin MB::PluginInvoker.fabricate(plugin)
         end
 
         mb_config
@@ -50,7 +50,7 @@ module MotherBrain
         # @return [Array]
         def parse_args(given_args)
           args, opts = Thor::Options.split(given_args)
-          thor_opts = Thor::Options.new(CliBase.class_options)
+          thor_opts = Thor::Options.new(InvokerBase.class_options)
           parsed_opts = thor_opts.parse(opts)
 
           [ args, parsed_opts ]
