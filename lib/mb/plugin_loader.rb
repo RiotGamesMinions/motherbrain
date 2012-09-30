@@ -73,7 +73,7 @@ module MotherBrain
 
     private
 
-      # @param [MotherBrain::Plugin]
+      # @param [MotherBrain::Plugin] plugin
       #
       # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
       def add(plugin)

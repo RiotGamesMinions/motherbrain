@@ -36,11 +36,14 @@ module MotherBrain
 
     private
 
-      # @param [MB::Group]
+      # @param [MB::Group] group
       def add_group(group)
         @groups[group.id] = group
       end
 
+      # @param [#to_sym] name
+      #
+      # @return [MB::Group]
       def get_group(name)
         @groups.fetch(name.to_sym, nil)
       end
