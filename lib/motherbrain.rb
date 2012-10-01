@@ -10,10 +10,9 @@ require 'thor/group'
 require 'mb/version'
 require 'mb/errors'
 
-require 'mb/mixin/simple_attributes'
-
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
+  autoload :Mixin, 'mb/mixin'
   autoload :Config, 'mb/config'
   autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
