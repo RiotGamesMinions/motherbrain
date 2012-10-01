@@ -1,40 +1,51 @@
 require 'spec_helper'
 
 describe MB::Component do
-  subject { MB::Component.new(:bacon) }
+  subject do
+    MB::Component.new do
+      name "activemq"
+
+      group "masters" do
+        # group definition
+      end
+    end
+  end
 
   describe "#groups" do
-    it "returns an array of Group objects" do
-      group = subject.group(:app) { }
+    subject do
+      MB::Component.new do
+        name "activemq"
 
+        group "masters" do
+          # group definition
+        end
+
+        command do
+          name "start"
+          description "whatever"
+        end
+      end
+    end
+
+    it "returns an array of Group objects" do
       subject.groups.should be_a(Array)
-      subject.groups.should include(group)
+      subject.groups.should each be_a(MB::Group)
     end
   end
 
   describe "#group" do
-    it "adds a new group to the component" do
-      subject.group(:app) { }
+    subject do
+      MB::Component.new do
+        name "activemq"
 
-      subject.groups.should have(1).item
+        group "masters" do
+          # group definition
+        end
+      end
     end
 
-    it "raises a DuplicateGroup error if the group has already been defined" do
-      subject.group(:app) { }
-
-      lambda {
-        subject.group(:app) { }
-      }.should raise_error(MB::DuplicateGroup)
-    end
-
-    context "when no block is given" do
-      before(:each) do
-        subject.group(:reset) { }
-      end
-
-      it "returns the group matching the given name" do
-        subject.group(:reset).name.should eql("reset")
-      end
+    it "returns the group matching the given name" do
+      subject.group("masters").name.should eql("masters")
     end
   end
 end

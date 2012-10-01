@@ -7,8 +7,8 @@ module MotherBrain
         @components ||= Hash.new
       end
 
-      def component(name, &block)
-        add_component Component.new(name, &block)
+      def component(&block)
+        add_component Component.new(&block)
       end
 
       private

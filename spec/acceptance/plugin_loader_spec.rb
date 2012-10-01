@@ -21,7 +21,9 @@ describe "loading a plugin" do
         end
       end
 
-      component :activemq do
+      component do
+        name "activemq"
+        
         group :master_broker do
           recipe "activemq::broker"
           role "why_man_why"
