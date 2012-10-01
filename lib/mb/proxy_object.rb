@@ -5,7 +5,7 @@ module MotherBrain
 
     def initialize(&block)
       unless block_given?
-        raise PluginSyntaxError, "Block required to evaluate ProxyObject objects"
+        raise PluginSyntaxError, "Block required to evaluate DSL proxy objects"
       end
 
       instance_eval(&block)
