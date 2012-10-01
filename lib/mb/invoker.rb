@@ -2,17 +2,17 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Invoker < InvokerBase
     class << self
+      # @return [MotherBrain::PluginLoader]
       attr_reader :plugin_loader
 
+      # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
         setup(configure(opts))
         super
       end
 
-      # @param [Hash] config
-      #
-      # @return [MB::Config]
+      # @param [MotherBrain:Config] config
       def setup(config)
         @plugin_loader = PluginLoader.new(config.plugin_paths)
         self.plugin_loader.load_all
@@ -43,6 +43,7 @@ module MotherBrain
         end
     end
 
+    # @see {InvokerBase}
     def initialize(args = [], options = {}, config = {})
       super
       self.class.setup(self.config)
