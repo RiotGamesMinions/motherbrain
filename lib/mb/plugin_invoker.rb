@@ -15,6 +15,10 @@ module MotherBrain
         klass.namespace(plugin.name)
         klass.set_plugin(plugin)
 
+        plugin.commands.each do |command|
+          klass.define_command(command)
+        end
+
         klass
       end
 
@@ -26,6 +30,14 @@ module MotherBrain
         # @param [MotherBrain::Plugin] plugin
         def set_plugin(plugin)
           @plugin = plugin
+        end
+
+        # @param [MotherBrain::Command] command
+        def define_command(command)
+          desc(command.name.to_s, command.description.to_s)
+          send(:define_method, command.name.to_sym) do
+            command.invoke
+          end
         end
     end
 

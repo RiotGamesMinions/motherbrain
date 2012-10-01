@@ -13,6 +13,11 @@ module MotherBrain
     def id
       self.name.to_sym
     end
+
+    # Run the proc stored in execute with the given arguments
+    def invoke(*args)
+      execute.call(*args)
+    end
   end
 
   class CommandProxy
