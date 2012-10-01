@@ -94,7 +94,7 @@ module MotherBrain
     #
     # @author Jamie Winsor <jamie@vialstudios.com>
     class DSLProxy
-      include Mixin::AttrSet
+      include Mixin::SimpleAttributes
       include Plugin::Components
       include Plugin::Commands
       include Plugin::Dependencies

@@ -1,8 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Command
-    extend Forwardable
-    include Mixin::AttrSet
+    include Mixin::SimpleAttributes
 
     def initialize(&block)
       if block_given?

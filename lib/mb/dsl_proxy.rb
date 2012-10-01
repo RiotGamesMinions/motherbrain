@@ -1,7 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   module DSLProxy
-    include Mixin::AttrSet
+    include Mixin::SimpleAttributes
 
     def initialize(&block)
       unless block_given?

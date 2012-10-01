@@ -1,7 +1,7 @@
 module MotherBrain
   module Mixin
     # @author Jamie Winsor <jamie@vialstudios.com>
-    module AttrSet
+    module SimpleAttributes
       class << self
         # @param [Object] value
         # @param [Hash] map
@@ -87,7 +87,7 @@ module MotherBrain
       #
       # @return [Object]
       def set(key, value, validation)
-        AttrSet.validate(key, value, validation)
+        SimpleAttributes.validate(key, value, validation)
 
         self.attributes[key.to_sym] = value
       end

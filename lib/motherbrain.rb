@@ -10,7 +10,7 @@ require 'thor/group'
 require 'mb/version'
 require 'mb/errors'
 
-require 'mb/mixin/attr_set'
+require 'mb/mixin/simple_attributes'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
