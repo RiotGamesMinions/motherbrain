@@ -23,6 +23,7 @@ describe "loading a plugin" do
 
       component do
         name "activemq"
+        description "do stuff to AMQ"
         
         group :master_broker do
           recipe "activemq::broker"
@@ -94,6 +95,8 @@ describe "loading a plugin" do
 
   describe "component" do
     subject { @plugin.component(:activemq) }
+
+    it { subject.description.should eql("do stuff to AMQ") }
 
     it { subject.groups.should have(1).item }
     it { subject.group(:master_broker).should_not be_nil }
