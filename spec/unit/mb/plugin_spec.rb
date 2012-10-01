@@ -79,8 +79,8 @@ describe MB::Plugin do
     end
   end
 
-  describe MB::Plugin::DSLProxy do
-    subject { MB::Plugin::DSLProxy.new }
+  describe MB::PluginProxy do
+    subject { MB::PluginProxy.new }
 
     describe "#name" do
       it "sets the given value to the name attribute" do

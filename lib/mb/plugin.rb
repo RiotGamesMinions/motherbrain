@@ -10,7 +10,7 @@ module MotherBrain
       #
       # @raise [InvalidPlugin]
       def load(content)
-        proxy = DSLProxy.new
+        proxy = PluginProxy.new
         proxy.instance_eval(content)
         
         from_proxy(proxy)
@@ -28,7 +28,7 @@ module MotherBrain
 
       private
 
-        # @param [DSLProxy] proxy
+        # @param [PluginProxy] proxy
         #
         # @return [Plugin]
         def from_proxy(proxy)
@@ -87,47 +87,48 @@ module MotherBrain
     def command(name)
       @commands.fetch(name, nil)
     end
+  end
 
-    # A proxy object to bind the values specified in a DSL to. The attributes of the
-    # proxy object can later be given to the initializer of Plugin to create a new
-    # instance of Plugin.
-    #
-    # @author Jamie Winsor <jamie@vialstudios.com>
-    class DSLProxy
-      include Mixin::SimpleAttributes
-      include Plugin::Components
-      include Plugin::Commands
-      include Plugin::Dependencies
+  # A proxy object to bind the values specified in a DSL to. The attributes of the
+  # proxy object can later be given to the initializer of Plugin to create a new
+  # instance of Plugin.
+  #
+  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @api private
+  class PluginProxy
+    include Mixin::SimpleAttributes
+    include Plugin::Components
+    include Plugin::Commands
+    include Plugin::Dependencies
 
-      # @param [String] value
-      def name(value)
-        set(:name, value, kind_of: String, required: true)
+    # @param [String] value
+    def name(value)
+      set(:name, value, kind_of: String, required: true)
+    end
+
+    # @param [String] value
+    def version(value)
+      begin
+        value = Solve::Version.new(value)
+      rescue Solve::Errors::SolveError => e
+        raise ValidationFailed, e.message
       end
+      set(:version, value, kind_of: Solve::Version, required: true)
+    end
 
-      # @param [String] value
-      def version(value)
-        begin
-          value = Solve::Version.new(value)
-        rescue Solve::Errors::SolveError => e
-          raise ValidationFailed, e.message
-        end
-        set(:version, value, kind_of: Solve::Version, required: true)
-      end
+    # @param [String] value
+    def description(value)
+      set(:description, value, kind_of: String)
+    end
 
-      # @param [String] value
-      def description(value)
-        set(:description, value, kind_of: String)
-      end
+    # @param [String, Array<String>] value
+    def author(value)
+      set(:author, value, kind_of: [String, Array])
+    end
 
-      # @param [String, Array<String>] value
-      def author(value)
-        set(:author, value, kind_of: [String, Array])
-      end
-
-      # @param [String, Array<String>] value
-      def email(value)
-        set(:email, value, kind_of: [String, Array])
-      end
+    # @param [String, Array<String>] value
+    def email(value)
+      set(:email, value, kind_of: [String, Array])
     end
   end
 end
