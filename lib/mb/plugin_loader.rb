@@ -4,8 +4,8 @@ module MotherBrain
     class << self
       def default_paths
         [ 
-          File.expand_path(File.join("~/", ".motherbrain", "plugins")),
-          File.expand_path(File.join(".", ".motherbrain", "plugins"))
+          File.expand_path(File.join("~/", ".mb", "plugins")),
+          File.expand_path(File.join(".", ".mb", "plugins"))
         ]
       end
     end
