@@ -5,7 +5,7 @@ module MotherBrain
 
     def initialize(&block)
       unless block_given?
-        raise "NO BLOCK BRO"
+        raise PluginSyntaxError, "Block required to evaluate DSLProxy objects"
       end
 
       instance_eval(&block)
