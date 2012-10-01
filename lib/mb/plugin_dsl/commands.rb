@@ -1,5 +1,5 @@
 module MotherBrain
-  class Plugin
+  module PluginDSL
     # @author Jamie Winsor <jamie@vialstudios.com>
     module Commands
       # @return [Hash]

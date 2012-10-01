@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe MB::Plugin::Components do
+describe MB::PluginDSL::Components do
   subject do
     Class.new do
-      include MB::Plugin::Components
+      include MB::PluginDSL::Components
     end.new
   end
 

@@ -27,7 +27,7 @@ module MotherBrain
   # @api private
   class ComponentProxy
     include DSLProxy
-    include Plugin::Commands
+    include PluginDSL::Commands
 
     # @param [String] value
     def name(value)

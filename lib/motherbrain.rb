@@ -17,6 +17,7 @@ module MotherBrain
   autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
   autoload :Plugin, 'mb/plugin'
+  autoload :PluginDSL, 'mb/plugin_dsl'
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
   autoload :Component, 'mb/component'

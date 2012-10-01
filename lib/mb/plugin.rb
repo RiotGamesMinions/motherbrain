@@ -1,10 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Plugin
-    autoload :Components, 'mb/plugin/components'
-    autoload :Commands, 'mb/plugin/commands'
-    autoload :Dependencies, 'mb/plugin/dependencies'
-
     class << self
       # @param [String] content
       #
@@ -97,9 +93,9 @@ module MotherBrain
   # @api private
   class PluginProxy
     include Mixin::SimpleAttributes
-    include Plugin::Components
-    include Plugin::Commands
-    include Plugin::Dependencies
+    include PluginDSL::Components
+    include PluginDSL::Commands
+    include PluginDSL::Dependencies
 
     # @param [String] value
     def name(value)
