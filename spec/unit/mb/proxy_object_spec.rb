@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe MB::DSLProxy do
+describe MB::ProxyObject do
   describe "ClassMethods" do
     subject do
       Class.new do
-        include MB::DSLProxy
+        include MB::ProxyObject
       end
     end
 

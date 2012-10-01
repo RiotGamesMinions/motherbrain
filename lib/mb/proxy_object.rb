@@ -1,11 +1,11 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  module DSLProxy
+  module ProxyObject
     include Mixin::SimpleAttributes
 
     def initialize(&block)
       unless block_given?
-        raise PluginSyntaxError, "Block required to evaluate DSLProxy objects"
+        raise PluginSyntaxError, "Block required to evaluate ProxyObject objects"
       end
 
       instance_eval(&block)

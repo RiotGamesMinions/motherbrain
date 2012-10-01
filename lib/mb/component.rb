@@ -26,7 +26,7 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   # @api private
   class ComponentProxy
-    include DSLProxy
+    include ProxyObject
     include PluginDSL::Commands
 
     # @param [String] value

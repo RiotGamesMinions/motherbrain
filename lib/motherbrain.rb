@@ -25,7 +25,7 @@ module MotherBrain
   autoload :ComponentInvoker, 'mb/component_invoker'
   autoload :Command, 'mb/command'
   autoload :Group, 'mb/group'
-  autoload :DSLProxy, 'mb/dsl_proxy'
+  autoload :ProxyObject, 'mb/proxy_object'
 
   class << self
     def ui

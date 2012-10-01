@@ -23,7 +23,7 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   # @api private
   class CommandProxy
-    include DSLProxy
+    include ProxyObject
 
     # @param [String] value
     def name(value)
