@@ -7,17 +7,15 @@ module MotherBrain
         @commands ||= Hash.new
       end
 
-      # @param [#to_sym] name
-      def command(name, &block)
-        add_command name, Proc.new(&block)
+      def command(&block)
+        add_command Command.new(&block)
       end
 
       private
 
-        # @param [#to_sym] name
         # @param [Command] command
-        def add_command(name, command)
-          self.commands[name] = command
+        def add_command(command)
+          self.commands[command.name] = command
         end
 
         # @param [#to_sym] name

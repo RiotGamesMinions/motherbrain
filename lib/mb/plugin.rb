@@ -1,5 +1,3 @@
-require 'mb/mixin/attr_set'
-
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Plugin

@@ -12,8 +12,13 @@ describe "loading a plugin" do
       depends "pvpnet", "~> 1.2.3"
       depends "activemq", "= 4.2.1"
 
-      command :start do
-        component(:activemq).invoke(:start)
+      command do
+        name "start"
+        description "Start all services"
+
+        execute do
+          component(:activemq).invoke(:start)
+        end
       end
 
       component :activemq do
@@ -33,14 +38,24 @@ describe "loading a plugin" do
         #   end
         # end
 
-        # command :start do
-        #   run do
-        #     service(:broker, :start).on(:master_broker)
-        #   end
+        # command do
+        #   name "start"
+        #   description "Start activemq services"
+
+        #   execute do
+        #     run do
+        #       service(:broker, :start).on(:master_broker)
+        #     end
+        #   emd
         # end
 
-        # command :stop do
-        #   run.service(:broker, :stop).on(:master_broker)
+        # command do
+        #   name "stop"
+        #   description "Stop activemq services"
+
+        #   execute do
+        #     run.service(:broker, :stop).on(:master_broker)
+        #   end
         # end
       end
     EOH
@@ -59,7 +74,7 @@ describe "loading a plugin" do
   it { subject.component(:activemq).should_not be_nil }
 
   it { subject.commands.should have(1).item }
-  it { subject.command(:start).should_not be_nil }
+  it { subject.command("start").should_not be_nil }
 
   it { subject.dependencies.should have(2).items }
 
@@ -98,6 +113,6 @@ describe "loading a plugin" do
   describe "commands" do
     subject { @plugin.commands }
 
-    it { subject[0].should be_a(Proc) }
+    it { subject[0].should be_a(MB::Command) }
   end
 end

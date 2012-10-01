@@ -10,6 +10,8 @@ require 'thor/group'
 require 'mb/version'
 require 'mb/errors'
 
+require 'mb/mixin/attr_set'
+
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
   autoload :Config, 'mb/config'
@@ -21,6 +23,7 @@ module MotherBrain
   autoload :Component, 'mb/component'
   autoload :Command, 'mb/command'
   autoload :Group, 'mb/group'
+  autoload :DSLProxy, 'mb/dsl_proxy'
 
   class << self
     def ui

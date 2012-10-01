@@ -81,17 +81,32 @@ module MotherBrain
         @attributes ||= Hash.new
       end
 
+      # @param [Symbol] key
+      # @param [Object] value
+      # @param [Hash] validation
+      #
+      # @return [Object]
+      def set(key, value, validation)
+        AttrSet.validate(key, value, validation)
+
+        self.attributes[key.to_sym] = value
+      end
+
+      # @param [#to_sym] key
+      #
+      # @return [Object]
+      def get(key)
+        self.attributes[key.to_sym]
+      end
+
       private
 
-        # @param [Symbol] key
-        # @param [Object] value
-        # @param [Hash] validation
-        #
-        # @return [Object]
-        def set(key, value, validation)
-          AttrSet.validate(key, value, validation)
-
-          self.attributes[key.to_sym] = value
+        def method_missing(method, *args)
+          attribute = get(method)
+          unless attribute.nil?
+            return attribute
+          end
+          super
         end
     end
   end

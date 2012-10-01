@@ -2,25 +2,36 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Command
     extend Forwardable
+    include Mixin::AttrSet
 
-    attr_reader :name
-
-    def_delegator :plugin, :component
-
-    def initialize(plugin, name, &block)
-      @plugin = plugin
-      @name = name
-
-      instance_eval(&block) if block_given?
+    def initialize(&block)
+      if block_given?
+        @attributes = CommandProxy.new(&block).attributes
+      end
     end
 
     # @return [Symbol]
     def id
       self.name.to_sym
     end
+  end
 
-    private
+  class CommandProxy
+    include DSLProxy
 
-      attr_reader :plugin
+    # @param [String] value
+    def name(value)
+      set(:name, value, kind_of: String, required: true)
+    end
+
+    # @param [String] value
+    def description(value)
+      set(:description, value, kind_of: String, required: true)
+    end
+
+    def execute(&block)
+      value = Proc.new(&block)
+      set(:execute, value, kind_of: Proc, required: true)
+    end
   end
 end
