@@ -40,25 +40,25 @@ describe "loading a plugin" do
         #   end
         # end
 
-        # command do
-        #   name "start"
-        #   description "Start activemq services"
+        command do
+          name "start"
+          description "Start activemq services"
 
-        #   execute do
-        #     run do
-        #       service(:broker, :start).on(:master_broker)
-        #     end
-        #   emd
-        # end
+          execute do
+            run do
+              service(:broker, :start).on(:master_broker)
+            end
+          end
+        end
 
-        # command do
-        #   name "stop"
-        #   description "Stop activemq services"
+        command do
+          name "stop"
+          description "Stop activemq services"
 
-        #   execute do
-        #     run.service(:broker, :stop).on(:master_broker)
-        #   end
-        # end
+          execute do
+            run.service(:broker, :stop).on(:master_broker)
+          end
+        end
       end
     EOH
   end
@@ -109,6 +109,14 @@ describe "loading a plugin" do
 
       it { subject.attributes.should have(1).item }
       it { subject.attributes.should include("activemq.broker.master" => true) }
+    end
+
+    it { subject.commands.should have(2).items }
+    it { subject.commands.should each be_a(MB::Command) }
+
+    describe "commands" do
+      it { subject.commands[0].name.should eql("start") }
+      it { subject.commands[1].name.should eql("stop") }
     end
   end
 

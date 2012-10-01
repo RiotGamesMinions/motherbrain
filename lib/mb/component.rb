@@ -14,12 +14,22 @@ module MotherBrain
       self.name.to_sym
     end
 
+    # @param [#to_sym] name
     def group(name)
       self.attributes[:groups][name.to_sym]
     end
 
     def groups
       self.attributes[:groups].values
+    end
+
+    # @param [#to_sym] name
+    def command(name)
+      self.attributes[:commands][name.to_sym]
+    end
+
+    def commands
+      self.attributes[:commands].values
     end
   end
 
