@@ -7,6 +7,7 @@ module MotherBrain
         @components ||= Hash.new
       end
 
+      # @raise [PluginSyntaxError] if no block is given
       def component(&block)
         unless block_given?
           raise PluginSyntaxError, "Component definition missing a required block"

@@ -7,7 +7,12 @@ module MotherBrain
         @commands ||= Hash.new
       end
 
+      # @raise [PluginSyntaxError] if no block is given
       def command(&block)
+        unless block_given?
+          raise PluginSyntaxError, "Command definition missing a required block"
+        end
+
         add_command Command.new(&block)
       end
 
