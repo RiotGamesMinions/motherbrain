@@ -1,6 +1,53 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Invoker < InvokerBase
+    class << self
+      attr_reader :plugin_loader
+
+      def start(given_args = ARGV, config = {})
+        args, opts = parse_args(given_args)
+        setup(configure(opts))
+        super
+      end
+
+      # @param [Hash] config
+      #
+      # @return [MB::Config]
+      def setup(config)
+        @plugin_loader = PluginLoader.new(config.plugin_paths)
+        self.plugin_loader.load_all
+
+        self.plugin_loader.plugins.each do |plugin|
+          self.register_plugin MB::PluginInvoker.fabricate(plugin)
+        end
+      end
+
+      # @param [Class] klass
+      def register_plugin(klass)
+        self.register klass, klass.plugin.name, "#{klass.plugin.name} [COMMAND]", klass.plugin.description
+      end
+
+      private
+
+        # Parse the given arguments into an instance of Thor::Argument and Thor::Options
+        #
+        # @param [Array] given_args
+        #
+        # @return [Array]
+        def parse_args(given_args)
+          args, opts = Thor::Options.split(given_args)
+          thor_opts = Thor::Options.new(InvokerBase.class_options)
+          parsed_opts = thor_opts.parse(opts)
+
+          [ args, parsed_opts ]
+        end
+    end
+
+    def initialize(args = [], options = {}, config = {})
+      super
+      self.class.setup(self.config)
+    end
+
     method_option :force,
       type: :boolean,
       default: false,
