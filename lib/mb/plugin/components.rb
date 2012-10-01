@@ -8,6 +8,10 @@ module MotherBrain
       end
 
       def component(&block)
+        unless block_given?
+          raise PluginSyntaxError, "Component definition missing a required block"
+        end
+
         add_component Component.new(&block)
       end
 
