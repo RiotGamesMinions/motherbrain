@@ -34,6 +34,11 @@ module MotherBrain
       set(:name, value, kind_of: String, required: true)
     end
 
+    # @param [String] value
+    def description(value)
+      set(:description, value, kind_of: String, required: true)
+    end
+
     # @param [#to_s] name
     def group(name, &block)
       group = get_group(name)

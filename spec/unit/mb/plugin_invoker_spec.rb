@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe MotherBrain::PluginInvoker do
   describe "ClassMethods" do
-    subject { MB::PluginInvoker }
+    subject { Class.new(MB::PluginInvoker) }
 
     let(:name) { "pvpnet" }
 
@@ -12,8 +12,14 @@ describe MotherBrain::PluginInvoker do
       ]
     end
 
+    let(:components) do
+      [
+        double('component', name: "activemq", commands: commands, description: "activemq stuff")
+      ]
+    end
+
     let(:plugin) do
-      double('plugin', name: name, commands: commands)
+      double('plugin', name: name, commands: commands, components: components)
     end
 
     describe "::fabricate" do
@@ -30,7 +36,21 @@ describe MotherBrain::PluginInvoker do
       end
 
       it "creates a task for each of the plugin's commands" do
-        subject.fabricate(plugin).tasks.should have(commands.length).item
+        tasks = subject.fabricate(plugin).tasks
+
+        tasks.should have(commands.length).items
+        commands.each do |command|
+          tasks.should include(command.name)
+        end
+      end
+
+      it "creates a new subcommand for every component" do
+        subcommands = subject.fabricate(plugin).subcommands
+
+        subcommands.should have(components.length).items
+        components.each do |component|
+          subcommands.should include(component.name)
+        end
       end
     end
   end

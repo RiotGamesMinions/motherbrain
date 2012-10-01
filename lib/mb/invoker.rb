@@ -22,7 +22,7 @@ module MotherBrain
         end
       end
 
-      # @param [Class] klass
+      # @param [MotherBrain::PluginInvoker] klass
       def register_plugin(klass)
         self.register klass, klass.plugin.name, "#{klass.plugin.name} [COMMAND]", klass.plugin.description
       end

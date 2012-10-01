@@ -14,6 +14,7 @@ module MotherBrain
 
   class InternalError < MBError; status_code(99); end
   class ArgumentError < InternalError; end
+  class AbstractFunction < InternalError; end
 
   class PluginSyntaxError < MBError; status_code(100); end
   class DuplicateGroup < PluginSyntaxError; end

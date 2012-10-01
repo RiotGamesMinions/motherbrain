@@ -1,6 +1,8 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class PluginInvoker < InvokerBase
+    include DynamicInvoker
+
     class << self
       # Return the plugin used to generate the anonymous CLI class
       #
@@ -9,7 +11,7 @@ module MotherBrain
 
       # @param [MotherBrain::Plugin] plugin
       #
-      # @return [Class]
+      # @return [PluginInvoker]
       def fabricate(plugin)
         klass = Class.new(self)
         klass.namespace(plugin.name)
@@ -19,7 +21,16 @@ module MotherBrain
           klass.define_command(command)
         end
 
+        plugin.components.each do |component|
+          register_component MB::ComponentInvoker.fabricate(klass, component)
+        end
+
         klass
+      end
+
+      # @param [MotherBrain::ComponentInvoker] klass
+      def register_component(klass)
+        self.register klass, klass.component.name, "#{klass.component.name} [COMMAND]", klass.component.description
       end
 
       protected
@@ -30,14 +41,6 @@ module MotherBrain
         # @param [MotherBrain::Plugin] plugin
         def set_plugin(plugin)
           @plugin = plugin
-        end
-
-        # @param [MotherBrain::Command] command
-        def define_command(command)
-          desc(command.name.to_s, command.description.to_s)
-          send(:define_method, command.name.to_sym) do
-            command.invoke
-          end
         end
     end
 
