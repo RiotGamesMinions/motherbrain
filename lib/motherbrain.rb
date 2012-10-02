@@ -27,6 +27,7 @@ module MotherBrain
   autoload :Command, 'mb/command'
   autoload :Group, 'mb/group'
   autoload :ProxyObject, 'mb/proxy_object'
+  autoload :Gear, 'mb/gear'
 
   class << self
     def ui
