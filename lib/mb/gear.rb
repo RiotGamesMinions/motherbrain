@@ -5,6 +5,7 @@ module MotherBrain
       def included(base)
         base.extend(ClassMethods)
         base.set_keyword(base.to_s.demodulize.underscore)
+        base.set_proxy("#{base.to_s.demodulize}Proxy")
         register(base)
       end
 
@@ -39,12 +40,24 @@ module MotherBrain
       def set_keyword(value)
         @keyword = value.to_sym
       end
+
+      # @return [Class]
+      def proxy
+        const_get(@proxy)
+      end
+
+      # @param [String] proxy
+      def set_proxy(proxy)
+        @proxy = proxy
+      end
     end
 
     include Mixin::SimpleAttributes
 
     def initialize(&block)
-      # do stuff
+      if block_given?
+        @attributes = self.class.proxy.new(&block).attributes
+      end
     end
   end
 end

@@ -4,5 +4,9 @@ module MotherBrain
     class Service
       include MB::Gear
     end
+
+    class ServiceProxy
+      include ProxyObject
+    end
   end
 end

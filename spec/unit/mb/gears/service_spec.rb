@@ -10,4 +10,14 @@ describe MB::Gear::Service do
   it "has the inferred keyword ':service' from it's Class name" do
     subject.keyword.should eql(:service)
   end
+
+  describe "::new" do
+    it "sets the given name attribute" do
+      obj = subject.new do
+        name "activemq"
+      end
+
+      obj.name.should eql("activemq")
+    end
+  end
 end

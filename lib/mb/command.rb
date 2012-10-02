@@ -26,11 +26,6 @@ module MotherBrain
     include ProxyObject
 
     # @param [String] value
-    def name(value)
-      set(:name, value, kind_of: String, required: true)
-    end
-
-    # @param [String] value
     def description(value)
       set(:description, value, kind_of: String, required: true)
     end

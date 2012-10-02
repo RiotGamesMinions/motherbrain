@@ -10,5 +10,10 @@ module MotherBrain
 
       instance_eval(&block)
     end
+
+    # @param [String] value
+    def name(value)
+      set(:name, value, kind_of: String, required: true)
+    end
   end
 end
