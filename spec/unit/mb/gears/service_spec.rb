@@ -37,7 +37,7 @@ describe MB::Gear::Service do
   subject do
     MB::Gear::Service.new do
       action :start do
-        # block
+        set_attribute("key.one", true)
       end
 
       action :stop do
@@ -57,9 +57,11 @@ describe MB::Gear::Service do
     end
   end
 
-  describe "#action" do
-    it "returns a proc for the given action" do
-      subject.action(:start).should be_a(Proc)
+  describe "#run_action" do
+    it "evaluates the given action" do
+      subject.should_receive(:instance_eval).with(&subject.actions[:stop]).and_return(1)
+
+      subject.run_action(:stop).should eql(1)
     end
   end
 end

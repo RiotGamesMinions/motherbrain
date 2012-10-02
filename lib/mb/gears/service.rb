@@ -4,8 +4,12 @@ module MotherBrain
     class Service
       include MB::Gear
 
-      def action(name)
-        self.actions[name]
+      def run_action(name)
+        instance_eval(&self.actions[name])
+      end
+
+      def set_attribute(key, value)
+        puts "Setting attribute '#{key}' to '#{value}'"
       end
     end
 
