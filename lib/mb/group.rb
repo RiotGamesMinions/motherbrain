@@ -1,26 +1,13 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Group
-    # @return [String]
-    attr_reader :name
-
-    # @return [Array<String>]
-    attr_reader :recipes
-
-    # @return [Array<String>]
-    attr_reader :roles
-
-    # @return [Hash]
-    attr_reader :attributes
+    include Mixin::SimpleAttributes
 
     # @param [Symbol, String] name
-    def initialize(name, &block)
-      @name = name.to_s
-      @recipes = Array.new
-      @roles = Array.new
-      @attributes = Hash.new
-
-      instance_eval(&block) if block_given?
+    def initialize(&block)
+      if block_given?
+        @attributes = GroupProxy.new(&block).attributes
+      end
     end
 
     # @return [Symbol]
@@ -28,40 +15,67 @@ module MotherBrain
       self.name.to_sym
     end
 
+    # @param [#to_sym] name
+    def chef_attribute(name)
+      self.chef_attributes.fetch(name.to_sym, nil)
+    end
+  end
+
+  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @api private
+  class GroupProxy
+    include ProxyObject
+
+    # @param [String] value
+    def name(value)
+      set(:name, value, kind_of: String, required: true)
+    end
+
+    # @param [String] value
+    def description(value)
+      set(:description, value, kind_of: String)
+    end
+
+    def recipes
+      @recipes ||= Set.new
+    end
+
     # @param [#to_s] value
     #
-    # @return [Array<String>]
+    # @return [Set<String>]
     def recipe(value)
-      value = value.to_s
-      if @recipes.include?(value)
-        return @recipes
-      end
+      self.recipes.add(value.to_s)
+    end
 
-      @recipes.push(value)
+    def roles
+      @roles ||= Set.new
     end
 
     # @param [#to_s] value
     #
-    # @return [Array<String>]
+    # @return [Set<String>]
     def role(value)
-      value = value.to_s
-      if @roles.include?(value)
-        return @roles
-      end
-
-      @roles.push(value)
+      self.roles.add(value.to_s)
     end
 
-    # @param [#to_s] attribute
-    # @param [Object] value
-    def attribute(attribute, value)
-      attribute = attribute.to_s
+    def chef_attributes
+      @chef_attributes ||= Hash.new
+    end
 
-      if @attributes.has_key?(attribute)
-        raise DuplicateAttribute, "An attribute '#{attribute}' has already been defined on group '#{name}'"
+    # @param [#to_s] attr_key
+    # @param [Object] attr_value
+    def chef_attribute(attr_key, attr_value)
+      attr_key = attr_key.to_s
+
+      if self.chef_attributes.has_key?(attr_key)
+        raise DuplicateChefAttribute, "An attribute '#{attr_key}' has already been defined on group '#{attributes[:name]}'"
       end
 
-      @attributes[attribute] = value
+      self.chef_attributes[attr_key] = attr_value
+    end
+
+    def attributes
+      super.merge!(recipes: self.recipes, roles: self.roles, chef_attributes: self.chef_attributes)
     end
   end
 end

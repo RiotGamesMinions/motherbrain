@@ -18,7 +18,7 @@ module MotherBrain
 
   class PluginSyntaxError < MBError; status_code(100); end
   class DuplicateGroup < PluginSyntaxError; end
-  class DuplicateAttribute < PluginSyntaxError; end
+  class DuplicateChefAttribute < PluginSyntaxError; end
   class ValidationFailed < PluginSyntaxError; end
 
   class PluginLoadError < MBError; status_code(101); end

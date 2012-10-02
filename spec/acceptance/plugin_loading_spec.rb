@@ -25,10 +25,12 @@ describe "loading a plugin" do
         name "activemq"
         description "do stuff to AMQ"
         
-        group :master_broker do
+        group do
+          name "master_broker"
+
           recipe "activemq::broker"
           role "why_man_why"
-          attribute 'activemq.broker.master', true
+          chef_attribute 'activemq.broker.master', true
         end
 
         # service :broker do
@@ -110,8 +112,8 @@ describe "loading a plugin" do
       it { subject.roles.should have(1).item }
       it { subject.roles.should include("why_man_why") }
 
-      it { subject.attributes.should have(1).item }
-      it { subject.attributes.should include("activemq.broker.master" => true) }
+      it { subject.chef_attributes.should have(1).item }
+      it { subject.chef_attributes.should include("activemq.broker.master" => true) }
     end
 
     it { subject.commands.should have(2).items }

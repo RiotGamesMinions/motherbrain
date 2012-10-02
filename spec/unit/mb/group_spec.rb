@@ -1,13 +1,13 @@
 require 'spec_helper'
 
 describe MB::Group do
-  subject "ClassMethods" do
+  describe "ClassMethods" do
     subject { MB::Group }
 
-    describe "::initialize" do
+    describe "::new" do
       context "given a block with multiple recipe calls" do
         it "adds each recipe to the array of recipes on the instantiated Group" do
-          obj = subject.new(:app) do
+          obj = subject.new do
             recipe "bacon::default"
             recipe "bacon::database"
           end
@@ -20,7 +20,7 @@ describe MB::Group do
 
       context "given a block with multiple role calls" do
         it "adds each role to the array of roles on the instantiated Group" do
-          obj = subject.new(:app) do
+          obj = subject.new do
             role "roles_are_evil"
             role "stop_using_roles"
           end
@@ -30,72 +30,134 @@ describe MB::Group do
           obj.roles.should include("stop_using_roles")
         end
       end
+
+      context "when an attribute of the same name is defined" do
+        it "raises a DuplicateGroup error" do
+          lambda {
+            group = subject.new do
+              chef_attribute "pvpnet.database.master", true
+              chef_attribute "pvpnet.database.master", false
+            end
+          }.should raise_error(MB::DuplicateChefAttribute)
+        end
+      end
     end
   end
 
-  subject { MB::Group.new(:app) }
-
-  describe "#recipe" do
-    it "returns an array" do
-      subject.recipe("bacon::default").should be_a(Array)
+  describe "#name" do
+    subject do
+      MB::Group.new do
+        name "master_database"
+      end
     end
 
-    it "adds the given recipe to the array of recipes" do
-      subject.recipe("bacon::default")
+    it "returns the name of the Group" do
+      subject.name.should eql("master_database")
+    end
+  end
 
-      subject.recipes.should have(1).item
-      subject.recipes.should include("bacon::default")
+  describe "#description" do
+    subject do
+      MB::Group.new do
+        description "some description"
+      end
     end
 
-    context "when a recipe that has already been added is added" do
-      it "does not add the recipe a second time" do
-        subject.recipe("bacon::default")
-        subject.recipe("bacon::default")
+    it "returns the description of the Group" do
+      subject.description.should eql("some description")
+    end
+  end
 
+  describe "#recipes" do
+    subject do
+      MB::Group.new do
+        recipe "pvpnet::default"
+        recipe "pvpnet::database"
+        recipe "pvpnet::app"
+      end
+    end
+
+    it "returns a Set of recipes" do
+      subject.recipes.should be_a(Set)
+    end
+
+    it "includes all of the recipes from the block passed to Group.new" do
+      subject.recipes.should have(3).items
+      subject.recipes.should include("pvpnet::default")
+      subject.recipes.should include("pvpnet::database")
+      subject.recipes.should include("pvpnet::app")
+    end
+
+    context "when a recipe of the same name is defined" do
+      subject do
+        MB::Group.new do
+          recipe "pvpnet::default"
+          recipe "pvpnet::default"
+        end
+      end
+
+      it "does not add a duplicate recipe" do
         subject.recipes.should have(1).item
       end
     end
   end
 
-  describe "#role" do
-    it "returns an array" do
-      subject.role("roles_are_evil").should be_a(Array)
+  describe "#roles" do
+    subject do
+      MB::Group.new do
+        role "stop"
+        role "fucking"
+        role "using"
+        role "roles"
+      end
     end
 
-    it "adds the given role to the array of roles" do
-      subject.role("roles_are_evil")
-
-      subject.roles.should have(1).item
-      subject.roles.should include("roles_are_evil")
+    it "returns a Set of roles" do
+      subject.roles.should be_a(Set)
     end
 
-    context "when a role that has already been added is added" do
-      it "does not add the role a second time" do
-        subject.role("roles_are_evil")
-        subject.role("roles_are_evil")
+    it "includes all of the roles from the block passed to Group.new" do
+      subject.roles.should have(4).items
+      subject.roles.should include("stop")
+      subject.roles.should include("fucking")
+      subject.roles.should include("using")
+      subject.roles.should include("roles")
+    end
 
+    context "when a role of the same name is defined" do
+      subject do
+        MB::Group.new do
+          role "asshole_role"
+          role "asshole_role"
+        end
+      end
+
+      it "does not add a duplicate role" do
         subject.roles.should have(1).item
       end
     end
   end
 
-  describe "#attribute" do
-    it "adds the given key value pair to the attributes" do
-      subject.attribute('pvpnet.database.master', true)
-
-      subject.attributes.should have(1).item
-      subject.attributes.should have_key('pvpnet.database.master')
-      subject.attributes['pvpnet.database.master'].should eql(true)
+  describe "#chef_attributes" do
+    subject do
+      MB::Group.new do
+        chef_attribute "pvpnet.database.master", true
+        chef_attribute "pvpnet.database.slave", false
+      end
     end
 
-    context "when an attribute with the same key has already been added" do
-      it "raises an error" do
-        subject.attribute('pvpnet.database.master', true)
+    it "returns a Hash" do
+      subject.chef_attributes.should be_a(Hash)
+    end
 
-        lambda {
-          subject.attribute('pvpnet.database.master', false)
-        }.should raise_error(MB::DuplicateAttribute)
-      end
+    it "has a key for every chef_attribute" do
+      subject.chef_attributes.should have_key("pvpnet.database.master")
+      subject.chef_attributes.should have_key("pvpnet.database.slave")
+    end
+
+    it "has the value for every chef_attribute" do
+      subject.chef_attributes["pvpnet.database.master"].should eql(true)
+      subject.chef_attributes["pvpnet.database.slave"].should eql(false)
     end
   end
 end

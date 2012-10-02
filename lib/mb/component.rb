@@ -38,6 +38,7 @@ module MotherBrain
   class ComponentProxy
     include ProxyObject
     include PluginDSL::Commands
+    include PluginDSL::Groups
 
     # @param [String] value
     def name(value)
@@ -49,37 +50,8 @@ module MotherBrain
       set(:description, value, kind_of: String, required: true)
     end
 
-    # @param [#to_s] name
-    def group(name, &block)
-      group = get_group(name)
-
-      unless group.nil?
-        raise DuplicateGroup, "Group '#{name}'' already defined"
-      end
-
-      add_group Group.new(name, &block)
-    end
-
     def attributes
-      super.merge!(commands: self.commands)
+      super.merge!(commands: self.commands, groups: self.groups)
     end
-
-    private
-
-      # @param [MB::Group] group
-      def add_group(group)
-        self.attributes[:groups] ||= Hash.new
-
-        self.attributes[:groups][group.id] = group
-      end
-
-      # @param [#to_sym] name
-      #
-      # @return [MB::Group]
-      def get_group(name)
-        self.attributes[:groups] ||= Hash.new
-
-        self.attributes[:groups].fetch(name.to_sym, nil)
-      end
-    end
+  end
 end

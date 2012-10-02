@@ -5,8 +5,8 @@ describe MB::Component do
     MB::Component.new do
       name "activemq"
 
-      group "masters" do
-        # group definition
+      group do
+        name "masters"
       end
     end
   end
@@ -16,13 +16,8 @@ describe MB::Component do
       MB::Component.new do
         name "activemq"
 
-        group "masters" do
-          # group definition
-        end
-
-        command do
-          name "start"
-          description "whatever"
+        group do
+          name "masters"
         end
       end
     end
@@ -38,8 +33,8 @@ describe MB::Component do
       MB::Component.new do
         name "activemq"
 
-        group "masters" do
-          # group definition
+        group do
+          name "masters"
         end
       end
     end
