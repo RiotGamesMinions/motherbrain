@@ -5,9 +5,9 @@ module MotherBrain
       def included(base)
         register(base)
       end
-            
+
       def all
-        @all ||= clear!
+        @all ||= Set.new
       end
 
       def reload!
