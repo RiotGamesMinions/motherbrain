@@ -39,6 +39,7 @@ module MotherBrain
     include ProxyObject
     include PluginDSL::Commands
     include PluginDSL::Groups
+    include PluginDSL::Gears
 
     # @param [String] value
     def name(value)

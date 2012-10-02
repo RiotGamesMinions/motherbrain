@@ -3,6 +3,7 @@ module MotherBrain
   module Gear
     class << self
       def included(base)
+        base.extend(ClassMethods)
         register(base)
       end
 
@@ -27,6 +28,24 @@ module MotherBrain
         def register(klass)
           all.add(klass)
         end
+    end
+
+    module ClassMethods
+      # @return [Symbol]
+      def keyword
+        @keyword ||= self.class.to_s.underscore.to_sym
+      end
+
+      # @param [#to_sym] value
+      def set_keyword(value)
+        @keyword = value.to_sym
+      end
+    end
+
+    include Mixin::SimpleAttributes
+
+    def initialize(&block)
+      # do stuff
     end
   end
 end

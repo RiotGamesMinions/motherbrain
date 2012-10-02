@@ -33,15 +33,17 @@ describe "loading a plugin" do
           chef_attribute 'activemq.broker.master', true
         end
 
-        # service :broker do
-        #   action :start do
-        #     set_attribute('activemq.broker.status', true)
-        #   end
+        service do
+          name "broker"
+          
+          action :start do
+            set_attribute('activemq.broker.status', true)
+          end
 
-        #   action :stop do
-        #     set_attribute('activemq.broker.status', false)
-        #   end
-        # end
+          action :stop do
+            set_attribute('activemq.broker.status', false)
+          end
+        end
 
         command do
           name "start"
