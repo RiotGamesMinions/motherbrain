@@ -9,6 +9,8 @@ module MotherBrain
       end
     end
 
+    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @api private
     class ServiceProxy
       include ProxyObject
 
