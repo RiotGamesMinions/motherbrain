@@ -59,7 +59,7 @@ module MotherBrain
     end
 
     def chef_attributes
-      @chef_attributes ||= Hash.new
+      @chef_attributes ||= HashWithIndifferentAccess.new
     end
 
     # @param [#to_s] attr_key

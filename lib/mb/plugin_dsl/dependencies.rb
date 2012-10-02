@@ -2,9 +2,9 @@ module MotherBrain
   module PluginDSL
     # @author Jamie Winsor <jamie@vialstudios.com>
     module Dependencies
-      # @return [Hash]
+      # @return [HashWithIndifferentAccess]
       def dependencies
-        @dependencies ||= Hash.new
+        @dependencies ||= HashWithIndifferentAccess.new
       end
 
       def depends(name, constraint)

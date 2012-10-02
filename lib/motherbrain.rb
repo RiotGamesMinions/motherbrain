@@ -6,6 +6,7 @@ require 'ridley'
 require 'solve'
 require 'thor'
 require 'thor/group'
+require 'active_support/core_ext/hash'
 
 require 'mb/version'
 require 'mb/errors'

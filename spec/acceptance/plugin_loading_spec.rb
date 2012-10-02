@@ -76,7 +76,7 @@ describe "loading a plugin" do
   it { subject.email.should eql("jamie@vialstudios.com") }
 
   it { subject.components.should have(1).item }
-  it { subject.component(:activemq).should_not be_nil }
+  it { subject.component("activemq").should_not be_nil }
 
   it { subject.commands.should have(1).item }
   it { subject.command("start").should_not be_nil }
@@ -96,15 +96,15 @@ describe "loading a plugin" do
   end
 
   describe "component" do
-    subject { @plugin.component(:activemq) }
+    subject { @plugin.component("activemq") }
 
     it { subject.description.should eql("do stuff to AMQ") }
 
     it { subject.groups.should have(1).item }
-    it { subject.group(:master_broker).should_not be_nil }
+    it { subject.group("master_broker").should_not be_nil }
 
     describe "group" do
-      subject { @plugin.component(:activemq).group(:master_broker) }
+      subject { @plugin.component("activemq").group("master_broker") }
 
       it { subject.recipes.should have(1).item }
       it { subject.recipes.should include("activemq::broker") }

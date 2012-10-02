@@ -9,9 +9,9 @@ module MotherBrain
 
       protected
 
-        # @return [Hash]
+        # @return [HashWithIndifferentAccess]
         def groups
-          @groups ||= Hash.new
+          @groups ||= HashWithIndifferentAccess.new
         end
 
       private

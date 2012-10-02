@@ -2,9 +2,9 @@ module MotherBrain
   module PluginDSL
     # @author Jamie Winsor <jamie@vialstudios.com>
     module Commands
-      # @return [Hash]
+      # @return [HashWithIndifferentAccess]
       def commands
-        @commands ||= Hash.new
+        @commands ||= HashWithIndifferentAccess.new
       end
 
       # @raise [PluginSyntaxError] if no block is given

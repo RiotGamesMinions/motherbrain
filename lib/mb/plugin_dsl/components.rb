@@ -2,9 +2,9 @@ module MotherBrain
   module PluginDSL
     # @author Jamie Winsor <jamie@vialstudios.com>
     module Components
-      # @return [Hash]
+      # @return [HashWithIndifferentAccess]
       def components
-        @components ||= Hash.new
+        @components ||= HashWithIndifferentAccess.new
       end
 
       # @raise [PluginSyntaxError] if no block is given
