@@ -7,7 +7,4 @@ begin
 rescue MB::MBError => e
   MB.ui.say e, :red
   exit e.status_code
-rescue => e
-  MB.ui.say e, :red
-  exit 1
 end
