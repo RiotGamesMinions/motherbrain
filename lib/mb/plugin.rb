@@ -8,7 +8,7 @@ module MotherBrain
       def load(content)
         proxy = PluginProxy.new
         proxy.instance_eval(content)
-        
+
         from_proxy(proxy)
       rescue ValidationFailed => e
         raise InvalidPlugin, e
@@ -28,39 +28,19 @@ module MotherBrain
         #
         # @return [Plugin]
         def from_proxy(proxy)
-          new(proxy.attributes) do |plugin|
-            plugin.components = proxy.components
-            plugin.commands = proxy.commands
-            plugin.dependencies = proxy.dependencies
-          end
+          new(proxy.attributes)
         end
     end
 
-    attr_reader :name
-    attr_reader :version
-
-    attr_accessor :description
-    attr_accessor :author
-    attr_accessor :email
-
-    attr_writer :components
-    attr_writer :commands
-    attr_accessor :dependencies
+    include Mixin::SimpleAttributes
 
     # @param [Hash] attributes
     def initialize(attributes = {}, &block)
-      @name = attributes.fetch(:name)
-      @version = attributes.fetch(:version)
-
-      @description = attributes.fetch(:description, "")
-      @author = attributes.fetch(:author, "")
-      @email = attributes.fetch(:email, "")
-
-      @components = Hash.new
-      @commands = Hash.new
-      @dependencies = Hash.new
-
-      instance_eval(&block) if block_given?
+      if block_given?
+        @attributes = PluginProxy.new(&block).attributes
+      else
+        @attributes = attributes
+      end
     end
 
     # @return [Symbol]
@@ -69,19 +49,19 @@ module MotherBrain
     end
 
     def components
-      @components.values
+      self.attributes[:components].values
     end
 
     def component(name)
-      @components.fetch(name, nil)
+      self.attributes[:components].fetch(name, nil)
     end
 
     def commands
-      @commands.values
+      self.attributes[:commands].values
     end
 
     def command(name)
-      @commands.fetch(name, nil)
+      self.attributes[:commands].fetch(name, nil)
     end
   end
 
@@ -125,6 +105,10 @@ module MotherBrain
     # @param [String, Array<String>] value
     def email(value)
       set(:email, value, kind_of: [String, Array])
+    end
+
+    def attributes
+      super.merge!(commands: self.commands, components: self.components, dependencies: self.dependencies)
     end
   end
 end
