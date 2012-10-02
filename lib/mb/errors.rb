@@ -20,6 +20,7 @@ module MotherBrain
   class DuplicateGroup < PluginSyntaxError; end
   class DuplicateChefAttribute < PluginSyntaxError; end
   class ValidationFailed < PluginSyntaxError; end
+  class DuplicateAction < PluginSyntaxError; end
 
   class PluginLoadError < MBError; status_code(101); end
   class AlreadyLoaded < PluginLoadError; end

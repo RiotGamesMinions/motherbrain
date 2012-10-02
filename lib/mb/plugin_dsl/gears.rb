@@ -3,8 +3,8 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     module Gears
       Gear.all.each do |klass|
-        define_method(klass.keyword) do
-          klass.new
+        define_method(klass.keyword) do |&block|
+          klass.new(&block)
         end
       end
     end
