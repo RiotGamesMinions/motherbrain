@@ -3,22 +3,22 @@ module MotherBrain
   class PluginLoader
     class << self
       def default_paths
-        [ 
+        Set.new [
           File.expand_path(File.join("~/", ".mb", "plugins")),
           File.expand_path(File.join(".", ".mb", "plugins"))
         ]
       end
     end
 
-    # @return [Set<Pathname>]
-    attr_reader :paths
+    # @return [MB::Context]
+    attr_reader :context
 
-    # @param [Array<String>, Array<Pathname>] paths
-    def initialize(paths = self.class.default_paths)
-      @paths = Set.new
+    # @param [MotherBrain::Context] context
+    def initialize(context)
+      @context = context
       @plugins = Hash.new
 
-      Array(paths).collect { |path| self.add_path(path) }      
+      context.config.plugin_paths.each { |path| self.add_path(path) }      
     end
 
     # @return [Array<MotherBrain::Plugin>]
@@ -51,7 +51,12 @@ module MotherBrain
     #
     # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
     def load(path)
-      add Plugin.from_file(path.to_s)
+      add Plugin.from_file(self.context, path.to_s)
+    end
+
+    # @return [Set<Pathname>]
+    def paths
+      @paths ||= Set.new
     end
 
     # @param [String, Pathname] path

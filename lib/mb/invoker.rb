@@ -12,9 +12,9 @@ module MotherBrain
         super
       end
 
-      # @param [MotherBrain:Config] config
-      def setup(config)
-        @plugin_loader = PluginLoader.new(config.plugin_paths)
+      # @param [MotherBrain:Context] context
+      def setup(context)
+        @plugin_loader = PluginLoader.new(context)
         self.plugin_loader.load_all
 
         self.plugin_loader.plugins.each do |plugin|
@@ -46,7 +46,7 @@ module MotherBrain
     # @see {InvokerBase}
     def initialize(args = [], options = {}, config = {})
       super
-      self.class.setup(self.config)
+      self.class.setup(self.context)
     end
 
     method_option :force,

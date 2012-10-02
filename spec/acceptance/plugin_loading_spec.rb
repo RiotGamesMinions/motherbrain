@@ -68,7 +68,9 @@ describe "loading a plugin" do
     EOH
   end
 
-  before(:each) { @plugin = MB::Plugin.load(dsl_content) }
+  let(:context) { double('context') }
+
+  before(:each) { @plugin = MB::Plugin.load(context, dsl_content) }
   subject { @plugin }
 
   it { subject.name.should eql("pvpnet") }

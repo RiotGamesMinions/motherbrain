@@ -2,24 +2,29 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class InvokerBase < Thor
     class << self
-      def configure(opts)
-        if opts[:config].nil?
+      # @param [Hash] options
+      #
+      # @return [MotherBrain::Context]
+      def configure(options)
+        config = if options[:config].nil?
           begin
             MB::Config.from_file(File.expand_path(MB::Config.default_path))
           rescue
             MB::Config.new
           end
         else
-          MB::Config.from_file(opts[:config])
+          MB::Config.from_file(options[:config])
         end
+
+        MB::Context.new(config)
       end
     end
 
-    attr_reader :config
+    attr_reader :context
 
     def initialize(args = [], options = {}, config = {})
       super
-      @config = self.class.configure(self.options)
+      @context = self.class.configure(self.options)
     end
 
     class_option :config,
@@ -27,11 +32,5 @@ module MotherBrain
       desc: "Path to a MotherBrain JSON configuration file.",
       aliases: "-c",
       banner: "PATH"
-
-    no_tasks do
-      def chef_conn
-        @chef_conn ||= Ridley.connection(config.to_ridley)
-      end
-    end
   end
 end

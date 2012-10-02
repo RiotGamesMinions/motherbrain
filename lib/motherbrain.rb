@@ -2,6 +2,7 @@ require 'json'
 require 'fileutils'
 require 'pathname'
 require 'set'
+require 'ostruct'
 require 'ridley'
 require 'solve'
 require 'thor'
@@ -29,6 +30,7 @@ module MotherBrain
   autoload :Group, 'mb/group'
   autoload :ProxyObject, 'mb/proxy_object'
   autoload :Gear, 'mb/gear'
+  autoload :Context, 'mb/context'
 
   class << self
     def ui

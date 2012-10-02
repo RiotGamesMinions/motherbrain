@@ -1,16 +1,21 @@
 require 'spec_helper'
 
 describe MotherBrain::PluginLoader do
+  let(:config) { double('config', plugin_paths: MB::PluginLoader.default_paths) }
+  let(:context) { double('context', config: config) }
+
   describe "ClassMethods" do
     subject { MB::PluginLoader }
 
     describe '::new' do
       it 'sets the paths attribute to a set of pathnames pointing to the default paths' do
-        obj = subject.new
+        obj = subject.new(context)
 
         obj.paths.should be_a(Set)
         obj.paths.should each be_a(Pathname)
-        obj.paths.to_a.collect(&:to_s).should eql(subject.default_paths)
+        subject.default_paths.each do |path|
+          obj.paths.collect(&:to_s).should include(path)
+        end
       end
 
       context 'given an array of paths' do
@@ -22,7 +27,7 @@ describe MotherBrain::PluginLoader do
         end
 
         it 'adds two Pathnames to the paths set' do
-          obj = subject.new(paths)
+          obj = subject.new(context)
 
           obj.paths.should have(2).items
           obj.paths.should each be_a(Pathname)
@@ -31,7 +36,7 @@ describe MotherBrain::PluginLoader do
     end
   end
 
-  subject { MB::PluginLoader.new }
+  subject { MB::PluginLoader.new(context) }
 
   describe '#load_all' do
     let(:paths) do
@@ -71,7 +76,7 @@ describe MotherBrain::PluginLoader do
     let(:plugin) { double('plugin', name: 'reset', version: '1.2.3', id: 'reset-1.2.3') }
 
     before(:each) do
-      MB::Plugin.stub(:from_file).with(path).and_return(plugin)
+      MB::Plugin.stub(:from_file).with(context, path).and_return(plugin)
     end
 
     it 'adds an instantiated plugin to the hash of plugins' do
@@ -142,7 +147,7 @@ describe MotherBrain::PluginLoader do
     let(:plugin) { double('plugin', name: 'reset', version: '1.2.3', id: :'reset-1.2.3') }
 
     before(:each) do
-      MB::Plugin.stub(:from_file).with(path).and_return(plugin)
+      MB::Plugin.stub(:from_file).with(context, path).and_return(plugin)
       subject.load(path)
     end
 

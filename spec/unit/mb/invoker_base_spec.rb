@@ -16,7 +16,7 @@ describe MB::InvokerBase do
         it "reads the configuration file as the Invoker's configuration" do
           invoker = subject.new([])
 
-          invoker.config.chef_api_url.should_not be_nil
+          invoker.context.config.chef_api_url.should_not be_nil
         end
       end
 
@@ -28,7 +28,7 @@ describe MB::InvokerBase do
         it "reads the configuration file as the Invoker's configuration" do
           invoker = subject.new([])
 
-          invoker.config.chef_api_url.should eql("http://localhost:8080")
+          invoker.context.config.chef_api_url.should eql("http://localhost:8080")
         end
       end
     end
@@ -42,7 +42,7 @@ describe MB::InvokerBase do
       it "loads the specified config file when the specified file exists" do
         invoker = subject.new([], config: ENV['MB_CONFIG'])
 
-        invoker.config.chef_api_url.should_not be_nil
+        invoker.context.config.chef_api_url.should_not be_nil
       end
 
       it "raises a ConfigNotFound error when the specified path does not exist" do
@@ -66,9 +66,9 @@ describe MB::InvokerBase do
 
   subject { MB::InvokerBase.new([], config: ENV['MB_CONFIG']) }
 
-  describe "#chef_conn" do
-    it "returns an instance of Ridley::Connection" do
-      subject.chef_conn.should be_a(Ridley::Connection)
+  describe "#context" do
+    it "returns an instance of MB::Context" do
+      subject.context.should be_a(MB::Context)
     end
   end
 end

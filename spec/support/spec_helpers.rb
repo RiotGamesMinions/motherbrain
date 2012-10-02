@@ -45,6 +45,9 @@ CONFIG
         f.write <<-EOH
         name '#{name}'
         version '#{version}'
+        description "whatever"
+        author "Jamie Winsor"
+        email "jamie@vialstudios.com"
         EOH
       end
     end

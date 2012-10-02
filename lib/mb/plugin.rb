@@ -2,40 +2,43 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Plugin
     class << self
+      # @param [MotherBrain::Context] context
       # @param [String] content
       #
       # @raise [InvalidPlugin]
-      def load(content)
+      #
+      # @return [MotherBrain::Plugin]
+      def load(context, content)
         proxy = PluginProxy.new
         proxy.instance_eval(content)
 
-        from_proxy(proxy)
+        new(context, proxy.attributes)
       rescue ValidationFailed => e
         raise InvalidPlugin, e
       end
 
-      def from_file(path)
-        load(File.read(path))
+      # @param [MotherBrain::Context] context
+      # @param [String] path
+      #
+      # @return [MotherBrain::Plugin]
+      def from_file(context, path)
+        load(context, File.read(path))
       end
 
       def key_for(name, version)
         "#{name}-#{version}".to_sym
       end
-
-      private
-
-        # @param [PluginProxy] proxy
-        #
-        # @return [Plugin]
-        def from_proxy(proxy)
-          new(proxy.attributes)
-        end
     end
 
     include Mixin::SimpleAttributes
 
+    # @return [MotherBrain::Context]
+    attr_reader :context
+
+    # @param [MotherBrain::Context] context
     # @param [Hash] attributes
-    def initialize(attributes = {}, &block)
+    def initialize(context, attributes = {}, &block)
+      @context = context
       if block_given?
         @attributes = PluginProxy.new(&block).attributes
       else

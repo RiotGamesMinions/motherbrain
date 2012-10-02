@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe MB::Plugin do
+  let(:context) { double('context') }
+
   describe "ClassMethods" do
     describe "::load" do
       subject { MB::Plugin }
@@ -13,7 +15,7 @@ describe MB::Plugin do
       end
 
       it "returns an instance of MB::Plugin" do
-        subject.load(bare_def).should be_a(MB::Plugin)
+        subject.load(context, bare_def).should be_a(MB::Plugin)
       end
 
       it "sets the evaluated value for name" do
@@ -22,7 +24,7 @@ describe MB::Plugin do
           version '1.2.3'
         EOH
 
-        subject.load(data).name.should eql('reset')
+        subject.load(context, data).name.should eql('reset')
       end
 
       it "sets the evaluated value for version" do
@@ -31,7 +33,7 @@ describe MB::Plugin do
           version '1.2.3'
         EOH
 
-        subject.load(data).version.to_s.should eql('1.2.3')
+        subject.load(context, data).version.to_s.should eql('1.2.3')
       end
 
       it "sets the evaluated value for description" do
@@ -41,7 +43,7 @@ describe MB::Plugin do
           description 'a good plugin'
         EOH
 
-        subject.load(data).description.should eql('a good plugin')
+        subject.load(context, data).description.should eql('a good plugin')
       end
 
       it "sets the evaluated value for author" do
@@ -51,7 +53,7 @@ describe MB::Plugin do
           author 'Jamie Winsor'
         EOH
 
-        subject.load(data).author.should eql('Jamie Winsor')
+        subject.load(context, data).author.should eql('Jamie Winsor')
       end
 
       it "sets the evaluated value for email" do
@@ -61,7 +63,7 @@ describe MB::Plugin do
           email 'jamie@vialstudios.com'
         EOH
 
-        subject.load(data).email.should eql('jamie@vialstudios.com')
+        subject.load(context, data).email.should eql('jamie@vialstudios.com')
       end
 
       context "when the string contains an invalid Plugin description" do
@@ -72,7 +74,7 @@ describe MB::Plugin do
           EOH
 
           lambda {
-            subject.load(data)
+            subject.load(context, data)
           }.should raise_error(MB::InvalidPlugin)
         end
       end
