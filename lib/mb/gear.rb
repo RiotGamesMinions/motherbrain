@@ -4,6 +4,7 @@ module MotherBrain
     class << self
       def included(base)
         base.extend(ClassMethods)
+        base.set_keyword(base.to_s.demodulize.underscore)
         register(base)
       end
 
@@ -32,9 +33,7 @@ module MotherBrain
 
     module ClassMethods
       # @return [Symbol]
-      def keyword
-        @keyword ||= self.class.to_s.underscore.to_sym
-      end
+      attr_reader :keyword
 
       # @param [#to_sym] value
       def set_keyword(value)

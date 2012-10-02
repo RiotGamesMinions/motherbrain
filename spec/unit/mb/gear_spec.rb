@@ -82,10 +82,8 @@ describe MB::Gear do
     end
 
     describe "::keyword" do
-      context "when a keyword is not set" do
-        it "returns the name of the class as an underscored symbol" do
-          subject.keyword.should eql(:class)
-        end
+      it "returns a symbol inferred from the class name" do
+        subject.keyword.should be_a(Symbol)
       end
     end
 
