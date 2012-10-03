@@ -3,7 +3,10 @@ module MotherBrain
   module ProxyObject
     include Mixin::SimpleAttributes
 
-    def initialize(&block)
+    attr_reader :context
+
+    def initialize(context, &block)
+      @context = context
       unless block_given?
         raise PluginSyntaxError, "Block required to evaluate DSL proxy objects"
       end

@@ -18,7 +18,7 @@ module MotherBrain
       @context = context
       @plugins = Hash.new
 
-      context.config.plugin_paths.each { |path| self.add_path(path) }      
+      context.config.plugin_paths.each { |path| self.add_path(path) }
     end
 
     # @return [Array<MotherBrain::Plugin>]

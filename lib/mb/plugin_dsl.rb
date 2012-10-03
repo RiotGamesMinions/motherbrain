@@ -1,6 +1,11 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  module PluginDSL; end
+  module PluginDSL
+    module Base
+      # @return [MotherBrain::Context]
+      attr_accessor :context
+    end
+  end
 end
 
 Dir["#{File.dirname(__FILE__)}/plugin_dsl/*.rb"].sort.each do |path|

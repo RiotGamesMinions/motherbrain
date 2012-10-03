@@ -2,6 +2,8 @@ module MotherBrain
   module PluginDSL
     # @author Jamie Winsor <jamie@vialstudios.com>
     module Components
+      include PluginDSL::Base
+      
       # @return [HashWithIndifferentAccess]
       def components
         @components ||= HashWithIndifferentAccess.new
@@ -13,7 +15,7 @@ module MotherBrain
           raise PluginSyntaxError, "Component definition missing a required block"
         end
 
-        add_component Component.new(&block)
+        add_component Component.new(context, &block)
       end
 
       private
