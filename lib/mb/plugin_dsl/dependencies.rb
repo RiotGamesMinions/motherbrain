@@ -2,6 +2,8 @@ module MotherBrain
   module PluginDSL
     # @author Jamie Winsor <jamie@vialstudios.com>
     module Dependencies
+      include PluginDSL::Base
+      
       # @return [HashWithIndifferentAccess]
       def dependencies
         @dependencies ||= HashWithIndifferentAccess.new

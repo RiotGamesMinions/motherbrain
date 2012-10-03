@@ -9,10 +9,12 @@ module MotherBrain
       #
       # @return [MotherBrain::Plugin]
       def load(context, content)
-        proxy = PluginProxy.new
+        plugin = new(context)
+        proxy = PluginProxy.new(plugin.context)
         proxy.instance_eval(content)
+        plugin.attributes = proxy.attributes
 
-        new(context, proxy.attributes)
+        plugin
       rescue ValidationFailed => e
         raise InvalidPlugin, e
       end
@@ -30,20 +32,16 @@ module MotherBrain
       end
     end
 
-    include Mixin::SimpleAttributes
+    include RealObject
 
-    # @return [MotherBrain::Context]
-    attr_reader :context
+    attr_accessor :attributes
 
     # @param [MotherBrain::Context] context
     # @param [Hash] attributes
-    def initialize(context, attributes = {}, &block)
-      @context = context
-      if block_given?
-        @attributes = PluginProxy.new(&block).attributes
-      else
-        @attributes = attributes
-      end
+    def initialize(context, attributes = {})
+      @context = context.dup
+      @attributes = attributes
+      @context.plugin = self
     end
 
     # @return [Symbol]
@@ -79,6 +77,14 @@ module MotherBrain
     include PluginDSL::Components
     include PluginDSL::Commands
     include PluginDSL::Dependencies
+
+    # @return [MotherBrain::Context]
+    attr_reader :context
+
+    # @param [MotherBrain::Context] context
+    def initialize(context)
+      @context = context
+    end
 
     # @param [String] value
     def name(value)

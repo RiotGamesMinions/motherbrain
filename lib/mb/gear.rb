@@ -2,13 +2,12 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   module Gear
     class << self
-      def included(base)
-        base.extend(ClassMethods)
-        base.set_keyword(base.to_s.demodulize.underscore)
-        base.set_proxy("#{base.to_s.demodulize}Proxy")
-        register(base)
+      # @param [~MotherBrain::Gear] klass
+      def register(klass)
+        all.add(klass)
       end
 
+      # @return [Set<MotherBrain::Gear>]
       def all
         @all ||= Set.new
       end
@@ -21,15 +20,20 @@ module MotherBrain
         end
       end
 
+      # @return [Set]
       def clear!
         @all = Set.new
       end
+    end
 
-      private
+    extend ActiveSupport::Concern
 
-        def register(klass)
-          all.add(klass)
-        end
+    included do
+      class_eval do
+        set_keyword(self.to_s.demodulize.underscore)
+        register_gear
+        include RealObject
+      end
     end
 
     module ClassMethods
@@ -41,22 +45,8 @@ module MotherBrain
         @keyword = value.to_sym
       end
 
-      # @return [Class]
-      def proxy
-        const_get(@proxy)
-      end
-
-      # @param [String] proxy
-      def set_proxy(proxy)
-        @proxy = proxy
-      end
-    end
-
-    include Mixin::SimpleAttributes
-
-    def initialize(&block)
-      if block_given?
-        @attributes = self.class.proxy.new(&block).attributes
+      def register_gear
+        Gear.register(self)
       end
     end
   end

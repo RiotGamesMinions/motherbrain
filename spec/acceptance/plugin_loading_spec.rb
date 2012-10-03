@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe "loading a plugin" do
+  let(:context) { MB::Context.new(@config) }
+
   let(:dsl_content) do
     <<-EOH
       name "pvpnet"
@@ -68,9 +70,10 @@ describe "loading a plugin" do
     EOH
   end
 
-  let(:context) { double('context') }
+  before(:each) do
+    @plugin = MB::Plugin.load(context, dsl_content)
+  end
 
-  before(:each) { @plugin = MB::Plugin.load(context, dsl_content) }
   subject { @plugin }
 
   it { subject.name.should eql("pvpnet") }

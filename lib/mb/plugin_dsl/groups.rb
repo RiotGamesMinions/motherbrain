@@ -2,9 +2,11 @@ module MotherBrain
   module PluginDSL
     # @author Jamie Winsor <jamie@vialstudios.com>
     module Groups
+      include PluginDSL::Base
+      
       # @param [#to_s] name
       def group(&block)
-        add_group Group.new(&block)
+        add_group Group.new(context, &block)
       end
 
       protected

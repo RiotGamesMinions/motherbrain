@@ -1,13 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Command
-    include Mixin::SimpleAttributes
-
-    def initialize(&block)
-      if block_given?
-        @attributes = CommandProxy.new(&block).attributes
-      end
-    end
+    include RealObject
 
     # @return [Symbol]
     def id

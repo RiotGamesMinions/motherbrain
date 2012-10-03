@@ -1,14 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Group
-    include Mixin::SimpleAttributes
-
-    # @param [Symbol, String] name
-    def initialize(&block)
-      if block_given?
-        @attributes = GroupProxy.new(&block).attributes
-      end
-    end
+    include RealObject
 
     # @return [Symbol]
     def id

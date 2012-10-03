@@ -27,9 +27,7 @@ Spork.prefork do
           client_key: File.join(fixtures_path, "fake_key.pem")
         }
       )
-      @context = double('context',
-        to_ridley: @config.to_ridley
-      )
+      @context = MB::Context.new(@config)
     end
   end
 end
