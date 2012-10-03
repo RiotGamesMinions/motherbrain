@@ -1,13 +1,19 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
+  # @private api
   module DynamicInvoker
+    extend ActiveSupport::Concern
+
     module ClassMethods
+      # @raise [AbstractFunction] if class is not implementing {#fabricate}
       def fabricate(*args)
-        raise AbstractFunction
+        raise AbstractFunction, "Class '#{self}' must implement abstract function"
       end
 
       protected
 
+        # Define a new Thor command from the given {MotherBrain::Command}
+        #
         # @param [MotherBrain::Command] command
         def define_command(command)
           desc(command.name.to_s, command.description.to_s)
@@ -15,12 +21,6 @@ module MotherBrain
             command.invoke
           end
         end
-    end
-
-    class << self
-      def included(base)
-        base.extend(ClassMethods)
-      end
     end
   end
 end
