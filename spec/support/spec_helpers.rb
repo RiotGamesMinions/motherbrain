@@ -8,6 +8,10 @@ module MotherBrain
       app_root_path.join('spec/tmp')
     end
 
+    def fixtures_path
+      app_root_path.join('spec/fixtures')
+    end
+
     def clean_tmp_path
       FileUtils.rm_rf(tmp_path)
       FileUtils.mkdir_p(tmp_path)

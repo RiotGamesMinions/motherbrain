@@ -20,6 +20,16 @@ Spork.prefork do
 
     config.before(:each) do
       clean_tmp_path
+      @config = double('config',
+        to_ridley: {
+          server_url: "http://chef.riotgames.com",
+          client_name: "fake",
+          client_key: File.join(fixtures_path, "fake_key.pem")
+        }
+      )
+      @context = double('context',
+        to_ridley: @config.to_ridley
+      )
     end
   end
 end
