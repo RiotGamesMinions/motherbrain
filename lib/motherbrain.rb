@@ -20,6 +20,7 @@ module MotherBrain
   autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
+  autoload :DynamicGears, 'mb/dynamic_gears'
   autoload :Plugin, 'mb/plugin'
   autoload :PluginDSL, 'mb/plugin_dsl'
   autoload :PluginInvoker, 'mb/plugin_invoker'

@@ -2,6 +2,7 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Component
     include RealObject
+    include DynamicGears
 
     # @return [Symbol]
     def id

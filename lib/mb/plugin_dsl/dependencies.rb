@@ -15,6 +15,12 @@ module MotherBrain
         add_dependency(name, constraint)
       end
 
+      protected
+
+        def attributes
+          super.merge!(dependencies: self.dependencies)
+        end
+
       private
 
         # @param [#to_s] name

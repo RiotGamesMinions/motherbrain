@@ -19,6 +19,12 @@ module MotherBrain
         add_command Command.new(context, &block)
       end
 
+      protected
+
+        def attributes
+          super.merge!(commands: self.commands)
+        end
+
       private
 
         # @param [Command] command

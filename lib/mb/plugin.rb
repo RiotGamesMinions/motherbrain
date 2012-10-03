@@ -123,8 +123,7 @@ module MotherBrain
       set(:email, value, kind_of: [String, Array])
     end
 
-    def attributes
-      super.merge!(commands: self.commands, components: self.components, dependencies: self.dependencies)
-    end
+    # @todo JW: make this private or protected
+    public :attributes
   end
 end

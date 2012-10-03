@@ -19,6 +19,12 @@ module MotherBrain
         add_component Component.new(context, &block)
       end
 
+      protected
+
+        def attributes
+          super.merge!(components: self.components, dependencies: self.dependencies)
+        end
+
       private
 
         # @param [Component] component
