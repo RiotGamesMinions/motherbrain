@@ -2,6 +2,8 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Plugin
     class << self
+      # Create a new plugin instance from the given context and content
+      #
       # @param [MotherBrain::Context] context
       # @param [String] content
       #
@@ -10,7 +12,7 @@ module MotherBrain
       # @return [MotherBrain::Plugin]
       def load(context, content)
         plugin = new(context)
-        proxy = PluginProxy.new(plugin.context)
+        proxy = PluginProxy.new(plugin)
         proxy.instance_eval(content)
         plugin.attributes = proxy.attributes
 
@@ -19,6 +21,8 @@ module MotherBrain
         raise InvalidPlugin, e
       end
 
+      # Load a plugin from the given file
+      #
       # @param [MotherBrain::Context] context
       # @param [String] path
       #
@@ -41,7 +45,6 @@ module MotherBrain
     def initialize(context, attributes = {})
       @context = context.dup
       @attributes = attributes
-      @context.plugin = self
     end
 
     # @return [Symbol]
@@ -73,17 +76,21 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   # @api private
   class PluginProxy
+    extend Forwardable
+
     include Mixin::SimpleAttributes
     include PluginDSL::Components
     include PluginDSL::Commands
     include PluginDSL::Dependencies
 
-    # @return [MotherBrain::Context]
-    attr_reader :context
+    # @return [MotherBrain::Plugin]
+    attr_reader :real
 
-    # @param [MotherBrain::Context] context
-    def initialize(context)
-      @context = context
+    def_delegator :real, :context
+
+    # @param [MotherBrain::Plugin] real
+    def initialize(real)
+      @real = real
     end
 
     # @param [String] value

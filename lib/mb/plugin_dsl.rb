@@ -4,6 +4,9 @@ module MotherBrain
     module Base
       # @return [MotherBrain::Context]
       attr_accessor :context
+
+      # @return [~MotherBrain::RealObject]
+      attr_accessor :real
     end
   end
 end

@@ -5,6 +5,11 @@ module MotherBrain
       include PluginDSL::Base
       
       def group(&block)
+        unless block_given?
+          raise PluginSyntaxError, "Group definition missing a required block"
+        end
+
+        context.parent = self.real
         add_group Group.new(context, &block)
       end
 

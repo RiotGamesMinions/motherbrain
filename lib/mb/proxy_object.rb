@@ -3,10 +3,16 @@ module MotherBrain
   module ProxyObject
     include Mixin::SimpleAttributes
 
+    # @return [Object]
+    #   the real object for this Proxy
+    attr_reader :real
+
+    # @return [MotherBrain::Context]
     attr_reader :context
 
-    def initialize(context, &block)
-      @context = context
+    def initialize(real, &block)
+      @real = real
+      @context = real.context
       unless block_given?
         raise PluginSyntaxError, "Block required to evaluate DSL proxy objects"
       end

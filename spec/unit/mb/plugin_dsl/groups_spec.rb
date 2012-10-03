@@ -7,6 +7,11 @@ describe MB::PluginDSL::Groups do
     end.new
   end
 
+  before(:each) do
+    subject.context = @context
+    subject.real = double('real_object')
+  end
+
   describe "#groups" do
     before(:each) do
       subject.group do

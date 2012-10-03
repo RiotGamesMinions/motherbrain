@@ -15,6 +15,7 @@ module MotherBrain
           raise PluginSyntaxError, "Command definition missing a required block"
         end
 
+        context.parent = self.real
         add_command Command.new(context, &block)
       end
 

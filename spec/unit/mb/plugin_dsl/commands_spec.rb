@@ -7,6 +7,11 @@ describe MB::PluginDSL::Commands do
     end.new
   end
 
+  before(:each) do
+    subject.context = @context
+    subject.real = double('real_object')
+  end
+
   describe "#command" do
     context "when no block is given" do
       it "raises a PluginSyntaxError" do

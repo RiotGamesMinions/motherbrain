@@ -15,6 +15,7 @@ module MotherBrain
           raise PluginSyntaxError, "Component definition missing a required block"
         end
 
+        context.parent = self.real
         add_component Component.new(context, &block)
       end
 

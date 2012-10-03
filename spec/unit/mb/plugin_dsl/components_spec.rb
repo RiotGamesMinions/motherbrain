@@ -8,7 +8,8 @@ describe MB::PluginDSL::Components do
   end
 
   before(:each) do
-    subject.stub(:context) { @context }
+    subject.context = @context
+    subject.real = double('real_object')
   end
 
   describe "#component" do

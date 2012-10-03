@@ -7,5 +7,10 @@ describe MB::PluginDSL::Dependencies do
     end.new
   end
 
+  before(:each) do
+    subject.context = @context
+    subject.real = double('real_object')
+  end
+
   pending
 end
