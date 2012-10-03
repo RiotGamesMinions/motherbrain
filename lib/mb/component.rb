@@ -1,13 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Component
-    include Mixin::SimpleAttributes
-
-    def initialize(&block)
-      if block_given?
-        @attributes = ComponentProxy.new(&block).attributes
-      end
-    end
+    include RealObject
 
     # @return [Symbol]
     def id

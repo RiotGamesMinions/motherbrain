@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe MB::Component do
   subject do
-    MB::Component.new do
+    MB::Component.new(@context) do
       name "activemq"
 
       group do
@@ -13,7 +13,7 @@ describe MB::Component do
 
   describe "#groups" do
     subject do
-      MB::Component.new do
+      MB::Component.new(@context) do
         name "activemq"
 
         group do
@@ -30,7 +30,7 @@ describe MB::Component do
 
   describe "#group" do
     subject do
-      MB::Component.new do
+      MB::Component.new(@context) do
         name "activemq"
 
         group do

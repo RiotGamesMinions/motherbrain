@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe MB::Command do
+describe MB::Command do  
   describe "ClassMethods" do
     subject { MB::Command }
 
     describe "::new" do
       before(:each) do
-        @command = subject.new do
+        @command = subject.new(@context) do
           name "start"
           description "start all services"
 

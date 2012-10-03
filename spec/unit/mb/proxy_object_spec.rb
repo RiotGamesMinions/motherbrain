@@ -12,7 +12,7 @@ describe MB::ProxyObject do
       context "when no block is given" do
         it "raises PluginSyntaxError" do
           lambda {
-            subject.new
+            subject.new(@context)
           }.should raise_error(MB::PluginSyntaxError)
         end
       end

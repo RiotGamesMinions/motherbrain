@@ -14,7 +14,7 @@ describe MB::Gear::Service do
 
     describe "::new" do
       it "sets the given name attribute" do
-        obj = subject.new do
+        obj = subject.new(@context) do
           name "activemq"
         end
 
@@ -24,7 +24,7 @@ describe MB::Gear::Service do
       context "when an action of the given name has already been defined" do
         it "raises a DuplicateAction error" do
           lambda {
-            subject.new do
+            subject.new(@context) do
               action :start do; end
               action :start do; end
             end
@@ -35,7 +35,7 @@ describe MB::Gear::Service do
   end
 
   subject do
-    MB::Gear::Service.new do
+    MB::Gear::Service.new(@context) do
       action :start do
         set_attribute("key.one", true)
       end

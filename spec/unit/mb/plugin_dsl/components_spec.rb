@@ -7,6 +7,10 @@ describe MB::PluginDSL::Components do
     end.new
   end
 
+  before(:each) do
+    subject.stub(:context) { @context }
+  end
+
   describe "#component" do
     let(:component) do
       double('component', id: 'pvpnet')
@@ -14,7 +18,7 @@ describe MB::PluginDSL::Components do
 
     it "creates a new component and adds it to the components" do
       block = Proc.new { }
-      MB::Component.should_receive(:new).with(&block).and_return(component)
+      MB::Component.should_receive(:new).with(@context, &block).and_return(component)
       subject.component(&block)
 
       subject.components.should have(1).item
