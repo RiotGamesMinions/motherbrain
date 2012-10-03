@@ -1,8 +1,8 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   #
-  # The base module for defining new {Gears} for a plugin. Any class including this module
-  # will be registered with {MotherBrain} as a {Gear}.
+  # The base module for defining new Gears for a plugin. Any class including this module
+  # and registered with {MotherBrain} as a {Gear} will be available for use in the plugin DSL.
   #
   # Gears represent the proverbial knobs and levers that can be used to manipulate a
   # {Component}.
@@ -11,6 +11,7 @@ module MotherBrain
   #
   #   class Twitter
   #     include MotherBrain::Gear
+  #     register_gear :twitter
   #   end
   #
   # @example Plugin DSL usage
@@ -24,6 +25,19 @@ module MotherBrain
   #   end
   #
   module Gear
+    RESERVED_KEYWORDS = [
+      :name,
+      :version,
+      :description,
+      :author,
+      :email,
+      :depends,
+      :command,
+      :component,
+      :group,
+      :execute
+    ]
+
     class << self
       # Registers a given Class as a Gear to be used within MotherBrain plugins. This
       # function is automatically called when {MotherBrain::Gear} is included into
@@ -33,6 +47,8 @@ module MotherBrain
       #
       # @param [~MotherBrain::Gear] klass
       def register(klass)
+        validate_keyword(klass.keyword)
+
         all.add(klass)
       end
 
@@ -45,7 +61,7 @@ module MotherBrain
       end
 
       # Clears all of the registered Gears and then traverses the ObjectSpace to find
-      # all classes which include {MotherBrain::Gear} and calls {#register} with each.
+      # all classes which include {MotherBrain::Gear} and calls {::register} with each.
       #
       # @return [Set<MotherBrain::Gear>]
       #   the Set of registered Gears
@@ -67,14 +83,44 @@ module MotherBrain
       def clear!
         @all = Set.new
       end
+
+      # @param [Symbol] keyword
+      #
+      # @return [MotherBrain::Gear, nil]
+      def find_by_keyword(keyword)
+        all.find { |klass| klass.keyword == keyword }
+      end
+
+      private
+
+        # Determine if the given keyword is valid
+        #
+        # @param [Symbol] keyword
+        #
+        # @raise [ReservedGearKeyword] if the given keyword is reserved
+        # @raise [DuplicateGearKeyword] if the given keyword has already been registered
+        #
+        # @return [Boolean]
+        def validate_keyword(keyword)
+          if RESERVED_KEYWORDS.include?(keyword)
+            reserved = RESERVED_KEYWORDS.collect { |key| "'#{key}'" }
+            raise ReservedGearKeyword, "'#{keyword}' is a reserved keyword. Reserved Keywords: #{reserved.join(', ')}."
+          end
+
+          culprit = find_by_keyword(keyword)
+
+          unless culprit.nil?
+            raise DuplicateGearKeyword, "Keyword '#{keyword}' already used by #{culprit}"
+          end
+
+          true
+        end
     end
 
     extend ActiveSupport::Concern
 
     included do
       class_eval do
-        set_keyword(self.to_s.demodulize.underscore)
-        Gear.register(self)
         include RealObject
       end
     end
@@ -87,31 +133,13 @@ module MotherBrain
       # @return [Symbol]
       attr_reader :keyword
 
-      # Explicitly set the keyword for a Gear. This is useful if you have a class whose name
-      # conflicts with an already registered Gear or if you have a long class name that you want
-      # simplified.
-      #
-      # @example setting a non default keyword
-      #
-      #     class TwitterFeed
-      #       include MotherBrain::Gear
-      #
-      #       set_keyword :twitter
-      #     end
-      #
-      # @example gear can now be identified to the DSL by 'twitter' instead of 'twitter_feed'
-      #
-      #   component do
-      #     name "news_post"
-      #
-      #      twitter do
-      #      ...
-      #      end
-      #    end
+      # Register the gear with {MotherBrain::Gear} with the given keyword. This is how a gear is
+      # identified within a plugin.
       # 
-      # @param [#to_sym] value
-      def set_keyword(value)
-        @keyword = value.to_sym
+      # @param [#to_sym] keyword
+      def register_gear(keyword)
+        @keyword = keyword.to_sym
+        Gear.register(self)
       end
     end
   end

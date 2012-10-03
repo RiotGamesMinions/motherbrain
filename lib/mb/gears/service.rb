@@ -3,6 +3,7 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Service
       include MB::Gear
+      register_gear :service
 
       def run_action(name)
         instance_eval(&self.actions[name])
