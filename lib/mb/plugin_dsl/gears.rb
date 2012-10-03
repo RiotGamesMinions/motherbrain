@@ -20,6 +20,7 @@ module MotherBrain
         element    = element_name(klass)
 
         add_fun        = "add_#{element}".to_sym
+        get_fun        = "get_#{element}".to_sym
         collection_fun = collection.to_sym
         element_fun    = element.to_sym
 
@@ -41,13 +42,18 @@ module MotherBrain
         protected collection_fun
 
         define_method add_fun do |obj|
-          unless send(collection)[obj.name].nil?
+          unless send(get_fun, obj.name).nil?
             raise DuplicateGear, "#{element.capitalize} '#{obj.name}' already defined"
           end
 
-          send(collection)[obj.name] = obj
+          send(collection_fun)[obj.name] = obj
         end
         private add_fun
+
+        define_method get_fun do |name|
+          send(collection_fun).fetch(name, nil)
+        end
+        private get_fun
       end
 
       protected
