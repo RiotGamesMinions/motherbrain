@@ -18,10 +18,16 @@ module MotherBrain
 
     def run(&block)
       if block_given?
-        command.parent.instance_eval(&block)
+        yield(self)
       else
-        command.parent
+        self
       end
     end
+
+    private
+
+      def method_missing(message, *args)
+        command.parent.send(message, *args) || super
+      end
   end
 end

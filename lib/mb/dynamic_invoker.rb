@@ -16,8 +16,9 @@ module MotherBrain
         #
         # @param [MotherBrain::Command] command
         def define_command(command)
-          desc(command.name.to_s, command.description.to_s)
-          define_method(command.name.to_sym) do
+          desc("#{command.name} ENVIRONMENT", command.description.to_s)
+          define_method(command.name.to_sym) do |environment|
+            context.environment = environment
             command.invoke
           end
         end
