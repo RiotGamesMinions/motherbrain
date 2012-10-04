@@ -160,4 +160,57 @@ describe MB::Group do
       subject.chef_attributes["pvpnet.database.slave"].should eql(false)
     end
   end
+
+  describe "#search_query" do
+    context "with one chef attribute" do
+      subject do
+        MB::Group.new(@context) do
+          chef_attribute "pvpnet.database.master", true
+        end
+      end
+
+      it "returns one key:value search string" do
+        subject.search_query.should eql("pvpnet_database_master:true")
+      end
+    end
+
+    context "with multiple chef attributes" do
+      subject do
+        MB::Group.new(@context) do
+          chef_attribute "pvpnet.database.master", true
+          chef_attribute "pvpnet.database.slave", false
+        end
+      end
+
+      it "returns them escaped and joined together by AND" do
+        subject.search_query.should eql("pvpnet_database_master:true AND pvpnet_database_slave:false")
+      end
+    end
+
+    context "with multiple recipes" do
+      subject do
+        MB::Group.new(@context) do
+          recipe "pvpnet::default"
+          recipe "pvpnet::database"
+        end
+      end
+
+      it "returns them escaped and joined together by AND" do
+        subject.search_query.should eql("run_list:recipe\\[pvpnet\\:\\:default\\] AND run_list:recipe\\[pvpnet\\:\\:database\\]")
+      end
+    end
+
+    context "with multiple roles" do
+      subject do
+        MB::Group.new(@context) do
+          role "app_server"
+          role "database_server"
+        end
+      end
+
+      it "returns them escaped and joined together by AND" do
+        subject.search_query.should eql("run_list:role\\[app_server\\] AND run_list:role\\[database_server\\]")
+      end
+    end
+  end
 end

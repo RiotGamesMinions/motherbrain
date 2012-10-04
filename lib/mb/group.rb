@@ -8,10 +8,45 @@ module MotherBrain
       self.name.to_sym
     end
 
+    # Returns an escape search query for Solr from the roles, rescipes, and chef_attributes
+    # assigned to this Group.
+    #
+    # @return [String]
+    def search_query
+      items = []
+
+      items += chef_attributes.collect do |key, value|
+        key = key.gsub(/\./, "_")
+        "#{attribute_escape(key)}:#{value}"
+      end
+
+      items += roles.collect do |role|
+        item = "role[#{role}]"
+        "run_list:#{solr_escape(item)}"
+      end
+
+      items += recipes.collect do |recipe|
+        item = "recipe[#{recipe}]"
+        "run_list:#{solr_escape(item)}"
+      end
+
+      items.join(' AND ')
+    end
+
     # @param [#to_sym] name
     def chef_attribute(name)
       self.chef_attributes.fetch(name.to_sym, nil)
     end
+
+    private
+
+      def attribute_escape(value)
+        value.gsub(/\./, "_")
+      end
+
+      def solr_escape(value)
+        value.gsub(/[\:\[\]\+\-\!\^\(\)\{\}]/) { |x| "\\#{x}" }
+      end
   end
 
   # @author Jamie Winsor <jamie@vialstudios.com>
