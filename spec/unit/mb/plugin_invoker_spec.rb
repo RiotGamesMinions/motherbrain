@@ -38,7 +38,6 @@ describe MotherBrain::PluginInvoker do
       it "creates a task for each of the plugin's commands" do
         tasks = subject.fabricate(plugin).tasks
 
-        tasks.should have(commands.length).items
         commands.each do |command|
           tasks.should include(command.name)
         end

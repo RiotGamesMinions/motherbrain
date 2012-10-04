@@ -179,5 +179,9 @@ describe MB::Plugin do
         end
       end
     end
+
+    describe "#nodes" do
+      pending
+    end
   end
 end

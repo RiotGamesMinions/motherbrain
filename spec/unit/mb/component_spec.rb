@@ -43,4 +43,8 @@ describe MB::Component do
       subject.group("masters").name.should eql("masters")
     end
   end
+
+  describe "#nodes" do
+    pending
+  end
 end

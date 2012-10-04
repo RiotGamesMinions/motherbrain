@@ -25,6 +25,14 @@ module MotherBrain
           register_component MB::ComponentInvoker.fabricate(klass, component)
         end
 
+        klass.class_eval do
+          desc("nodes ENVIRONMENT", "List all nodes grouped by Component and Group")
+          define_method(:nodes) do |environment|
+            MB.ui.say "Nodes for #{environment}:"
+            MB.ui.say plugin.nodes(environment).to_yaml
+          end
+        end
+
         klass
       end
 

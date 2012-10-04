@@ -170,7 +170,7 @@ describe MB::Group do
       end
 
       it "returns one key:value search string" do
-        subject.search_query.should eql("pvpnet_database_master:true")
+        subject.search_query("test").should eql("chef_environment:test AND pvpnet_database_master:true")
       end
     end
 
@@ -183,7 +183,7 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query.should eql("pvpnet_database_master:true AND pvpnet_database_slave:false")
+        subject.search_query("test").should eql("chef_environment:test AND pvpnet_database_master:true AND pvpnet_database_slave:false")
       end
     end
 
@@ -196,7 +196,7 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query.should eql("run_list:recipe\\[pvpnet\\:\\:default\\] AND run_list:recipe\\[pvpnet\\:\\:database\\]")
+        subject.search_query("test").should eql("chef_environment:test AND run_list:recipe\\[pvpnet\\:\\:default\\] AND run_list:recipe\\[pvpnet\\:\\:database\\]")
       end
     end
 
@@ -209,7 +209,7 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query.should eql("run_list:role\\[app_server\\] AND run_list:role\\[database_server\\]")
+        subject.search_query("test").should eql("chef_environment:test AND run_list:role\\[app_server\\] AND run_list:role\\[database_server\\]")
       end
     end
   end

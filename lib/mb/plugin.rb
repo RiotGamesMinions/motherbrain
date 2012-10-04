@@ -71,6 +71,39 @@ module MotherBrain
         raise CommandNotFound, "Command '#{name}' not found on component '#{self.name}'"
       }
     end
+
+    # Finds the nodes for the given environment for each {Component} of the plugin groups them
+    # by {Component#name} and {Group#name} into a Hash where the keys are {Component#name} and 
+    # values are a hash where the keys are {Group#name} and the values are strings containing
+    # the FQDN and IPAddress of each node.
+    #
+    # @example
+    #
+    #   {
+    #     "activemq" => {
+    #       database_masters" => [
+    #         "db-master1.riotgames.com (192.168.0.1)"
+    #       ],
+    #       "database_slaves" => [
+    #         "db-slave1.riotgames.com (192.168.0.2)"
+    #         "db-slave2.riotgames.com (192.168.0.3)"
+    #       ]
+    #     },
+    #     "tomcat" => {
+    #       "frontend" => [
+    #         "tomcat1.riotgames.com (192.168.0.4)"
+    #       ]
+    #     }
+    #   }
+    #
+    # @return [Hash]
+    def nodes(environment)
+      {}.tap do |nodes|
+        self.components.each do |component|
+          nodes[component.name] = component.nodes(environment)
+        end
+      end
+    end
   end
 
   # A proxy object to bind the values specified in a DSL to. The attributes of the

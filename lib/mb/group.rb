@@ -8,12 +8,31 @@ module MotherBrain
       self.name.to_sym
     end
 
+    # Returns an array of strings containing the fully qualified hostnam and ipaddress of
+    # each node matching this instance of {Group}'s signature in the given environment.
+    #
+    # @param [String] environment
+    #
+    # @example
+    #
+    #   group.nodes("production") => [
+    #     "jwinsor-1.riotgames.com (192.168.0.8)",
+    #     "jwinsor-win.riotgames.com (192.168.0.10)"
+    #   ]
+    #
+    # @return [Array<String>]
+    def nodes(environment)
+      context.chef_conn.search(:node, search_query(environment))[:rows].collect do |node|
+        "#{node[:automatic][:fqdn]} (#{node[:automatic][:ipaddress]})"
+      end
+    end
+
     # Returns an escape search query for Solr from the roles, rescipes, and chef_attributes
     # assigned to this Group.
     #
     # @return [String]
-    def search_query
-      items = []
+    def search_query(environment)
+      items = ["chef_environment:#{environment}"]
 
       items += chef_attributes.collect do |key, value|
         key = key.gsub(/\./, "_")

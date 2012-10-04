@@ -22,6 +22,14 @@ module MotherBrain
           klass.define_command(command)
         end
 
+        klass.class_eval do
+          desc("nodes ENVIRONMENT", "List all nodes grouped by Group")
+          define_method(:nodes) do |environment|
+            MB.ui.say "Nodes for #{environment}:"
+            MB.ui.say component.nodes(environment).to_yaml
+          end
+        end
+
         klass
       end
 
