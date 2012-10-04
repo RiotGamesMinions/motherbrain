@@ -26,6 +26,13 @@ module MotherBrain
     def commands
       self.attributes[:commands].values
     end
+
+    # Run a command of the given name on the component.
+    #
+    # @param [String, Symbol] name
+    def invoke(name)
+      self.command(name).invoke
+    end
   end
 
   # @author Jamie Winsor <jamie@vialstudios.com>

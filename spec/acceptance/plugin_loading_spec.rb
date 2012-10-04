@@ -19,7 +19,7 @@ describe "loading a plugin" do
         description "Start all services"
 
         execute do
-          component(:activemq).invoke(:start)
+          component("activemq").invoke("start")
         end
       end
 
@@ -103,7 +103,29 @@ describe "loading a plugin" do
     it { subject["activemq"].to_s.should eql("= 4.2.1") }
   end
 
-  describe "component" do
+  describe "commands" do
+    it "invokes an async command" do
+      subject.command("start").invoke.should be_a(MB::CommandRunner)
+    end
+
+    context "when a command is not found" do
+      it "raises a CommandNotFound error" do
+        lambda {
+          subject.command("not_there")
+        }.should raise_error(MB::CommandNotFound)
+      end
+    end
+  end
+
+  context "when a component is not found" do
+    it "raises a ComponentNotFound error" do
+      lambda {
+        subject.component("not_there")
+      }.should raise_error(MB::ComponentNotFound)
+    end
+  end
+
+  describe "components" do
     subject { @plugin.component("activemq") }
 
     it { subject.description.should eql("do stuff to AMQ") }
@@ -132,18 +154,12 @@ describe "loading a plugin" do
       it { subject.commands[1].name.should eql("stop") }
 
       it "invokes an async command" do
-        subject.command("start").invoke
+        subject.command("start").invoke.should be_a(MB::CommandRunner)
       end
 
       it "invokes a sync command" do
-        subject.command("stop").invoke
+        subject.command("stop").invoke.should be_a(MB::CommandRunner)
       end
     end
-  end
-
-  describe "commands" do
-    subject { @plugin.commands }
-
-    it { subject[0].should be_a(MB::Command) }
   end
 end

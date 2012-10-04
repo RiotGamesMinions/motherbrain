@@ -24,6 +24,8 @@ module MotherBrain
   class ValidationFailed < PluginSyntaxError; end
   class DuplicateAction < PluginSyntaxError; end
   class DuplicateGear < PluginSyntaxError; end
+  class CommandNotFound < PluginSyntaxError; end
+  class ComponentNotFound < PluginSyntaxError; end
 
   class PluginLoadError < MBError; status_code(101); end
   class AlreadyLoaded < PluginLoadError; end

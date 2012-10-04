@@ -57,7 +57,9 @@ module MotherBrain
     end
 
     def component(name)
-      self.attributes[:components].fetch(name, nil)
+      self.attributes[:components].fetch(name) {
+        raise ComponentNotFound, "Component '#{name}' not found on plugin '#{self.name}' (#{self.version})"
+      }
     end
 
     def commands
@@ -65,7 +67,9 @@ module MotherBrain
     end
 
     def command(name)
-      self.attributes[:commands].fetch(name, nil)
+      self.attributes[:commands].fetch(name) {
+        raise CommandNotFound, "Command '#{name}' not found on component '#{self.name}'"
+      }
     end
   end
 
