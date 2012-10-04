@@ -58,10 +58,8 @@ describe MB::Gear::Service do
   end
 
   describe "#run_action" do
-    it "evaluates the given action" do
-      subject.should_receive(:instance_eval).with(&subject.actions[:stop]).and_return(1)
-
-      subject.run_action(:stop).should eql(1)
+    it "returns a proc" do
+      subject.run_action(:stop).should be_a(Proc)
     end
   end
 end

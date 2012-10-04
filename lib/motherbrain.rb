@@ -28,6 +28,7 @@ module MotherBrain
   autoload :Component, 'mb/component'
   autoload :ComponentInvoker, 'mb/component_invoker'
   autoload :Command, 'mb/command'
+  autoload :CommandRunner, 'mb/command_runner'
   autoload :Group, 'mb/group'
   autoload :ProxyObject, 'mb/proxy_object'
   autoload :RealObject, 'mb/real_object'

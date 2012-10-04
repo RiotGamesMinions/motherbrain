@@ -6,7 +6,7 @@ module MotherBrain
       register_gear :service
 
       def run_action(name)
-        instance_eval(&self.actions[name])
+        Proc.new { instance_eval(&self.actions[name]) }
       end
 
       def set_attribute(key, value)

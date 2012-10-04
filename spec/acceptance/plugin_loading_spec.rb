@@ -53,7 +53,8 @@ describe "loading a plugin" do
 
           execute do
             run do
-              service(:broker, :start).on(:master_broker)
+              service("broker").run_action(:start)#.on("master_broker")
+              service("broker").run_action(:start)#.on("master_broker")
             end
           end
         end
@@ -63,7 +64,7 @@ describe "loading a plugin" do
           description "Stop activemq services"
 
           execute do
-            run.service(:broker, :stop).on(:master_broker)
+            run.service("broker").run_action(:stop)#.on("master_broker")
           end
         end
       end
@@ -129,6 +130,14 @@ describe "loading a plugin" do
     describe "commands" do
       it { subject.commands[0].name.should eql("start") }
       it { subject.commands[1].name.should eql("stop") }
+
+      it "invokes an async command" do
+        subject.command("start").invoke
+      end
+
+      it "invokes a sync command" do
+        subject.command("stop").invoke
+      end
     end
   end
 
