@@ -21,6 +21,7 @@ Spork.prefork do
   
   Before do
     set_mb_config_path
+    set_plugin_path
   end
 end
 

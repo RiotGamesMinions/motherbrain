@@ -21,8 +21,16 @@ module MotherBrain
       ENV["MB_CONFIG"] = path.to_s
     end
 
+    def set_plugin_path(path = plugin_path)
+      ENV["MB_PLUGIN_PATH"] = path.to_s
+    end
+
     def mb_config_path
       app_root_path.join("spec", "tmp", ".mb", "config.json")
+    end
+
+    def plugin_path
+      app_root_path.join("spec", "tmp", ".mb", "plugins")
     end
 
     def generate_config(path)
