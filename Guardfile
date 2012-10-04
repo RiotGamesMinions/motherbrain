@@ -27,7 +27,6 @@ guard 'cucumber', cli: "--drb --require features --format pretty", all_on_start:
   watch(%r{^features/step_definitions/(.+)_steps\.rb$}) { |m| Dir[File.join("**/#{m[1]}.feature")][0] || 'features' }
 
   watch(%r{^lib/mb/cli.rb})                             { 'features/core' }
-  watch(%r{^lib/mb-pvpnet/commands.rb})                 { 'features/pvpnet' }
 end
 
 # guard 'environment-factory',
