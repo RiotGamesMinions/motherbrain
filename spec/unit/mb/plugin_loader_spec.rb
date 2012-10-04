@@ -35,6 +35,28 @@ describe MotherBrain::PluginLoader do
         end
       end
     end
+
+    describe "::default_paths" do
+      it "returns a Set" do
+        subject.default_paths.should be_a(Set)
+      end
+
+      it "contains the elements of PluginLoader::DEFAULT_PLUGIN_PATHS" do
+        subject.default_paths.should have(MB::PluginLoader::DEFAULT_PLUGIN_PATHS.length).items
+        MB::PluginLoader::DEFAULT_PLUGIN_PATHS.each do |path|
+          subject.default_paths.should include(path)
+        end
+      end
+
+      context "given ENV['MB_PLUGIN_PATH'] is set" do
+        it "returns a Set only containing the path in the environment variable" do
+          ENV['MB_PLUGIN_PATH'] = "/tmp/motherbrain_spec"
+
+          subject.default_paths.should have(1).item
+          subject.default_paths.should include("/tmp/motherbrain_spec")
+        end
+      end
+    end
   end
 
   subject { MB::PluginLoader.new(@context) }

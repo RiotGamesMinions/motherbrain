@@ -1,12 +1,25 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class PluginLoader
+    DEFAULT_PLUGIN_PATHS = [
+      File.expand_path(File.join("~/", ".mb", "plugins")),
+      File.expand_path(File.join(".", ".mb", "plugins"))
+    ]
+
     class << self
+      # Returns a Set of expanded file paths that are directories that may contain
+      # MotherBrain plugins.
+      #
+      # If the MB_PLUGIN_PATH environment variable is set the value of the variable
+      # will be used as the default plugin path.
+      #
+      # @return [Set<String>]
       def default_paths
-        Set.new [
-          File.expand_path(File.join("~/", ".mb", "plugins")),
-          File.expand_path(File.join(".", ".mb", "plugins"))
-        ]
+        if ENV["MB_PLUGIN_PATH"].nil?
+          Set.new(DEFAULT_PLUGIN_PATHS)
+        else
+          Set.new.add(File.expand_path(ENV["MB_PLUGIN_PATH"]))
+        end
       end
     end
 
