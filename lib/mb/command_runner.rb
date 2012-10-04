@@ -9,9 +9,10 @@ module MotherBrain
 
     # @param [MotherBrain::Command] command
     # @param [Proc] proc
-    def initialize(command, proc)
+    def initialize(command, proc, *args)
       @command = command
       @proc = proc
+      @arguments = args
       instance_eval(&proc)
     end
 
