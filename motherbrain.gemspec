@@ -4,9 +4,9 @@ require File.expand_path('../lib/mb/version', __FILE__)
 Gem::Specification.new do |s|
   s.authors       = ["Jamie Winsor"]
   s.email         = ["jamie@vialstudios.com"]
-  s.description   = %q{TODO: Write a gem description}
-  s.summary       = %q{TODO: Write a gem summary}
-  s.homepage      = ""
+  s.description   = %q{An orchestrator for Chef}
+  s.summary       = s.description
+  s.homepage      = "https://github.com/RiotGames/motherbrain"
 
   s.files         = `git ls-files`.split($\)
   s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
