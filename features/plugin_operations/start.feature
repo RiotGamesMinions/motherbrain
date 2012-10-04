@@ -7,6 +7,7 @@ Feature: starting a cluster running pvpnet
     Given the Chef Server has environment "mb-dev"
     And the "mb-dev" environment has a pvpnet cluster
 
+  @wip
   Scenario: sending a start command to a stopped cluster
     Given the pvpnet cluster in "mb-dev" is "stopped"
     When I run the pvpnet "start" command on the "mb-dev" environment
@@ -17,6 +18,7 @@ Feature: starting a cluster running pvpnet
       """
     And the exit status should be 0
 
+  @wip
   Scenario: sending a start command to a started cluster
   Given the pvpnet cluster in "mb-dev" is "started"
     When I run the pvpnet "start" command on the "mb-dev" environment
@@ -27,6 +29,7 @@ Feature: starting a cluster running pvpnet
       """
     And the exit status should be 0
 
+  @wip
   Scenario: sending a start command to a cluster that is already executing another command
     Given the pvpnet cluster in "mb-dev" is "busy"
     When I run the pvpnet "start" command on the "mb-dev" environment

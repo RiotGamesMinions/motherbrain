@@ -6,6 +6,7 @@ Feature: recovering from incorrect permissions when when sending cluster operati
   Background: chef server unavailable
     Given the Chef Server is unavailable
 
+  @wip
   Scenario Outline: sending a command when the Chef Server is offline or unavailable
     When I run the pvpnet "<command_name>" command on the "mb-dev" environment with "<arguments>"
     Then the output should contain:

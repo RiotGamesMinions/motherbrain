@@ -3,6 +3,7 @@ Feature: listing the nodes in a cluster running pvpnet
   I need a way to show me all of the nodes in a cluster
   So I can see every node that comprises a pvpnet cluster and their role in one view
 
+  @wip
   Scenario: listing the nodes in an environment
     Given the Chef Server has environment "mb-dev"
     And the "mb-dev" environment has a pvpnet cluster with nodes:

@@ -3,6 +3,7 @@ Feature: stopping a cluster running pvpnet
   I need a way to tell all of the nodes running pvpnet in a particular environment to stop their pvpnet services
   So I can easily, quickly, and reliably stop a cluster of nodes running pvpnet
 
+  @wip
   Scenario: sending a stop command to a started cluster
     Given a pvpnet cluster in environment "mb-dev"
     And the pvpnet cluster in "mb-dev" is "started"
@@ -14,6 +15,7 @@ Feature: stopping a cluster running pvpnet
       """
     And the exit status should be 0
 
+  @wip
   Scenario: sending a stop command to a stopped cluster
     Given a pvpnet cluster in environment "mb-dev"
     And the pvpnet cluster in "mb-dev" is "stopped"
@@ -25,6 +27,7 @@ Feature: stopping a cluster running pvpnet
       """
     And the exit status should be 0
 
+  @wip
   Scenario: sending a stop command to a cluster that is already executing another command
     Given a pvpnet cluster in environment "mb-dev"
     And the pvpnet cluster in "mb-dev" is "busy"

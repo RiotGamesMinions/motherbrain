@@ -7,6 +7,7 @@ Feature: recovering from incorrect permissions when when sending cluster operati
     Given the Chef Server has environment "mb-dev"
     And I do not have admin permissions on the Chef Server
 
+  @wip
   Scenario Outline: sending a command when you do not have permissions on the Chef Server    
     When I run the pvpnet "<command_name>" command on the "mb-dev" environment with "<arguments>"
     Then the output should contain:

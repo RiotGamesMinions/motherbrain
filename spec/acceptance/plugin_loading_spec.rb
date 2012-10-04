@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "loading a plugin" do
+describe "loading a plugin", type: "acceptance" do
   let(:context) { MB::Context.new(@config) }
 
   let(:dsl_content) do

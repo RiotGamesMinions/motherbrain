@@ -7,6 +7,7 @@ Feature: recovering from cluster not found errors when sending cluster operation
     Given the Chef Server has environment "mb-dev"
     But the "mb-dev" environment does not have a pvpnet cluster
 
+  @wip
   Scenario Outline: sending a command to an environment that does not contain a cluster
     Given an environment "mb-dev" that does not contain a pvpnet cluster
     When I run the pvpnet "<command_name>" command on the "mb-dev" environment with "<arguments>"
