@@ -73,8 +73,8 @@ module MotherBrain
     end
 
     # Finds the nodes for the given environment for each {Component} of the plugin groups them
-    # by {Component#name} and {Group#name} into a Hash where the keys are {Component#name} and 
-    # values are a hash where the keys are {Group#name} and the values are strings containing
+    # by Component#name and Group#name into a Hash where the keys are Component#name and 
+    # values are a hash where the keys are Group#name and the values are strings containing
     # the FQDN and IPAddress of each node.
     #
     # @example

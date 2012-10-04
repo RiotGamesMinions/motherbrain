@@ -35,7 +35,7 @@ module MotherBrain
     end
 
     # Finds the nodes for the given environment for each {Group} and groups them
-    # by {Group#name} into a Hash where the keys are {Group#name} and values are
+    # by Group#name into a Hash where the keys are Group#name and values are
     # a string containing the FQDN and IPAddress of each node.
     #
     # @example
