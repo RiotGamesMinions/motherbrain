@@ -22,9 +22,7 @@ module MotherBrain
     #
     # @return [Array<String>]
     def nodes(environment)
-      context.chef_conn.search(:node, search_query(environment))[:rows].collect do |node|
-        "#{node[:automatic][:fqdn]} (#{node[:automatic][:ipaddress]})"
-      end
+      context.chef_conn.search(:node, search_query(environment))[:rows]
     end
 
     # Returns an escape search query for Solr from the roles, rescipes, and chef_attributes

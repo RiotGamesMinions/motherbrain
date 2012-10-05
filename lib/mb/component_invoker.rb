@@ -25,8 +25,13 @@ module MotherBrain
         klass.class_eval do
           desc("nodes ENVIRONMENT", "List all nodes grouped by Group")
           define_method(:nodes) do |environment|
-            MB.ui.say "Nodes for #{environment}:"
-            MB.ui.say component.nodes(environment).to_yaml
+            MB.ui.say "Nodes for '#{component.name}' in '#{environment}':"
+            
+            nodes = component.nodes(environment).each do |group, nodes|
+              nodes.collect! { |node| "#{node[:automatic][:fqdn]} (#{node[:automatic][:ipaddress]})" }
+            end
+
+            MB.ui.say nodes.to_yaml
           end
         end
 
