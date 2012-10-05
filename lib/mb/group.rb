@@ -8,17 +8,10 @@ module MotherBrain
       self.name.to_sym
     end
 
-    # Returns an array of strings containing the fully qualified hostnam and ipaddress of
-    # each node matching this instance of {Group}'s signature in the given environment.
+    # Returns an Array of Hashes containing the node data from Chef about each
+    # node matching this instance of {Group}'s signature in the given environment.
     #
     # @param [String] environment
-    #
-    # @example
-    #
-    #   group.nodes("production") => [
-    #     "jwinsor-1.riotgames.com (192.168.0.8)",
-    #     "jwinsor-win.riotgames.com (192.168.0.10)"
-    #   ]
     #
     # @return [Array<String>]
     def nodes(environment)
