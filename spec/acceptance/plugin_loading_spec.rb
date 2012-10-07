@@ -52,9 +52,9 @@ describe "loading a plugin", type: "acceptance" do
           description "Start activemq services"
 
           execute do
-            run do
-              service("broker").run_action(:start)#.on("master_broker")
-              service("broker").run_action(:start)#.on("master_broker")
+            chef_run do
+              service("broker").run_action(:start).on("master_broker")
+              service("broker").run_action(:start).on("master_broker")
             end
           end
         end
@@ -64,7 +64,9 @@ describe "loading a plugin", type: "acceptance" do
           description "Stop activemq services"
 
           execute do
-            run.service("broker").run_action(:stop)#.on("master_broker")
+            chef_run do
+              service("broker").run_action(:stop).on("master_broker")
+            end
           end
         end
       end

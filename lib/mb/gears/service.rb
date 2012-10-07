@@ -5,13 +5,23 @@ module MotherBrain
       include MB::Gear
       register_gear :service
 
+      attr_accessor :node
+
       def run_action(name)
-        Proc.new { instance_eval(&self.actions[name]) }
+        ActionRunner.new(self, action(name))
       end
 
       def set_attribute(key, value)
         puts "Setting attribute '#{key}' to '#{value}'"
       end
+
+      protected
+
+        def action(name)
+          self.actions.fetch(name) { 
+            raise ActionNotFound, "#{self.class.keyword} '#{self.name}' does not have the action '#{name}'"
+          }
+        end
     end
 
     # @author Jamie Winsor <jamie@vialstudios.com>

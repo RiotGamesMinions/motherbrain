@@ -26,6 +26,8 @@ module MotherBrain
   class DuplicateGear < PluginSyntaxError; end
   class CommandNotFound < PluginSyntaxError; end
   class ComponentNotFound < PluginSyntaxError; end
+  class ActionNotFound < PluginSyntaxError; end
+  class GroupNotFound < PluginSyntaxError; end
 
   class PluginLoadError < MBError; status_code(101); end
   class AlreadyLoaded < PluginLoadError; end
