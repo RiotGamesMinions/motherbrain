@@ -3,13 +3,15 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com
     # @api private
     class ActionRunner
+      # @return [MotherBrain::Context]
+      attr_accessor :context
+
       attr_reader :action
-      attr_reader :target_groups
 
       def initialize(gear, action)
         @gear = gear
         @action = action
-        @target_groups = Set.new
+        @context = OpenStruct.new
       end
 
       def on(group_name)
@@ -17,14 +19,12 @@ module MotherBrain
           raise GroupNotFound, "Group '#{group_name}' not found"
         end
 
-        target_groups.add(group_name)
+        groups.add(group_name)
         self
       end
 
-      def nodes
-        target_groups.collect do |group|
-          group(group).nodes(gear.context.environment)
-        end
+      def groups
+        context.groups ||= Set.new
       end
 
       def run(arguments = nil)

@@ -20,14 +20,14 @@ describe MB::Gear::ActionRunner do
     end
 
     it "adds a group to the set of target groups" do
-      subject.on("master").target_groups.should have(1).item
+      subject.on("master").groups.should have(1).item
     end
 
     it "does not add duplicate target groups" do
       subject.on("master")
       subject.on("master")
 
-      subject.target_groups.should have(1).item
+      subject.groups.should have(1).item
     end
 
     context "given a group that is not part of the gear's parent" do

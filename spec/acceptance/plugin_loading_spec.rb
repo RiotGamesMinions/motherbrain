@@ -107,6 +107,8 @@ describe "loading a plugin", type: "acceptance" do
 
   describe "commands" do
     it "invokes an async command" do
+      pending
+
       subject.command("start").invoke.should be_a(MB::CommandRunner)
     end
 
@@ -156,10 +158,12 @@ describe "loading a plugin", type: "acceptance" do
       it { subject.commands[1].name.should eql("stop") }
 
       it "invokes an async command" do
+        pending
         subject.command("start").invoke.should be_a(MB::CommandRunner)
       end
 
       it "invokes a sync command" do
+        pending
         subject.command("stop").invoke.should be_a(MB::CommandRunner)
       end
     end

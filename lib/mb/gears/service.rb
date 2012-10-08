@@ -5,10 +5,10 @@ module MotherBrain
       include MB::Gear
       register_gear :service
 
-      attr_accessor :node
-
       def run_action(name)
-        ActionRunner.new(self, action(name))
+        runner = ActionRunner.new(self, action(name))
+        runner.context = self.context
+        runner
       end
 
       def set_attribute(key, value)
