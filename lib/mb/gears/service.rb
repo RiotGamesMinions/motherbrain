@@ -7,6 +7,7 @@ module MotherBrain
 
       def run_action(name)
         runner = ActionRunner.new(self, action(name))
+        self.context.runners ||= Array.new
         self.context.runners << runner
         runner
       end
