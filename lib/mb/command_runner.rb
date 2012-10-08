@@ -2,32 +2,46 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   # @api private
   class CommandRunner
-    # @return [MotherBrain::Command]
-    attr_reader :command
-    # @return [Proc]
-    attr_reader :proc
+    attr_reader :scope
 
-    # @param [MotherBrain::Command] command
-    # @param [Proc] proc
-    def initialize(command, proc, *args)
-      @command = command
-      @proc = proc
+    # @return [Proc]
+    attr_reader :execute
+
+    # @param [Object] scope
+    # @param [Proc] execute
+    def initialize(scope, execute, *args)
+      @scope = scope
+      @execute = execute
       @arguments = args
-      instance_eval(&proc)
+
+      instance_eval(&execute)
     end
 
-    def run(&block)
-      if block_given?
-        yield(self)
-      else
-        self
+    def chef_run(&block)
+      unless block_given?
+        raise PluginSyntaxError, "Block required"
       end
+
+      scope.context.runners = Array.new
+      scope.instance_eval(&block)
+
+      scope.context.runners.each { |runner| runner.run }
+
+      nodes = scope.context.runners.collect do |runner|
+        runner.nodes
+      end.flatten.uniq
+
+      chef_start(nodes)
+    ensure
+      scope.context.runners = nil
     end
 
     private
 
-      def method_missing(message, *args)
-        command.parent.send(message, *args) || super
+      def chef_start(nodes)
+        nodes.each do |node|
+          puts "Running Chef on #{node[:name]}"
+        end
       end
   end
 end

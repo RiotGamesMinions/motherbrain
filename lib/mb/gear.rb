@@ -25,6 +25,8 @@ module MotherBrain
   #   end
   #
   module Gear
+    autoload :ActionRunner, 'mb/gear/action_runner'
+    
     RESERVED_KEYWORDS = [
       :name,
       :version,
