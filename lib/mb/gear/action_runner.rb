@@ -3,15 +3,13 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com
     # @api private
     class ActionRunner
-      # @return [MotherBrain::Context]
-      attr_accessor :context
-
       attr_reader :action
+      attr_reader :groups
 
       def initialize(gear, action)
         @gear = gear
         @action = action
-        @context = OpenStruct.new
+        @groups = Set.new
       end
 
       def on(group_name)
@@ -23,12 +21,14 @@ module MotherBrain
         self
       end
 
-      def groups
-        context.groups ||= Set.new
-      end
-
       def run(arguments = nil)
         gear.instance_eval(&action)
+      end
+
+      def nodes
+        groups.collect do |group|
+          group(group).nodes(gear.context.environment)
+        end
       end
 
       private

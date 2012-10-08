@@ -22,15 +22,18 @@ module MotherBrain
         raise PluginSyntaxError, "Block required"
       end
 
-      runner = scope.instance_eval(&block)
-      runner.context = scope.context
-      runner.run
+      scope.context.runners = Array.new
+      scope.instance_eval(&block)
 
-      nodes = runner.context.groups.collect do |name|
-        scope.group(name).nodes(scope.context.environment)
+      scope.context.runners.each { |runner| runner.run }
+
+      nodes = scope.context.runners.collect do |runner|
+        runner.nodes
       end.flatten.uniq
 
       chef_start(nodes)
+    ensure
+      scope.context.runners = nil
     end
 
     private
