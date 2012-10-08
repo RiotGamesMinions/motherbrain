@@ -58,8 +58,38 @@ describe MB::Gear::Service do
   end
 
   describe "#run_action" do
-    it "returns a proc" do
-      subject.run_action(:stop).should be_a(Proc)
+    subject do
+      MB::Gear::Service.new(@context) do
+        name "activemq"
+
+        action :start do
+          set_attribute("key.one", true)
+        end
+      end
     end
+
+    let(:start_action) do
+      subject.attributes["actions"]["start"]
+    end
+
+    it "returns a Gear::ActionRunner" do
+      subject.run_action(:start).should be_a(MB::Gear::ActionRunner)
+    end
+
+    it "has sets the action to the one on the Service Gear of the given name" do
+      subject.run_action(:start).action.should eql(start_action)
+    end
+
+    context "given an action that does not exist" do
+      it "raises an ActionNotFound error" do
+        lambda {
+          subject.run_action(:stop)
+        }.should raise_error(MB::ActionNotFound)
+      end
+    end
+  end
+
+  describe "#set_attribute" do
+    pending
   end
 end

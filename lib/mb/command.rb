@@ -10,7 +10,7 @@ module MotherBrain
 
     # Run the proc stored in execute with the given arguments
     def invoke(*args)
-      CommandRunner.new(self, execute, *args)
+      CommandRunner.new(self.parent, execute, *args)
     end
   end
 

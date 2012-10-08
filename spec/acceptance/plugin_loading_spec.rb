@@ -52,9 +52,9 @@ describe "loading a plugin", type: "acceptance" do
           description "Start activemq services"
 
           execute do
-            run do
-              service("broker").run_action(:start)#.on("master_broker")
-              service("broker").run_action(:start)#.on("master_broker")
+            chef_run do
+              service("broker").run_action(:start).on("master_broker")
+              service("broker").run_action(:start).on("master_broker")
             end
           end
         end
@@ -64,7 +64,9 @@ describe "loading a plugin", type: "acceptance" do
           description "Stop activemq services"
 
           execute do
-            run.service("broker").run_action(:stop)#.on("master_broker")
+            chef_run do
+              service("broker").run_action(:stop).on("master_broker")
+            end
           end
         end
       end
@@ -105,6 +107,8 @@ describe "loading a plugin", type: "acceptance" do
 
   describe "commands" do
     it "invokes an async command" do
+      pending
+
       subject.command("start").invoke.should be_a(MB::CommandRunner)
     end
 
@@ -154,10 +158,12 @@ describe "loading a plugin", type: "acceptance" do
       it { subject.commands[1].name.should eql("stop") }
 
       it "invokes an async command" do
+        pending
         subject.command("start").invoke.should be_a(MB::CommandRunner)
       end
 
       it "invokes a sync command" do
+        pending
         subject.command("stop").invoke.should be_a(MB::CommandRunner)
       end
     end
