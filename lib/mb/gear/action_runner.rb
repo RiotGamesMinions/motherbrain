@@ -21,14 +21,14 @@ module MotherBrain
         self
       end
 
-      def run(arguments = nil)
+      def run
         gear.instance_eval(&action)
       end
 
       def nodes
-        groups.collect do |group|
+        @nodes ||= groups.collect do |group|
           group(group).nodes(gear.context.environment)
-        end
+        end.flatten.uniq
       end
 
       private

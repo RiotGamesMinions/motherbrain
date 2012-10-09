@@ -8,12 +8,30 @@ module MotherBrain
       def run_action(name)
         runner = ActionRunner.new(self, action(name))
         self.context.runners ||= Array.new
+        self.context.active_runner = runner
         self.context.runners << runner
         runner
       end
 
-      def set_attribute(key, value)
-        puts "Setting attribute '#{key}' to '#{value}'"
+      def environment_attribute(key, value)
+        puts "Setting attribute '#{key}' to '#{value}' on #{self.context.environment}"
+        self.context.chef_conn.sync do
+          obj = environment.find(self.context.environment)
+          obj.set_override_attribute(key, value)
+          obj.save
+        end
+      end
+
+      def node_attribute(key, value)
+        self.context.active_runner.nodes.each do |l_node|
+          puts "Setting attribute '#{key}' to '#{value}' on #{l_node[:name]}"
+
+          self.context.chef_conn.sync do
+            obj = node.find(l_node[:name])
+            obj.set_override_attribute(key, value)
+            obj.save
+          end
+        end
       end
 
       protected
