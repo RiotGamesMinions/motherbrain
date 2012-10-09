@@ -31,18 +31,11 @@ module MotherBrain
         runner.nodes
       end.flatten.uniq
 
-      chef_start(nodes)
+      chef = ChefRunner.new
+      chef.add_nodes(nodes)
+      chef.run
     ensure
       scope.context.runners = nil
     end
-
-    private
-
-      def chef_start(nodes)
-        rye_set = Rye::Set.new "envnodes", user: "reset", parallel: true, sudo: true
-        rye_set.add_keys "/Users/reset/.ssh/id_rsa"
-        rye_set.add_boxes nodes.collect { |node| node[:automatic][:ipaddress] }
-        rye_set.chef_client
-      end
   end
 end

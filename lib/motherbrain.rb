@@ -9,6 +9,7 @@ require 'thor'
 require 'thor/group'
 require 'active_support/inflector'
 require 'active_support/core_ext/hash'
+require 'chozo/core_ext'
 require 'rye'
 
 require 'mb/version'
@@ -32,9 +33,10 @@ module MotherBrain
   autoload :Plugin, 'mb/plugin'
   autoload :PluginDSL, 'mb/plugin_dsl'
   autoload :PluginInvoker, 'mb/plugin_invoker'
-  autoload :PluginLoader, 'mb/plugin_loader'  
+  autoload :PluginLoader, 'mb/plugin_loader'
   autoload :ProxyObject, 'mb/proxy_object'
-  autoload :RealObject, 'mb/real_object'  
+  autoload :RealObject, 'mb/real_object'
+  autoload :ChefRunner, 'mb/chef_runner'
 
   class << self
     attr_writer :ui
@@ -55,5 +57,3 @@ unless defined?(MB)
   # Alias for {MotherBrain}
   MB = MotherBrain
 end
-
-Rye::Cmd.add_command :chef_client, 'chef-client'
