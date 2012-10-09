@@ -64,7 +64,7 @@ module MotherBrain
       sudo: true
     }.freeze
 
-    DEFAULT_ADDRESS_ATTRIBUTE = 'ipaddress'
+    DEFAULT_ADDRESS_ATTRIBUTE = 'fqdn'
 
     # @return [Rye::Set]
     attr_reader :connection
@@ -73,7 +73,7 @@ module MotherBrain
     def_delegator :connection, :boxes, :nodes
 
     # @option options [String] :address_attribute
-    #   a dotted path representing the Chef attribute containing the connection address. (Default: 'ipaddress')
+    #   a dotted path representing the Chef attribute containing the connection address. (Default: 'fqdn')
     # @option options [Boolean] :safe
     #   should Rye be safe? Default: true
     # @option options [Integer] :port

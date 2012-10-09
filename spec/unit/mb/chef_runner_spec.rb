@@ -157,7 +157,7 @@ describe MB::ChefRunner do
   end
 
   let(:automatic_attributes) do
-    HashWithIndifferentAccess.new(ipaddress: "33.33.33.10")
+    HashWithIndifferentAccess.new(fqdn: "reset.dev.riotgames.com")
   end
 
   let(:node) do
