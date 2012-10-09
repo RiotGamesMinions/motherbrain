@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'chozo'
   s.add_runtime_dependency 'nexus_cli', '~> 0.3.0'
   s.add_runtime_dependency 'activesupport'
+  s.add_runtime_dependency 'rye'
 
   s.add_development_dependency 'thor', '>= 0.16.0'
   s.add_development_dependency 'cucumber'

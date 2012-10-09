@@ -13,7 +13,7 @@ module MotherBrain
 
     # @return [Ridley::Connection]
     def chef_conn
-      @chef_conn ||= Ridley.connection(config.to_ridley)
+      @chef_conn ||= Ridley.connection(config.to_ridley.merge(ssl: { verify: false }))
     end
   end
 end

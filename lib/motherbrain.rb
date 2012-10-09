@@ -9,6 +9,7 @@ require 'thor'
 require 'thor/group'
 require 'active_support/inflector'
 require 'active_support/core_ext/hash'
+require 'rye'
 
 require 'mb/version'
 require 'mb/errors'
@@ -54,3 +55,5 @@ unless defined?(MB)
   # Alias for {MotherBrain}
   MB = MotherBrain
 end
+
+Rye::Cmd.add_command :chef_client, 'chef-client'

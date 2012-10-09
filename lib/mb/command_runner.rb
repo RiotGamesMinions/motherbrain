@@ -39,9 +39,10 @@ module MotherBrain
     private
 
       def chef_start(nodes)
-        nodes.each do |node|
-          puts "Running Chef on #{node[:name]}"
-        end
+        rye_set = Rye::Set.new "envnodes", user: "reset", parallel: true, sudo: true
+        rye_set.add_keys "/Users/reset/.ssh/id_rsa"
+        rye_set.add_boxes nodes.collect { |node| node[:automatic][:ipaddress] }
+        rye_set.chef_client
       end
   end
 end
