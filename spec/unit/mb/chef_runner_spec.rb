@@ -112,7 +112,17 @@ describe MB::ChefRunner do
 
       context "when the response contains failures" do
         let(:host1) { double('host1', exit_status: 0) }
-        let(:host2) { double('host2', exit_status: 1) }
+        let(:host2) do
+          double('host2',
+            exit_status: 1,
+            to_hash: {
+              exit_status: 1,
+              exit_signal: nil,
+              stderr: [],
+              stdout: []
+            }
+          )
+        end
         let(:response) do
           [
             host1,
@@ -131,9 +141,16 @@ describe MB::ChefRunner do
           @handled[0].should eql(:error)
         end
 
-        it "has an error array containing the hosts without an exit_status of 0" do
+        it "has an error array of hashes" do
           @handled[1].should have(1).item
-          @handled[1].should include(host2)
+          @handled[1].should each be_a(Hash)
+        end
+
+        it "has an exit_status, exit_signal, stderr, and stdout key for each error" do
+          @handled[1].should each have_key(:exit_status)
+          @handled[1].should each have_key(:exit_signal)
+          @handled[1].should each have_key(:stderr)
+          @handled[1].should each have_key(:stdout)
         end
       end
     end

@@ -12,6 +12,7 @@ require 'active_support/inflector'
 require 'active_support/core_ext/hash'
 require 'chozo/core_ext'
 require 'rye'
+require 'mb/rye_ext'
 
 require 'mb/version'
 require 'mb/errors'

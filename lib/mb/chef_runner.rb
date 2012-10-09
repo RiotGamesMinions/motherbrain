@@ -29,15 +29,29 @@ module MotherBrain
       #
       # @example response containing failures
       #
-      #   handle_response(response) => [ :error, [#<Rye::Rap>] ]
+      #   handle_response(response) => [ :error,
+      #     [
+      #       {
+      #         exit_status: 1,
+      #         exit_signal: nil,
+      #         stderr: [],
+      #         stdout: []
+      #       }
+      #     ]
+      #   ]
       #
       # @return [Array]
       def handle_response(response)
-        errors = response.select { |rap| rap.exit_status != 0 }
+        culprits = response.select { |rap| rap.exit_status != 0 }
 
-        if errors.empty?
+        if culprits.empty?
           [ :ok, [] ]
         else
+          errors = [].tap do |err|
+            culprits.collect do |culprit|
+              err << culprit.to_hash
+            end
+          end
           [ :error, errors ]
         end
       end
