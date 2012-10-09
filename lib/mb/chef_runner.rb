@@ -47,11 +47,7 @@ module MotherBrain
         if culprits.empty?
           [ :ok, [] ]
         else
-          errors = [].tap do |err|
-            culprits.collect do |culprit|
-              err << culprit.to_hash
-            end
-          end
+          errors = culprits.map(&:to_hash)
           [ :error, errors ]
         end
       end
@@ -126,7 +122,35 @@ module MotherBrain
       self.connection.add_boxes(address)
     end
 
-    # @return [Boolean]
+    # Run Chef Client on the nodes of this instance. Return a response array containing two
+    # elements. The first element is a the symbol :ok or :error and the second element is
+    # an array of Hashes containing error information.
+    #
+    # @example response containing no failures
+    #
+    #   runner.run => [ :ok, [] ]
+    #
+    # @example response containing failures
+    #
+    #   runner.run => [ :error,
+    #     [
+    #       {
+    #         exit_status: 1,
+    #         exit_signal: nil,
+    #         stderr: [],
+    #         stdout: []
+    #       },
+    #       {
+    #         exit_status: 127,
+    #         exit_signal: nil,
+    #         stderr: [],
+    #         stdout: []
+    #       }
+    #     ]
+    #   ]
+    #
+    # @return [Array]
+    #   a response array
     def run
       self.class.handle_response(self.connection.chef_client)
     end
