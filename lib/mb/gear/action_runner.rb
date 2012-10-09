@@ -22,7 +22,10 @@ module MotherBrain
       end
 
       def run
+        gear.context.nodes = self.nodes
         gear.instance_eval(&action)
+      ensure
+        gear.context.nodes = nil
       end
 
       def nodes

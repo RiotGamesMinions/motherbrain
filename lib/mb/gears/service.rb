@@ -8,7 +8,6 @@ module MotherBrain
       def run_action(name)
         runner = ActionRunner.new(self, action(name))
         self.context.runners ||= Array.new
-        self.context.active_runner = runner
         self.context.runners << runner
         runner
       end
@@ -23,7 +22,7 @@ module MotherBrain
       end
 
       def node_attribute(key, value)
-        self.context.active_runner.nodes.each do |l_node|
+        self.context.nodes.each do |l_node|
           puts "Setting attribute '#{key}' to '#{value}' on #{l_node[:name]}"
 
           self.context.chef_conn.sync do
