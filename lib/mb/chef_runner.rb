@@ -4,9 +4,40 @@ module MotherBrain
     class << self
       # @param [Hash] options
       #
+      # @raise [MotherBrain::ArgumentError] if the given options are invalid
+      #
       # @return [Boolean]
       def validate_options(options)
+        unless options.has_key?(:keys) || (options.has_key?(:user) && options.has_key?(:password))
+          raise ArgumentError, "Must specify an option for 'keys' or 'user' and 'password'"
+        end
+
+        if options.has_key?(:keys) && (options.has_key?(:user) || options.has_key?(:password))
+          raise ArgumentError, "Cannot specify an option for 'keys' and 'user' or 'password'"
+        end
+
         true
+      end
+
+      # @param [Rye::Rap] response
+      #
+      # @example response containing no failures
+      #
+      #   handle_response(response) => [ :ok, [] ]
+      #
+      # @example response containing failures
+      #
+      #   handle_response(response) => [ :error, [#<Rye::Rap>] ]
+      #
+      # @return [Array]
+      def handle_response(response)
+        errors = response.select { |rap| rap.exit_status != 0 }
+
+        if errors.empty?
+          [ :ok, [] ]
+        else
+          [ :error, errors ]
+        end
       end
     end
 
@@ -64,6 +95,11 @@ module MotherBrain
     end
 
     # @param [Ridley::Node] node
+    #
+    # @raise [NoValueForAddressAttribute] if a value for the connection address is not found at
+    #   the address_attribute of this instance of {ChefRunner}
+    #
+    # @return [Rye::Set]
     def add_node(node)
       address = node.automatic.dig(address_attribute)
       
@@ -76,19 +112,13 @@ module MotherBrain
 
     # @return [Boolean]
     def run
-      handle_response(self.connections.chef_client)
+      self.class.handle_response(self.connection.chef_client)
     end
 
     private
 
+      # @return [String]
       attr_reader :address_attribute
-
-      # @param [Rye::Rap] response
-      #
-      # @return [Boolean]
-      def handle_response(response)
-        true
-      end
   end
 end
 
