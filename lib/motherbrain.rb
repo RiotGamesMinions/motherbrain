@@ -1,6 +1,7 @@
 require 'json'
 require 'fileutils'
 require 'pathname'
+require 'forwardable'
 require 'set'
 require 'ostruct'
 require 'ridley'

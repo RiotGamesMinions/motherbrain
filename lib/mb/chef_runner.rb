@@ -1,5 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
+  #
+  # A class to encapsulate running Chef on a set of nodes.
   class ChefRunner
     class << self
       # @param [Hash] options
