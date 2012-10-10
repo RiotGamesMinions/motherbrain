@@ -157,6 +157,23 @@ module MotherBrain
       self.class.handle_response(self.connection.chef_client)
     end
 
+    # Test the ChefRunner connection to all nodes
+    #
+    # @raise [RyeError] if there is a problem with connecting to a node by SSH 
+    # @raise [ChefTestRunFailure] if there was a problem with executing a basic command (uptime)
+    #   on one or more of the nodes
+    #
+    # @return [Symbol]
+    def test!
+      status, errors = self.class.handle_response(self.connection.uptime)
+
+      if status == :error
+        raise ChefTestRunFailure.new(errors)
+      end
+
+      status
+    end
+
     private
 
       # @return [String]

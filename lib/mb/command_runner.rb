@@ -33,6 +33,7 @@ module MotherBrain
 
       chef = ChefRunner.new
       chef.add_nodes(nodes)
+      chef.test!
       status, errors = chef.run
 
       if status == :error

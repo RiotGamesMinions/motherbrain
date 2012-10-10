@@ -42,6 +42,7 @@ module MotherBrain
       @errors = errors
     end
   end
+  class ChefTestRunFailure < ChefRunFailure; end
 
   class ClusterBusy < MBError; status_code(10); end
   class ClusterNotFound < MBError; status_code(11); end
