@@ -32,6 +32,7 @@ module MotherBrain
       #   handle_response(response) => [ :error,
       #     [
       #       {
+      #         host: "33.33.33.10",
       #         exit_status: 1,
       #         exit_signal: nil,
       #         stderr: [],
@@ -132,15 +133,16 @@ module MotherBrain
     #
     # @example response containing failures
     #
-    #   runner.run => [ :error,
-    #     [
+    #   runner.run => [ :error, [
     #       {
+    #         host: "33.33.33.10",
     #         exit_status: 1,
     #         exit_signal: nil,
     #         stderr: [],
     #         stdout: []
     #       },
     #       {
+    #         host: "33.33.33.11",
     #         exit_status: 127,
     #         exit_signal: nil,
     #         stderr: [],

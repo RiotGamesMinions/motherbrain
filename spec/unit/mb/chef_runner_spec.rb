@@ -116,6 +116,7 @@ describe MB::ChefRunner do
           double('host2',
             exit_status: 1,
             to_hash: {
+              host: "33.33.33.11",
               exit_status: 1,
               exit_signal: nil,
               stderr: [],
@@ -146,7 +147,8 @@ describe MB::ChefRunner do
           @handled[1].should each be_a(Hash)
         end
 
-        it "has an exit_status, exit_signal, stderr, and stdout key for each error" do
+        it "has a host, exit_status, exit_signal, stderr, and stdout key for each error" do
+          @handled[1].should each have_key(:host)
           @handled[1].should each have_key(:exit_status)
           @handled[1].should each have_key(:exit_signal)
           @handled[1].should each have_key(:stderr)
