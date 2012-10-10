@@ -52,6 +52,33 @@ module MotherBrain
           [ :error, errors ]
         end
       end
+
+      # @param [Ridley::Node] node
+      #
+      # @example given a standard node
+      #
+      #   'fqdn'
+      #
+      # @example given a eucalyptus node
+      #
+      #   'eucalyptus.public_hostname'
+      #
+      # @example given an ec2 node
+      #
+      #   'ec2.public_hostname'
+      #
+      # @return [String]
+      #   a dotted path to the address attribute for this node
+      def address_attribute(node)
+        case
+        when node.eucalyptus?
+          ADDRESS_ATTRIBUTES.fetch(:eucalyptus)
+        when node.ec2?
+          ADDRESS_ATTRIBUTES.fetch(:ec2)
+        else
+          ADDRESS_ATTRIBUTES.fetch(:default)
+        end
+      end
     end
 
     extend Forwardable
@@ -61,7 +88,11 @@ module MotherBrain
       sudo: true
     }.freeze
 
-    DEFAULT_ADDRESS_ATTRIBUTE = 'fqdn'
+    ADDRESS_ATTRIBUTES = {
+      default: 'fqdn',
+      eucalyptus: 'eucalyptus.public_hostname',
+      ec2: 'ec2.public_hostname'
+    }.freeze
 
     # @return [Rye::Set]
     attr_reader :connection
@@ -100,7 +131,7 @@ module MotherBrain
     def initialize(options = Hash.new)
       self.class.validate_options(options)
 
-      @address_attribute = options.delete(:address_attribute) { DEFAULT_ADDRESS_ATTRIBUTE }
+      @address_attribute = options.delete(:address_attribute) { nil }
       nodes = options.delete(:nodes) { nil }
 
       @connection = Rye::Set.new("motherbrain", DEFAULT_OPTIONS.merge(options))
@@ -119,10 +150,11 @@ module MotherBrain
     #
     # @return [Rye::Set]
     def add_node(node)
-      address = node.automatic.dig(address_attribute)
+      l_address_attribute = address_attribute || self.class.address_attribute(node)
+      address = node.automatic.dig(l_address_attribute)
       
       if address.nil?
-        raise NoValueForAddressAttribute, "No address found at automatic node attribute '#{address_attribute}'."
+        raise NoValueForAddressAttribute, "No address found at automatic node attribute '#{l_address_attribute}'"
       end
 
       self.connection.add_boxes(address)

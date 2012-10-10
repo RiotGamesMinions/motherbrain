@@ -11,12 +11,6 @@ describe MB::ChefRunner do
     subject { MB::ChefRunner }
 
     describe "::new" do
-      it "sets a default value for 'address_attribute'" do
-        obj = subject.new(valid_options)
-
-        obj.send(:address_attribute).should eql(MB::ChefRunner::DEFAULT_ADDRESS_ATTRIBUTE)
-      end
-
       it "validates the given options" do
         subject.should_receive(:validate_options).with(valid_options).and_return(true)
         
@@ -156,6 +150,30 @@ describe MB::ChefRunner do
         end
       end
     end
+
+    describe "::address_attribute" do
+      let(:node) { double('node', ec2?: false, eucalyptus?: false) }
+
+      it "returns a default address attribute" do
+        subject.address_attribute(node).should eql('fqdn')
+      end
+
+      context "when the node is an ec2 node" do
+        let(:node) { double('node', ec2?: true, eucalyptus?: false) }
+
+        it "it returns a dotted path to the ec2 public hostname" do
+          subject.address_attribute(node).should eql('ec2.public_hostname')
+        end
+      end
+
+      context "when the node is a eucalyptus node" do
+        let(:node) { double('node', ec2?: false, eucalyptus?: true) }
+
+        it "it returns a dotted path to the eucalyptus public hostname" do
+          subject.address_attribute(node).should eql('eucalyptus.public_hostname')
+        end
+      end
+    end
   end
 
   let(:automatic_attributes) do
@@ -163,7 +181,7 @@ describe MB::ChefRunner do
   end
 
   let(:node) do
-    double('node', automatic: automatic_attributes)
+    double('node', automatic: automatic_attributes, eucalyptus?: false, ec2?: false)
   end
 
   subject { MB::ChefRunner.new(valid_options) }
