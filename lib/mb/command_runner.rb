@@ -33,7 +33,11 @@ module MotherBrain
 
       chef = ChefRunner.new
       chef.add_nodes(nodes)
-      chef.run
+      status, errors = chef.run
+
+      if status == :error
+        raise ChefRunFailure.new(errors)
+      end
     ensure
       scope.context.runners = nil
     end
