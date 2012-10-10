@@ -69,6 +69,8 @@ module MotherBrain
     # @return [Rye::Box]
     def_delegator :connection, :boxes, :nodes
 
+    # @option options [Array<Ridley::Node>, Ridley::Node] :nodes
+    #   an array of, or single, Ridley::Node to add to the connection
     # @option options [String] :address_attribute
     #   a dotted path representing the Chef attribute containing the connection address. (Default: 'fqdn')
     # @option options [Boolean] :safe
@@ -99,7 +101,10 @@ module MotherBrain
       self.class.validate_options(options)
 
       @address_attribute = options.delete(:address_attribute) { DEFAULT_ADDRESS_ATTRIBUTE }
+      nodes = options.delete(:nodes) { nil }
+
       @connection = Rye::Set.new("motherbrain", DEFAULT_OPTIONS.merge(options))
+      self.add_nodes(nodes) unless nodes.nil?
     end
 
     # @param [Array<Ridley::Node>, Ridley::Node] nodes

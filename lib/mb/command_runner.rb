@@ -31,8 +31,7 @@ module MotherBrain
         runner.nodes
       end.flatten.uniq
 
-      chef = ChefRunner.new
-      chef.add_nodes(nodes)
+      chef = ChefRunner.new(nodes: nodes)
       chef.test!
       status, errors = chef.run
 
