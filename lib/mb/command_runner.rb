@@ -9,10 +9,9 @@ module MotherBrain
 
     # @param [Object] scope
     # @param [Proc] execute
-    def initialize(scope, execute, *args)
+    def initialize(scope, execute)
       @scope = scope
       @execute = execute
-      @arguments = args
 
       instance_eval(&execute)
     end
