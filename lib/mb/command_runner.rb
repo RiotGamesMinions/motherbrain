@@ -31,7 +31,14 @@ module MotherBrain
         runner.nodes
       end.flatten.uniq
 
-      chef = ChefRunner.new(nodes: nodes)
+      runner_options = {}.tap do |opts|
+        opts[:nodes] = nodes
+        opts[:user] = scope.context.config.ssh_user
+        opts[:keys] = scope.context.config.ssh_key if scope.context.config.ssh_key
+        opts[:password] = scope.context.config.ssh_password if scope.context.config.ssh_password
+      end
+
+      chef = ChefRunner.new(runner_options)
       chef.test!
       status, errors = chef.run
 

@@ -38,6 +38,14 @@ module MotherBrain
 
     attribute :plugin_paths, default: PluginLoader.default_paths
 
+    attribute :ssh_user
+    validates_presence_of :ssh_user
+
+    attribute :ssh_password
+    attribute :ssh_key
+
+    validates_with ConfigValidator
+
     # Returns a connection hash for Ridley from the instance's attributes
     #
     # @example

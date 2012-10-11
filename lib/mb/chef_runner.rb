@@ -10,12 +10,12 @@ module MotherBrain
       #
       # @return [Boolean]
       def validate_options(options)
-        unless options.has_key?(:keys) || (options.has_key?(:user) && options.has_key?(:password))
-          raise ArgumentError, "Must specify an option for 'keys' or 'user' and 'password'"
+        unless options.has_key?(:user) && (options.has_key?(:keys) || options.has_key?(:password))
+          raise ArgumentError, "Must specify an option for 'user' and 'keys' or 'password'"
         end
 
-        if options.has_key?(:keys) && (options.has_key?(:user) || options.has_key?(:password))
-          raise ArgumentError, "Cannot specify an option for 'keys' and 'user' or 'password'"
+        if options.has_key?(:keys) && options.has_key?(:password)
+          raise ArgumentError, "Cannot specify an option for 'keys' and 'password'"
         end
 
         true

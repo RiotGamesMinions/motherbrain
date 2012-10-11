@@ -47,7 +47,24 @@ module MotherBrain
   class ClusterBusy < MBError; status_code(10); end
   class ClusterNotFound < MBError; status_code(11); end
   class EnvironmentNotFound < MBError; status_code(12); end
-  class InvalidConfig < MBError; status_code(13); end
+
+  class InvalidConfig < MBError
+    status_code(13)
+
+    # @return [ActiveModel::Errors]
+    attr_reader :errors
+
+    # @param [ActiveModel::Errors]
+    def initialize(errors)
+      @errors = errors
+    end
+
+    def to_s
+      errors.full_messages.collect do |err|
+        "* #{err}"
+      end.join("\n")
+    end
+  end
   class ConfigNotFound < MBError; status_code(14); end
   class ConfigExists < MBError; status_code(15); end
   class InvalidPlugin < MBError; status_code(16); end

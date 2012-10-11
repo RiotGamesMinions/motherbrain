@@ -28,6 +28,8 @@ describe MB::Config do
       o.nexus_repository = "riot"
       o.nexus_username = "test"
       o.nexus_password = "test123"
+      o.ssh_user = "root"
+      o.ssh_password = "something"
     end
   end
 
@@ -90,6 +92,21 @@ describe MB::Config do
       subject.nexus_password = ''
 
       subject.should_not be_valid
+    end
+
+    it "is invalid if the ssh_user is blank" do
+      subject.ssh_user = ''
+
+      subject.should_not be_valid
+    end
+
+    it "is invalid if the ssh_key and ssh_password is blank" do
+      subject.ssh_key = ''
+      subject.ssh_password = ''
+
+      subject.should_not be_valid
+      subject.errors.messages[:ssh_password].should =~ ["You must specify an SSH password or an SSH key"]
+      subject.errors.messages[:ssh_key].should =~ ["You must specify an SSH password or an SSH key"]
     end
   end
 

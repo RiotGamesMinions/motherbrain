@@ -3,6 +3,7 @@ require 'spec_helper'
 describe MB::ChefRunner do
   let(:valid_options) do
     {
+      user: "reset",
       keys: "/tmp/id_rsa"
     }
   end
@@ -27,9 +28,10 @@ describe MB::ChefRunner do
     end
 
     describe "::validate_options" do
-      context "given a value for 'keys'" do
+      context "given a value for 'user' and 'keys'" do
         let(:options) do
           {
+            user: "reset",
             keys: "/tmp/id_rsa"
           }
         end
@@ -70,6 +72,20 @@ describe MB::ChefRunner do
 
       context "given no value for 'user' and 'password' or 'keys'"  do
         let(:options) { Hash.new }
+
+        it "raises an ArgumentError" do
+          lambda {
+            subject.validate_options(options)
+          }.should raise_error(MB::ArgumentError)
+        end
+      end
+
+      context "given a value for 'user' but not 'password' or 'keys'" do
+        let(:options) do
+          {
+            user: "reset"
+          }
+        end
 
         it "raises an ArgumentError" do
           lambda {
