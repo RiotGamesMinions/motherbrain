@@ -54,15 +54,18 @@ module MotherBrain
     # @return [ActiveModel::Errors]
     attr_reader :errors
 
-    # @param [ActiveModel::Errors]
+    # @param [ActiveModel::Errors] errors
     def initialize(errors)
       @errors = errors
     end
 
-    def to_s
-      errors.full_messages.collect do |err|
+    def message
+      msg = errors.full_messages.collect do |err|
         "* #{err}"
-      end.join("\n")
+      end
+      msg.unshift "-----"
+      msg.unshift "Invalid Configuration File"
+      msg.join("\n")
     end
   end
   class ConfigNotFound < MBError; status_code(14); end

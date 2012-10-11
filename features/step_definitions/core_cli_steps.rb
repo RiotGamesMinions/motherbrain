@@ -1,5 +1,5 @@
 When /^I run the "(.*?)" command$/ do |command|
-  run_simple(unescape("mb #{command}"))
+  run_simple(unescape("mb #{command}"), false)
 end
 
 When /^I run the "(.*?)" command interactively$/ do |command|

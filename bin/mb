@@ -4,7 +4,13 @@ require 'motherbrain'
 
 begin
   MB::Invoker.start
+rescue MB::InvalidConfig => e
+  MB.ui.say e.message, :red
+  exit e.status_code
 rescue MB::MBError => e
   MB.ui.say e, :red
   exit e.status_code
+rescue Chozo::Errors::ChozoError => e
+  MB.ui.say e, :red
+  exit 1
 end

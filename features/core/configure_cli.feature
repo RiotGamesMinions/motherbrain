@@ -4,7 +4,7 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
   So it is quick and easy for me to configure or reconfigure my MB CLI
 
   Scenario: generating a new config file
-    Given a configuration file does not exist
+    Given a MotherBrain configuration does not exist
     When I run the "configure" command interactively
     And I type "https://api.opscode.com/organizations/vialstudio"
     And I type "reset"
@@ -13,6 +13,8 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
     And I type "riot"
     And I type "deployer"
     And I type "secr3tPassw0rd"
+    And I type "root"
+    And I type "secretpass"
     Then the output should contain:
       """
       Config written to:
@@ -26,9 +28,11 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
       | nexus_repository | riot                                             |
       | nexus_username   | deployer                                         |
       | nexus_password   | secr3tPassw0rd                                   |
+      | ssh_user         | root                                             |
+      | ssh_password     | secretpass                                       |
 
   Scenario: attempting to generate a new config when one already exists
-    Given a configuration file exists
+    Given a valid MotherBrain configuration
     When I run the "configure" command interactively
     Then the output should contain:
       """
@@ -37,7 +41,7 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
     And the exit status should be the code for error "ConfigExists"
 
   Scenario: forcefully generating a config when one already exists
-    Given a configuration file exists
+    Given a valid MotherBrain configuration
     When I run the "configure" command interactively with:
       | --force |
     And I type "https://api.opscode.com/organizations/vialstudio"
@@ -47,6 +51,8 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
     And I type "riot"
     And I type "deployer"
     And I type "secr3tPassw0rd"
+    And I type "root"
+    And I type "secretpass"
     Then the output should contain:
       """
       Config written to:
@@ -60,3 +66,5 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
       | nexus_repository | riot                                             |
       | nexus_username   | deployer                                         |
       | nexus_password   | secr3tPassw0rd                                   |
+      | ssh_user         | root                                             |
+      | ssh_password     | secretpass                                       |
