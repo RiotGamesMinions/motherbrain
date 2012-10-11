@@ -30,11 +30,17 @@ module MotherBrain
         end
     end
 
+    NOCONFIG_TASKS = [
+      "configure",
+      "help",
+      "version"
+    ].freeze
+
     attr_reader :context
 
     def initialize(args = [], options = {}, config = {})
       super
-      unless ["configure", "help", "version"].include? config[:current_task].try(:name)
+      unless NOCONFIG_TASKS.include? config[:current_task].try(:name)
         @context = self.class.configure(self.options)
       end
     end
