@@ -15,7 +15,7 @@ module MotherBrain
     #
     # @return [Array<String>]
     def nodes(environment)
-      context.chef_conn.search(:node, search_query(environment))[:rows]
+      context.chef_conn.search(:node, search_query(environment))
     end
 
     # Returns an escape search query for Solr from the roles, rescipes, and chef_attributes

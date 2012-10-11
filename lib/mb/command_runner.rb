@@ -9,10 +9,9 @@ module MotherBrain
 
     # @param [Object] scope
     # @param [Proc] execute
-    def initialize(scope, execute, *args)
+    def initialize(scope, execute)
       @scope = scope
       @execute = execute
-      @arguments = args
 
       instance_eval(&execute)
     end
@@ -31,18 +30,22 @@ module MotherBrain
         runner.nodes
       end.flatten.uniq
 
-      chef_start(nodes)
+      runner_options = {}.tap do |opts|
+        opts[:nodes] = nodes
+        opts[:user] = scope.context.config.ssh_user
+        opts[:keys] = scope.context.config.ssh_key if scope.context.config.ssh_key
+        opts[:password] = scope.context.config.ssh_password if scope.context.config.ssh_password
+      end
+
+      chef = ChefRunner.new(runner_options)
+      chef.test!
+      status, errors = chef.run
+
+      if status == :error
+        raise ChefRunFailure.new(errors)
+      end
     ensure
       scope.context.runners = nil
     end
-
-    private
-
-      def chef_start(nodes)
-        rye_set = Rye::Set.new "envnodes", user: "reset", parallel: true, sudo: true
-        rye_set.add_keys "/Users/reset/.ssh/id_rsa"
-        rye_set.add_boxes nodes.collect { |node| node[:automatic][:ipaddress] }
-        rye_set.chef_client
-      end
   end
 end

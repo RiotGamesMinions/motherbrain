@@ -1,6 +1,7 @@
 require 'json'
 require 'fileutils'
 require 'pathname'
+require 'forwardable'
 require 'set'
 require 'ostruct'
 require 'ridley'
@@ -9,7 +10,9 @@ require 'thor'
 require 'thor/group'
 require 'active_support/inflector'
 require 'active_support/core_ext/hash'
+require 'chozo/core_ext'
 require 'rye'
+require 'mb/rye_ext'
 
 require 'mb/version'
 require 'mb/errors'
@@ -21,6 +24,7 @@ module MotherBrain
   autoload :Component, 'mb/component'
   autoload :ComponentInvoker, 'mb/component_invoker'
   autoload :Config, 'mb/config'
+  autoload :ConfigValidator, 'mb/config_validator'
   autoload :Context, 'mb/context'
   autoload :DynamicGears, 'mb/dynamic_gears'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
@@ -32,9 +36,10 @@ module MotherBrain
   autoload :Plugin, 'mb/plugin'
   autoload :PluginDSL, 'mb/plugin_dsl'
   autoload :PluginInvoker, 'mb/plugin_invoker'
-  autoload :PluginLoader, 'mb/plugin_loader'  
+  autoload :PluginLoader, 'mb/plugin_loader'
   autoload :ProxyObject, 'mb/proxy_object'
-  autoload :RealObject, 'mb/real_object'  
+  autoload :RealObject, 'mb/real_object'
+  autoload :ChefRunner, 'mb/chef_runner'
 
   class << self
     attr_writer :ui
@@ -55,5 +60,3 @@ unless defined?(MB)
   # Alias for {MotherBrain}
   MB = MotherBrain
 end
-
-Rye::Cmd.add_command :chef_client, 'chef-client'
