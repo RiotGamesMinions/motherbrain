@@ -8,7 +8,7 @@ describe MB::InvokerBase do
       context "when the value of ENV['MB_CONFIG'] specifies a config file that exists" do
         before(:each) do
           set_mb_config_path(mb_config_path.join('config.json'))
-          generate_config(ENV['MB_CONFIG'])
+          generate_valid_config(ENV['MB_CONFIG'])
         end
 
         after(:each) { FileUtils.rm(ENV['MB_CONFIG']) }
@@ -25,10 +25,10 @@ describe MB::InvokerBase do
           FileUtils.rm(ENV['MB_CONFIG'])
         end
 
-        it "reads the configuration file as the Invoker's configuration" do
-          invoker = subject.new([])
-
-          invoker.context.config.chef_api_url.should eql("http://localhost:8080")
+        it "raises a Chozo::Errors::ConfigNotFound error configuration" do
+          lambda {
+            subject.new([])
+          }.should raise_error(Chozo::Errors::ConfigNotFound)
         end
       end
     end
@@ -36,7 +36,7 @@ describe MB::InvokerBase do
     describe "specifying a configuration file" do
       before(:each) do
         set_mb_config_path(mb_config_path.join('config.json'))
-        generate_config(ENV['MB_CONFIG'])
+        generate_valid_config(ENV['MB_CONFIG'])
       end
 
       it "loads the specified config file when the specified file exists" do
@@ -61,7 +61,7 @@ describe MB::InvokerBase do
 
   before(:each) do
     set_mb_config_path(mb_config_path.join('config.json'))
-    generate_config(ENV['MB_CONFIG'])
+    generate_valid_config(ENV['MB_CONFIG'])
   end
 
   subject { MB::InvokerBase.new([], config: ENV['MB_CONFIG']) }

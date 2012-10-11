@@ -8,7 +8,10 @@ module MotherBrain
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
-        setup(configure(opts))
+        if (args & InvokerBase::NOCONFIG_TASKS).empty?
+          setup(configure(opts))
+        end
+        
         super
       end
 
@@ -46,7 +49,9 @@ module MotherBrain
     # @see {InvokerBase}
     def initialize(args = [], options = {}, config = {})
       super
-      self.class.setup(self.context)
+      unless InvokerBase::NOCONFIG_TASKS.include?(config[:current_task].try(:name))
+        self.class.setup(self.context)
+      end
     end
 
     method_option :force,
@@ -63,13 +68,15 @@ module MotherBrain
 
       @config = MB::Config.new(path)
 
-      @config.chef_api_url = MB.ui.ask "Enter a Chef API URL: "
-      @config.chef_api_client = MB.ui.ask "Enter a Chef API Client: "
-      @config.chef_api_key = MB.ui.ask "Enter the path to the client's Chef API Key: "
-      @config.nexus_api_url = MB.ui.ask "Enter a Nexus API URL: "
+      @config.chef_api_url     = MB.ui.ask "Enter a Chef API URL: "
+      @config.chef_api_client  = MB.ui.ask "Enter a Chef API Client: "
+      @config.chef_api_key     = MB.ui.ask "Enter the path to the client's Chef API Key: "
+      @config.nexus_api_url    = MB.ui.ask "Enter a Nexus API URL: "
       @config.nexus_repository = MB.ui.ask "Enter a Nexus repository: "
-      @config.nexus_username = MB.ui.ask "Enter your Nexus username: "
-      @config.nexus_password = MB.ui.ask "Enter your Nexus password: "
+      @config.nexus_username   = MB.ui.ask "Enter your Nexus username: "
+      @config.nexus_password   = MB.ui.ask "Enter your Nexus password: "
+      @config.ssh_user         = MB.ui.ask "Enter a SSH user: "
+      @config.ssh_password     = MB.ui.ask "Enter a SSH password: "
       @config.save
 
       MB.ui.say "Config written to: '#{path}'"
