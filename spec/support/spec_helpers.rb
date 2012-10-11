@@ -33,20 +33,24 @@ module MotherBrain
       app_root_path.join("spec", "tmp", ".mb", "plugins")
     end
 
-    def generate_config(path)
-      config = <<-CONFIG
-{
-  "chef_api_url": "https://api.opscode.com/organizations/vialstudio",
-  "chef_api_client": "reset",
-  "chef_api_key": "/Users/reset/.chef/reset.pem",
-  "nexus_api_url": "http://nexus.riotgames.com/nexus/",
-  "nexus_repository": "riot",
-  "nexus_username": "test",
-  "nexus_password": "test123"
-}
-CONFIG
-      FileUtils.mkdir_p(File.dirname(path))
-      File.write(path, config)
+    def generate_valid_config(path)
+      FileUtils.rm_rf(path)
+      MB::Config.new.tap do |mb|
+        mb.chef_api_url = "https://api.opscode.com/organizations/vialstudio"
+        mb.chef_api_client = "reset"
+        mb.chef_api_key = "/Users/reset/.chef/reset.pem"
+        mb.nexus_api_url = "http://nexus.riotgames.com/nexus/"
+        mb.nexus_repository = "riot"
+        mb.nexus_username = "test"
+        mb.nexus_password = "test123"
+        mb.ssh_user = "root"
+        mb.ssh_password = "secretpass"
+      end.save(path)
+    end
+
+    def generate_invalid_config(path)
+      FileUtils.rm_rf(path)
+      MB::Config.new.save(path)
     end
 
     def generate_plugin(name, version, path)

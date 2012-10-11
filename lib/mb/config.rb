@@ -1,5 +1,3 @@
-require 'chozo/config'
-
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Config

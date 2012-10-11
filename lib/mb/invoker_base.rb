@@ -7,24 +7,42 @@ module MotherBrain
       # @return [MotherBrain::Context]
       def configure(options)
         config = if options[:config].nil?
-          begin
-            MB::Config.from_file(File.expand_path(MB::Config.default_path))
-          rescue
-            MB::Config.new
-          end
+          MB::Config.from_file(File.expand_path(MB::Config.default_path))
         else
           MB::Config.from_file(options[:config])
         end
 
+        validate_config(config)
         MB::Context.new(config)
       end
+
+      private
+
+        # @raise [InvalidConfig] if configuration is invalid
+        #
+        # @return [Boolean]
+        def validate_config(config)
+          unless config.valid?
+            raise InvalidConfig.new(config.errors)
+          end
+
+          true
+        end
     end
+
+    NOCONFIG_TASKS = [
+      "configure",
+      "help",
+      "version"
+    ].freeze
 
     attr_reader :context
 
     def initialize(args = [], options = {}, config = {})
       super
-      @context = self.class.configure(self.options)
+      unless NOCONFIG_TASKS.include? config[:current_task].try(:name)
+        @context = self.class.configure(self.options)
+      end
     end
 
     class_option :config,

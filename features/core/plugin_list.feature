@@ -4,7 +4,7 @@ Feature: listing the plugins available to MotherBrain
   So I can see what plugins and versions of those plugins I have installed
 
   Background:
-    Given a default MotherBrain configuration
+    Given a valid MotherBrain configuration
 
   Scenario: listing all plugins
     Given a plugin "pvpnet" at version "1.2.3"
