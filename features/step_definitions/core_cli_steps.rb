@@ -10,6 +10,10 @@ When /^I run the "(.*?)" command interactively with:$/ do |command, arguments|
   run_interactive("mb #{command} #{arguments.raw.join(' ')}")
 end
 
+When /^I run a command that requires a config$/ do
+  step %Q{I run the "plugins" command}
+end
+
 Then /^the exit status should be the code for error "(.*?)"$/ do |konstant|
   exit_status = MB.const_get(konstant).status_code
   assert_exit_status(exit_status)

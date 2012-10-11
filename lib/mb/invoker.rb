@@ -8,7 +8,7 @@ module MotherBrain
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
-        unless args == ["configure"]
+        if (args & ["configure", "help", "version"]).empty?
           setup(configure(opts))
         end
         
@@ -49,7 +49,7 @@ module MotherBrain
     # @see {InvokerBase}
     def initialize(args = [], options = {}, config = {})
       super
-      unless config[:current_task].try(:name) == "configure"
+      unless ["configure", "help", "version"].include? config[:current_task].try(:name)
         self.class.setup(self.context)
       end
     end

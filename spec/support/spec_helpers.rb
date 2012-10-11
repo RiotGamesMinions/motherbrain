@@ -34,6 +34,7 @@ module MotherBrain
     end
 
     def generate_valid_config(path)
+      FileUtils.rm_rf(path)
       MB::Config.new.tap do |mb|
         mb.chef_api_url = "https://api.opscode.com/organizations/vialstudio"
         mb.chef_api_client = "reset"
@@ -48,6 +49,7 @@ module MotherBrain
     end
 
     def generate_invalid_config(path)
+      FileUtils.rm_rf(path)
       MB::Config.new.save(path)
     end
 

@@ -34,7 +34,7 @@ module MotherBrain
 
     def initialize(args = [], options = {}, config = {})
       super
-      unless config[:current_task].try(:name) == "configure"
+      unless ["configure", "help", "version"].include? config[:current_task].try(:name)
         @context = self.class.configure(self.options)
       end
     end
