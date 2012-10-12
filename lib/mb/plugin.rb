@@ -14,9 +14,7 @@ module MotherBrain
         chef_conn   = context.chef_conn
         environment = context.environment
 
-        lambda do |config, chef_conn, environment, &block|
-          self.new(chef_conn, environment, &block)
-        end.call(config, chef_conn, environment, &block)
+        new(chef_conn, environment, &block)
       rescue => e
         raise PluginLoadError, e
       end
