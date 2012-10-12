@@ -78,6 +78,11 @@ module MotherBrain
       self.groups.add(group)
     end
 
+    # @param [MB::Command] command
+    def add_command(command)
+      self.commands.add(command)
+    end
+
     private
 
       attr_reader :environment
@@ -86,7 +91,7 @@ module MotherBrain
       def dsl_eval(&block)
         self.attributes = CleanRoom.new(self, environment, chef_conn, &block).attributes
         self
-      end      
+      end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
@@ -113,6 +118,10 @@ module MotherBrain
 
       def group(&block)
         component.add_group Group.new(environment, chef_conn, &block)
+      end
+
+      def command(&block)
+        component.add_command Command.new(component, &block)
       end
 
       private
