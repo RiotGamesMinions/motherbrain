@@ -35,15 +35,6 @@ module MotherBrain
 
               plugin.add_component(component)
             end
-
-            Component::CleanRoom.class_eval do
-              define_method :group do |&block|
-                group = Group.new(environment, chef_conn)
-                group.dsl_eval(&block)
-
-                component.add_group(group)
-              end
-            end
           end
           
           plugin.dsl_eval(&block)

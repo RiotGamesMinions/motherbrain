@@ -7,9 +7,15 @@ module MotherBrain
     attr_reader :groups
     attr_reader :commands
 
-    def initialize
+    def initialize(environment, chef_conn, &block)
+      @environment = environment
+      @chef_conn = chef_conn
       @groups   = Set.new
       @commands = Set.new
+
+      if block_given?
+        dsl_eval(&block)
+      end
     end
 
     # @return [Symbol]
@@ -72,17 +78,26 @@ module MotherBrain
       self.groups.add(group)
     end
 
-    def dsl_eval(&block)
-      self.attributes = CleanRoom.new(&block).attributes
-      self
-    end
+    private
+
+      attr_reader :environment
+      attr_reader :chef_conn
+
+      def dsl_eval(&block)
+        self.attributes = CleanRoom.new(self, environment, chef_conn, &block).attributes
+        self
+      end      
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom
       include Mixin::SimpleAttributes
 
-      def initialize(&block)
+      def initialize(component, environment, chef_conn, &block)
+        @component = component
+        @environment = environment
+        @chef_conn = chef_conn
+
         instance_eval(&block)
       end
 
@@ -95,6 +110,16 @@ module MotherBrain
       def description(value)
         set(:description, value, kind_of: String, required: true)
       end
+
+      def group(&block)
+        component.add_group Group.new(environment, chef_conn, &block)
+      end
+
+      private
+
+        attr_reader :component
+        attr_reader :environment
+        attr_reader :chef_conn
     end
   end
 end
