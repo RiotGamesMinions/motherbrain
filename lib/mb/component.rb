@@ -1,8 +1,16 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Component
-    include RealObject
+    include Mixin::SimpleAttributes
     include DynamicGears
+
+    attr_reader :groups
+    attr_reader :commands
+
+    def initialize
+      @groups   = Set.new
+      @commands = Set.new
+    end
 
     # @return [Symbol]
     def id
@@ -11,20 +19,12 @@ module MotherBrain
 
     # @param [#to_sym] name
     def group(name)
-      self.attributes[:groups][name.to_sym]
-    end
-
-    def groups
-      self.attributes[:groups].values
+      self.groups.find { |group| group.name == name }
     end
 
     # @param [#to_sym] name
     def command(name)
-      self.attributes[:commands][name.to_sym]
-    end
-
-    def commands
-      self.attributes[:commands].values
+      self.commands.find { |command| command.name == name }
     end
 
     # Run a command of the given name on the component.
@@ -67,23 +67,34 @@ module MotherBrain
         end
       end
     end
-  end
 
-  # @author Jamie Winsor <jamie@vialstudios.com>
-  # @api private
-  class ComponentProxy
-    include ProxyObject
-    include PluginDSL::Commands
-    include PluginDSL::Groups
-    include PluginDSL::Gears
-
-    # @param [String] value
-    def description(value)
-      set(:description, value, kind_of: String, required: true)
+    def add_group(group)
+      self.groups.add(group)
     end
 
-    def attributes
-      super.merge!(commands: self.commands, groups: self.groups)
+    def dsl_eval(&block)
+      self.attributes = CleanRoom.new(&block).attributes
+      self
+    end
+
+    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @api private
+    class CleanRoom
+      include Mixin::SimpleAttributes
+
+      def initialize(&block)
+        instance_eval(&block)
+      end
+
+      # @param [String] value
+      def name(value)
+        set(:name, value, kind_of: String, required: true)
+      end
+
+      # @param [String] value
+      def description(value)
+        set(:description, value, kind_of: String, required: true)
+      end
     end
   end
 end
