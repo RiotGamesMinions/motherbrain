@@ -1,13 +1,16 @@
 require 'spec_helper'
 
 describe MB::Group do
+  let(:environment) { "mb-test" }
+  let(:chef_conn) { double('chef_conn') }
+
   describe "ClassMethods" do
     subject { MB::Group }
 
     describe "::new" do
       context "given a block with multiple recipe calls" do
         it "adds each recipe to the array of recipes on the instantiated Group" do
-          obj = subject.new(@context) do
+          obj = subject.new(environment, chef_conn) do
             recipe "bacon::default"
             recipe "bacon::database"
           end
@@ -20,7 +23,7 @@ describe MB::Group do
 
       context "given a block with multiple role calls" do
         it "adds each role to the array of roles on the instantiated Group" do
-          obj = subject.new(@context) do
+          obj = subject.new(environment, chef_conn) do
             role "roles_are_evil"
             role "stop_using_roles"
           end
@@ -34,7 +37,7 @@ describe MB::Group do
       context "when an attribute of the same name is defined" do
         it "raises a DuplicateGroup error" do
           lambda {
-            group = subject.new(@context) do
+            subject.new(environment, chef_conn) do
               chef_attribute "pvpnet.database.master", true
               chef_attribute "pvpnet.database.master", false
             end
@@ -46,7 +49,7 @@ describe MB::Group do
 
   describe "#name" do
     subject do
-      MB::Group.new(@context) do
+      MB::Group.new(environment, chef_conn) do
         name "master_database"
       end
     end
@@ -58,7 +61,7 @@ describe MB::Group do
 
   describe "#description" do
     subject do
-      MB::Group.new(@context) do
+      MB::Group.new(environment, chef_conn) do
         description "some description"
       end
     end
@@ -70,7 +73,7 @@ describe MB::Group do
 
   describe "#recipes" do
     subject do
-      MB::Group.new(@context) do
+      MB::Group.new(environment, chef_conn) do
         recipe "pvpnet::default"
         recipe "pvpnet::database"
         recipe "pvpnet::app"
@@ -90,7 +93,7 @@ describe MB::Group do
 
     context "when a recipe of the same name is defined" do
       subject do
-        MB::Group.new(@context) do
+        MB::Group.new(environment, chef_conn) do
           recipe "pvpnet::default"
           recipe "pvpnet::default"
         end
@@ -104,7 +107,7 @@ describe MB::Group do
 
   describe "#roles" do
     subject do
-      MB::Group.new(@context) do
+      MB::Group.new(environment, chef_conn) do
         role "stop"
         role "fucking"
         role "using"
@@ -126,7 +129,7 @@ describe MB::Group do
 
     context "when a role of the same name is defined" do
       subject do
-        MB::Group.new(@context) do
+        MB::Group.new(environment, chef_conn) do
           role "asshole_role"
           role "asshole_role"
         end
@@ -140,7 +143,7 @@ describe MB::Group do
 
   describe "#chef_attributes" do
     subject do
-      MB::Group.new(@context) do
+      MB::Group.new(environment, chef_conn) do
         chef_attribute "pvpnet.database.master", true
         chef_attribute "pvpnet.database.slave", false
       end
@@ -164,52 +167,52 @@ describe MB::Group do
   describe "#search_query" do
     context "with one chef attribute" do
       subject do
-        MB::Group.new(@context) do
+        MB::Group.new(environment, chef_conn) do
           chef_attribute "pvpnet.database.master", true
         end
       end
 
       it "returns one key:value search string" do
-        subject.search_query("test").should eql("chef_environment:test AND pvpnet_database_master:true")
+        subject.search_query.should eql("chef_environment:#{environment} AND pvpnet_database_master:true")
       end
     end
 
     context "with multiple chef attributes" do
       subject do
-        MB::Group.new(@context) do
+        MB::Group.new(environment, chef_conn) do
           chef_attribute "pvpnet.database.master", true
           chef_attribute "pvpnet.database.slave", false
         end
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query("test").should eql("chef_environment:test AND pvpnet_database_master:true AND pvpnet_database_slave:false")
+        subject.search_query.should eql("chef_environment:#{environment} AND pvpnet_database_master:true AND pvpnet_database_slave:false")
       end
     end
 
     context "with multiple recipes" do
       subject do
-        MB::Group.new(@context) do
+        MB::Group.new(environment, chef_conn) do
           recipe "pvpnet::default"
           recipe "pvpnet::database"
         end
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query("test").should eql("chef_environment:test AND run_list:recipe\\[pvpnet\\:\\:default\\] AND run_list:recipe\\[pvpnet\\:\\:database\\]")
+        subject.search_query.should eql("chef_environment:#{environment} AND run_list:recipe\\[pvpnet\\:\\:default\\] AND run_list:recipe\\[pvpnet\\:\\:database\\]")
       end
     end
 
     context "with multiple roles" do
       subject do
-        MB::Group.new(@context) do
+        MB::Group.new(environment, chef_conn) do
           role "app_server"
           role "database_server"
         end
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query("test").should eql("chef_environment:test AND run_list:role\\[app_server\\] AND run_list:role\\[database_server\\]")
+        subject.search_query.should eql("chef_environment:#{environment} AND run_list:role\\[app_server\\] AND run_list:role\\[database_server\\]")
       end
     end
   end

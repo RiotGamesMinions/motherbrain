@@ -7,12 +7,18 @@ module MotherBrain
     attr_reader :recipes
     attr_reader :chef_attributes
 
-    def initialize(environment, chef_conn)
+    # @param [String] environment
+    # @param [Ridley::Connection] chef_conn
+    def initialize(environment, chef_conn, &block)
       @environment     = environment
       @chef_conn       = chef_conn
       @recipes         = Set.new
       @roles           = Set.new
       @chef_attributes = HashWithIndifferentAccess.new
+
+      if block_given?
+        dsl_eval(&block)
+      end
     end
 
     # @return [Symbol]
@@ -65,7 +71,7 @@ module MotherBrain
 
     def add_chef_attribute(key, value)
       if chef_attribute(key).present?
-        raise DuplicateChefAttribute, "An attribute '#{attr_key}' has already been defined on group '#{attributes[:name]}'"
+        raise DuplicateChefAttribute, "An attribute '#{key}' has already been defined on group '#{attributes[:name]}'"
       end
 
       self.chef_attributes[key] = value
