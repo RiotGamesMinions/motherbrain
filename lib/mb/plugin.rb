@@ -13,31 +13,9 @@ module MotherBrain
         config      = context.config
         chef_conn   = context.chef_conn
         environment = context.environment
-        plugin = nil
 
         lambda do |config, chef_conn, environment, &block|
-          plugin = self.new
-
-          Plugin::CleanRoom.class_eval do
-            component = nil
-
-            define_method :depends do |name, constraint|
-              plugin.add_dependency(name, constraint)
-            end
-
-            define_method :command do |&block|
-              plugin.add_command Command.new(context, &block)
-            end
-
-            define_method :component do |&block|
-              component = Component.new
-              component.dsl_eval(&block)
-
-              plugin.add_component(component)
-            end
-          end
-          
-          plugin.dsl_eval(&block)
+          self.new(chef_conn, environment, &block)
         end.call(config, chef_conn, environment, &block)
       rescue => e
         raise PluginLoadError, e
@@ -69,10 +47,16 @@ module MotherBrain
     attr_reader :commands
     attr_reader :dependencies
 
-    def initialize
+    def initialize(environment, chef_conn, &block)
+      @environment  = environment
+      @chef_conn    = chef_conn
       @components   = Set.new
       @commands     = Set.new
       @dependencies = HashWithIndifferentAccess.new
+
+      if block_given?
+        dsl_eval(&block)
+      end
     end
 
     # @return [Symbol]
@@ -159,10 +143,15 @@ module MotherBrain
       self.dependencies[name.to_s] = Solve::Constraint.new(constraint)
     end
 
-    def dsl_eval(&block)
-      self.attributes = CleanRoom.new(&block).attributes
-      self
-    end
+    private
+
+      attr_reader :environment
+      attr_reader :chef_conn
+
+      def dsl_eval(&block)
+        self.attributes = CleanRoom.new(self, environment, chef_conn, &block).attributes
+        self
+      end
 
     # A clean room bind the Plugin DSL syntax to. This clean room can later to
     # populate an instance of Plugin.
@@ -172,7 +161,10 @@ module MotherBrain
     class CleanRoom
       include Mixin::SimpleAttributes
 
-      def initialize(&block)
+      def initialize(plugin, environment, chef_conn, &block)
+        @plugin = plugin
+        @environment = environment
+        @chef_conn = chef_conn
         instance_eval(&block)
       end
 
@@ -205,6 +197,24 @@ module MotherBrain
       def email(value)
         set(:email, value, kind_of: [String, Array])
       end
+
+      def depends(name, constraint)
+        plugin.add_dependency(name, constraint)
+      end
+
+      def command(&block)
+        plugin.add_command Command.new(plugin, &block)
+      end
+
+      def component(&block)
+        plugin.add_component Component.new(environment, chef_conn, &block)
+      end
+
+      private
+
+        attr_reader :plugin
+        attr_reader :environment
+        attr_reader :chef_conn
     end
   end
 end
