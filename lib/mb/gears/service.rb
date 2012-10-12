@@ -5,6 +5,16 @@ module MotherBrain
       include MB::Gear
       register_gear :service
 
+      attr_reader :actions
+
+      def initialize(&block)
+        @actions = Hash.new
+
+        if block_given?
+          dsl_eval(&block)
+        end
+      end
+
       def run_action(name)
         runner = ActionRunner.new(self, action(name))
         self.context.runners ||= Array.new
@@ -33,37 +43,49 @@ module MotherBrain
         end
       end
 
-      protected
+      def action(name)
+        self.actions.fetch(name) { 
+          raise ActionNotFound, "#{self.class.keyword} '#{self.name}' does not have the action '#{name}'"
+        }
+      end
 
-        def action(name)
-          self.actions.fetch(name) { 
-            raise ActionNotFound, "#{self.class.keyword} '#{self.name}' does not have the action '#{name}'"
-          }
-        end
-    end
-
-    # @author Jamie Winsor <jamie@vialstudios.com>
-    # @api private
-    class ServiceProxy
-      include ProxyObject
-
-      def action(name, &block)
+      def add_action(name, proc)
         if self.actions.has_key?(name)
           raise DuplicateAction, "Action '#{name}' already defined on service '#{self.attributes[:name]}'"
         end
 
-        self.actions[name] = block
       end
 
-      def attributes
-        super.merge!(actions: self.actions)
-      end
+      private
 
-      protected
-
-        def actions
-          @actions ||= HashWithIndifferentAccess.new
+        def dsl_eval(&block)
+          self.attributes = CleanRoom.new(self, &block).attributes
+          self
         end
+
+      # @author Jamie Winsor <jamie@vialstudios.com>
+      # @api private
+      class CleanRoom
+        include Mixin::SimpleAttributes
+
+        def initialize(gear, &block)
+          @gear = gear
+          instance_eval(&block)
+        end
+
+        # @param [String] value
+        def name(value)
+          set(:name, value, kind_of: String, required: true)
+        end
+
+        def action(name, &block)
+          gear.add_action(name, block)
+        end
+
+        private
+
+          attr_reader :gear
+      end
     end
   end
 end

@@ -93,6 +93,26 @@ module MotherBrain
         all.find { |klass| klass.keyword == keyword }
       end
 
+      def collection_name(klass)
+        klass.keyword.to_s.pluralize.to_sym
+      end
+
+      def element_name(klass)
+        klass.keyword
+      end
+
+      def add_fun(klass)
+        "add_#{element_name(klass)}".to_sym
+      end
+
+      def get_fun(klass)
+        element_name(klass)
+      end
+
+      def collection_fun(klass)
+        collection_name(klass).to_sym
+      end
+
       private
 
         # Determine if the given keyword is valid
@@ -123,7 +143,7 @@ module MotherBrain
 
     included do
       class_eval do
-        include RealObject
+        include Mixin::SimpleAttributes
       end
     end
 

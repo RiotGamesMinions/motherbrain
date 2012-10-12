@@ -2,7 +2,6 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Component
     include Mixin::SimpleAttributes
-    include DynamicGears
 
     attr_reader :groups
     attr_reader :commands
@@ -83,6 +82,35 @@ module MotherBrain
       self.commands.add(command)
     end
 
+    Gear.all.each do |klass|
+      element_name    = Gear.element_name(klass)
+      collection_name = Gear.collection_name(klass)
+      collection_fun  = Gear.collection_fun(klass)
+      add_fun         = Gear.add_fun(klass)
+      get_fun         = Gear.get_fun(klass)
+
+      define_method collection_fun do
+        if instance_variable_defined?("@#{collection_name}")
+          instance_variable_get("@#{collection_name}")
+        else
+          instance_variable_set("@#{collection_name}", Set.new)
+        end
+      end
+      collection_fun
+
+      define_method add_fun do |object|
+        unless send(get_fun, object.name).nil?
+          raise DuplicateGear, "#{element_name.capitalize} '#{object.name}' already defined"
+        end
+
+        send(collection_fun).add(object)
+      end
+
+      define_method get_fun do |name|
+        send(collection_fun).find { |obj| obj.name == name }
+      end
+    end
+
     private
 
       attr_reader :environment
@@ -122,6 +150,12 @@ module MotherBrain
 
       def command(&block)
         component.add_command Command.new(component, &block)
+      end
+
+      Gear.all.each do |klass|
+        define_method Gear.element_name(klass) do |&block|
+          component.send Gear.add_fun(klass), klass.new(&block)
+        end
       end
 
       private

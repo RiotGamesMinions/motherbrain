@@ -68,16 +68,12 @@ describe MB::Gear::Service do
       end
     end
 
-    let(:start_action) do
-      subject.attributes["actions"]["start"]
-    end
-
     it "returns a Gear::ActionRunner" do
       subject.run_action(:start).should be_a(MB::Gear::ActionRunner)
     end
 
     it "has sets the action to the one on the Service Gear of the given name" do
-      subject.run_action(:start).action.should eql(start_action)
+      subject.run_action(:start).action.should be_a(Proc)
     end
 
     context "given an action that does not exist" do

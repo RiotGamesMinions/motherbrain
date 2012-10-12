@@ -1,8 +1,10 @@
 require 'spec_helper'
 
 describe MB::Gear::ActionRunner do
+  let(:environment) { "mb-test" }
+  let(:chef_conn) { double('chef_conn') }
   let(:component) do
-    MB::Component.new(@context) do
+    MB::Component.new(environment, chef_conn) do
       group do
         name "master"
       end

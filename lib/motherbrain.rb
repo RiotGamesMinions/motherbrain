@@ -27,7 +27,6 @@ module MotherBrain
   autoload :Config, 'mb/config'
   autoload :ConfigValidator, 'mb/config_validator'
   autoload :Context, 'mb/context'
-  autoload :DynamicGears, 'mb/dynamic_gears'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
   autoload :Gear, 'mb/gear'
   autoload :Group, 'mb/group'
@@ -35,11 +34,8 @@ module MotherBrain
   autoload :Invoker, 'mb/invoker'
   autoload :Mixin, 'mb/mixin'
   autoload :Plugin, 'mb/plugin'
-  autoload :PluginDSL, 'mb/plugin_dsl'
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
-  autoload :ProxyObject, 'mb/proxy_object'
-  autoload :RealObject, 'mb/real_object'
   autoload :ChefRunner, 'mb/chef_runner'
 
   class << self

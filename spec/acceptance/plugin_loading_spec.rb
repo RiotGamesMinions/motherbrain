@@ -154,8 +154,8 @@ describe "loading a plugin", type: "acceptance" do
     it { subject.commands.should each be_a(MB::Command) }
 
     describe "commands" do
-      it { subject.commands[0].name.should eql("start") }
-      it { subject.commands[1].name.should eql("stop") }
+      it { subject.command("start").should_not be_nil }
+      it { subject.command("stop").should_not be_nil }
 
       it "invokes an async command" do
         pending

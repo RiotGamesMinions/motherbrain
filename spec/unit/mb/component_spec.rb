@@ -58,4 +58,24 @@ describe MB::Component do
   describe "#invoke" do
     pending
   end
+
+  describe "#service" do
+    subject do
+      MB::Component.new(environment, chef_conn) do
+        name "activemq"
+
+        service do
+          name "masters"
+        end
+      end
+    end
+
+    it "returns a Set of services" do
+      subject.services.should be_a(Set)
+    end
+
+    it "contains each service defined" do
+      subject.services.should have(1).item
+    end
+  end
 end
