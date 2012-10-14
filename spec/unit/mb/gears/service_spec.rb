@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe MB::Gear::Service do
+  let(:component) { double('component', name: 'test-component') }
+
   describe "Class" do
     subject { MB::Gear::Service }
 
@@ -14,7 +16,7 @@ describe MB::Gear::Service do
 
     describe "::new" do
       it "sets the given name attribute" do
-        obj = subject.new(@context) do
+        obj = subject.new(component) do
           name "activemq"
         end
 
@@ -24,7 +26,7 @@ describe MB::Gear::Service do
       context "when an action of the given name has already been defined" do
         it "raises a DuplicateAction error" do
           lambda {
-            subject.new(@context) do
+            subject.new(component) do
               action :start do; end
               action :start do; end
             end
@@ -35,9 +37,9 @@ describe MB::Gear::Service do
   end
 
   subject do
-    MB::Gear::Service.new(@context) do
+    MB::Gear::Service.new(component) do
       action :start do
-        set_attribute("key.one", true)
+        node_attribute("key.one", true)
       end
 
       action :stop do
@@ -47,45 +49,76 @@ describe MB::Gear::Service do
   end
 
   describe "#actions" do
-    it "returns a Hash of service names and procs for each action" do
-      subject.actions.should be_a(Hash)
+    it "returns a Set of Gear::Action::Service objects for each defined action" do
+      subject.actions.should be_a(Set)
       subject.actions.should have(2).items
-      subject.actions.should have_key(:start)
-      subject.actions.should have_key(:stop)
-      subject.actions[:start].should be_a(Proc)
-      subject.actions[:stop].should be_a(Proc)
+      subject.actions.should each be_a(MB::Gear::Service::Action)
     end
   end
 
-  describe "#run_action" do
+  describe "#action" do
     subject do
-      MB::Gear::Service.new(@context) do
+      MB::Gear::Service.new(component) do
         name "activemq"
 
         action :start do
-          set_attribute("key.one", true)
+          node_attribute("key.one", true)
         end
       end
     end
 
-    it "returns a Gear::ActionRunner" do
-      subject.run_action(:start).should be_a(MB::Gear::ActionRunner)
-    end
-
-    it "has sets the action to the one on the Service Gear of the given name" do
-      subject.run_action(:start).action.should be_a(Proc)
+    it "returns a Gear::Service::Action" do
+      subject.action(:start).should be_a(MB::Gear::Service::Action)
     end
 
     context "given an action that does not exist" do
       it "raises an ActionNotFound error" do
         lambda {
-          subject.run_action(:stop)
+          subject.action(:stop)
         }.should raise_error(MB::ActionNotFound)
       end
     end
   end
 
-  describe "#set_attribute" do
+  describe "#node_attribute" do
     pending
+  end
+
+  describe MB::Gear::Service::Action do
+    let(:id) { :start }
+    subject { MB::Gear::Service::Action.new(component, id) }
+
+    before(:each) do
+      component.stub(:group).with("master").and_return(double('master_group'))
+    end
+
+    describe "#on" do
+      it "returns self" do
+        subject.on("master").should eql(subject)
+      end
+
+      it "adds a group to the set of target groups" do
+        subject.on("master").groups.should have(1).item
+      end
+
+      it "does not add duplicate target groups" do
+        subject.on("master")
+        subject.on("master")
+
+        subject.groups.should have(1).item
+      end
+
+      context "given a group that is not part of the gear's parent" do
+        before(:each) do
+          component.stub(:group).with("not_exist").and_return(nil)
+        end
+
+        it "raises a GroupNotFound error" do
+          lambda {
+            subject.on("not_exist")
+          }.should raise_error(MB::GroupNotFound)
+        end
+      end
+    end
   end
 end

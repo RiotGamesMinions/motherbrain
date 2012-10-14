@@ -154,7 +154,7 @@ module MotherBrain
 
       Gear.all.each do |klass|
         define_method Gear.element_name(klass) do |&block|
-          component.send Gear.add_fun(klass), klass.new(&block)
+          component.send Gear.add_fun(klass), klass.new(component, &block)
         end
       end
 
