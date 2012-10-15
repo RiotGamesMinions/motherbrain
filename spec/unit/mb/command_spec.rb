@@ -1,12 +1,14 @@
 require 'spec_helper'
 
-describe MB::Command do  
+describe MB::Command do
+  let(:scope) { double('plugin') }
+
   describe "ClassMethods" do
     subject { MB::Command }
 
     describe "::new" do
       before(:each) do
-        @command = subject.new(@context) do
+        @command = subject.new(@context, scope) do
           name "start"
           description "start all services"
 

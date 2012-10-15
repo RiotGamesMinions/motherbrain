@@ -25,7 +25,10 @@ Spork.prefork do
           server_url: "http://chef.riotgames.com",
           client_name: "fake",
           client_key: File.join(fixtures_path, "fake_key.pem")
-        }
+        },
+        ssh_user: 'reset',
+        ssh_password: 'whatever',
+        ssh_key: nil
       )
       @context = MB::Context.new(@config)
     end
