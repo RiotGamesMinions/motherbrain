@@ -1,6 +1,9 @@
 require 'spec_helper'
 
 describe MB::Component do
+  let(:environment) { 'mb-test' }
+  let(:chef_conn) { double('chef_conn') }
+
   subject do
     MB::Component.new(@context) do
       name "activemq"
@@ -22,8 +25,8 @@ describe MB::Component do
       end
     end
 
-    it "returns an array of Group objects" do
-      subject.groups.should be_a(Array)
+    it "returns a Set of Group objects" do
+      subject.groups.should be_a(Set)
       subject.groups.should each be_a(MB::Group)
     end
   end
@@ -46,5 +49,33 @@ describe MB::Component do
 
   describe "#nodes" do
     pending
+  end
+
+  describe "#add_group" do
+    pending
+  end
+
+  describe "#invoke" do
+    pending
+  end
+
+  describe "#service" do
+    subject do
+      MB::Component.new(@context) do
+        name "activemq"
+
+        service do
+          name "masters"
+        end
+      end
+    end
+
+    it "returns a Set of services" do
+      subject.services.should be_a(Set)
+    end
+
+    it "contains each service defined" do
+      subject.services.should have(1).item
+    end
   end
 end

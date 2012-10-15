@@ -1,6 +1,13 @@
 require 'spec_helper'
 
 describe MB::Group do
+  let(:environment) { "mb-test" }
+
+  before(:each) do
+    @context = @context.dup
+    @context.environment = environment
+  end
+
   describe "ClassMethods" do
     subject { MB::Group }
 
@@ -34,7 +41,7 @@ describe MB::Group do
       context "when an attribute of the same name is defined" do
         it "raises a DuplicateGroup error" do
           lambda {
-            group = subject.new(@context) do
+            subject.new(@context) do
               chef_attribute "pvpnet.database.master", true
               chef_attribute "pvpnet.database.master", false
             end
@@ -170,7 +177,7 @@ describe MB::Group do
       end
 
       it "returns one key:value search string" do
-        subject.search_query("test").should eql("chef_environment:test AND pvpnet_database_master:true")
+        subject.search_query.should eql("chef_environment:#{environment} AND pvpnet_database_master:true")
       end
     end
 
@@ -183,7 +190,7 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query("test").should eql("chef_environment:test AND pvpnet_database_master:true AND pvpnet_database_slave:false")
+        subject.search_query.should eql("chef_environment:#{environment} AND pvpnet_database_master:true AND pvpnet_database_slave:false")
       end
     end
 
@@ -196,7 +203,7 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query("test").should eql("chef_environment:test AND run_list:recipe\\[pvpnet\\:\\:default\\] AND run_list:recipe\\[pvpnet\\:\\:database\\]")
+        subject.search_query.should eql("chef_environment:#{environment} AND run_list:recipe\\[pvpnet\\:\\:default\\] AND run_list:recipe\\[pvpnet\\:\\:database\\]")
       end
     end
 
@@ -209,7 +216,7 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query("test").should eql("chef_environment:test AND run_list:role\\[app_server\\] AND run_list:role\\[database_server\\]")
+        subject.search_query.should eql("chef_environment:#{environment} AND run_list:role\\[app_server\\] AND run_list:role\\[database_server\\]")
       end
     end
   end

@@ -3,8 +3,8 @@ require 'spec_helper'
 describe "loading a plugin", type: "acceptance" do
   let(:context) { MB::Context.new(@config) }
 
-  let(:dsl_content) do
-    <<-EOH
+  let(:dsl_body) do
+    proc {
       name "pvpnet"
       version "1.2.3"
       description "whatever"
@@ -39,11 +39,11 @@ describe "loading a plugin", type: "acceptance" do
           name "broker"
           
           action :start do
-            set_attribute('activemq.broker.status', true)
+            node_attribute('activemq.broker.status', true)
           end
 
           action :stop do
-            set_attribute('activemq.broker.status', false)
+            node_attribute('activemq.broker.status', false)
           end
         end
 
@@ -70,11 +70,11 @@ describe "loading a plugin", type: "acceptance" do
           end
         end
       end
-    EOH
+    }
   end
 
   before(:each) do
-    @plugin = MB::Plugin.load(context, dsl_content)
+    @plugin = MB::Plugin.load(context, &dsl_body)
   end
 
   subject { @plugin }
@@ -154,8 +154,8 @@ describe "loading a plugin", type: "acceptance" do
     it { subject.commands.should each be_a(MB::Command) }
 
     describe "commands" do
-      it { subject.commands[0].name.should eql("start") }
-      it { subject.commands[1].name.should eql("stop") }
+      it { subject.command("start").should_not be_nil }
+      it { subject.command("stop").should_not be_nil }
 
       it "invokes an async command" do
         pending

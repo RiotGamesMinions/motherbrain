@@ -76,11 +76,6 @@ module MotherBrain
         respond_to: validate_respond_to
       }.freeze
 
-      # @return [HashWithIndifferentAccess]
-      def attributes
-        @attributes ||= HashWithIndifferentAccess.new
-      end
-
       # @param [Symbol] key
       # @param [Object] value
       # @param [Hash] validation
@@ -98,6 +93,17 @@ module MotherBrain
       def get(key)
         self.attributes[key.to_sym]
       end
+
+      protected
+
+        # @return [HashWithIndifferentAccess]
+        def attributes
+          @attributes ||= HashWithIndifferentAccess.new
+        end
+
+        def attributes=(hash)
+          @attributes = HashWithIndifferentAccess.new(hash.to_hash)
+        end
 
       private
 

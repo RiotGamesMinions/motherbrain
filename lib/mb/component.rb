@@ -1,8 +1,18 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Component
-    include RealObject
-    include DynamicGears
+  class Component < ContextualModel
+    attr_reader :groups
+    attr_reader :commands
+
+    def initialize(context, &block)
+      super(context)
+      @groups   = Set.new
+      @commands = Set.new
+
+      if block_given?
+        dsl_eval(&block)
+      end
+    end
 
     # @return [Symbol]
     def id
@@ -11,20 +21,12 @@ module MotherBrain
 
     # @param [#to_sym] name
     def group(name)
-      self.attributes[:groups][name.to_sym]
-    end
-
-    def groups
-      self.attributes[:groups].values
+      self.groups.find { |group| group.name == name }
     end
 
     # @param [#to_sym] name
     def command(name)
-      self.attributes[:commands][name.to_sym]
-    end
-
-    def commands
-      self.attributes[:commands].values
+      self.commands.find { |command| command.name == name }
     end
 
     # Run a command of the given name on the component.
@@ -67,23 +69,89 @@ module MotherBrain
         end
       end
     end
-  end
 
-  # @author Jamie Winsor <jamie@vialstudios.com>
-  # @api private
-  class ComponentProxy
-    include ProxyObject
-    include PluginDSL::Commands
-    include PluginDSL::Groups
-    include PluginDSL::Gears
-
-    # @param [String] value
-    def description(value)
-      set(:description, value, kind_of: String, required: true)
+    def add_group(group)
+      self.groups.add(group)
     end
 
-    def attributes
-      super.merge!(commands: self.commands, groups: self.groups)
+    # @param [MB::Command] command
+    def add_command(command)
+      self.commands.add(command)
+    end
+
+    Gear.all.each do |klass|
+      element_name    = Gear.element_name(klass)
+      collection_name = Gear.collection_name(klass)
+      collection_fun  = Gear.collection_fun(klass)
+      add_fun         = Gear.add_fun(klass)
+      get_fun         = Gear.get_fun(klass)
+
+      define_method collection_fun do
+        if instance_variable_defined?("@#{collection_name}")
+          instance_variable_get("@#{collection_name}")
+        else
+          instance_variable_set("@#{collection_name}", Set.new)
+        end
+      end
+      collection_fun
+
+      define_method add_fun do |object|
+        unless send(get_fun, object.name).nil?
+          raise DuplicateGear, "#{element_name.capitalize} '#{object.name}' already defined"
+        end
+
+        send(collection_fun).add(object)
+      end
+
+      define_method get_fun do |name|
+        send(collection_fun).find { |obj| obj.name == name }
+      end
+    end
+
+    private
+
+      def dsl_eval(&block)
+        self.attributes = CleanRoom.new(context, self, &block).attributes
+        self
+      end
+
+    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @api private
+    class CleanRoom < ContextualModel
+      def initialize(context, component, &block)
+        super(context)
+        @component = component
+
+        instance_eval(&block)
+      end
+
+      # @param [String] value
+      def name(value)
+        set(:name, value, kind_of: String, required: true)
+      end
+
+      # @param [String] value
+      def description(value)
+        set(:description, value, kind_of: String, required: true)
+      end
+
+      def group(&block)
+        component.add_group Group.new(context, &block)
+      end
+
+      def command(&block)
+        component.add_command Command.new(context, component, &block)
+      end
+
+      Gear.all.each do |klass|
+        define_method Gear.element_name(klass) do |&block|
+          component.send Gear.add_fun(klass), klass.new(context, component, &block)
+        end
+      end
+
+      private
+
+        attr_reader :component
     end
   end
 end
