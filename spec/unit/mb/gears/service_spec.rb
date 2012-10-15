@@ -96,28 +96,6 @@ describe MB::Gear::Service do
     end
   end
 
-  describe "#run_action" do
-    let(:action_1) { double('action_1', name: "start") }
-
-    before(:each) do
-      subject.add_action(action_1)
-    end
-
-    it "sends the message 'run' to the given action" do
-      action_1.should_receive(:run)
-
-      subject.run_action("start")
-    end
-
-    context "when an action of the given name does not exist" do
-      it "raises an ActionNotFound error" do
-        lambda {
-          subject.run_action("not_there")
-        }.should raise_error(MB::ActionNotFound)
-      end
-    end
-  end
-
   describe MB::Gear::Service::Action do
     let(:action_name) { :start }
 
@@ -145,7 +123,7 @@ describe MB::Gear::Service do
     end
 
     subject do
-      MB::Gear::Service::Action.new(action_name, component) do
+      MB::Gear::Service::Action.new(@context, action_name, component) do
         # block
       end
     end

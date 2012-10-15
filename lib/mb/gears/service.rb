@@ -34,6 +34,7 @@ module MotherBrain
 
         action
       end
+      alias_method :run_action, :action
 
       # Add a new action to this Service
       #
@@ -48,23 +49,13 @@ module MotherBrain
         self.actions.add(new_action)
       end
 
-      # Run the given action
-      #
-      # @param [String] name
-      #
-      # @raise [ActionNotFound] if there is no action of the given name defined
-      #
-      # @return [Boolean]
-      def run_action(name)
-        action(name).run
-      end
-
       private
 
         attr_reader :component
+        attr_reader :context
 
         def dsl_eval(&block)
-          self.attributes = CleanRoom.new(self, &block).attributes
+          self.attributes = CleanRoom.new(context, self, component, &block).attributes
           self
         end
 
@@ -75,11 +66,12 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class CleanRoom
-        include Mixin::SimpleAttributes
-
+      class CleanRoom < BasicCleanRoom
         # @param [MB::Component] component
-        def initialize(component, &block)
+        def initialize(context, service, component, &block)
+          super(context)
+
+          @service   = service
           @component = component
           instance_eval(&block)
         end
@@ -91,11 +83,12 @@ module MotherBrain
 
         # @param [String] name
         def action(name, &block)
-          component.add_action Action.new(name, component, &block)
+          service.add_action Action.new(context, name, component, &block)
         end
 
         private
 
+          attr_reader :service
           attr_reader :component
       end
 
@@ -111,16 +104,17 @@ module MotherBrain
         # @param [MB::Component] component
         #
         # @raise [ArgumentError] if no block is given
-        def initialize(name, component, &block)
+        def initialize(context, name, component, &block)
           unless block_given?
             raise ArgumentError, "block required for action '#{name}' on component '#{component.name}'"
           end
 
+          @context   = context
           @name      = name
           @groups    = Set.new
           @component = component
           @block     = block
-          @runner    = ActionRunner.new(self, component)
+          @runner    = ActionRunner.new(context, self, component)
         end
 
         # Run this action on all of the nodes in the given group
@@ -153,11 +147,12 @@ module MotherBrain
         # @return [Boolean]
         def run
           runner.instance_eval(&block)
-          true
+          self
         end
 
         private
 
+          attr_reader :context
           attr_reader :component
           attr_reader :runner
           attr_reader :block
@@ -165,9 +160,12 @@ module MotherBrain
         # @author Jamie Winsor <jamie@vialstudios.com>
         # @api private
         class ActionRunner
+          extend Forwardable
+
           # @param [Gear::Action] action
           # @param [MB::Component] component
-          def initialize(action, component)
+          def initialize(context, action, component)
+            @context   = context
             @action    = action
             @component = component
           end
@@ -178,10 +176,10 @@ module MotherBrain
           # @param [String] key
           # @param [Object] value
           def environment_attribute(key, value)
-            puts "Setting attribute '#{key}' to '#{value}' on #{component.environment}"
+            puts "Setting attribute '#{key}' to '#{value}' on #{self.environment}"
 
-            component.chef_conn.sync do
-              obj = environment.find!(component.environment)
+            self.chef_conn.sync do
+              obj = environment.find!(self.environment)
               obj.set_override_attribute(key, value)
               obj.save
             end
@@ -196,7 +194,7 @@ module MotherBrain
             action.nodes.each do |l_node|
               puts "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
 
-              component.chef_conn.sync do
+              self.chef_conn.sync do
                 obj = node.find!(l_node.name)
                 obj.set_override_attribute(key, value)
                 obj.save
@@ -208,6 +206,10 @@ module MotherBrain
 
             attr_reader :action
             attr_reader :component
+
+            def_delegator :context, :config
+            def_delegator :context, :chef_conn
+            def_delegator :context, :environment
         end
       end
     end

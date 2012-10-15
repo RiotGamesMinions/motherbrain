@@ -10,11 +10,7 @@ module MotherBrain
       #
       # @yieldreturn [MotherBrain::Plugin]
       def load(context, &block)
-        config      = context.config
-        chef_conn   = context.chef_conn
-        environment = context.environment
-
-        new(chef_conn, environment, &block)
+        new(context, &block)
       rescue => e
         raise PluginLoadError, e
       end
@@ -39,15 +35,16 @@ module MotherBrain
       end
     end
 
+    extend Forwardable
+
     include Mixin::SimpleAttributes
 
     attr_reader :components
     attr_reader :commands
     attr_reader :dependencies
 
-    def initialize(environment, chef_conn, &block)
-      @environment  = environment
-      @chef_conn    = chef_conn
+    def initialize(context, &block)
+      @context      = context
       @components   = Set.new
       @commands     = Set.new
       @dependencies = HashWithIndifferentAccess.new
@@ -143,11 +140,14 @@ module MotherBrain
 
     private
 
-      attr_reader :environment
-      attr_reader :chef_conn
+      attr_reader :context
+
+      def_delegator :context, :config
+      def_delegator :context, :chef_conn
+      def_delegator :context, :environment
 
       def dsl_eval(&block)
-        self.attributes = CleanRoom.new(self, environment, chef_conn, &block).attributes
+        self.attributes = CleanRoom.new(context, self, &block).attributes
         self
       end
 
@@ -156,13 +156,11 @@ module MotherBrain
     #
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom
-      include Mixin::SimpleAttributes
+    class CleanRoom < BasicCleanRoom
+      def initialize(context, plugin, &block)
+        super(context)
 
-      def initialize(plugin, environment, chef_conn, &block)
         @plugin = plugin
-        @environment = environment
-        @chef_conn = chef_conn
         instance_eval(&block)
       end
 
@@ -201,18 +199,16 @@ module MotherBrain
       end
 
       def command(&block)
-        plugin.add_command Command.new(plugin, &block)
+        plugin.add_command Command.new(context, plugin, &block)
       end
 
       def component(&block)
-        plugin.add_component Component.new(environment, chef_conn, &block)
+        plugin.add_component Component.new(context, &block)
       end
 
       private
 
         attr_reader :plugin
-        attr_reader :environment
-        attr_reader :chef_conn
     end
   end
 end

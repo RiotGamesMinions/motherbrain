@@ -1,14 +1,14 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Component
+    extend Forwardable
     include Mixin::SimpleAttributes
 
     attr_reader :groups
     attr_reader :commands
 
-    def initialize(environment, chef_conn, &block)
-      @environment = environment
-      @chef_conn = chef_conn
+    def initialize(context, &block)
+      @context  = context
       @groups   = Set.new
       @commands = Set.new
 
@@ -113,23 +113,23 @@ module MotherBrain
 
     private
 
-      attr_reader :environment
-      attr_reader :chef_conn
+      attr_reader :context
+
+      def_delegator :context, :config
+      def_delegator :context, :chef_conn
+      def_delegator :context, :environment
 
       def dsl_eval(&block)
-        self.attributes = CleanRoom.new(self, environment, chef_conn, &block).attributes
+        self.attributes = CleanRoom.new(context, self, &block).attributes
         self
       end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom
-      include Mixin::SimpleAttributes
-
-      def initialize(component, environment, chef_conn, &block)
+    class CleanRoom < BasicCleanRoom
+      def initialize(context, component, &block)
+        super(context)
         @component = component
-        @environment = environment
-        @chef_conn = chef_conn
 
         instance_eval(&block)
       end
@@ -145,11 +145,11 @@ module MotherBrain
       end
 
       def group(&block)
-        component.add_group Group.new(environment, chef_conn, &block)
+        component.add_group Group.new(context, &block)
       end
 
       def command(&block)
-        component.add_command Command.new(component, &block)
+        component.add_command Command.new(context, component, &block)
       end
 
       Gear.all.each do |klass|
@@ -161,8 +161,6 @@ module MotherBrain
       private
 
         attr_reader :component
-        attr_reader :environment
-        attr_reader :chef_conn
     end
   end
 end

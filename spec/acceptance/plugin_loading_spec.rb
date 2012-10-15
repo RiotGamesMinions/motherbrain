@@ -39,11 +39,11 @@ describe "loading a plugin", type: "acceptance" do
           name "broker"
           
           action :start do
-            set_attribute('activemq.broker.status', true)
+            node_attribute('activemq.broker.status', true)
           end
 
           action :stop do
-            set_attribute('activemq.broker.status', false)
+            node_attribute('activemq.broker.status', false)
           end
         end
 

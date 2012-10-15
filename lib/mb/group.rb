@@ -1,6 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Group
+    extend Forwardable
     include Mixin::SimpleAttributes
 
     attr_reader :roles
@@ -9,9 +10,8 @@ module MotherBrain
 
     # @param [String] environment
     # @param [Ridley::Connection] chef_conn
-    def initialize(environment, chef_conn, &block)
-      @environment     = environment
-      @chef_conn       = chef_conn
+    def initialize(context, &block)
+      @context         = context
       @recipes         = Set.new
       @roles           = Set.new
       @chef_attributes = HashWithIndifferentAccess.new
@@ -83,14 +83,17 @@ module MotherBrain
     end
 
     def dsl_eval(&block)
-      self.attributes = CleanRoom.new(self, &block).attributes
+      self.attributes = CleanRoom.new(context, self, &block).attributes
       self
     end
 
     private
 
-      attr_reader :environment
-      attr_reader :chef_conn
+      attr_reader :context
+
+      def_delegator :context, :config
+      def_delegator :context, :chef_conn
+      def_delegator :context, :environment
 
       def attribute_escape(value)
         value.gsub(/\./, "_")
@@ -102,11 +105,11 @@ module MotherBrain
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom
-      include Mixin::SimpleAttributes
-
-      def initialize(group, &block)
+    class CleanRoom < BasicCleanRoom
+      def initialize(context, group, &block)
+        super(context)
         @group = group
+
         instance_eval(&block)
       end
 
