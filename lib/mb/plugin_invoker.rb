@@ -28,9 +28,11 @@ module MotherBrain
         klass.class_eval do
           desc("nodes ENVIRONMENT", "List all nodes grouped by Component and Group")
           define_method(:nodes) do |environment|
+            plugin.send(:context).environment = environment
+
             MB.ui.say "Nodes in '#{environment}':"
 
-            nodes = plugin.nodes(environment).each do |component, groups|
+            nodes = plugin.nodes.each do |component, groups|
               groups.each do |group, nodes|
                 nodes.collect! { |node| "#{node[:automatic][:fqdn]} (#{node[:automatic][:ipaddress]})" }
               end

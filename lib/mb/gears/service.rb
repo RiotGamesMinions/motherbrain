@@ -174,7 +174,7 @@ module MotherBrain
           # @param [String] key
           # @param [Object] value
           def environment_attribute(key, value)
-            puts "Setting attribute '#{key}' to '#{value}' on #{self.environment}"
+            MB.ui.say "Setting attribute '#{key}' to '#{value}' on #{self.environment}"
 
             self.chef_conn.sync do
               obj = environment.find!(self.environment)
@@ -190,7 +190,7 @@ module MotherBrain
           # @param [Object] value
           def node_attribute(key, value)
             action.nodes.each do |l_node|
-              puts "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
+              MB.ui.say "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
 
               self.chef_conn.sync do
                 obj = node.find!(l_node.name)

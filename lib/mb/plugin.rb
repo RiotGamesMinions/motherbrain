@@ -110,10 +110,10 @@ module MotherBrain
     #   }
     #
     # @return [Hash]
-    def nodes(environment)
+    def nodes
       {}.tap do |nodes|
         self.components.each do |component|
-          nodes[component.name] = component.nodes(environment)
+          nodes[component.name] = component.nodes
         end
       end
     end

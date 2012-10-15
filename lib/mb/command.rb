@@ -74,6 +74,8 @@ module MotherBrain
         end
 
         actions = CleanRoom.new(context, scope, &block).actions
+        actions.map(&:run)
+
         nodes = actions.collect(&:nodes).flatten.uniq
 
         runner_options = {}.tap do |opts|
@@ -102,9 +104,11 @@ module MotherBrain
           @actions = Array.new
 
           Gear.all.each do |klass|
+            clean_room = self
+
             klass.instance_eval do
               define_method :run_action do |name|
-                actions << action = action(name)
+                clean_room.actions << action = action(name)
                 action
               end
             end

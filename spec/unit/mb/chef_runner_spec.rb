@@ -257,7 +257,7 @@ describe MB::ChefRunner do
       subject.connection.should_receive(:chef_client).and_return(response)
       subject.class.should_receive(:handle_response).with(response).and_return(true)
 
-      subject.run.should eql(true)
+      subject.run.should be_true
     end
   end
 end

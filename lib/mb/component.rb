@@ -62,10 +62,10 @@ module MotherBrain
     #   }
     #
     # @return [Hash]
-    def nodes(environment)
+    def nodes
       {}.tap do |nodes|
         self.groups.each do |group|
-          nodes[group.name] = group.nodes(environment)
+          nodes[group.name] = group.nodes
         end
       end
     end

@@ -191,7 +191,11 @@ module MotherBrain
     # @return [Array]
     #   a response array
     def run
+      node_str = self.nodes.collect(&:host).join(', ')
+
+      MB.ui.say "Running Chef Client on: #{node_str}"
       self.class.handle_response(self.connection.chef_client)
+      MB.ui.say "Completed Chef Client on: #{node_str}"
     end
 
     # Test the ChefRunner connection to all nodes
