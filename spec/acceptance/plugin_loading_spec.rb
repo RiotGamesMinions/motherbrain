@@ -22,8 +22,7 @@ describe "loading a plugin", type: "acceptance" do
         end
       end
 
-      component do
-        name "activemq"
+      component "activemq" do
         description "do stuff to AMQ"
         
         group do

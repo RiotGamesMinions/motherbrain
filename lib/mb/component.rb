@@ -3,9 +3,11 @@ module MotherBrain
   class Component < ContextualModel
     attr_reader :groups
     attr_reader :commands
+    attr_reader :name
 
-    def initialize(context, &block)
+    def initialize(name, context, &block)
       super(context)
+      @name     = name
       @groups   = Set.new
       @commands = Set.new
 
@@ -123,11 +125,6 @@ module MotherBrain
         @component = component
 
         instance_eval(&block)
-      end
-
-      # @param [String] value
-      def name(value)
-        set(:name, value, kind_of: String, required: true)
       end
 
       # @param [String] value

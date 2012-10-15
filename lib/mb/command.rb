@@ -5,7 +5,7 @@ module MotherBrain
 
     def initialize(name, context, scope, &block)
       super(context)
-      @name = name
+      @name  = name
       @scope = scope
 
       if block_given?

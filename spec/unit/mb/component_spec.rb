@@ -5,9 +5,7 @@ describe MB::Component do
   let(:chef_conn) { double('chef_conn') }
 
   subject do
-    MB::Component.new(@context) do
-      name "activemq"
-
+    MB::Component.new("activemq", @context) do
       group do
         name "masters"
       end
@@ -16,9 +14,7 @@ describe MB::Component do
 
   describe "#groups" do
     subject do
-      MB::Component.new(@context) do
-        name "activemq"
-
+      MB::Component.new("activemq", @context) do
         group do
           name "masters"
         end
@@ -33,9 +29,7 @@ describe MB::Component do
 
   describe "#group" do
     subject do
-      MB::Component.new(@context) do
-        name "activemq"
-
+      MB::Component.new("activemq", @context) do
         group do
           name "masters"
         end
@@ -61,9 +55,7 @@ describe MB::Component do
 
   describe "#service" do
     subject do
-      MB::Component.new(@context) do
-        name "activemq"
-
+      MB::Component.new("activemq", @context) do
         service do
           name "masters"
         end

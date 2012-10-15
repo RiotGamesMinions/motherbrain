@@ -192,8 +192,8 @@ module MotherBrain
         plugin.add_command Command.new(name, context, plugin, &block)
       end
 
-      def component(&block)
-        plugin.add_component Component.new(context, &block)
+      def component(name, &block)
+        plugin.add_component Component.new(name, context, &block)
       end
 
       private
