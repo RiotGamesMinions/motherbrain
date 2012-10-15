@@ -86,10 +86,39 @@ describe MB::Gear::Service do
 
   describe MB::Gear::Service::Action do
     let(:action_name) { :start }
-    subject { MB::Gear::Service::Action.new(action_name, component) }
+
+    let(:node_1) { double('node_1', name: 'reset.riotgames.com') }
+    let(:node_2) { double('node_2', name: 'jwinsor.riotgames.com') }
+    let(:node_3) { double('node_3', name: 'jwinsor-2.riotgames.com') }
+
+    let(:master_group) do
+      double('master_group',
+        nodes: [
+          node_1,
+          node_2
+        ]
+      )
+    end
+
+    let(:slave_group) do
+      double('slave_group',
+        nodes: [
+          node_1,
+          node_2,
+          node_3
+        ]
+      )
+    end
+
+    subject do
+      MB::Gear::Service::Action.new(action_name, component) do
+        # block
+      end
+    end
 
     before(:each) do
-      component.stub(:group).with("master").and_return(double('master_group'))
+      component.stub(:group).with("master").and_return(master_group)
+      component.stub(:group).with("slave").and_return(slave_group)
     end
 
     describe "#on" do
@@ -118,6 +147,29 @@ describe MB::Gear::Service do
             subject.on("not_exist")
           }.should raise_error(MB::GroupNotFound)
         end
+      end
+    end
+
+    describe "#nodes" do
+      before(:each) do
+        subject.on("master")
+        subject.on("slave")
+      end
+
+      it "returns an array" do
+        subject.nodes.should be_a(Array)
+      end
+
+      it "contains only the unique node elements from the component's group" do
+        subject.nodes =~ master_group.nodes
+        subject.nodes =~ slave_group.nodes
+        subject.nodes.should have(3).items
+      end
+    end
+
+    describe "#run" do
+      it "returns true on success" do
+        subject.run.should be_true
       end
     end
   end

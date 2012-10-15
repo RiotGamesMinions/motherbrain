@@ -71,6 +71,100 @@ module MotherBrain
 
           attr_reader :component
       end
+
+      # @author Jamie Winsor <jamie@vialstudios.com>
+      # @api private
+      class Action
+        attr_reader :name
+        attr_reader :groups
+
+        def initialize(name, component, &block)
+          unless block_given?
+            raise ArgumentError, "block required for action '#{name}' on component '#{component.name}'"
+          end
+
+          @name      = name
+          @groups    = Set.new
+          @component = component
+          @block     = block
+          @runner    = ActionRunner.new(self, component)
+        end
+
+        # Run this action on all of the nodes in the given group
+        #
+        # @param [String] group_name
+        #
+        # @return [self]
+        #   returns the current instance to allow chaining
+        def on(group_name)
+          group = component.group(group_name)
+
+          if group.nil?
+            raise GroupNotFound, "Group '#{group_name}' not found on component '#{component.name}'"
+          end
+
+          self.groups.add(group)
+          self
+        end
+
+        # The nodes of any group added to this Action. Only unique nodes will be
+        # returned.
+        #
+        # @return [Array]
+        def nodes
+          groups.collect do |group|
+            group.nodes
+          end.flatten.uniq
+        end
+
+        # @return [Boolean]
+        def run
+          runner.instance_eval(&block)
+          true
+        end
+
+        private
+
+          attr_reader :component
+          attr_reader :runner
+          attr_reader :block
+
+        # @author Jamie Winsor <jamie@vialstudios.com>
+        # @api private
+        class ActionRunner
+          def initialize(action, component)
+            @action    = action
+            @component = component
+          end
+
+          def environment_attribute(key, value)
+            puts "Setting attribute '#{key}' to '#{value}' on #{component.environment}"
+
+            component.chef_conn.sync do
+              obj = environment.find!(component.environment)
+              obj.set_override_attribute(key, value)
+              obj.save
+            end
+          end
+
+          def node_attribute(key, value)
+            action.nodes.each do |l_node|
+              puts "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
+
+              component.chef_conn.sync do
+                obj = node.find!(l_node.name)
+                obj.set_override_attribute(key, value)
+                obj.save
+              end
+            end
+          end
+
+          private
+
+            attr_reader :action
+            attr_reader :component
+        end
+      end
     end
   end
 end
