@@ -1,7 +1,7 @@
 module MotherBrain
   module Gear
     # @author Jamie Winsor <jamie@vialstudios.com>
-    class Service
+    class Service < ContextualModel
       include MB::Gear
       register_gear :service
 
@@ -9,7 +9,9 @@ module MotherBrain
       attr_reader :actions
 
       # @param [MB::Component] component
-      def initialize(component, &block)
+      def initialize(context, component, &block)
+        super(context)
+
         @component = component
         @actions   = Set.new
 
@@ -52,7 +54,6 @@ module MotherBrain
       private
 
         attr_reader :component
-        attr_reader :context
 
         def dsl_eval(&block)
           self.attributes = CleanRoom.new(context, self, component, &block).attributes
@@ -66,7 +67,7 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class CleanRoom < BasicCleanRoom
+      class CleanRoom < ContextualModel
         # @param [MB::Component] component
         def initialize(context, service, component, &block)
           super(context)
@@ -94,7 +95,7 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class Action
+      class Action < ContextualModel
         # @return [String]
         attr_reader :name
         # @return [Set<MB::Group>]
@@ -109,7 +110,7 @@ module MotherBrain
             raise ArgumentError, "block required for action '#{name}' on component '#{component.name}'"
           end
 
-          @context   = context
+          super(context)
           @name      = name
           @groups    = Set.new
           @component = component
@@ -152,20 +153,17 @@ module MotherBrain
 
         private
 
-          attr_reader :context
           attr_reader :component
           attr_reader :runner
           attr_reader :block
 
         # @author Jamie Winsor <jamie@vialstudios.com>
         # @api private
-        class ActionRunner
-          extend Forwardable
-
+        class ActionRunner < ContextualModel
           # @param [Gear::Action] action
           # @param [MB::Component] component
           def initialize(context, action, component)
-            @context   = context
+            super(context)
             @action    = action
             @component = component
           end
@@ -206,10 +204,6 @@ module MotherBrain
 
             attr_reader :action
             attr_reader :component
-
-            def_delegator :context, :config
-            def_delegator :context, :chef_conn
-            def_delegator :context, :environment
         end
       end
     end

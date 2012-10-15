@@ -1,4 +1,5 @@
 module MotherBrain
+  # @author Jamie Winsor <jamie@vialstudios.com>
   class ConfigValidator < ActiveModel::Validator
     def validate(record)
       if record.ssh_password.blank? && record.ssh_key.blank?

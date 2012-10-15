@@ -20,13 +20,13 @@ require 'mb/errors'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
-  autoload :BasicCleanRoom, 'mb/basic_clean_room'
   autoload :Command, 'mb/command'
   autoload :Component, 'mb/component'
   autoload :ComponentInvoker, 'mb/component_invoker'
   autoload :Config, 'mb/config'
   autoload :ConfigValidator, 'mb/config_validator'
   autoload :Context, 'mb/context'
+  autoload :ContextualModel, 'mb/contextual_model'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
   autoload :Gear, 'mb/gear'
   autoload :Group, 'mb/group'

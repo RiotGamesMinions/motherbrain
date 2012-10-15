@@ -105,7 +105,7 @@ module MotherBrain
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < BasicCleanRoom
+    class CleanRoom < ContextualModel
       def initialize(context, group, &block)
         super(context)
         @group = group

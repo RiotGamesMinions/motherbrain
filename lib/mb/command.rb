@@ -1,10 +1,8 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Command
-    include Mixin::SimpleAttributes
-    
+  class Command < ContextualModel
     def initialize(context, scope, &block)
-      @context = context
+      super(context)
       @scope   = scope
 
       if block_given?
@@ -24,7 +22,6 @@ module MotherBrain
 
     private
 
-      attr_reader :context
       attr_reader :scope
 
       def dsl_eval(&block)
@@ -34,7 +31,7 @@ module MotherBrain
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < BasicCleanRoom
+    class CleanRoom < ContextualModel
       def initialize(context, &block)
         super(context)
 
@@ -59,15 +56,13 @@ module MotherBrain
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CommandRunner
-      extend Forwardable
-
+    class CommandRunner < ContextualModel
       attr_reader :scope
 
       # @param [Object] scope
       # @param [Proc] execute
       def initialize(context, scope, execute)
-        @context = context
+        super(context)
         @scope   = scope
 
         instance_eval(&execute)
@@ -97,15 +92,7 @@ module MotherBrain
         end
       end
 
-      private
-
-        attr_reader :context
-
-        def_delegator :context, :config
-        def_delegator :context, :chef_conn
-        def_delegator :context, :environment
-
-      class CleanRoom < BasicCleanRoom
+      class CleanRoom < ContextualModel
         attr_reader :actions
 
         # @param [Object] scope

@@ -16,7 +16,7 @@ describe MB::Gear::Service do
 
     describe "::new" do
       it "sets the given name attribute" do
-        obj = subject.new(component) do
+        obj = subject.new(@context, component) do
           name "activemq"
         end
 
@@ -26,14 +26,14 @@ describe MB::Gear::Service do
   end
 
   subject do
-    MB::Gear::Service.new(component) do
+    MB::Gear::Service.new(@context, component) do
       # block
     end
   end
 
   describe "#actions" do
     subject do
-      MB::Gear::Service.new(component) do
+      MB::Gear::Service.new(@context, component) do
         action :start do
           node_attribute("key.one", true)
         end
@@ -53,7 +53,7 @@ describe MB::Gear::Service do
 
   describe "#action" do
     subject do
-      MB::Gear::Service.new(component) do
+      MB::Gear::Service.new(@context, component) do
         name "activemq"
 
         action :start do

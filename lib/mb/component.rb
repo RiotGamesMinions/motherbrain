@@ -1,14 +1,11 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Component
-    extend Forwardable
-    include Mixin::SimpleAttributes
-
+  class Component < ContextualModel
     attr_reader :groups
     attr_reader :commands
 
     def initialize(context, &block)
-      @context  = context
+      super(context)
       @groups   = Set.new
       @commands = Set.new
 
@@ -113,12 +110,6 @@ module MotherBrain
 
     private
 
-      attr_reader :context
-
-      def_delegator :context, :config
-      def_delegator :context, :chef_conn
-      def_delegator :context, :environment
-
       def dsl_eval(&block)
         self.attributes = CleanRoom.new(context, self, &block).attributes
         self
@@ -126,7 +117,7 @@ module MotherBrain
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < BasicCleanRoom
+    class CleanRoom < ContextualModel
       def initialize(context, component, &block)
         super(context)
         @component = component
@@ -154,7 +145,7 @@ module MotherBrain
 
       Gear.all.each do |klass|
         define_method Gear.element_name(klass) do |&block|
-          component.send Gear.add_fun(klass), klass.new(component, &block)
+          component.send Gear.add_fun(klass), klass.new(context, component, &block)
         end
       end
 

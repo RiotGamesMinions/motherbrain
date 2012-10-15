@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Plugin
+  class Plugin < ContextualModel
     class << self
       # Create a new plugin instance from the given context and content
       #
@@ -35,16 +35,12 @@ module MotherBrain
       end
     end
 
-    extend Forwardable
-
-    include Mixin::SimpleAttributes
-
     attr_reader :components
     attr_reader :commands
     attr_reader :dependencies
 
     def initialize(context, &block)
-      @context      = context
+      super(context)
       @components   = Set.new
       @commands     = Set.new
       @dependencies = HashWithIndifferentAccess.new
@@ -140,12 +136,6 @@ module MotherBrain
 
     private
 
-      attr_reader :context
-
-      def_delegator :context, :config
-      def_delegator :context, :chef_conn
-      def_delegator :context, :environment
-
       def dsl_eval(&block)
         self.attributes = CleanRoom.new(context, self, &block).attributes
         self
@@ -156,7 +146,7 @@ module MotherBrain
     #
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < BasicCleanRoom
+    class CleanRoom < ContextualModel
       def initialize(context, plugin, &block)
         super(context)
 
