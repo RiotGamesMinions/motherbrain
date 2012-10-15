@@ -139,8 +139,8 @@ module MotherBrain
         component.add_group Group.new(context, &block)
       end
 
-      def command(&block)
-        component.add_command Command.new(context, component, &block)
+      def command(name, &block)
+        component.add_command Command.new(name, context, component, &block)
       end
 
       Gear.all.each do |klass|

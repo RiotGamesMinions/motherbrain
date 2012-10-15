@@ -14,8 +14,7 @@ describe "loading a plugin", type: "acceptance" do
       depends "pvpnet", "~> 1.2.3"
       depends "activemq", "= 4.2.1"
 
-      command do
-        name "start"
+      command "start" do
         description "Start all services"
 
         execute do
@@ -47,8 +46,7 @@ describe "loading a plugin", type: "acceptance" do
           end
         end
 
-        command do
-          name "start"
+        command "start" do
           description "Start activemq services"
 
           execute do
@@ -59,8 +57,7 @@ describe "loading a plugin", type: "acceptance" do
           end
         end
 
-        command do
-          name "stop"
+        command "stop" do
           description "Stop activemq services"
 
           execute do

@@ -8,8 +8,7 @@ describe MB::Command do
 
     describe "::new" do
       before(:each) do
-        @command = subject.new(@context, scope) do
-          name "start"
+        @command = subject.new("start", @context, scope) do
           description "start all services"
 
           execute do

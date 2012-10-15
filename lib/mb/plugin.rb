@@ -188,8 +188,8 @@ module MotherBrain
         plugin.add_dependency(name, constraint)
       end
 
-      def command(&block)
-        plugin.add_command Command.new(context, plugin, &block)
+      def command(name, &block)
+        plugin.add_command Command.new(name, context, plugin, &block)
       end
 
       def component(&block)
