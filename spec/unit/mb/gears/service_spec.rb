@@ -85,8 +85,8 @@ describe MB::Gear::Service do
   end
 
   describe MB::Gear::Service::Action do
-    let(:id) { :start }
-    subject { MB::Gear::Service::Action.new(component, id) }
+    let(:action_name) { :start }
+    subject { MB::Gear::Service::Action.new(action_name, component) }
 
     before(:each) do
       component.stub(:group).with("master").and_return(double('master_group'))
