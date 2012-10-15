@@ -25,9 +25,7 @@ describe "loading a plugin", type: "acceptance" do
       component "activemq" do
         description "do stuff to AMQ"
         
-        group do
-          name "master_broker"
-
+        group "master_broker" do
           recipe "activemq::broker"
           role "why_man_why"
           chef_attribute 'activemq.broker.master', true

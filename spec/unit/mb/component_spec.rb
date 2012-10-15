@@ -6,8 +6,8 @@ describe MB::Component do
 
   subject do
     MB::Component.new("activemq", @context) do
-      group do
-        name "masters"
+      group "masters" do
+        # block
       end
     end
   end
@@ -15,8 +15,8 @@ describe MB::Component do
   describe "#groups" do
     subject do
       MB::Component.new("activemq", @context) do
-        group do
-          name "masters"
+        group "masters" do
+          # block
         end
       end
     end
@@ -30,8 +30,8 @@ describe MB::Component do
   describe "#group" do
     subject do
       MB::Component.new("activemq", @context) do
-        group do
-          name "masters"
+        group "masters" do
+          # block
         end
       end
     end

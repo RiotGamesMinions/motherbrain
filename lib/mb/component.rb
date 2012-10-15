@@ -1,9 +1,9 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Component < ContextualModel
+    attr_reader :name
     attr_reader :groups
     attr_reader :commands
-    attr_reader :name
 
     def initialize(name, context, &block)
       super(context)
@@ -132,8 +132,8 @@ module MotherBrain
         set(:description, value, kind_of: String, required: true)
       end
 
-      def group(&block)
-        component.add_group Group.new(context, &block)
+      def group(name, &block)
+        component.add_group Group.new(name, context, &block)
       end
 
       def command(name, &block)

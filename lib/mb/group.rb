@@ -1,14 +1,16 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Group < ContextualModel
+    attr_reader :name
     attr_reader :roles
     attr_reader :recipes
     attr_reader :chef_attributes
 
     # @param [String] environment
     # @param [Ridley::Connection] chef_conn
-    def initialize(context, &block)
+    def initialize(name, context, &block)
       super(context)
+      @name            = name
       @recipes         = Set.new
       @roles           = Set.new
       @chef_attributes = HashWithIndifferentAccess.new
