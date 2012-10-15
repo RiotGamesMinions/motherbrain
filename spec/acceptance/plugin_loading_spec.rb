@@ -31,9 +31,7 @@ describe "loading a plugin", type: "acceptance" do
           chef_attribute 'activemq.broker.master', true
         end
 
-        service do
-          name "broker"
-          
+        service "broker" do
           action :start do
             node_attribute('activemq.broker.status', true)
           end

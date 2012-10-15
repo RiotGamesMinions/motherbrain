@@ -56,8 +56,8 @@ describe MB::Component do
   describe "#service" do
     subject do
       MB::Component.new("activemq", @context) do
-        service do
-          name "masters"
+        service "masters" do
+          # block
         end
       end
     end
