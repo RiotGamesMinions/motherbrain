@@ -1,9 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Group
-    extend Forwardable
-    include Mixin::SimpleAttributes
-
+  class Group < ContextualModel
     attr_reader :roles
     attr_reader :recipes
     attr_reader :chef_attributes
@@ -11,7 +8,7 @@ module MotherBrain
     # @param [String] environment
     # @param [Ridley::Connection] chef_conn
     def initialize(context, &block)
-      @context         = context
+      super(context)
       @recipes         = Set.new
       @roles           = Set.new
       @chef_attributes = HashWithIndifferentAccess.new
@@ -88,12 +85,6 @@ module MotherBrain
     end
 
     private
-
-      attr_reader :context
-
-      def_delegator :context, :config
-      def_delegator :context, :chef_conn
-      def_delegator :context, :environment
 
       def attribute_escape(value)
         value.gsub(/\./, "_")
