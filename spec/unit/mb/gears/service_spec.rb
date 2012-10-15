@@ -22,33 +22,28 @@ describe MB::Gear::Service do
 
         obj.name.should eql("activemq")
       end
-
-      context "when an action of the given name has already been defined" do
-        it "raises a DuplicateAction error" do
-          lambda {
-            subject.new(component) do
-              action :start do; end
-              action :start do; end
-            end
-          }.should raise_error(MB::DuplicateAction)
-        end
-      end
     end
   end
 
   subject do
     MB::Gear::Service.new(component) do
-      action :start do
-        node_attribute("key.one", true)
-      end
-
-      action :stop do
-        # block
-      end
+      # block
     end
   end
 
   describe "#actions" do
+    subject do
+      MB::Gear::Service.new(component) do
+        action :start do
+          node_attribute("key.one", true)
+        end
+
+        action :stop do
+          # block
+        end
+      end
+    end
+
     it "returns a Set of Gear::Action::Service objects for each defined action" do
       subject.actions.should be_a(Set)
       subject.actions.should have(2).items
@@ -80,8 +75,47 @@ describe MB::Gear::Service do
     end
   end
 
-  describe "#node_attribute" do
-    pending
+  describe "#add_action" do
+    let(:action_1) { double('action_1', name: "start") }
+    let(:action_2) { double('action_2', name: "stop") }
+
+    it "adds the given action to the set of actions" do
+      subject.add_action(action_1)
+
+      subject.actions.should have(1).item
+      subject.action("start").should eql(action_1)
+    end
+
+    context "when an action of the given name has already been defined" do
+      it "raises a DuplicateAction error" do
+        lambda {
+          subject.add_action(action_1)
+          subject.add_action(action_1)
+        }.should raise_error(MB::DuplicateAction)
+      end
+    end
+  end
+
+  describe "#run_action" do
+    let(:action_1) { double('action_1', name: "start") }
+
+    before(:each) do
+      subject.add_action(action_1)
+    end
+
+    it "sends the message 'run' to the given action" do
+      action_1.should_receive(:run)
+
+      subject.run_action("start")
+    end
+
+    context "when an action of the given name does not exist" do
+      it "raises an ActionNotFound error" do
+        lambda {
+          subject.run_action("not_there")
+        }.should raise_error(MB::ActionNotFound)
+      end
+    end
   end
 
   describe MB::Gear::Service::Action do

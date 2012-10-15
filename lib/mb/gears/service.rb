@@ -5,8 +5,10 @@ module MotherBrain
       include MB::Gear
       register_gear :service
 
+      # @return [Set<Action>]
       attr_reader :actions
 
+      # @param [MB::Component] component
       def initialize(component, &block)
         @component = component
         @actions   = Set.new
@@ -16,6 +18,13 @@ module MotherBrain
         end
       end
 
+      # Find and return the given action
+      #
+      # @param [String] name
+      #
+      # @raise [ActionNotFound] if there is no action of the given name defined
+      #
+      # @return [Gear::Action]
       def action(name)
         action = get_action(name)
 
@@ -26,13 +35,28 @@ module MotherBrain
         action
       end
 
+      # Add a new action to this Service
+      #
       # @param [Service::Action] new_action
+      #
+      # @return [Set<Action>]
       def add_action(new_action)
         unless get_action(new_action.name).nil?
           raise DuplicateAction, "Action '#{new_action.name}' already defined on service '#{self.attributes[:name]}'"
         end
 
         self.actions.add(new_action)
+      end
+
+      # Run the given action
+      #
+      # @param [String] name
+      #
+      # @raise [ActionNotFound] if there is no action of the given name defined
+      #
+      # @return [Boolean]
+      def run_action(name)
+        action(name).run
       end
 
       private
@@ -44,6 +68,7 @@ module MotherBrain
           self
         end
 
+        # @param [String] name
         def get_action(name)
           self.actions.find { |action| action.name == name }
         end
@@ -53,6 +78,7 @@ module MotherBrain
       class CleanRoom
         include Mixin::SimpleAttributes
 
+        # @param [MB::Component] component
         def initialize(component, &block)
           @component = component
           instance_eval(&block)
@@ -63,6 +89,7 @@ module MotherBrain
           set(:name, value, kind_of: String, required: true)
         end
 
+        # @param [String] name
         def action(name, &block)
           component.add_action Action.new(name, component, &block)
         end
@@ -75,9 +102,15 @@ module MotherBrain
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
       class Action
+        # @return [String]
         attr_reader :name
+        # @return [Set<MB::Group>]
         attr_reader :groups
 
+        # @param [String] name
+        # @param [MB::Component] component
+        #
+        # @raise [ArgumentError] if no block is given
         def initialize(name, component, &block)
           unless block_given?
             raise ArgumentError, "block required for action '#{name}' on component '#{component.name}'"
@@ -132,11 +165,18 @@ module MotherBrain
         # @author Jamie Winsor <jamie@vialstudios.com>
         # @api private
         class ActionRunner
+          # @param [Gear::Action] action
+          # @param [MB::Component] component
           def initialize(action, component)
             @action    = action
             @component = component
           end
 
+          # Set an environment level attribute to the given value. The key is represented
+          # by a dotted path.
+          #
+          # @param [String] key
+          # @param [Object] value
           def environment_attribute(key, value)
             puts "Setting attribute '#{key}' to '#{value}' on #{component.environment}"
 
@@ -147,6 +187,11 @@ module MotherBrain
             end
           end
 
+          # Set a node level attribute to the given value. The key is represented
+          # by a dotted path.
+          #
+          # @param [String] key
+          # @param [Object] value
           def node_attribute(key, value)
             action.nodes.each do |l_node|
               puts "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
