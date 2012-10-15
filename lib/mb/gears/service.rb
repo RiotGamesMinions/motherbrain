@@ -5,13 +5,15 @@ module MotherBrain
       include MB::Gear
       register_gear :service
 
+      attr_reader :name
       # @return [Set<Action>]
       attr_reader :actions
 
       # @param [MB::Component] component
-      def initialize(context, component, &block)
+      def initialize(name, context, component, &block)
         super(context)
 
+        @name      = name
         @component = component
         @actions   = Set.new
 
@@ -75,11 +77,6 @@ module MotherBrain
           @service   = service
           @component = component
           instance_eval(&block)
-        end
-
-        # @param [String] value
-        def name(value)
-          set(:name, value, kind_of: String, required: true)
         end
 
         # @param [String] name

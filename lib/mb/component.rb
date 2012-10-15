@@ -1,11 +1,13 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Component < ContextualModel
+    attr_reader :name
     attr_reader :groups
     attr_reader :commands
 
-    def initialize(context, &block)
+    def initialize(name, context, &block)
       super(context)
+      @name     = name
       @groups   = Set.new
       @commands = Set.new
 
@@ -126,26 +128,21 @@ module MotherBrain
       end
 
       # @param [String] value
-      def name(value)
-        set(:name, value, kind_of: String, required: true)
-      end
-
-      # @param [String] value
       def description(value)
         set(:description, value, kind_of: String, required: true)
       end
 
-      def group(&block)
-        component.add_group Group.new(context, &block)
+      def group(name, &block)
+        component.add_group Group.new(name, context, &block)
       end
 
-      def command(&block)
-        component.add_command Command.new(context, component, &block)
+      def command(name, &block)
+        component.add_command Command.new(name, context, component, &block)
       end
 
       Gear.all.each do |klass|
-        define_method Gear.element_name(klass) do |&block|
-          component.send Gear.add_fun(klass), klass.new(context, component, &block)
+        define_method Gear.element_name(klass) do |name, &block|
+          component.send Gear.add_fun(klass), klass.new(name, context, component, &block)
         end
       end
 

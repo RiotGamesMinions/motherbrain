@@ -1,9 +1,12 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Command < ContextualModel
-    def initialize(context, scope, &block)
+    attr_reader :name
+
+    def initialize(name, context, scope, &block)
       super(context)
-      @scope   = scope
+      @name  = name
+      @scope = scope
 
       if block_given?
         dsl_eval(&block)
@@ -36,11 +39,6 @@ module MotherBrain
         super(context)
 
         instance_eval(&block)
-      end
-
-      # @param [String] value
-      def name(value)
-        set(:name, value, kind_of: String, required: true)
       end
 
       # @param [String] value

@@ -14,8 +14,7 @@ describe "loading a plugin", type: "acceptance" do
       depends "pvpnet", "~> 1.2.3"
       depends "activemq", "= 4.2.1"
 
-      command do
-        name "start"
+      command "start" do
         description "Start all services"
 
         execute do
@@ -23,21 +22,16 @@ describe "loading a plugin", type: "acceptance" do
         end
       end
 
-      component do
-        name "activemq"
+      component "activemq" do
         description "do stuff to AMQ"
         
-        group do
-          name "master_broker"
-
+        group "master_broker" do
           recipe "activemq::broker"
           role "why_man_why"
           chef_attribute 'activemq.broker.master', true
         end
 
-        service do
-          name "broker"
-          
+        service "broker" do
           action :start do
             node_attribute('activemq.broker.status', true)
           end
@@ -47,8 +41,7 @@ describe "loading a plugin", type: "acceptance" do
           end
         end
 
-        command do
-          name "start"
+        command "start" do
           description "Start activemq services"
 
           execute do
@@ -59,8 +52,7 @@ describe "loading a plugin", type: "acceptance" do
           end
         end
 
-        command do
-          name "stop"
+        command "stop" do
           description "Stop activemq services"
 
           execute do
