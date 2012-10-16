@@ -123,12 +123,12 @@ module MotherBrain
         def run(nodes)
           @nodes = nodes
           runner.instance_eval(&block)
-          chef_run
+          chef_run(nodes)
           
           self
         end
 
-        def chef_run
+        def chef_run(nodes)
           runner_options = {}.tap do |opts|
             opts[:nodes]    = nodes
             opts[:user]     = config.ssh_user
