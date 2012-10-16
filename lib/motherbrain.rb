@@ -61,8 +61,8 @@ module MotherBrain
     # @param [Logger, nil] obj
     #
     # @return [Logger]
-    def set_logger(klass)
-      @logger = klass
+    def set_logger(obj)
+      MB::Logging.set_logger(obj)
     end
   end
 end
