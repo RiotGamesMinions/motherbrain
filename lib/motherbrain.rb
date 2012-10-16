@@ -56,6 +56,7 @@ module MotherBrain
     def logger
       MB::Logging.logger
     end
+    alias_method :log, :logger
 
     # @param [Logger, nil] obj
     #
