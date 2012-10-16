@@ -5,9 +5,11 @@ module MotherBrain
     attr_reader :groups
     attr_reader :commands
 
+    # @param [#to_s] name
+    # @param [MB::Context] context
     def initialize(name, context, &block)
       super(context)
-      @name     = name
+      @name     = name.to_s
       @groups   = Set.new
       @commands = Set.new
 
@@ -120,6 +122,8 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < ContextualModel
+      # @param [MB::Context] context
+      # @param [MB::Component] component
       def initialize(context, component, &block)
         super(context)
         @component = component
