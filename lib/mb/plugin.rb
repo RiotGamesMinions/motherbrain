@@ -39,6 +39,7 @@ module MotherBrain
     attr_reader :commands
     attr_reader :dependencies
 
+    # @param [MB::Context] context
     def initialize(context, &block)
       super(context)
       @components   = Set.new
@@ -147,6 +148,8 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < ContextualModel
+      # @param [MB::Context] context
+      # @param [MB::Plugin] plugin
       def initialize(context, plugin, &block)
         super(context)
 
@@ -184,14 +187,18 @@ module MotherBrain
         set(:email, value, kind_of: [String, Array])
       end
 
+      # @param [#to_s] name
+      # @param [#to_s] constraint
       def depends(name, constraint)
         plugin.add_dependency(name, constraint)
       end
 
+      # @param [#to_s] name
       def command(name, &block)
         plugin.add_command Command.new(name, context, plugin, &block)
       end
 
+      # @param [#to_s] name
       def component(name, &block)
         plugin.add_component Component.new(name, context, &block)
       end

@@ -5,15 +5,18 @@ module MotherBrain
       include MB::Gear
       register_gear :service
 
+      # @return [String]
       attr_reader :name
       # @return [Set<Action>]
       attr_reader :actions
 
+      # @param [#to_s] name
+      # @param [MB::Context] context
       # @param [MB::Component] component
       def initialize(name, context, component, &block)
         super(context)
 
-        @name      = name
+        @name      = name.to_s
         @component = component
         @actions   = Set.new
 
@@ -70,6 +73,8 @@ module MotherBrain
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
       class CleanRoom < ContextualModel
+        # @param [MB::Context] context
+        # @param [MB::Service] service
         # @param [MB::Component] component
         def initialize(context, service, component, &block)
           super(context)
@@ -157,6 +162,7 @@ module MotherBrain
         # @author Jamie Winsor <jamie@vialstudios.com>
         # @api private
         class ActionRunner < ContextualModel
+          # @param [MB::Context] context
           # @param [Gear::Action] action
           # @param [MB::Component] component
           def initialize(context, action, component)

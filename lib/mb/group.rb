@@ -6,11 +6,11 @@ module MotherBrain
     attr_reader :recipes
     attr_reader :chef_attributes
 
-    # @param [String] environment
-    # @param [Ridley::Connection] chef_conn
+    # @param [#to_s] name
+    # @param [MB::Context] context
     def initialize(name, context, &block)
       super(context)
-      @name            = name
+      @name            = name.to_s
       @recipes         = Set.new
       @roles           = Set.new
       @chef_attributes = HashWithIndifferentAccess.new
@@ -99,6 +99,8 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < ContextualModel
+      # @param [MB::Context] context
+      # @param [MB::Group] group
       def initialize(context, group, &block)
         super(context)
         @group = group

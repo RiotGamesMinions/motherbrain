@@ -3,9 +3,12 @@ module MotherBrain
   class Command < ContextualModel
     attr_reader :name
 
+    # @param [#to_s] name
+    # @param [MB::Context] context
+    # @param [MB::Plugin, MB::Component] scope
     def initialize(name, context, scope, &block)
       super(context)
-      @name  = name
+      @name  = name.to_s
       @scope = scope
 
       if block_given?
@@ -92,10 +95,13 @@ module MotherBrain
         end
       end
 
+      # @author Jamie Winsor <jamie@vialstudios.com>
+      # @api private
       class CleanRoom < ContextualModel
         attr_reader :actions
 
-        # @param [Object] scope
+        # @param [MB::Context] context
+        # @param [MB::Plugin, MB::Component] scope
         def initialize(context, scope, &block)
           super(context)
           @scope   = scope
