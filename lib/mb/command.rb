@@ -61,7 +61,7 @@ module MotherBrain
       # @param [Proc] execute
       def initialize(context, scope, execute)
         super(context)
-        @scope   = scope
+        @scope = scope
 
         instance_eval(&execute)
       end
