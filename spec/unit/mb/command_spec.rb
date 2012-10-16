@@ -59,7 +59,7 @@ describe MB::Command::CommandRunner do
       MB::Command::CommandRunner::CleanRoom.stub_chain(:new, :actions).and_return(actions)
 
       actions.each do |action|
-        action.should_receive(:run)
+        action.should_receive(:run).with(nodes)
       end
 
       scope.stub(:group!).and_return(group)
