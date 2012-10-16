@@ -162,6 +162,8 @@ module MotherBrain
         # @author Jamie Winsor <jamie@vialstudios.com>
         # @api private
         class ActionRunner < ContextualModel
+          include Logging
+
           # @param [MB::Context] context
           # @param [Gear::Action] action
           # @param [MB::Component] component
@@ -177,7 +179,7 @@ module MotherBrain
           # @param [String] key
           # @param [Object] value
           def environment_attribute(key, value)
-            MB.ui.say "Setting attribute '#{key}' to '#{value}' on #{self.environment}"
+            log.info "Setting attribute '#{key}' to '#{value}' on #{self.environment}"
 
             self.chef_conn.sync do
               obj = environment.find!(self.environment)
@@ -193,7 +195,7 @@ module MotherBrain
           # @param [Object] value
           def node_attribute(key, value)
             action.nodes.each do |l_node|
-              MB.ui.say "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
+              log.info "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
 
               self.chef_conn.sync do
                 obj = node.find!(l_node.name)
