@@ -104,5 +104,22 @@ describe MB::Command::CommandRunner do
       
       subject.new(@context, scope, command_block)
     end
+
+    it "can only run on one node at a time" do
+      scope.should_receive(:group!).with("master_group").and_return(master_group)
+
+      actions.each do |action|
+        action.should_receive(:run).with([node_1])
+        action.should_receive(:run).with([node_2])
+      end
+
+      command_block = Proc.new do
+        on("master_group", max_concurrent: 1) do
+          # block
+        end
+      end
+      
+      subject.new(@context, scope, command_block)
+    end
   end
 end

@@ -74,21 +74,20 @@ module MotherBrain
           raise PluginSyntaxError, "Block required"
         end
 
-        unless group_names.kind_of?(Array)
-          group_names = [group_names]
-        end
+        actions = CleanRoom.new(context, scope, &block).actions
 
-        groups = group_names.map { |group_name| scope.group!(group_name) }
-        nodes = groups.flat_map(&:nodes).uniq
+        group_names = [group_names] unless group_names.kind_of?(Array)
+        nodes = group_names.map { |group_name| scope.group!(group_name) }.flat_map(&:nodes).uniq
 
         if options[:any]
           nodes = nodes.first(options[:any])
         end
-
-        actions = CleanRoom.new(context, scope, &block).actions
-
-        actions.each do |action|
-          action.run(nodes)
+        
+        options[:max_concurrent] ||= nodes.count
+        nodes.each_slice(options[:max_concurrent]) do |current_nodes|
+          actions.each do |action|
+            action.run(current_nodes)
+          end
         end
       end
 
