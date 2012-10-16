@@ -69,29 +69,24 @@ module MotherBrain
         instance_eval(&execute)
       end
 
-      def chef_run(&block)
+      def on(group_names, options = {}, &block)
         unless block_given?
           raise PluginSyntaxError, "Block required"
         end
 
-        actions = CleanRoom.new(context, scope, &block).actions
-        actions.map(&:run)
-
-        nodes = actions.collect(&:nodes).flatten.uniq
-
-        runner_options = {}.tap do |opts|
-          opts[:nodes]    = nodes
-          opts[:user]     = config.ssh_user
-          opts[:keys]     = config.ssh_key if config.ssh_key
-          opts[:password] = config.ssh_password if config.ssh_password
+        unless group_names.kind_of?(Array)
+          group_names = [group_names]
         end
 
-        chef = ChefRunner.new(runner_options)
-        chef.test!
-        status, errors = chef.run
+        nodes = group_names.map do |group_name|
+          scope.group!(group_name)
+        end.flat_map(&:nodes).uniq
 
-        if status == :error
-          raise ChefRunFailure.new(errors)
+        actions = CleanRoom.new(context, scope, &block).actions
+
+        actions.each do |action|
+          action.nodes = nodes
+          action.run
         end
       end
 

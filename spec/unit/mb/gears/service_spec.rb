@@ -129,52 +129,9 @@ describe MB::Gear::Service do
     before(:each) do
       component.stub(:group).with("master").and_return(master_group)
       component.stub(:group).with("slave").and_return(slave_group)
-    end
 
-    describe "#on" do
-      it "returns self" do
-        subject.on("master").should eql(subject)
-      end
-
-      it "adds a group to the set of target groups" do
-        subject.on("master").groups.should have(1).item
-      end
-
-      it "does not add duplicate target groups" do
-        subject.on("master")
-        subject.on("master")
-
-        subject.groups.should have(1).item
-      end
-
-      context "given a group that is not part of the gear's parent" do
-        before(:each) do
-          component.stub(:group).with("not_exist").and_return(nil)
-        end
-
-        it "raises a GroupNotFound error" do
-          lambda {
-            subject.on("not_exist")
-          }.should raise_error(MB::GroupNotFound)
-        end
-      end
-    end
-
-    describe "#nodes" do
-      before(:each) do
-        subject.on("master")
-        subject.on("slave")
-      end
-
-      it "returns an array" do
-        subject.nodes.should be_a(Array)
-      end
-
-      it "contains only the unique node elements from the component's group" do
-        subject.nodes =~ master_group.nodes
-        subject.nodes =~ slave_group.nodes
-        subject.nodes.should have(3).items
-      end
+      MB::ChefRunner.any_instance.stub(:test!)
+      MB::ChefRunner.any_instance.stub(:run).and_return([:success, []])
     end
 
     describe "#run" do

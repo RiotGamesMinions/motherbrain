@@ -29,6 +29,17 @@ module MotherBrain
     end
 
     # @param [#to_sym] name
+    def group!(group_name)
+      group = group(group_name)
+      
+      if group.nil?
+        raise GroupNotFound, "Group #{group_name} does not exist on #{name}!"
+      end
+
+      group
+    end
+
+    # @param [#to_sym] name
     def command(name)
       self.commands.find { |command| command.name == name }
     end

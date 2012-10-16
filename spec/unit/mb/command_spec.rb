@@ -31,3 +31,41 @@ describe MB::Command do
     end
   end
 end
+
+describe MB::Command::CommandRunner do
+  let(:scope) { double('plugin', name: "plugin") }
+
+  let(:action_1) { double('action_1', name: "action 1", run: lambda {}) }
+  let(:action_2) { double('action_2', name: "action 2", run: lambda {}) }
+
+  let(:actions) { [ action_1, action_2 ] }
+
+  let(:node_1) { double('node_1', name: 'reset.riotgames.com') }
+  let(:node_2) { double('node_2', name: 'jwinsor.riotgames.com') }
+  let(:nodes) { [ node_1, node_2 ] }
+
+  let(:group) { double('group', nodes: nodes) }
+
+  subject { MB::Command::CommandRunner }
+
+  describe "#on" do
+    before(:each) do
+      @proc = Proc.new do
+        on("group") do
+          # block
+        end
+      end
+
+      MB::Command::CommandRunner::CleanRoom.stub_chain(:new, :actions).and_return(actions)
+    end
+
+    it "initializes" do
+      actions.each do |action|
+        action.should_receive(:nodes=)
+      end
+
+      scope.stub(:group!).and_return(group)
+      subject.new(@context, scope, @proc)
+    end
+  end
+end
