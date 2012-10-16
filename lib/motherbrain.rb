@@ -32,6 +32,7 @@ module MotherBrain
   autoload :Group, 'mb/group'
   autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
+  autoload :Logging, 'mb/logging'
   autoload :Mixin, 'mb/mixin'
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
@@ -49,6 +50,18 @@ module MotherBrain
     # @return [Pathname]
     def root
       @root ||= Pathname.new(File.expand_path('../', File.dirname(__FILE__)))
+    end
+
+    # @return [Logger]
+    def logger
+      MB::Logging.logger
+    end
+
+    # @param [Logger, nil] obj
+    #
+    # @return [Logger]
+    def set_logger(klass)
+      @logger = klass
     end
   end
 end
