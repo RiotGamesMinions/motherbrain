@@ -101,7 +101,7 @@ module MotherBrain
         # @return [String]
         attr_reader :name
         # @return [Set<Ridley::Node>]
-        attr_accessor :nodes
+        attr_reader :nodes
 
         # @param [String] name
         # @param [MB::Component] component
@@ -114,14 +114,14 @@ module MotherBrain
 
           super(context)
           @name      = name
-          @nodes     = Set.new
           @component = component
           @block     = block
           @runner    = ActionRunner.new(context, self, component)
         end
 
         # @return [Boolean]
-        def run
+        def run(nodes)
+          @nodes = nodes
           runner.instance_eval(&block)
           chef_run
           

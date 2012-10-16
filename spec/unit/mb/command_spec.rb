@@ -35,8 +35,8 @@ end
 describe MB::Command::CommandRunner do
   let(:scope) { double('plugin', name: "plugin") }
 
-  let(:action_1) { double('action_1', name: "action 1", run: lambda {}) }
-  let(:action_2) { double('action_2', name: "action 2", run: lambda {}) }
+  let(:action_1) { double('action_1', name: "action 1") }
+  let(:action_2) { double('action_2', name: "action 2") }
 
   let(:actions) { [ action_1, action_2 ] }
 
@@ -57,14 +57,15 @@ describe MB::Command::CommandRunner do
       end
 
       MB::Command::CommandRunner::CleanRoom.stub_chain(:new, :actions).and_return(actions)
-    end
 
-    it "initializes" do
       actions.each do |action|
-        action.should_receive(:nodes=)
+        action.should_receive(:run)
       end
 
       scope.stub(:group!).and_return(group)
+    end
+
+    it "initializes" do
       subject.new(@context, scope, @proc)
     end
   end

@@ -78,15 +78,12 @@ module MotherBrain
           group_names = [group_names]
         end
 
-        nodes = group_names.map do |group_name|
-          scope.group!(group_name)
-        end.flat_map(&:nodes).uniq
-
+        groups = group_names.map { |group_name| scope.group!(group_name) }
+        nodes = groups.flat_map(&:nodes).uniq
         actions = CleanRoom.new(context, scope, &block).actions
 
         actions.each do |action|
-          action.nodes = nodes
-          action.run
+          action.run(nodes)
         end
       end
 
