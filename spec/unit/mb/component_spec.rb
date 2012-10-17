@@ -41,6 +41,24 @@ describe MB::Component do
     end
   end
 
+  describe "#group!" do
+    subject do
+      MB::Component.new("activemq", @context) do
+        group "masters" do
+          # block
+        end
+      end
+    end
+
+    it "returns the group matching the given name" do
+      subject.group!("masters").name.should eql("masters")
+    end
+
+    it "raises an exception on a missing group" do
+      lambda { subject.group!("slaves") }.should raise_error(MB::GroupNotFound)
+    end
+  end
+
   describe "#nodes" do
     pending
   end
