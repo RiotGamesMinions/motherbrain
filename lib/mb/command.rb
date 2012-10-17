@@ -92,7 +92,6 @@ module MotherBrain
 
         actions = CleanRoom.new(context, scope, &block).actions
 
-        group_names = [group_names] unless group_names.kind_of?(Array)
         nodes = group_names.map { |group_name| scope.group!(group_name) }.flat_map(&:nodes).uniq
 
         if options[:any]
