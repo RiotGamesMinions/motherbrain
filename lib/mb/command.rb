@@ -69,29 +69,40 @@ module MotherBrain
         instance_eval(&execute)
       end
 
-      def chef_run(&block)
+      # Run the block specified on the nodes in the groups specified.
+      #
+      # @param [Array] group_names groups to run on
+      #
+      # @option options [Integer] :any
+      #   the number of nodes to run on, which nodes are chosen doesn't matter
+      # @option options [Integer] :max_concurrent
+      #   the number of nodes to run on at a time
+      #
+      # @example running on masters and slaves, only 2 of them, 1 at a time 
+      #
+      #   on("masters", "slaves", any: 2, max_concurrent: 1) do
+      #     # actions
+      #   end
+      def on(*group_names, &block)
+        options = group_names.last.kind_of?(Hash) ? group_names.pop : {}
+
         unless block_given?
           raise PluginSyntaxError, "Block required"
         end
 
         actions = CleanRoom.new(context, scope, &block).actions
-        actions.map(&:run)
 
-        nodes = actions.collect(&:nodes).flatten.uniq
+        nodes = group_names.map { |group_name| scope.group!(group_name) }.flat_map(&:nodes).uniq
 
-        runner_options = {}.tap do |opts|
-          opts[:nodes]    = nodes
-          opts[:user]     = config.ssh_user
-          opts[:keys]     = config.ssh_key if config.ssh_key
-          opts[:password] = config.ssh_password if config.ssh_password
+        if options[:any]
+          nodes = nodes.first(options[:any])
         end
-
-        chef = ChefRunner.new(runner_options)
-        chef.test!
-        status, errors = chef.run
-
-        if status == :error
-          raise ChefRunFailure.new(errors)
+        
+        options[:max_concurrent] ||= nodes.count
+        nodes.each_slice(options[:max_concurrent]) do |current_nodes|
+          actions.each do |action|
+            action.run(current_nodes)
+          end
         end
       end
 

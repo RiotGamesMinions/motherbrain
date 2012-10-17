@@ -100,8 +100,8 @@ module MotherBrain
       class Action < ContextualModel
         # @return [String]
         attr_reader :name
-        # @return [Set<MB::Group>]
-        attr_reader :groups
+        # @return [Set<Ridley::Node>]
+        attr_reader :nodes
 
         # @param [String] name
         # @param [MB::Component] component
@@ -114,43 +114,40 @@ module MotherBrain
 
           super(context)
           @name      = name
-          @groups    = Set.new
           @component = component
           @block     = block
           @runner    = ActionRunner.new(context, self, component)
         end
 
-        # Run this action on all of the nodes in the given group
+        # Run this action on the specified nodes.
         #
-        # @param [String] group_name
-        #
-        # @return [self]
-        #   returns the current instance to allow chaining
-        def on(group_name)
-          group = component.group(group_name)
+        # @param [Array<Ridley::Node>] nodes the nodes to run this action on
+        def run(nodes)
+          @nodes = nodes
+          runner.instance_eval(&block)
+          chef_run(nodes)
+          
+          self
+        end
 
-          if group.nil?
-            raise GroupNotFound, "Group '#{group_name}' not found on component '#{component.name}'"
+        # Run chef on the specified nodes.
+        #
+        # @param [Array<Ridley::Node>] nodes the nodes to run chef on
+        def chef_run(nodes)
+          runner_options = {}.tap do |opts|
+            opts[:nodes]    = nodes
+            opts[:user]     = config.ssh_user
+            opts[:keys]     = config.ssh_key if config.ssh_key
+            opts[:password] = config.ssh_password if config.ssh_password
           end
 
-          self.groups.add(group)
-          self
-        end
+          chef = ChefRunner.new(runner_options)
+          chef.test!
+          status, errors = chef.run
 
-        # The nodes of any group added to this Action. Only unique nodes will be
-        # returned.
-        #
-        # @return [Array]
-        def nodes
-          groups.collect do |group|
-            group.nodes
-          end.flatten.uniq
-        end
-
-        # @return [Boolean]
-        def run
-          runner.instance_eval(&block)
-          self
+          if status == :error
+            raise ChefRunFailure.new(errors)
+          end
         end
 
         private

@@ -100,25 +100,8 @@ describe MB::Gear::Service do
     let(:node_1) { double('node_1', name: 'reset.riotgames.com') }
     let(:node_2) { double('node_2', name: 'jwinsor.riotgames.com') }
     let(:node_3) { double('node_3', name: 'jwinsor-2.riotgames.com') }
-
-    let(:master_group) do
-      double('master_group',
-        nodes: [
-          node_1,
-          node_2
-        ]
-      )
-    end
-
-    let(:slave_group) do
-      double('slave_group',
-        nodes: [
-          node_1,
-          node_2,
-          node_3
-        ]
-      )
-    end
+    let(:nodes) { [ node_1, node_2, node_3 ] }
+    let(:chef_runner) { double('chef_runner') }
 
     subject do
       MB::Gear::Service::Action.new(@context, action_name, component) do
@@ -127,59 +110,14 @@ describe MB::Gear::Service do
     end
 
     before(:each) do
-      component.stub(:group).with("master").and_return(master_group)
-      component.stub(:group).with("slave").and_return(slave_group)
-    end
-
-    describe "#on" do
-      it "returns self" do
-        subject.on("master").should eql(subject)
-      end
-
-      it "adds a group to the set of target groups" do
-        subject.on("master").groups.should have(1).item
-      end
-
-      it "does not add duplicate target groups" do
-        subject.on("master")
-        subject.on("master")
-
-        subject.groups.should have(1).item
-      end
-
-      context "given a group that is not part of the gear's parent" do
-        before(:each) do
-          component.stub(:group).with("not_exist").and_return(nil)
-        end
-
-        it "raises a GroupNotFound error" do
-          lambda {
-            subject.on("not_exist")
-          }.should raise_error(MB::GroupNotFound)
-        end
-      end
-    end
-
-    describe "#nodes" do
-      before(:each) do
-        subject.on("master")
-        subject.on("slave")
-      end
-
-      it "returns an array" do
-        subject.nodes.should be_a(Array)
-      end
-
-      it "contains only the unique node elements from the component's group" do
-        subject.nodes =~ master_group.nodes
-        subject.nodes =~ slave_group.nodes
-        subject.nodes.should have(3).items
-      end
+      chef_runner.should_receive(:test!)
+      chef_runner.should_receive(:run).and_return([:success, []])
+      MB::ChefRunner.stub(:new).and_return(chef_runner)
     end
 
     describe "#run" do
       it "returns true on success" do
-        subject.run.should be_true
+        subject.run(nodes).should be_true
       end
     end
   end
