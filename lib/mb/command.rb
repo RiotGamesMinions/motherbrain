@@ -74,7 +74,7 @@ module MotherBrain
       # @param [Array] group_names groups to run on
       #
       # @option options [Integer] :any
-      #   the number of nodes to run on, which ones are chosen doesn't matter
+      #   the number of nodes to run on, which nodes are chosen doesn't matter
       # @option options [Integer] :max_concurrent
       #   the number of nodes to run on at a time
       #
