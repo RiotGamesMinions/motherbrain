@@ -69,9 +69,8 @@ module MotherBrain
         instance_eval(&execute)
       end
 
-      def on(*args, &block)
-        options = args.last.kind_of?(Hash) ? args.pop : {}
-        group_names = args
+      def on(*group_names, &block)
+        options = group_names.last.kind_of?(Hash) ? group_names.pop : {}
 
         unless block_given?
           raise PluginSyntaxError, "Block required"
