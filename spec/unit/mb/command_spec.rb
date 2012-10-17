@@ -56,6 +56,14 @@ describe MB::Command::CommandRunner do
       MB::Command::CommandRunner::CleanRoom.stub_chain(:new, :actions).and_return(actions)
     end
 
+    it "should raise an exception if it has no block" do
+      command_block = Proc.new do
+        on("master_group")
+      end
+      
+      lambda { subject.new(@context, scope, command_block)}.should raise_error(MB::PluginSyntaxError)
+    end
+
     it "has a single group" do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
@@ -81,7 +89,24 @@ describe MB::Command::CommandRunner do
       end
 
       command_block = Proc.new do
-        on(["master_group", "slave_group"]) do
+        on("master_group", "slave_group") do
+          # block
+        end
+      end
+      
+      subject.new(@context, scope, command_block)
+    end
+
+    it "has multiple groups and an option" do
+      scope.should_receive(:group!).with("master_group").and_return(master_group)
+      scope.should_receive(:group!).with("slave_group").and_return(slave_group)
+
+      actions.each do |action|
+        action.should_receive(:run).with([anything()]).exactly(3).times
+      end
+
+      command_block = Proc.new do
+        on("master_group", "slave_group", max_concurrent: 1) do
           # block
         end
       end
