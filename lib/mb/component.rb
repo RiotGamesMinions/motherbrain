@@ -29,6 +29,7 @@ module MotherBrain
     end
 
     # @param [#to_sym] name
+    # @raise [GroupNotFound] if the group is not found
     def group!(group_name)
       group = group(group_name)
       

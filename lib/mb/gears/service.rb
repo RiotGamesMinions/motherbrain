@@ -119,7 +119,9 @@ module MotherBrain
           @runner    = ActionRunner.new(context, self, component)
         end
 
-        # @return [Boolean]
+        # Run this action on the specified nodes.
+        #
+        # @param [Array<Ridley::Node>] nodes the nodes to run this action on
         def run(nodes)
           @nodes = nodes
           runner.instance_eval(&block)
@@ -128,6 +130,9 @@ module MotherBrain
           self
         end
 
+        # Run chef on the specified nodes.
+        #
+        # @param [Array<Ridley::Node>] nodes the nodes to run chef on
         def chef_run(nodes)
           runner_options = {}.tap do |opts|
             opts[:nodes]    = nodes

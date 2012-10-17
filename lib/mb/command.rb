@@ -69,6 +69,20 @@ module MotherBrain
         instance_eval(&execute)
       end
 
+      # Run the block specified on the nodes in the groups specified.
+      #
+      # @param [Array] group_names groups to run on
+      #
+      # @option options [Integer] :any
+      #   the number of nodes to run on, which ones are chosen doesn't matter
+      # @option options [Integer] :max_concurrent
+      #   the number of nodes to run on at a time
+      #
+      # @example running on masters and slaves, only 2 of them, 1 at a time 
+      #
+      #   on("masters", "slaves", any: 2, max_concurrent: 1) do
+      #     # actions
+      #   end
       def on(*group_names, &block)
         options = group_names.last.kind_of?(Hash) ? group_names.pop : {}
 
