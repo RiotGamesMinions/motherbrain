@@ -103,21 +103,85 @@ describe MB::Gear::Service do
     let(:nodes) { [ node_1, node_2, node_3 ] }
     let(:chef_runner) { double('chef_runner') }
 
-    subject do
-      MB::Gear::Service::Action.new(@context, action_name, component) do
-        # block
-      end
-    end
+    let(:ridley_object) { double("ridley_object") }
 
     before(:each) do
-      chef_runner.should_receive(:test!)
-      chef_runner.should_receive(:run).and_return([:success, []])
+      chef_runner.stub(:test!)
+      chef_runner.stub(:run).and_return([:success, []])
       MB::ChefRunner.stub(:new).and_return(chef_runner)
+
+      Ridley::Context.any_instance.stub(:find!).and_return(ridley_object)
     end
 
     describe "#run" do
       it "returns true on success" do
-        subject.run(nodes).should be_true
+        MB::Gear::Service::Action.new(@context, action_name, component) do
+          # block
+        end.run(nodes).should be_true
+      end
+
+      it "sets an environment attribute" do
+        ridley_object.should_receive(:set_override_attribute)
+        ridley_object.should_receive(:save)
+
+        MB::Gear::Service::Action.new(@context, action_name, component) do
+          environment_attribute("some.attr", "val")
+        end.run(nodes)
+      end
+      
+      it "sets a node attribute" do
+        ridley_object.should_receive(:set_override_attribute).exactly(3).times
+        ridley_object.should_receive(:save).exactly(3).times
+
+        MB::Gear::Service::Action.new(@context, action_name, component) do
+          node_attribute("some.attr", "val")
+        end.run(nodes)
+      end
+
+      it "toggles an environment attribute" do
+        ridley_object.stub(:override_attributes).and_return({some: {attr: "before_val"}})
+        ridley_object.should_receive(:set_override_attribute)
+        ridley_object.should_receive(:set_override_attribute).with("some.attr", "before_val")
+        ridley_object.should_receive(:save).exactly(2).times
+
+        MB::Gear::Service::Action.new(@context, action_name, component) do
+          environment_attribute("some.attr", "val", toggle: true)
+        end.run(nodes)
+      end
+
+      it "toggles a node attribute" do
+        ridley_object.stub(:override_attributes).and_return({some: {attr: "before_val"}})
+        ridley_object.should_receive(:set_override_attribute).with("some.attr", "val").exactly(3).times
+        ridley_object.should_receive(:set_override_attribute).with("some.attr", "before_val").exactly(3).times
+        ridley_object.should_receive(:save).exactly(6).times
+
+        MB::Gear::Service::Action.new(@context, action_name, component) do
+          node_attribute("some.attr", "val", toggle: true)
+        end.run(nodes)
+      end
+
+      it "toggles a node and environment attribute" do
+        ridley_object.stub(:override_attributes).and_return({some: {attr: "before_val"}})
+        ridley_object.should_receive(:set_override_attribute).with("some.attr", "val").exactly(4).times
+        ridley_object.should_receive(:set_override_attribute).with("some.attr", "before_val").exactly(4).times
+        ridley_object.should_receive(:save).exactly(8).times
+
+        MB::Gear::Service::Action.new(@context, action_name, component) do
+          node_attribute("some.attr", "val", toggle: true)
+          environment_attribute("some.attr", "val", toggle: true)
+        end.run(nodes)
+      end
+
+      it "always performs resets" do
+        ridley_object.stub(:override_attributes).and_return({some: {attr: "before_val"}})
+        ridley_object.should_receive(:set_override_attribute).with("some.attr", "val").exactly(3).times
+        ridley_object.should_receive(:set_override_attribute).with("some.attr", "before_val").exactly(3).times
+        ridley_object.should_receive(:save).exactly(6).times
+
+        MB::Gear::Service::Action.new(@context, action_name, component) do
+          node_attribute("some.attr", "val", toggle: true)
+          this_does_not_exist!
+        end.run(nodes)
       end
     end
   end
