@@ -162,6 +162,7 @@ module MotherBrain
         class ActionRunner < ContextualModel
           include Logging
 
+          # @return [Array<Proc>]
           attr_reader :resets
 
           # @param [MB::Context] context
