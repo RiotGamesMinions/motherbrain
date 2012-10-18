@@ -190,7 +190,7 @@ module MotherBrain
               if options[:toggle]
                 original_value = obj.override_attributes.dig(key)
                 if original_value
-                  resets << lambda { environment_attribute(key, original_value) }
+                  resets.unshift(lambda { environment_attribute(key, original_value) })
                 end
               end
 
@@ -227,7 +227,7 @@ module MotherBrain
                 if options[:toggle]
                   original_value = obj.override_attributes.dig(key)
                   if original_value
-                    resets << lambda { set_node_attribute(l_node, key, original_value) }
+                    resets.unshift(lambda { set_node_attribute(l_node, key, original_value) })
                   end
                 end
 
