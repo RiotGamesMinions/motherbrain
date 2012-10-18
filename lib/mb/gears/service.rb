@@ -179,6 +179,9 @@ module MotherBrain
           #
           # @param [String] key
           # @param [Object] value
+          #
+          # @option options [Boolean] :toggle
+          #   set this environment attribute only for a single chef run (default: false)
           def environment_attribute(key, value, options = {})
             options[:toggle] ||= false
 
@@ -199,11 +202,14 @@ module MotherBrain
             end
           end
 
-          # Set a node level attribute to the given value. The key is represented
-          # by a dotted path.
+          # Set a node level attribute on all nodes for this action to the given value. 
+          # The key is represented by a dotted path.
           #
           # @param [String] key
           # @param [Object] value
+          #
+          # @option options [Boolean] :toggle
+          #   set this node attribute only for a single chef run (default: false)
           def node_attribute(key, value, options = {})
             options[:toggle] ||= false
 
@@ -218,6 +224,15 @@ module MotherBrain
 
           private
 
+            # Set a node level attribute on a single node to the given value. 
+            # The key is represented by a dotted path.
+            #
+            # @param [Ridley::Node] l_node the node to set the attribute on
+            # @param [String] key
+            # @param [Object] value
+            #
+            # @option options [Boolean] :toggle
+            #   set this node attribute only for a single chef run (default: false)
             def set_node_attribute(l_node, key, value, options = {})
               log.info "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
 
