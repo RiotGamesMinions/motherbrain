@@ -126,8 +126,9 @@ module MotherBrain
           @nodes = nodes
           runner.instance_eval(&block)
           chef_run(nodes)
-          
-          self
+        ensure
+          runner.reset!
+          return self
         end
 
         # Run chef on the specified nodes.
@@ -161,6 +162,9 @@ module MotherBrain
         class ActionRunner < ContextualModel
           include Logging
 
+          # @return [Array<Proc>]
+          attr_reader :resets
+
           # @param [MB::Context] context
           # @param [Gear::Action] action
           # @param [MB::Component] component
@@ -168,6 +172,7 @@ module MotherBrain
             super(context)
             @action    = action
             @component = component
+            @resets = []
           end
 
           # Set an environment level attribute to the given value. The key is represented
@@ -175,34 +180,77 @@ module MotherBrain
           #
           # @param [String] key
           # @param [Object] value
-          def environment_attribute(key, value)
+          #
+          # @option options [Boolean] :toggle
+          #   set this environment attribute only for a single chef run (default: false)
+          def environment_attribute(key, value, options = {})
+            options[:toggle] ||= false
+
             log.info "Setting attribute '#{key}' to '#{value}' on #{self.environment}"
 
             self.chef_conn.sync do
               obj = environment.find!(self.environment)
+
+              if options[:toggle]
+                original_value = obj.override_attributes.dig(key)
+                if original_value
+                  resets.unshift(lambda { environment_attribute(key, original_value) })
+                end
+              end
+
               obj.set_override_attribute(key, value)
               obj.save
             end
           end
 
-          # Set a node level attribute to the given value. The key is represented
-          # by a dotted path.
+          # Set a node level attribute on all nodes for this action to the given value. 
+          # The key is represented by a dotted path.
           #
           # @param [String] key
           # @param [Object] value
-          def node_attribute(key, value)
+          #
+          # @option options [Boolean] :toggle
+          #   set this node attribute only for a single chef run (default: false)
+          def node_attribute(key, value, options = {})
+            options[:toggle] ||= false
+
             action.nodes.each do |l_node|
+              set_node_attribute(l_node, key, value, options)
+            end
+          end
+
+          def reset!
+            resets.each(&:call)
+          end
+
+          private
+
+            # Set a node level attribute on a single node to the given value. 
+            # The key is represented by a dotted path.
+            #
+            # @param [Ridley::Node] l_node the node to set the attribute on
+            # @param [String] key
+            # @param [Object] value
+            #
+            # @option options [Boolean] :toggle
+            #   set this node attribute only for a single chef run (default: false)
+            def set_node_attribute(l_node, key, value, options = {})
               log.info "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
 
               self.chef_conn.sync do
                 obj = node.find!(l_node.name)
+
+                if options[:toggle]
+                  original_value = obj.override_attributes.dig(key)
+                  if original_value
+                    resets.unshift(lambda { set_node_attribute(l_node, key, original_value) })
+                  end
+                end
+
                 obj.set_override_attribute(key, value)
                 obj.save
               end
             end
-          end
-
-          private
 
             attr_reader :action
             attr_reader :component
