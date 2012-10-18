@@ -127,7 +127,7 @@ module MotherBrain
           runner.instance_eval(&block)
           chef_run(nodes)
         ensure
-          runner.resets.each(&:call)
+          runner.reset!
           return self
         end
 
@@ -210,6 +210,10 @@ module MotherBrain
             action.nodes.each do |l_node|
               set_node_attribute(l_node, key, value, options)
             end
+          end
+
+          def reset!
+            resets.each(&:call)
           end
 
           private
