@@ -59,12 +59,14 @@ module MotherBrain
     # @api private
     class CommandRunner < ContextualModel
       attr_reader :scope
+      attr_accessor :run_groups
 
       # @param [Object] scope
       # @param [Proc] execute
       def initialize(context, scope, execute)
         super(context)
         @scope = scope
+        @run_groups = []
 
         instance_eval(&execute)
       end
@@ -103,11 +105,9 @@ module MotherBrain
         end
         
         options[:max_concurrent] ||= nodes.count
-        nodes.each_slice(options[:max_concurrent]) do |current_nodes|
-          actions.each do |action|
-            action.run(current_nodes)
-          end
-        end
+        node_groups = nodes.each_slice(options[:max_concurrent]).to_a
+
+        run_groups << [actions, node_groups]
       end
 
       # @author Jamie Winsor <jamie@vialstudios.com>

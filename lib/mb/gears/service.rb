@@ -102,6 +102,8 @@ module MotherBrain
         attr_reader :name
         # @return [Set<Ridley::Node>]
         attr_reader :nodes
+        # @return [Boolean]
+        attr_reader :requires_chef_run
 
         # @param [String] name
         # @param [MB::Component] component
@@ -113,10 +115,11 @@ module MotherBrain
           end
 
           super(context)
-          @name      = name
-          @component = component
-          @block     = block
-          @runner    = ActionRunner.new(context, self, component)
+          @name              = name
+          @component         = component
+          @block             = block
+          @runner            = ActionRunner.new(context, self, component)
+          @requires_chef_run = true
         end
 
         # Run this action on the specified nodes.

@@ -50,6 +50,9 @@ describe MB::Command::CommandRunner do
 
   subject { MB::Command::CommandRunner }
 
+  describe "#async" do
+  end
+
   describe "#on" do
 
     before(:each) do
@@ -67,26 +70,21 @@ describe MB::Command::CommandRunner do
     it "has a single group" do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
-      actions.each do |action|
-        action.should_receive(:run).with(master_group.nodes)
-      end
-
       command_block = Proc.new do
         on("master_group") do
           # block
         end
       end
       
-      subject.new(@context, scope, command_block)
+      command_runner = subject.new(@context, scope, command_block)
+      actual_actions, node_groups = command_runner.run_groups.first
+      actual_actions.should =~ actions
+      node_groups.first.should =~ master_group.nodes
     end
 
     it "has multiple groups" do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
-
-      actions.each do |action|
-        action.should_receive(:run).with(nodes)
-      end
 
       command_block = Proc.new do
         on("master_group", "slave_group") do
@@ -94,16 +92,15 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      command_runner = subject.new(@context, scope, command_block)
+      actual_actions, node_groups = command_runner.run_groups.first
+      actual_actions.should =~ actions
+      node_groups.first.should =~ nodes
     end
 
     it "has multiple groups and an option" do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
-
-      actions.each do |action|
-        action.should_receive(:run).with([anything()]).exactly(3).times
-      end
 
       command_block = Proc.new do
         on("master_group", "slave_group", max_concurrent: 1) do
@@ -111,15 +108,14 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      command_runner = subject.new(@context, scope, command_block)
+      actual_actions, node_groups = command_runner.run_groups.first
+      actual_actions.should =~ actions
+      node_groups.should =~ [[node_1], [node_2], [node_3]]
     end
 
     it "can run on any 1 node" do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
-
-      actions.each do |action|
-        action.should_receive(:run).with([anything()])
-      end
 
       command_block = Proc.new do
         on("master_group", any: 1) do
@@ -127,16 +123,14 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      command_runner = subject.new(@context, scope, command_block)
+      actual_actions, node_groups = command_runner.run_groups.first
+      actual_actions.should =~ actions
+      node_groups.should =~ [[node_1]]
     end
 
     it "can only run on one node at a time" do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
-
-      actions.each do |action|
-        action.should_receive(:run).with([node_1])
-        action.should_receive(:run).with([node_2])
-      end
 
       command_block = Proc.new do
         on("master_group", max_concurrent: 1) do
@@ -144,7 +138,10 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      command_runner = subject.new(@context, scope, command_block)
+      actual_actions, node_groups = command_runner.run_groups.first
+      actual_actions.should =~ actions
+      node_groups.should =~ [[node_1], [node_2]]
     end
 
     context "when there are no nodes in the target groups" do
