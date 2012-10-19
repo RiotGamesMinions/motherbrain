@@ -106,7 +106,6 @@ module MotherBrain
         
         options[:max_concurrent] ||= nodes.count
         node_groups = nodes.each_slice(options[:max_concurrent]).to_a
-
         run_groups << [actions, node_groups]
       end
 

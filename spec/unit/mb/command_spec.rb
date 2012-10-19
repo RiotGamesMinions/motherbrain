@@ -144,6 +144,30 @@ describe MB::Command::CommandRunner do
       node_groups.should =~ [[node_1], [node_2]]
     end
 
+    it "has multiple on blocks" do
+      scope.should_receive(:group!).with("master_group").and_return(master_group)
+      scope.should_receive(:group!).with("slave_group").and_return(slave_group)
+
+      command_block = Proc.new do
+        on("master_group", max_concurrent: 1) do
+          # block
+        end
+
+        on("slave_group") do
+          # block
+        end
+      end
+      
+      command_runner = subject.new(@context, scope, command_block)
+      master_actions, master_node_groups = command_runner.run_groups.first
+      master_actions.should =~ actions
+      master_node_groups.should =~ [[node_1], [node_2]]
+
+      slave_actions, slave_node_groups = command_runner.run_groups.second
+      slave_actions.should =~ actions
+      slave_node_groups.should =~ [[node_3]]
+    end
+
     context "when there are no nodes in the target groups" do
       let(:empty_group) { double('empty_group', nodes: Array.new) } 
 
