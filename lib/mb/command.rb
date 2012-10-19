@@ -94,6 +94,10 @@ module MotherBrain
 
         nodes = group_names.map { |group_name| scope.group!(group_name) }.flat_map(&:nodes).uniq
 
+        if nodes.empty?
+          return nil
+        end
+
         if options[:any]
           nodes = nodes.first(options[:any])
         end
