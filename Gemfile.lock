@@ -5,7 +5,7 @@ PATH
       activesupport
       chozo
       nexus_cli (~> 0.3.0)
-      ridley (>= 0.3.0)
+      ridley (>= 0.3.1)
       rye
       solve (>= 0.3.1)
 
@@ -93,8 +93,9 @@ GEM
     redcarpet (2.1.1)
     rest-client (1.6.7)
       mime-types (>= 1.16)
-    ridley (0.3.0)
-      activemodel
+    ridley (0.3.1)
+      activemodel (>= 3.2.0)
+      activesupport (>= 3.2.0)
       addressable
       chozo (>= 0.0.3)
       faraday
