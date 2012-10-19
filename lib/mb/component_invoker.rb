@@ -25,6 +25,8 @@ module MotherBrain
         klass.class_eval do
           desc("nodes ENVIRONMENT", "List all nodes grouped by Group")
           define_method(:nodes) do |environment|
+            assert_environment_exists(environment)
+
             MB.ui.say "Nodes for '#{component.name}' in '#{environment}':"
             
             nodes = component.nodes(environment).each do |group, nodes|

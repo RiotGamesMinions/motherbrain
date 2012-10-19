@@ -28,6 +28,8 @@ module MotherBrain
         klass.class_eval do
           desc("nodes ENVIRONMENT", "List all nodes grouped by Component and Group")
           define_method(:nodes) do |environment|
+            assert_environment_exists(environment)
+            
             plugin.send(:context).environment = environment
 
             MB.ui.say "Nodes in '#{environment}':"
