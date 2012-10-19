@@ -241,13 +241,13 @@ module MotherBrain
                 obj = node.find!(l_node.name)
 
                 if options[:toggle]
-                  original_value = obj.override_attributes.dig(key)
+                  original_value = obj.normal_attributes.dig(key)
                   if original_value
                     resets.unshift(lambda { set_node_attribute(l_node, key, original_value) })
                   end
                 end
 
-                obj.set_override_attribute(key, value)
+                obj.set_attribute(key, value)
                 obj.save
               end
             end
