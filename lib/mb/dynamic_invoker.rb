@@ -18,10 +18,20 @@ module MotherBrain
         def define_command(command)
           desc("#{command.name} ENVIRONMENT", command.description.to_s)
           define_method(command.name.to_sym) do |environment|
+            assert_environment_exists(environment)
+
             command.send(:context).environment = environment
             command.invoke
           end
         end
     end
+
+    protected
+
+      def assert_environment_exists(env_name)
+        context.chef_conn.environment.find!(env_name)
+      rescue Ridley::Errors::HTTPNotFound
+        raise EnvironmentNotFound, "Environment: '#{env_name}' not found on Chef Server"
+      end
   end
 end
