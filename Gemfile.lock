@@ -95,7 +95,7 @@ GEM
     redcarpet (2.1.1)
     rest-client (1.6.7)
       mime-types (>= 1.16)
-    ridley (0.2.1)
+    ridley (0.3.0)
       activemodel
       addressable
       chozo (>= 0.0.3)
