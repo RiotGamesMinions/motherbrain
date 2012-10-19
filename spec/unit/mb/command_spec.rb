@@ -146,5 +146,23 @@ describe MB::Command::CommandRunner do
       
       subject.new(@context, scope, command_block)
     end
+
+    context "when there are no nodes in the target groups" do
+      let(:empty_group) { double('empty_group', nodes: Array.new) } 
+
+      it "runs no actions" do
+        scope.should_receive(:group!).with("empty_group").and_return(empty_group)
+
+        command_block = Proc.new do
+          on("empty_group") do
+            # block
+          end
+        end
+
+        actions.each { |action| action.should_not_receive(:run) }
+
+        subject.new(@context, scope, command_block)
+      end
+    end
   end
 end
