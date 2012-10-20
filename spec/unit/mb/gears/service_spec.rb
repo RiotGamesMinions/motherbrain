@@ -175,6 +175,17 @@ describe MB::Gear::Service do
         end.run(nodes)
       end
 
+      it "toggles a node attribute that is nil" do
+        ridley_object.stub(:normal).and_return({some: {}})
+        ridley_object.should_receive(:set_attribute).with("some.attr", "val").exactly(3).times
+        ridley_object.should_receive(:set_attribute).with("some.attr", nil).exactly(3).times
+        ridley_object.should_receive(:save).exactly(6).times
+
+        MB::Gear::Service::Action.new(@context, action_name, component) do
+          node_attribute("some.attr", "val", toggle: true)
+        end.run(nodes)
+      end
+
       it "always performs resets" do
         ridley_object.stub(:normal).and_return({some: {attr: "before_val"}})
         ridley_object.should_receive(:set_attribute).with("some.attr", "val").exactly(3).times
