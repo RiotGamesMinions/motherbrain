@@ -193,9 +193,7 @@ module MotherBrain
 
               if options[:toggle]
                 original_value = obj.override_attributes.dig(key)
-                if original_value
-                  resets.unshift(lambda { environment_attribute(key, original_value) })
-                end
+                resets.unshift(lambda { environment_attribute(key, original_value) })
               end
 
               obj.set_override_attribute(key, value)
@@ -241,10 +239,8 @@ module MotherBrain
                 obj = node.find!(l_node.name)
 
                 if options[:toggle]
-                  original_value = obj.normal_attributes.dig(key)
-                  if original_value
-                    resets.unshift(lambda { set_node_attribute(l_node, key, original_value) })
-                  end
+                  original_value = obj.normal.dig(key)
+                  resets.unshift(lambda { set_node_attribute(l_node, key, original_value) })
                 end
 
                 obj.set_attribute(key, value)
