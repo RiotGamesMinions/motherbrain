@@ -150,7 +150,7 @@ describe MB::Gear::Service do
       end
 
       it "toggles a node attribute" do
-        ridley_object.stub(:normal_attributes).and_return({some: {attr: "before_val"}})
+        ridley_object.stub(:normal).and_return({some: {attr: "before_val"}})
         ridley_object.should_receive(:set_attribute).with("some.attr", "val").exactly(3).times
         ridley_object.should_receive(:set_attribute).with("some.attr", "before_val").exactly(3).times
         ridley_object.should_receive(:save).exactly(6).times
@@ -162,7 +162,7 @@ describe MB::Gear::Service do
 
       it "toggles a node and environment attribute" do
         ridley_object.stub(:override_attributes).and_return({some: {attr: "before_val"}})
-        ridley_object.stub(:normal_attributes).and_return({some: {attr: "before_val"}})
+        ridley_object.stub(:normal).and_return({some: {attr: "before_val"}})
         ridley_object.should_receive(:set_attribute).with("some.attr", "val").exactly(3).times
         ridley_object.should_receive(:set_override_attribute).with("some.attr", "val").exactly(1).times
         ridley_object.should_receive(:set_attribute).with("some.attr", "before_val").exactly(3).times
@@ -176,7 +176,7 @@ describe MB::Gear::Service do
       end
 
       it "always performs resets" do
-        ridley_object.stub(:normal_attributes).and_return({some: {attr: "before_val"}})
+        ridley_object.stub(:normal).and_return({some: {attr: "before_val"}})
         ridley_object.should_receive(:set_attribute).with("some.attr", "val").exactly(3).times
         ridley_object.should_receive(:set_attribute).with("some.attr", "before_val").exactly(3).times
         ridley_object.should_receive(:save).exactly(6).times
