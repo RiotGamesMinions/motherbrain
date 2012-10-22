@@ -67,7 +67,7 @@ describe MB::Command::CommandRunner do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
       actions.each do |action|
-        action.should_receive(:run).with([node_1, node_2])
+        action.should_receive(:run).with(master_group.nodes)
       end
 
       command_block = Proc.new do
