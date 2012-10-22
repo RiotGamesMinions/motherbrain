@@ -55,11 +55,28 @@ module MotherBrain
       end
     end
 
+    class RunGroup
+      attr_accessor :actions
+      attr_accessor :node_groups
+
+      def initialize(actions, node_groups)
+        @actions = actions
+        @node_groups = node_groups
+      end
+
+      def run
+        node_groups.each do |nodes|
+          actions.each do |action|
+            action.run(nodes)
+          end
+        end
+      end
+    end
+
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CommandRunner < ContextualModel
       attr_reader :scope
-      attr_accessor :run_groups
 
       # @param [Object] scope
       # @param [Proc] execute
@@ -67,8 +84,35 @@ module MotherBrain
         super(context)
         @scope = scope
         @run_groups = []
+        @async = false
 
         instance_eval(&execute)
+      end
+
+      def run
+        threads = []
+
+        @run_groups.each do |run_group|
+          threads << Thread.new(run_group) do |run_group|
+            run_group.run
+          end
+        end
+
+        threads.each(&:join)
+
+        @run_groups = []
+      end
+
+      def async?
+        @async
+      end
+
+      def async(&block)
+        @async = true
+        instance_eval(&block)
+        @async = false
+
+        run
       end
 
       # Run the block specified on the nodes in the groups specified.
@@ -106,7 +150,13 @@ module MotherBrain
         
         options[:max_concurrent] ||= nodes.count
         node_groups = nodes.each_slice(options[:max_concurrent]).to_a
-        run_groups << [actions, node_groups]
+
+        run_group = RunGroup.new(actions, node_groups)
+        @run_groups << run_group
+
+        unless async?
+          run
+        end
       end
 
       # @author Jamie Winsor <jamie@vialstudios.com>
