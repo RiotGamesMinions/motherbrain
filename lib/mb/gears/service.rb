@@ -113,10 +113,10 @@ module MotherBrain
           end
 
           super(context)
-          @name              = name
-          @component         = component
-          @block             = block
-          @runner            = ActionRunner.new(context, self, component)
+          @name      = name
+          @component = component
+          @block     = block
+          @runner    = ActionRunner.new(context, self, component)
         end
 
         # Run this action on the specified nodes.
