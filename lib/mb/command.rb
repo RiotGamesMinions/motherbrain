@@ -55,27 +55,6 @@ module MotherBrain
       end
     end
 
-    class RunGroup
-      # @return [Array<#run>] actions the actions to run on the nodes
-      attr_accessor :actions
-      # @return [Array<Array<Ridley::Node>>] node_groups the nodes to run the actions on
-      attr_accessor :node_groups
-
-      def initialize(actions, node_groups)
-        @actions = actions
-        @node_groups = node_groups
-      end
-
-      # Run the actions on the nodes, one group of nodes at a time.
-      def run
-        node_groups.each do |nodes|
-          actions.each do |action|
-            action.run(nodes)
-          end
-        end
-      end
-    end
-
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CommandRunner < ContextualModel
@@ -86,25 +65,25 @@ module MotherBrain
       def initialize(context, scope, execute)
         super(context)
         @scope = scope
-        @run_groups = []
+        @on_procs = []
         @async = false
 
         instance_eval(&execute)
       end
 
-      # Run all of the RunGroups that are stored on this instance.
+      # Run the stored procs created by on() that have not been ran yet.
       def run
         threads = []
 
-        @run_groups.each do |run_group|
-          threads << Thread.new(run_group) do |run_group|
-            run_group.run
+        @on_procs.each do |on_proc|
+          threads << Thread.new(on_proc) do |on_proc|
+            on_proc.call
           end
         end
 
         threads.each(&:join)
 
-        @run_groups = []
+        @on_procs = []
       end
 
       # Are we inside an async block?
@@ -157,8 +136,13 @@ module MotherBrain
         options[:max_concurrent] ||= nodes.count
         node_groups = nodes.each_slice(options[:max_concurrent]).to_a
 
-        run_group = RunGroup.new(actions, node_groups)
-        @run_groups << run_group
+        @on_procs << lambda do
+          node_groups.each do |nodes|
+            actions.each do |action|
+              action.run(nodes)
+            end
+          end
+        end
 
         unless async?
           run
