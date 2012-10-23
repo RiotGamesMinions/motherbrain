@@ -65,13 +65,44 @@ module MotherBrain
       def initialize(context, scope, execute)
         super(context)
         @scope = scope
+        @on_procs = []
+        @async = false
 
         instance_eval(&execute)
       end
 
+      # Run the stored procs created by on() that have not been ran yet.
+      def run
+        threads = []
+
+        @on_procs.each do |on_proc|
+          threads << Thread.new(on_proc) do |on_proc|
+            on_proc.call
+          end
+        end
+
+        threads.each(&:join)
+
+        @on_procs = []
+      end
+
+      # Are we inside an async block?
+      def async?
+        @async
+      end
+
+      # Run the block asynchronously.
+      def async(&block)
+        @async = true
+        instance_eval(&block)
+        @async = false
+
+        run
+      end
+
       # Run the block specified on the nodes in the groups specified.
       #
-      # @param [Array] group_names groups to run on
+      # @param [Array<String>] group_names groups to run on
       #
       # @option options [Integer] :any
       #   the number of nodes to run on, which nodes are chosen doesn't matter
@@ -103,10 +134,18 @@ module MotherBrain
         end
         
         options[:max_concurrent] ||= nodes.count
-        nodes.each_slice(options[:max_concurrent]) do |current_nodes|
-          actions.each do |action|
-            action.run(current_nodes)
+        node_groups = nodes.each_slice(options[:max_concurrent]).to_a
+
+        @on_procs << lambda do
+          node_groups.each do |nodes|
+            actions.each do |action|
+              action.run(nodes)
+            end
           end
+        end
+
+        unless async?
+          run
         end
       end
 

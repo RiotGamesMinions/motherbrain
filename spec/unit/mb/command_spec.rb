@@ -50,12 +50,11 @@ describe MB::Command::CommandRunner do
 
   subject { MB::Command::CommandRunner }
 
+  before(:each) do
+    MB::Command::CommandRunner::CleanRoom.stub_chain(:new, :actions).and_return(actions)
+  end
+
   describe "#on" do
-
-    before(:each) do
-      MB::Command::CommandRunner::CleanRoom.stub_chain(:new, :actions).and_return(actions)
-    end
-
     it "should raise an exception if it has no block" do
       command_block = Proc.new do
         on("master_group")
@@ -141,6 +140,52 @@ describe MB::Command::CommandRunner do
       command_block = Proc.new do
         on("master_group", max_concurrent: 1) do
           # block
+        end
+      end
+      
+      subject.new(@context, scope, command_block)
+    end
+
+    it "has multiple on blocks" do
+      scope.should_receive(:group!).with("master_group").and_return(master_group)
+      scope.should_receive(:group!).with("slave_group").and_return(slave_group)
+
+      actions.each do |action|
+        action.should_receive(:run).with([node_1])
+        action.should_receive(:run).with([node_2])
+        action.should_receive(:run).with([node_3])
+      end
+      
+      command_block = Proc.new do
+        on("master_group", max_concurrent: 1) do
+          # block
+        end
+
+        on("slave_group") do
+          # block
+        end
+      end
+      
+      subject.new(@context, scope, command_block)
+    end
+  end
+
+  describe "#async" do
+    it "is ran asynchronously" do
+      scope.should_receive(:group!).with("master_group").and_return(master_group)
+      scope.should_receive(:group!).with("slave_group").and_return(slave_group)
+
+      subject.any_instance.should_receive(:run).exactly(1).times
+      
+      command_block = Proc.new do
+        async do
+          on("master_group", max_concurrent: 1) do
+            # block
+          end
+
+          on("slave_group") do
+            # block
+          end
         end
       end
       
