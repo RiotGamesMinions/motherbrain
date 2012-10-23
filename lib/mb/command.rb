@@ -56,7 +56,9 @@ module MotherBrain
     end
 
     class RunGroup
+      # @return [Array<#run>] actions the actions to run on the nodes
       attr_accessor :actions
+      # @return [Array<Array<Ridley::Node>>] node_groups the nodes to run the actions on
       attr_accessor :node_groups
 
       def initialize(actions, node_groups)
@@ -64,6 +66,7 @@ module MotherBrain
         @node_groups = node_groups
       end
 
+      # Run the actions on the nodes, one group of nodes at a time.
       def run
         node_groups.each do |nodes|
           actions.each do |action|
@@ -89,6 +92,7 @@ module MotherBrain
         instance_eval(&execute)
       end
 
+      # Run all of the RunGroups that are stored on this instance.
       def run
         threads = []
 
@@ -103,10 +107,12 @@ module MotherBrain
         @run_groups = []
       end
 
+      # Are we inside an async block?
       def async?
         @async
       end
 
+      # Run the block asynchronously.
       def async(&block)
         @async = true
         instance_eval(&block)
@@ -117,7 +123,7 @@ module MotherBrain
 
       # Run the block specified on the nodes in the groups specified.
       #
-      # @param [Array] group_names groups to run on
+      # @param [Array<String>] group_names groups to run on
       #
       # @option options [Integer] :any
       #   the number of nodes to run on, which nodes are chosen doesn't matter
