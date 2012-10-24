@@ -181,6 +181,9 @@ module MotherBrain
           end
         end
 
+        def jmx(port, object)
+        end
+
         private
 
           attr_reader :scope
