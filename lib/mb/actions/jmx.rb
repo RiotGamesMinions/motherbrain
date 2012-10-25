@@ -1,4 +1,6 @@
-require 'jmx4r'
+if MB.jruby?
+  require 'jmx4r'
+end
 
 module MotherBrain
   module Action
@@ -11,6 +13,10 @@ module MotherBrain
       # @param [Fixnum] port the port to connect over
       # @param [String] object_name the name of the jmx object
       def initialize(port, object_name, &block)
+        unless MB.jruby?
+          raise ActionNotSupported, "The jmx action is only supported on JRuby"
+        end
+
         unless block_given? && block.arity == 1
           raise ArgumentError, "block with one argument required for jmx action"
         end
