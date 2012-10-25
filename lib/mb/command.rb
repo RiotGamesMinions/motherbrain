@@ -181,7 +181,8 @@ module MotherBrain
           end
         end
 
-        def jmx(port, object)
+        def jmx(port, object_name, &block)
+          actions << ::MB::Action::Jmx.new(port, object_name, &block)
         end
 
         private
