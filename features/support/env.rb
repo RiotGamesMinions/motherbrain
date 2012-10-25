@@ -1,25 +1,42 @@
 require 'rubygems'
 require 'bundler'
+require 'motherbrain'
 
-require 'rspec'
-require 'aruba/cucumber'
+def setup_env
+  require 'rspec'
+  require 'aruba/cucumber'
 
-Dir[File.join(File.expand_path("../../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
+  Dir[File.join(File.expand_path("../../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
 
-RSpec.configure do |config|
-  config.include MotherBrain::SpecHelpers
+  RSpec.configure do |config|
+    config.include MotherBrain::SpecHelpers
 
-  config.before(:each) do
-    clean_tmp_path
+    config.before(:each) do
+      clean_tmp_path
+    end
+  end
+
+  World(Aruba::Api)
+  World(MotherBrain::SpecHelpers)
+
+  Before do
+    set_mb_config_path
+    set_plugin_path
   end
 end
 
-World(Aruba::Api)
-World(MotherBrain::SpecHelpers)
+if MB.jruby?
+  setup_env
+  require 'motherbrain'
+else
+  require 'spork'
 
-Before do
-  set_mb_config_path
-  set_plugin_path
+  Spork.prefork do
+    setup_env
+  end
+
+  Spork.each_run do
+    require 'motherbrain'
+  end
 end
 
-require 'motherbrain'
