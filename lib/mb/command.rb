@@ -181,6 +181,11 @@ module MotherBrain
           end
         end
 
+        # @see {MotherBrain::Action::Jmx}
+        def jmx(port, object_name, &block)
+          actions << ::MB::Action::Jmx.new(port, object_name, &block)
+        end
+
         private
 
           attr_reader :scope
