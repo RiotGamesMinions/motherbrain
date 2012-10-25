@@ -25,7 +25,7 @@ module MotherBrain
       # @param [Array<Ridley::Node>] nodes the nodes to run this action on
       def run(nodes)
         nodes.each do |node|
-          connection = JMX::MBean.connection(host: node.automatic[:cloud][:public_hostname], port: port)
+          connection = JMX::MBean.connection(host: node.public_hostname, port: port)
           mbean = JMX::MBean.find_by_name(object_name, connection: connection)
           block.call(mbean)
         end
