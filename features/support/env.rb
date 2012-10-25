@@ -27,7 +27,6 @@ end
 
 if MB.jruby?
   setup_env
-  require 'motherbrain'
 else
   require 'spork'
 

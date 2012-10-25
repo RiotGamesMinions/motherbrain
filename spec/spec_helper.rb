@@ -38,7 +38,6 @@ end
 
 if MB.jruby?
   setup_rspec
-  require 'motherbrain'
 else
   require 'spork'
 
