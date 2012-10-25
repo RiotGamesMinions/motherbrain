@@ -2,7 +2,7 @@ require 'jmx4r'
 
 module MotherBrain
   module Action
-    class Jmx < Action
+    class Jmx
       attr_reader :port
       attr_reader :object_name
       attr_reader :block

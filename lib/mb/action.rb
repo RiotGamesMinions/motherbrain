@@ -1,10 +1,5 @@
 module MotherBrain
   module Action
-    class Action
-      def run(nodes)
-        raise NotImplementedError
-      end
-    end
   end
 end
 
