@@ -1,8 +1,8 @@
 require 'rubygems'
 require 'bundler'
-require 'spork'
+require 'motherbrain'
 
-Spork.prefork do
+def setup_env
   require 'rspec'
   require 'aruba/cucumber'
 
@@ -18,13 +18,24 @@ Spork.prefork do
 
   World(Aruba::Api)
   World(MotherBrain::SpecHelpers)
-  
+
   Before do
     set_mb_config_path
     set_plugin_path
   end
 end
 
-Spork.each_run do  
-  require 'motherbrain'
+if MB.jruby?
+  setup_env
+else
+  require 'spork'
+
+  Spork.prefork do
+    setup_env
+  end
+
+  Spork.each_run do
+    require 'motherbrain'
+  end
 end
+

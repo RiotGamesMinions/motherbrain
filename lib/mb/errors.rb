@@ -35,6 +35,8 @@ module MotherBrain
   class ChefRunnerError < MBError; status_code(102); end
   class NoValueForAddressAttribute < ChefRunnerError; end
 
+  class ActionNotSupported < MBError; status_code(103); end
+
   class ChefRunFailure < MBError
     status_code(103)
 
