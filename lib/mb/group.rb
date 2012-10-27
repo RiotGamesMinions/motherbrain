@@ -108,11 +108,6 @@ module MotherBrain
         instance_eval(&block)
       end
 
-      # @param [String] value
-      def description(value)
-        set(:description, value, kind_of: String)
-      end
-
       # @param [#to_s] value
       #
       # @return [Set<String>]

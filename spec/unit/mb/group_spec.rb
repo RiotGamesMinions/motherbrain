@@ -63,18 +63,6 @@ describe MB::Group do
     end
   end
 
-  describe "#description" do
-    subject do
-      MB::Group.new("a_group", @context) do
-        description "some description"
-      end
-    end
-
-    it "returns the description of the Group" do
-      subject.description.should eql("some description")
-    end
-  end
-
   describe "#recipes" do
     subject do
       MB::Group.new("pvpnet", @context) do
