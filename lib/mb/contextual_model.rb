@@ -16,6 +16,6 @@ module MotherBrain
 
       def_delegator :context, :config
       def_delegator :context, :chef_conn
-      def_delegator :context, :environment    
+      def_delegator :context, :environment
   end
 end
