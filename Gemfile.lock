@@ -52,7 +52,7 @@ GEM
       ruby-progressbar (~> 1.0.0)
     gherkin (2.11.5)
       json (>= 1.4.6)
-    guard (1.5.0)
+    guard (1.5.1)
       listen (>= 0.4.2)
       lumberjack (>= 1.0.2)
       pry (>= 0.9.10)
@@ -152,7 +152,7 @@ DEPENDENCIES
   coolline
   cucumber
   fuubar
-  guard (>= 1.4.0)
+  guard (>= 1.5.0)
   guard-cucumber
   guard-rspec (>= 2.0.0)
   guard-spork

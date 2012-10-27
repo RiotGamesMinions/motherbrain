@@ -1,5 +1,4 @@
 notification :off
-interactor :coolline
 
 guard 'yard', stdout: '/dev/null', stderr: '/dev/null' do
   watch(%r{app/.+\.rb})

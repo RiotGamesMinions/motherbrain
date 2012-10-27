@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'fuubar'
   s.add_development_dependency 'yard'
-  s.add_development_dependency 'guard', '>= 1.4.0'
+  s.add_development_dependency 'guard', '>= 1.5.0'
   s.add_development_dependency 'guard-rspec', '>= 2.0.0'
   s.add_development_dependency 'guard-cucumber'
   s.add_development_dependency 'guard-yard'
