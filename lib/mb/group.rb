@@ -81,12 +81,12 @@ module MotherBrain
       self.chef_attributes.fetch(name.to_sym, nil)
     end
 
-    def dsl_eval(&block)
-      self.attributes = CleanRoom.new(context, self, &block).attributes
-      self
-    end
-
     private
+
+      def dsl_eval(&block)
+        self.attributes = CleanRoom.new(context, self, &block).attributes
+        self
+      end
 
       def attribute_escape(value)
         value.gsub(/\./, "_")
