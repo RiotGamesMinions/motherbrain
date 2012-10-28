@@ -1,5 +1,9 @@
 if MB.jruby?
-  require 'jmx4r'
+  begin
+    require 'jmx4r'
+  rescue LoadError
+    raise "A plugin that uses JMX was loaded but you do not have the 'jmx4r' gem. Run 'gem install jmx4r' and try again."
+  end
 end
 
 module MotherBrain
