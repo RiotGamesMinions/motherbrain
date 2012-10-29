@@ -123,8 +123,6 @@ module MotherBrain
     # @param [MB::Gear] klass the class of the gear to search for
     # @param [Array] args the identifiers for the gear to find
     #
-    # @return [MB::Gear]
-    #
     # @example searching for a service gear
     #
     #   get_gear(MB::Gear::Service, "service_name")
