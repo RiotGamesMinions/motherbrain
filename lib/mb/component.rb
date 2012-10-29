@@ -137,14 +137,11 @@ module MotherBrain
     end
 
     Gear.all.each do |klass|
-      add_fun         = Gear.add_fun(klass)
-      get_fun         = Gear.get_fun(klass)
-
-      define_method add_fun do |object|
+      define_method Gear.add_fun(klass) do |object|
         add_gear(object)
       end
 
-      define_method get_fun do |*args|
+      define_method Gear.get_fun(klass) do |*args|
         get_gear(klass, *args)
       end
     end
