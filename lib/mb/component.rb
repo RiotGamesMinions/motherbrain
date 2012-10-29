@@ -132,6 +132,8 @@ module MotherBrain
     # @example searching for a jmx gear
     #
     #   get_gear(MB::Gear::Jmx)
+    #
+    # @return [MB::Gear]
     def get_gear(klass, *args)
       klass.find(gears(klass), *args)
     end
