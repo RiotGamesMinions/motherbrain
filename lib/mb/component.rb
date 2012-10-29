@@ -96,10 +96,16 @@ module MotherBrain
       self.commands.add(command)
     end
 
+    # Returns the gears of class klass defined on this component.
+    #
+    # @param [MB::Gear] klass the class of the gears to find
     def gears(klass)
       @gears[klass.keyword] ||= Set.new
     end
 
+    # Adds a gear to this component.
+    #
+    # @param [MB::Gear] gear the gear
     def add_gear(gear)
       klass = gear.class
 
@@ -110,6 +116,18 @@ module MotherBrain
       gears(klass).add(gear)
     end
 
+    # Finds a gear of class klass identified by *args.
+    #
+    # @param [MB::Gear] klass the class of the gear to search for
+    # @param [Array] args the identifiers for the gear to find
+    #
+    # @example searching for a service gear
+    #
+    #   get_gear(MB::Gear::Service, "service_name")
+    #
+    # @example searching for a jmx gear
+    #
+    #   get_gear(MB::Gear::Jmx)
     def get_gear(klass, *args)
       klass.find(gears(klass), *args)
     end
