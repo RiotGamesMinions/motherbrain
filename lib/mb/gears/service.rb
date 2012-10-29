@@ -53,7 +53,6 @@ module MotherBrain
 
         action
       end
-      alias_method :run_action, :action
 
       # Add a new action to this Service
       #
