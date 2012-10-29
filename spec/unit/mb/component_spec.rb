@@ -72,20 +72,40 @@ describe MB::Component do
   end
 
   describe "#service" do
-    subject do
-      MB::Component.new("activemq", @context) do
+    subject { MB::Component }
+
+    it "returns a Set of services" do
+      component = subject.new("activemq", @context) do
         service "masters" do
           # block
         end
       end
-    end
 
-    it "returns a Set of services" do
-      subject.gears(MB::Gear::Service).should be_a(Set)
+      component.gears(MB::Gear::Service).should be_a(Set)
     end
 
     it "contains each service defined" do
-      subject.gears(MB::Gear::Service).should have(1).item
+      component = subject.new("activemq", @context) do
+        service "masters" do
+          # block
+        end
+      end
+
+      component.gears(MB::Gear::Service).should have(1).item
+    end
+
+    it "does not allow duplicate services" do
+      lambda do
+        subject.new("activemq", @context) do
+          service "masters" do
+            # block
+          end
+
+          service "masters" do
+            # block
+          end
+        end
+      end.should raise_error(MB::DuplicateGear)
     end
   end
 end

@@ -165,8 +165,8 @@ module MotherBrain
             clean_room = self
 
             klass.instance_eval do
-              define_method :run_action do |name|
-                clean_room.actions << action = action(name)
+              define_method :run do |*args, &block|
+                clean_room.actions << action = action(*args, &block)
                 action
               end
             end
@@ -176,14 +176,9 @@ module MotherBrain
         end
 
         Gear.all.each do |klass|
-          define_method Gear.get_fun(klass) do |gear|
-            scope.send(Gear.get_fun(klass), gear)
+          define_method Gear.get_fun(klass) do |*args|
+            scope.send(Gear.get_fun(klass), *args)
           end
-        end
-
-        # @see {MotherBrain::Action::Jmx}
-        def jmx(port, object_name, &block)
-          actions << ::MB::Action::Jmx.new(port, object_name, &block)
         end
 
         private

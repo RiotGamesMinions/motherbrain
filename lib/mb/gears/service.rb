@@ -5,6 +5,12 @@ module MotherBrain
       include MB::Gear
       register_gear :service
 
+      class << self
+        def find(gears, name)
+          gears.find { |obj| obj.name == name }
+        end
+      end
+
       # @return [String]
       attr_reader :name
       # @return [Set<Action>]

@@ -24,10 +24,6 @@ module MotherBrain
       self.name.to_sym
     end
 
-    def gears(klass)
-      @gears[klass.keyword] ||= Set.new
-    end
-
     # @param [#to_sym] name
     def group(name)
       self.groups.find { |group| group.name == name }
@@ -100,21 +96,35 @@ module MotherBrain
       self.commands.add(command)
     end
 
+    def gears(klass)
+      @gears[klass.keyword] ||= Set.new
+    end
+
+    def add_gear(gear)
+      klass = gear.class
+
+      unless get_gear(klass, gear.name).nil? 
+        raise DuplicateGear, "#{klass.keyword.capitalize} '#{gear.name}' already defined"
+      end
+
+      gears(klass).add(gear)
+    end
+
+    def get_gear(klass, *args)
+      klass.find(gears(klass), *args)
+    end
+
     Gear.all.each do |klass|
       element_name    = Gear.element_name(klass)
       add_fun         = Gear.add_fun(klass)
       get_fun         = Gear.get_fun(klass)
 
       define_method add_fun do |object|
-        unless send(get_fun, object.name).nil?
-          raise DuplicateGear, "#{element_name.capitalize} '#{object.name}' already defined"
-        end
-
-        gears(klass).add(object)
+        add_gear(object)
       end
 
-      define_method get_fun do |name|
-        gears(klass).find { |obj| obj.name == name }
+      define_method get_fun do |*args|
+        get_gear(klass, *args)
       end
     end
 

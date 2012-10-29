@@ -1,8 +1,32 @@
 require 'spec_helper'
 
 if MB.jruby?
-  describe MB::Action::Jmx do
-    subject { MB::Action::Jmx }
+  describe MB::Gear::Jmx do
+
+    describe "Class" do
+      subject { MB::Gear::Jmx }
+      
+      it "is registered with MB::Gear" do
+        MB::Gear.all.should include(subject)
+      end
+
+      it "has the inferred keyword ':jmx' from it's Class name" do
+        subject.keyword.should eql(:jmx)
+      end
+    end
+
+    describe "#action" do
+      subject { MB::Gear::Jmx.new }
+
+      it "returns a Gear::Jmx::Action" do
+        subject.action(9001, "com.some.thing:name=thing") do |mbean|
+        end.should be_a(MB::Gear::Jmx::Action)
+      end
+    end
+  end
+
+  describe MB::Gear::Jmx::Action do
+    subject { MB::Gear::Jmx::Action }
 
     describe "::new" do
       let(:port) { 9001 }
