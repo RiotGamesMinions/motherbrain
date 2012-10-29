@@ -137,7 +137,6 @@ module MotherBrain
     end
 
     Gear.all.each do |klass|
-      element_name    = Gear.element_name(klass)
       add_fun         = Gear.add_fun(klass)
       get_fun         = Gear.get_fun(klass)
 
