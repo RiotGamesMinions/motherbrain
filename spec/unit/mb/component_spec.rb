@@ -81,11 +81,11 @@ describe MB::Component do
     end
 
     it "returns a Set of services" do
-      subject.services.should be_a(Set)
+      subject.gears(MB::Gear::Service).should be_a(Set)
     end
 
     it "contains each service defined" do
-      subject.services.should have(1).item
+      subject.gears(MB::Gear::Service).should have(1).item
     end
   end
 end
