@@ -46,8 +46,8 @@ describe "loading a plugin", type: "acceptance" do
 
           execute do
             on("master_broker") do
-              service("broker").run_action(:start)
-              service("broker").run_action(:start)
+              service("broker").run(:start)
+              service("broker").run(:start)
             end
           end
         end
@@ -57,7 +57,7 @@ describe "loading a plugin", type: "acceptance" do
 
           execute do
             on("master_broker") do
-              service("broker").run_action(:stop)
+              service("broker").run(:stop)
             end
           end
         end
