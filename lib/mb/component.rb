@@ -99,6 +99,8 @@ module MotherBrain
     # Returns the gears of class klass defined on this component.
     #
     # @param [MB::Gear] klass the class of the gears to find
+    #
+    # @return [Array<MB::Gear>]
     def gears(klass)
       @gears[klass.keyword] ||= Set.new
     end
@@ -120,6 +122,8 @@ module MotherBrain
     #
     # @param [MB::Gear] klass the class of the gear to search for
     # @param [Array] args the identifiers for the gear to find
+    #
+    # @return [MB::Gear]
     #
     # @example searching for a service gear
     #

@@ -13,11 +13,15 @@ module MotherBrain
       register_gear :jmx
 
       class << self
+        # @return [MB::Gear::Jmx]
         def find(gears)
           Jmx.new
         end
       end
 
+      # @see [MB::Gear::Jmx::Action]
+      #
+      # @return [MB::Gear::Jmx::Action]
       def action(port, object_name, &block)
         Action.new(port, object_name, &block)
       end
@@ -29,6 +33,9 @@ module MotherBrain
 
         # @param [Fixnum] port the port to connect over
         # @param [String] object_name the name of the jmx object
+        #
+        # @raise [ActionNotSupported] if not running JRuby
+        # @raise [ArgumentError]
         def initialize(port, object_name, &block)
           unless MB.jruby?
             raise ActionNotSupported, "The jmx action is only supported on JRuby"
