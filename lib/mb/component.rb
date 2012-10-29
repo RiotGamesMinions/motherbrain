@@ -12,6 +12,7 @@ module MotherBrain
       @name     = name.to_s
       @groups   = Set.new
       @commands = Set.new
+      @gears    = Hash.new
 
       if block_given?
         dsl_eval(&block)
@@ -21,6 +22,10 @@ module MotherBrain
     # @return [Symbol]
     def id
       self.name.to_sym
+    end
+
+    def gears(klass)
+      @gears[klass.keyword] ||= Set.new
     end
 
     # @param [#to_sym] name
@@ -97,30 +102,19 @@ module MotherBrain
 
     Gear.all.each do |klass|
       element_name    = Gear.element_name(klass)
-      collection_name = Gear.collection_name(klass)
-      collection_fun  = Gear.collection_fun(klass)
       add_fun         = Gear.add_fun(klass)
       get_fun         = Gear.get_fun(klass)
-
-      define_method collection_fun do
-        if instance_variable_defined?("@#{collection_name}")
-          instance_variable_get("@#{collection_name}")
-        else
-          instance_variable_set("@#{collection_name}", Set.new)
-        end
-      end
-      collection_fun
 
       define_method add_fun do |object|
         unless send(get_fun, object.name).nil?
           raise DuplicateGear, "#{element_name.capitalize} '#{object.name}' already defined"
         end
 
-        send(collection_fun).add(object)
+        gears(klass).add(object)
       end
 
       define_method get_fun do |name|
-        send(collection_fun).find { |obj| obj.name == name }
+        gears(klass).find { |obj| obj.name == name }
       end
     end
 
@@ -157,8 +151,8 @@ module MotherBrain
       end
 
       Gear.all.each do |klass|
-        define_method Gear.element_name(klass) do |name, &block|
-          component.send Gear.add_fun(klass), klass.new(name, context, component, &block)
+        define_method Gear.element_name(klass) do |*args, &block|
+          component.send Gear.add_fun(klass), klass.new(context, component, *args, &block)
         end
       end
 

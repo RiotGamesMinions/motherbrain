@@ -13,7 +13,7 @@ module MotherBrain
       # @param [#to_s] name
       # @param [MB::Context] context
       # @param [MB::Component] component
-      def initialize(name, context, component, &block)
+      def initialize(context, component, name, &block)
         super(context)
 
         @name      = name.to_s

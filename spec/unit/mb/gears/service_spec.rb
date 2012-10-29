@@ -16,7 +16,7 @@ describe MB::Gear::Service do
 
     describe "::new" do
       it "sets the given name attribute" do
-        obj = subject.new("activemq", @context, component) do
+        obj = subject.new(@context, component, "activemq") do
           # block
         end
 

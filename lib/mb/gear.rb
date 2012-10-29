@@ -91,10 +91,6 @@ module MotherBrain
         all.find { |klass| klass.keyword == keyword }
       end
 
-      def collection_name(klass)
-        klass.keyword.to_s.pluralize.to_sym
-      end
-
       def element_name(klass)
         klass.keyword
       end
@@ -105,10 +101,6 @@ module MotherBrain
 
       def get_fun(klass)
         element_name(klass)
-      end
-
-      def collection_fun(klass)
-        collection_name(klass).to_sym
       end
 
       private
