@@ -137,10 +137,6 @@ module MotherBrain
     end
 
     Gear.all.each do |klass|
-      define_method Gear.add_fun(klass) do |object|
-        add_gear(object)
-      end
-
       define_method Gear.get_fun(klass) do |*args|
         get_gear(klass, *args)
       end
@@ -180,7 +176,7 @@ module MotherBrain
 
       Gear.all.each do |klass|
         define_method Gear.element_name(klass) do |*args, &block|
-          component.send Gear.add_fun(klass), klass.new(context, component, *args, &block)
+          component.add_gear(klass.new(context, component, *args, &block))
         end
       end
 

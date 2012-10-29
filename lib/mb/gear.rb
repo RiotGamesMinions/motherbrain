@@ -95,10 +95,6 @@ module MotherBrain
         klass.keyword
       end
 
-      def add_fun(klass)
-        "add_#{element_name(klass)}".to_sym
-      end
-
       def get_fun(klass)
         element_name(klass)
       end
