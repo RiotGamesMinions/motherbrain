@@ -5,6 +5,18 @@ module MotherBrain
       include MB::Gear
       register_gear :service
 
+      class << self
+        # Finds a gear identified by name in the list of gears supplied.
+        #
+        # @param [String] the name of the gear to search for
+        # @param [Array<MB::Gear::Service>] the list of gears to search in
+        #
+        # @return [MB::Gear::Service]
+        def find(gears, name)
+          gears.find { |obj| obj.name == name }
+        end
+      end
+
       # @return [String]
       attr_reader :name
       # @return [Set<Action>]
