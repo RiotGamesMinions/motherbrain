@@ -22,26 +22,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'nexus_cli', '~> 0.3.0'
   s.add_runtime_dependency 'activesupport'
   s.add_runtime_dependency 'rye'
-
-  s.add_development_dependency 'thor', '>= 0.16.0'
-  s.add_development_dependency 'cucumber'
-  s.add_development_dependency 'aruba'
-  s.add_development_dependency 'rspec'
-  s.add_development_dependency 'fuubar'
-  s.add_development_dependency 'yard'
-  s.add_development_dependency 'guard', '>= 1.5.0'
-  s.add_development_dependency 'guard-rspec', '>= 2.0.0'
-  s.add_development_dependency 'guard-cucumber'
-  s.add_development_dependency 'guard-yard'
-  s.add_development_dependency 'coolline'
-  s.add_development_dependency 'redcarpet'
-  s.add_development_dependency 'json_spec'
-  s.add_development_dependency 'webmock'
-  s.add_development_dependency 'rb-fsevent', '~> 0.9.1'
-
-  if RUBY_ENGINE == 'jruby'
-    s.add_runtime_dependency 'jmx4r'
-  else
-    s.add_development_dependency 'guard-spork'
-  end
+  s.add_runtime_dependency 'thor', '>= 0.16.0'
 end
