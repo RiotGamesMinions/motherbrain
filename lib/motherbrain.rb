@@ -33,7 +33,6 @@ module MotherBrain
   autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
   autoload :Logging, 'mb/logging'
-  autoload :Mixin, 'mb/mixin'
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
