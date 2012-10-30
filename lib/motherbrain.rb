@@ -19,7 +19,6 @@ require 'mb/errors'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
-  autoload :Action, 'mb/action'
   autoload :ChefRunner, 'mb/chef_runner'
   autoload :CleanRoomBase, 'mb/clean_room_base'
   autoload :Command, 'mb/command'
@@ -38,7 +37,6 @@ module MotherBrain
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
-  autoload :ChefRunner, 'mb/chef_runner'
   autoload :RealObjectBase, 'mb/real_object_base'
 
   class << self

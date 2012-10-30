@@ -45,9 +45,7 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
-      def description(value)
-        binding.description = value
-      end
+      bind_attribute :description
 
       def execute(&block)
         binding.execute = block
