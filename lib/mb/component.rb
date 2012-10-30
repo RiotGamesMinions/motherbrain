@@ -158,9 +158,7 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
-      def description(value)
-        binding.description = value
-      end
+      bind_attribute :description
 
       def group(name, &block)
         binding.add_group Group.new(name, context, &block)

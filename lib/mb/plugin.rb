@@ -181,25 +181,11 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
-      def name(value)
-        binding.name = value
-      end
-
-      def version(value)
-        binding.version = value
-      end
-
-      def description(value)
-        binding.description = value
-      end
-
-      def author(value)
-        binding.author = value
-      end
-
-      def email(value)
-        binding.email = value
-      end
+      bind_attribute :name
+      bind_attribute :version
+      bind_attribute :description
+      bind_attribute :author
+      bind_attribute :email
 
       # @param [#to_s] name
       # @param [#to_s] constraint
