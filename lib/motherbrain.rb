@@ -38,7 +38,6 @@ module MotherBrain
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
   autoload :ChefRunner, 'mb/chef_runner'
-  autoload :Action, 'mb/action'
 
   class << self
     attr_writer :ui
