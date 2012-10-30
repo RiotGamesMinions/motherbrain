@@ -2,7 +2,6 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class CleanRoomBase
     extend Forwardable
-    include Chozo::VariaModel
 
     # @param [MB::Context] context
     # @param [MB::ContextualModel] binding
