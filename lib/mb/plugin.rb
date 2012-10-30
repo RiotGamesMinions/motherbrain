@@ -10,7 +10,7 @@ module MotherBrain
       #
       # @yieldreturn [MotherBrain::Plugin]
       def load(context, &block)
-        new(context, &block)
+        new(context, &block).validate!
       rescue => e
         raise PluginLoadError, e
       end
@@ -38,6 +38,27 @@ module MotherBrain
     attr_reader :components
     attr_reader :commands
     attr_reader :dependencies
+
+    attribute :name,
+      type: String,
+      required: true
+
+    attribute :version,
+      type: Solve::Version,
+      required: true,
+      coerce: lambda { |m|
+        Solve::Version.new(m)
+      }
+
+    attribute :description,
+      type: String,
+      required: true
+
+    attribute :author,
+      type: [String, Array]
+
+    attribute :email,
+      type: [String, Array]
 
     # @param [MB::Context] context
     def initialize(context, &block)
@@ -135,6 +156,19 @@ module MotherBrain
       self.dependencies[name.to_s] = Solve::Constraint.new(constraint)
     end
 
+    # Completely validate a loaded plugin and raise an exception of errors
+    #
+    # @return [self]
+    def validate!
+      errors = self.validate
+
+      unless errors.empty?
+        raise errors
+      end
+
+      self
+    end
+
     private
 
       def dsl_eval(&block)
@@ -157,35 +191,31 @@ module MotherBrain
         instance_eval(&block)
       end
 
-      # @param [String] value
-      def name(value)
-        set(:name, value, kind_of: String, required: true)
-      end
+      attribute :name,
+        type: String,
+        required: true,
+        dsl_mimics: true
 
-      # @param [String] value
-      def version(value)
-        begin
-          value = Solve::Version.new(value)
-        rescue Solve::Errors::SolveError => e
-          raise ValidationFailed, e.message
-        end
-        set(:version, value, kind_of: Solve::Version, required: true)
-      end
+      attribute :version,
+        type: Solve::Version,
+        required: true,
+        dsl_mimics: true,
+        coerce: lambda { |m|
+          Solve::Version.new(m)
+        }
 
-      # @param [String] value
-      def description(value)
-        set(:description, value, kind_of: String)
-      end
+      attribute :description,
+        type: String,
+        required: true,
+        dsl_mimics: true
 
-      # @param [String, Array<String>] value
-      def author(value)
-        set(:author, value, kind_of: [String, Array])
-      end
+      attribute :author,
+        type: [String, Array],
+        dsl_mimics: true
 
-      # @param [String, Array<String>] value
-      def email(value)
-        set(:email, value, kind_of: [String, Array])
-      end
+      attribute :email,
+        type: [String, Array],
+        dsl_mimics: true
 
       # @param [#to_s] name
       # @param [#to_s] constraint

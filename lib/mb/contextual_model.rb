@@ -1,14 +1,22 @@
+require 'chozo/varia_model'
+
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class ContextualModel
     extend Forwardable
-    
-    include Mixin::SimpleAttributes
+
+    include Chozo::VariaModel
 
     # @param [MB::Context] context
     def initialize(context)
       @context = context
     end
+
+    # protected :validate
+    # protected :attributes
+    # protected :attributes=
+    # protected :valid?
+    # protected :errors
 
     private
 

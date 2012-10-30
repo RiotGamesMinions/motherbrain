@@ -5,6 +5,10 @@ module MotherBrain
     attr_reader :groups
     attr_reader :commands
 
+    attribute :description,
+      type: String,
+      required: true
+
     # @param [#to_s] name
     # @param [MB::Context] context
     def initialize(name, context, &block)
@@ -161,10 +165,10 @@ module MotherBrain
         instance_eval(&block)
       end
 
-      # @param [String] value
-      def description(value)
-        set(:description, value, kind_of: String, required: true)
-      end
+      attribute :description,
+        type: String,
+        required: true,
+        dsl_mimics: true
 
       def group(name, &block)
         component.add_group Group.new(name, context, &block)

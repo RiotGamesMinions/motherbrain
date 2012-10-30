@@ -3,6 +3,14 @@ module MotherBrain
   class Command < ContextualModel
     attr_reader :name
 
+    attribute :description,
+      type: String,
+      required: true
+
+    attribute :execute,
+      type: Proc,
+      required: true
+
     # @param [#to_s] name
     # @param [MB::Context] context
     # @param [MB::Plugin, MB::Component] scope
@@ -44,14 +52,13 @@ module MotherBrain
         instance_eval(&block)
       end
 
-      # @param [String] value
-      def description(value)
-        set(:description, value, kind_of: String, required: true)
-      end
+      attribute :description,
+        type: String,
+        required: true,
+        dsl_mimics: true
 
       def execute(&block)
-        value = Proc.new(&block)
-        set(:execute, value, kind_of: Proc, required: true)
+        self.attributes['execute'] = block
       end
     end
 

@@ -129,7 +129,7 @@ module MotherBrain
 
     included do
       class_eval do
-        include Mixin::SimpleAttributes
+        include Chozo::VariaModel
       end
     end
 
