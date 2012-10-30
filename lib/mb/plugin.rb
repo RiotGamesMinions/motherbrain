@@ -172,8 +172,7 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        self.attributes = CleanRoom.new(context, self, &block).attributes
-        self
+        CleanRoom.new(context, self, &block)
       end
 
     # A clean room bind the Plugin DSL syntax to. This clean room can later to
@@ -181,61 +180,42 @@ module MotherBrain
     #
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < ContextualModel
-      # @param [MB::Context] context
-      # @param [MB::Plugin] plugin
-      def initialize(context, plugin, &block)
-        super(context)
-
-        @plugin = plugin
-        instance_eval(&block)
+    class CleanRoom < CleanRoomBase
+      def name(value)
+        binding.name = value
       end
 
-      attribute :name,
-        type: String,
-        required: true,
-        dsl_mimics: true
+      def version(value)
+        binding.version = value
+      end
 
-      attribute :version,
-        type: Solve::Version,
-        required: true,
-        dsl_mimics: true,
-        coerce: lambda { |m|
-          Solve::Version.new(m)
-        }
+      def description(value)
+        binding.description = value
+      end
 
-      attribute :description,
-        type: String,
-        required: true,
-        dsl_mimics: true
+      def author(value)
+        binding.author = value
+      end
 
-      attribute :author,
-        type: [String, Array],
-        dsl_mimics: true
-
-      attribute :email,
-        type: [String, Array],
-        dsl_mimics: true
+      def email(value)
+        binding.email = value
+      end
 
       # @param [#to_s] name
       # @param [#to_s] constraint
       def depends(name, constraint)
-        plugin.add_dependency(name, constraint)
+        binding.add_dependency(name, constraint)
       end
 
       # @param [#to_s] name
       def command(name, &block)
-        plugin.add_command Command.new(name, context, plugin, &block)
+        binding.add_command Command.new(name, context, binding, &block)
       end
 
       # @param [#to_s] name
       def component(name, &block)
-        plugin.add_component Component.new(name, context, &block)
+        binding.add_component Component.new(name, context, &block)
       end
-
-      private
-
-        attr_reader :plugin
     end
   end
 end

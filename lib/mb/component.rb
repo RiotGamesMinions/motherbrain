@@ -149,44 +149,29 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        self.attributes = CleanRoom.new(context, self, &block).attributes
-        self
+        CleanRoom.new(context, self, &block)
       end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < ContextualModel
-      # @param [MB::Context] context
-      # @param [MB::Component] component
-      def initialize(context, component, &block)
-        super(context)
-        @component = component
-
-        instance_eval(&block)
+    class CleanRoom < CleanRoomBase
+      def description(value)
+        binding.description = value
       end
 
-      attribute :description,
-        type: String,
-        required: true,
-        dsl_mimics: true
-
       def group(name, &block)
-        component.add_group Group.new(name, context, &block)
+        binding.add_group Group.new(name, context, &block)
       end
 
       def command(name, &block)
-        component.add_command Command.new(name, context, component, &block)
+        binding.add_command Command.new(name, context, binding, &block)
       end
 
       Gear.all.each do |klass|
         define_method Gear.element_name(klass) do |*args, &block|
-          component.add_gear(klass.new(context, component, *args, &block))
+          binding.add_gear(klass.new(context, binding, *args, &block))
         end
       end
-
-      private
-
-        attr_reader :component
     end
   end
 end

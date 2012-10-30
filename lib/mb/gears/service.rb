@@ -72,8 +72,7 @@ module MotherBrain
         attr_reader :component
 
         def dsl_eval(&block)
-          self.attributes = CleanRoom.new(context, self, component, &block).attributes
-          self
+          CleanRoom.new(context, self, component, &block)
         end
 
         # @param [String] name
@@ -83,26 +82,22 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class CleanRoom < ContextualModel
+      class CleanRoom < CleanRoomBase
         # @param [MB::Context] context
-        # @param [MB::Service] service
+        # @param [MB::Service] binding
         # @param [MB::Component] component
-        def initialize(context, service, component, &block)
-          super(context)
-
-          @service   = service
+        def initialize(context, binding, component, &block)
           @component = component
-          instance_eval(&block)
+          super(context, binding, &block)
         end
 
         # @param [String] name
         def action(name, &block)
-          service.add_action Action.new(context, name, component, &block)
+          binding.add_action Action.new(context, name, component, &block)
         end
 
         private
 
-          attr_reader :service
           attr_reader :component
       end
 

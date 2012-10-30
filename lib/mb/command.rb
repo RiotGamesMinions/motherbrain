@@ -39,26 +39,18 @@ module MotherBrain
       attr_reader :scope
 
       def dsl_eval(&block)
-        self.attributes = CleanRoom.new(context, &block).attributes
-        self
+        CleanRoom.new(context, self, &block)
       end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < ContextualModel
-      def initialize(context, &block)
-        super(context)
-
-        instance_eval(&block)
+    class CleanRoom < CleanRoomBase
+      def description(value)
+        binding.description = value
       end
 
-      attribute :description,
-        type: String,
-        required: true,
-        dsl_mimics: true
-
       def execute(&block)
-        self.attributes['execute'] = block
+        binding.execute = block
       end
     end
 
@@ -158,14 +150,10 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class CleanRoom < ContextualModel
-        attr_reader :actions
-
+      class CleanRoom < CleanRoomBase
         # @param [MB::Context] context
-        # @param [MB::Plugin, MB::Component] scope
-        def initialize(context, scope, &block)
-          super(context)
-          @scope   = scope
+        # @param [MB::Plugin, MB::Component] binding
+        def initialize(context, binding, &block)
           @actions = Array.new
 
           Gear.all.each do |klass|
@@ -179,18 +167,18 @@ module MotherBrain
             end
           end
 
-          instance_eval(&block)
+          super(context, binding, &block)
         end
 
         Gear.all.each do |klass|
           define_method Gear.get_fun(klass) do |*args|
-            scope.send(Gear.get_fun(klass), *args)
+            binding.send(Gear.get_fun(klass), *args)
           end
         end
 
-        private
+        protected
 
-          attr_reader :scope
+          attr_reader :actions
       end
     end
   end

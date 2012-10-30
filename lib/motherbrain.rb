@@ -20,6 +20,7 @@ require 'mb/errors'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
+  autoload :CleanRoomBase, 'mb/clean_room_base'
   autoload :Command, 'mb/command'
   autoload :Component, 'mb/component'
   autoload :ComponentInvoker, 'mb/component_invoker'
