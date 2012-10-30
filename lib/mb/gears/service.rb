@@ -1,19 +1,21 @@
 module MotherBrain
   module Gear
     # @author Jamie Winsor <jamie@vialstudios.com>
-    class Service < ContextualModel
+    class Service < RealObjectBase
       include MB::Gear
       register_gear :service
 
       class << self
         # Finds a gear identified by name in the list of gears supplied.
         #
-        # @param [String] the name of the gear to search for
-        # @param [Array<MB::Gear::Service>] the list of gears to search in
+        # @param [Array<MB::Gear::Service>] gears
+        #   the list of gears to search in
+        # @param [#to_s] name
+        #   the name of the gear to search for
         #
         # @return [MB::Gear::Service]
         def find(gears, name)
-          gears.find { |obj| obj.name == name }
+          gears.find { |obj| obj.name == name.to_s }
         end
       end
 
@@ -103,7 +105,7 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class Action < ContextualModel
+      class Action < RealObjectBase
         # @return [String]
         attr_reader :name
         # @return [Set<Ridley::Node>]
@@ -165,7 +167,7 @@ module MotherBrain
 
         # @author Jamie Winsor <jamie@vialstudios.com>
         # @api private
-        class ActionRunner < ContextualModel
+        class ActionRunner < RealObjectBase
           include Logging
 
           # @return [Array<Proc>]

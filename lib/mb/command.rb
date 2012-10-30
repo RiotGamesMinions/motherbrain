@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Command < ContextualModel
+  class Command < RealObjectBase
     attr_reader :name
 
     attribute :description,
@@ -56,7 +56,7 @@ module MotherBrain
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CommandRunner < ContextualModel
+    class CommandRunner < RealObjectBase
       attr_reader :scope
 
       # @param [Object] scope

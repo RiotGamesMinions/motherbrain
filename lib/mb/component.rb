@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Component < ContextualModel
+  class Component < RealObjectBase
     attr_reader :name
     attr_reader :groups
     attr_reader :commands
@@ -33,8 +33,11 @@ module MotherBrain
       self.groups.find { |group| group.name == name }
     end
 
-    # @param [#to_sym] name
+    # @param [#to_sym] group_name
+    #
     # @raise [GroupNotFound] if the group is not found
+    #
+    # @return [MB::Group]
     def group!(group_name)
       group = group(group_name)
       

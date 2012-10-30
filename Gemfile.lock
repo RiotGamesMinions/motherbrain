@@ -1,6 +1,6 @@
 GIT
   remote: git@github.com:reset/chozo.git
-  revision: 29f447d1ce5c8a49f6f53f2f464cb06401e920be
+  revision: f97e0cccc59e9d49b211d28eb4c320894a6e5fde
   specs:
     chozo (0.1.0)
       activemodel (>= 3.2.0)

@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Group < ContextualModel
+  class Group < RealObjectBase
     attr_reader :name
     attr_reader :roles
     attr_reader :recipes

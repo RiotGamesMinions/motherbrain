@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Plugin < ContextualModel
+  class Plugin < RealObjectBase
     class << self
       # Create a new plugin instance from the given context and content
       #
