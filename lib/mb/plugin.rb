@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Plugin < ContextualModel
+  class Plugin < RealModelBase
     class << self
       # Create a new plugin instance from the given context and content
       #
@@ -10,7 +10,7 @@ module MotherBrain
       #
       # @yieldreturn [MotherBrain::Plugin]
       def load(context, &block)
-        new(context, &block)
+        new(context, &block).validate!
       rescue => e
         raise PluginLoadError, e
       end
@@ -38,6 +38,27 @@ module MotherBrain
     attr_reader :components
     attr_reader :commands
     attr_reader :dependencies
+
+    attribute :name,
+      type: String,
+      required: true
+
+    attribute :version,
+      type: Solve::Version,
+      required: true,
+      coerce: lambda { |m|
+        Solve::Version.new(m)
+      }
+
+    attribute :description,
+      type: String,
+      required: true
+
+    attribute :author,
+      type: [String, Array]
+
+    attribute :email,
+      type: [String, Array]
 
     # @param [MB::Context] context
     def initialize(context, &block)
@@ -135,11 +156,23 @@ module MotherBrain
       self.dependencies[name.to_s] = Solve::Constraint.new(constraint)
     end
 
+    # Completely validate a loaded plugin and raise an exception of errors
+    #
+    # @return [self]
+    def validate!
+      errors = self.validate
+
+      unless errors.empty?
+        raise errors
+      end
+
+      self
+    end
+
     private
 
       def dsl_eval(&block)
-        self.attributes = CleanRoom.new(context, self, &block).attributes
-        self
+        CleanRoom.new(context, self).instance_eval(&block)
       end
 
     # A clean room bind the Plugin DSL syntax to. This clean room can later to
@@ -147,65 +180,28 @@ module MotherBrain
     #
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < ContextualModel
-      # @param [MB::Context] context
-      # @param [MB::Plugin] plugin
-      def initialize(context, plugin, &block)
-        super(context)
-
-        @plugin = plugin
-        instance_eval(&block)
-      end
-
-      # @param [String] value
-      def name(value)
-        set(:name, value, kind_of: String, required: true)
-      end
-
-      # @param [String] value
-      def version(value)
-        begin
-          value = Solve::Version.new(value)
-        rescue Solve::Errors::SolveError => e
-          raise ValidationFailed, e.message
-        end
-        set(:version, value, kind_of: Solve::Version, required: true)
-      end
-
-      # @param [String] value
-      def description(value)
-        set(:description, value, kind_of: String)
-      end
-
-      # @param [String, Array<String>] value
-      def author(value)
-        set(:author, value, kind_of: [String, Array])
-      end
-
-      # @param [String, Array<String>] value
-      def email(value)
-        set(:email, value, kind_of: [String, Array])
-      end
+    class CleanRoom < CleanRoomBase
+      dsl_attr_writer :name
+      dsl_attr_writer :version
+      dsl_attr_writer :description
+      dsl_attr_writer :author
+      dsl_attr_writer :email
 
       # @param [#to_s] name
       # @param [#to_s] constraint
       def depends(name, constraint)
-        plugin.add_dependency(name, constraint)
+        real_model.add_dependency(name, constraint)
       end
 
       # @param [#to_s] name
       def command(name, &block)
-        plugin.add_command Command.new(name, context, plugin, &block)
+        real_model.add_command Command.new(name, context, real_model, &block)
       end
 
       # @param [#to_s] name
       def component(name, &block)
-        plugin.add_component Component.new(name, context, &block)
+        real_model.add_component Component.new(name, context, &block)
       end
-
-      private
-
-        attr_reader :plugin
     end
   end
 end

@@ -1,7 +1,15 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Command < ContextualModel
+  class Command < RealModelBase
     attr_reader :name
+
+    attribute :description,
+      type: String,
+      required: true
+
+    attribute :execute,
+      type: Proc,
+      required: true
 
     # @param [#to_s] name
     # @param [MB::Context] context
@@ -31,33 +39,22 @@ module MotherBrain
       attr_reader :scope
 
       def dsl_eval(&block)
-        self.attributes = CleanRoom.new(context, &block).attributes
-        self
+        CleanRoom.new(context, self).instance_eval(&block)
       end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < ContextualModel
-      def initialize(context, &block)
-        super(context)
-
-        instance_eval(&block)
-      end
-
-      # @param [String] value
-      def description(value)
-        set(:description, value, kind_of: String, required: true)
-      end
+    class CleanRoom < CleanRoomBase
+      dsl_attr_writer :description
 
       def execute(&block)
-        value = Proc.new(&block)
-        set(:execute, value, kind_of: Proc, required: true)
+        real_model.execute = block
       end
     end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CommandRunner < ContextualModel
+    class CommandRunner < RealModelBase
       attr_reader :scope
 
       # @param [Object] scope
@@ -121,7 +118,9 @@ module MotherBrain
           raise PluginSyntaxError, "Block required"
         end
 
-        actions = CleanRoom.new(context, scope, &block).actions
+        clean_room = CleanRoom.new(context, scope)
+        clean_room.instance_eval(&block)
+        actions = clean_room.actions
 
         nodes = group_names.map { |group_name| scope.group!(group_name) }.flat_map(&:nodes).uniq
 
@@ -151,14 +150,11 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class CleanRoom < ContextualModel
-        attr_reader :actions
-
+      class CleanRoom < CleanRoomBase
         # @param [MB::Context] context
-        # @param [MB::Plugin, MB::Component] scope
-        def initialize(context, scope, &block)
-          super(context)
-          @scope   = scope
+        # @param [MB::Plugin, MB::Component] real_model
+        def initialize(context, real_model)
+          super(context, real_model)
           @actions = Array.new
 
           Gear.all.each do |klass|
@@ -171,19 +167,17 @@ module MotherBrain
               end
             end
           end
-
-          instance_eval(&block)
         end
 
         Gear.all.each do |klass|
           define_method Gear.get_fun(klass) do |*args|
-            scope.send(Gear.get_fun(klass), *args)
+            real_model.send(Gear.get_fun(klass), *args)
           end
         end
 
-        private
+        protected
 
-          attr_reader :scope
+          attr_reader :actions
       end
     end
   end

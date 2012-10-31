@@ -1,19 +1,21 @@
 module MotherBrain
   module Gear
     # @author Jamie Winsor <jamie@vialstudios.com>
-    class Service < ContextualModel
+    class Service < RealModelBase
       include MB::Gear
       register_gear :service
 
       class << self
         # Finds a gear identified by name in the list of gears supplied.
         #
-        # @param [String] the name of the gear to search for
-        # @param [Array<MB::Gear::Service>] the list of gears to search in
+        # @param [Array<MB::Gear::Service>] gears
+        #   the list of gears to search in
+        # @param [#to_s] name
+        #   the name of the gear to search for
         #
         # @return [MB::Gear::Service]
         def find(gears, name)
-          gears.find { |obj| obj.name == name }
+          gears.find { |obj| obj.name == name.to_s }
         end
       end
 
@@ -72,8 +74,10 @@ module MotherBrain
         attr_reader :component
 
         def dsl_eval(&block)
-          self.attributes = CleanRoom.new(context, self, component, &block).attributes
-          self
+          CleanRoom.new(context, self).instance_eval do
+            @component = component
+            instance_eval(&block)
+          end
         end
 
         # @param [String] name
@@ -83,32 +87,20 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class CleanRoom < ContextualModel
-        # @param [MB::Context] context
-        # @param [MB::Service] service
-        # @param [MB::Component] component
-        def initialize(context, service, component, &block)
-          super(context)
-
-          @service   = service
-          @component = component
-          instance_eval(&block)
-        end
-
+      class CleanRoom < CleanRoomBase
         # @param [String] name
         def action(name, &block)
-          service.add_action Action.new(context, name, component, &block)
+          real_model.add_action Action.new(context, name, component, &block)
         end
 
         private
 
-          attr_reader :service
           attr_reader :component
       end
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class Action < ContextualModel
+      class Action < RealModelBase
         # @return [String]
         attr_reader :name
         # @return [Set<Ridley::Node>]
@@ -170,7 +162,7 @@ module MotherBrain
 
         # @author Jamie Winsor <jamie@vialstudios.com>
         # @api private
-        class ActionRunner < ContextualModel
+        class ActionRunner < RealModelBase
           include Logging
 
           # @return [Array<Proc>]
