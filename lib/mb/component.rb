@@ -1,9 +1,13 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Component < ContextualModel
+  class Component < RealModelBase
     attr_reader :name
     attr_reader :groups
     attr_reader :commands
+
+    attribute :description,
+      type: String,
+      required: true
 
     # @param [#to_s] name
     # @param [MB::Context] context
@@ -29,8 +33,11 @@ module MotherBrain
       self.groups.find { |group| group.name == name }
     end
 
-    # @param [#to_sym] name
+    # @param [#to_sym] group_name
+    #
     # @raise [GroupNotFound] if the group is not found
+    #
+    # @return [MB::Group]
     def group!(group_name)
       group = group(group_name)
       
@@ -145,44 +152,27 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        self.attributes = CleanRoom.new(context, self, &block).attributes
-        self
+        CleanRoom.new(context, self).instance_eval(&block)
       end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < ContextualModel
-      # @param [MB::Context] context
-      # @param [MB::Component] component
-      def initialize(context, component, &block)
-        super(context)
-        @component = component
-
-        instance_eval(&block)
-      end
-
-      # @param [String] value
-      def description(value)
-        set(:description, value, kind_of: String, required: true)
-      end
+    class CleanRoom < CleanRoomBase
+      dsl_attr_writer :description
 
       def group(name, &block)
-        component.add_group Group.new(name, context, &block)
+        real_model.add_group Group.new(name, context, &block)
       end
 
       def command(name, &block)
-        component.add_command Command.new(name, context, component, &block)
+        real_model.add_command Command.new(name, context, real_model, &block)
       end
 
       Gear.all.each do |klass|
         define_method Gear.element_name(klass) do |*args, &block|
-          component.add_gear(klass.new(context, component, *args, &block))
+          real_model.add_gear(klass.new(context, real_model, *args, &block))
         end
       end
-
-      private
-
-        attr_reader :component
     end
   end
 end

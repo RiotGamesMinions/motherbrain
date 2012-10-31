@@ -4,14 +4,13 @@ require 'pathname'
 require 'forwardable'
 require 'set'
 require 'ostruct'
+require 'chozo'
 require 'ridley'
 require 'solve'
 require 'thor'
 require 'thor/group'
 require 'active_support/inflector'
 require 'active_support/core_ext/hash'
-require 'chozo/config'
-require 'chozo/core_ext'
 require 'rye'
 require 'mb/rye_ext'
 
@@ -20,6 +19,8 @@ require 'mb/errors'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
+  autoload :ChefRunner, 'mb/chef_runner'
+  autoload :CleanRoomBase, 'mb/clean_room_base'
   autoload :Command, 'mb/command'
   autoload :Component, 'mb/component'
   autoload :ComponentInvoker, 'mb/component_invoker'
@@ -33,11 +34,10 @@ module MotherBrain
   autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
   autoload :Logging, 'mb/logging'
-  autoload :Mixin, 'mb/mixin'
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
-  autoload :ChefRunner, 'mb/chef_runner'
+  autoload :RealModelBase, 'mb/real_model_base'
 
   class << self
     attr_writer :ui

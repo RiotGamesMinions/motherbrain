@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Group < ContextualModel
+  class Group < RealModelBase
     attr_reader :name
     attr_reader :roles
     attr_reader :recipes
@@ -84,8 +84,7 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        self.attributes = CleanRoom.new(context, self, &block).attributes
-        self
+        CleanRoom.new(context, self).instance_eval(&block)
       end
 
       def attribute_escape(value)
@@ -98,39 +97,26 @@ module MotherBrain
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CleanRoom < ContextualModel
-      # @param [MB::Context] context
-      # @param [MB::Group] group
-      def initialize(context, group, &block)
-        super(context)
-        @group = group
-
-        instance_eval(&block)
-      end
-
+    class CleanRoom < CleanRoomBase
       # @param [#to_s] value
       #
       # @return [Set<String>]
       def recipe(value)
-        group.add_recipe(value.to_s)
+        real_model.add_recipe(value.to_s)
       end
 
       # @param [#to_s] value
       #
       # @return [Set<String>]
       def role(value)
-        group.add_role(value.to_s)
+        real_model.add_role(value.to_s)
       end
 
       # @param [#to_s] attr_key
       # @param [Object] attr_value
       def chef_attribute(attr_key, attr_value)
-        group.add_chef_attribute(attr_key, attr_value)
+        real_model.add_chef_attribute(attr_key, attr_value)
       end
-
-      protected
-
-        attr_reader :group
     end
   end
 end
