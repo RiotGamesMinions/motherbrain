@@ -2,7 +2,6 @@ source :rubygems
 
 gemspec
 
-gem 'chozo', git: 'git@github.com:reset/chozo.git'
 gem 'jmx4r', platforms: :jruby
 
 group :development do

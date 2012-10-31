@@ -39,10 +39,6 @@ module MotherBrain
         mb.chef_api_url = "https://api.opscode.com/organizations/vialstudio"
         mb.chef_api_client = "reset"
         mb.chef_api_key = "/Users/reset/.chef/reset.pem"
-        mb.nexus_api_url = "http://nexus.riotgames.com/nexus/"
-        mb.nexus_repository = "riot"
-        mb.nexus_username = "test"
-        mb.nexus_password = "test123"
         mb.ssh_user = "root"
         mb.ssh_password = "secretpass"
       end.save(path)
