@@ -3,10 +3,10 @@ module MotherBrain
   class CleanRoomBase < ContextualModel
     class << self
       # Create a DSL writer function that will assign the a given value
-      # to the binding of this clean room.
+      # to the real object of this clean room.
       #
       # @param [Symbol] attribute
-      def bind_attribute(attribute)
+      def dsl_attr_writer(attribute)
         class_eval do
           define_method attribute do |value|
             set_attribute(attribute, value)
@@ -16,23 +16,23 @@ module MotherBrain
     end
 
     # @param [MB::Context] context
-    # @param [MB::ContextualModel] binding
+    # @param [MB::ContextualModel] real_object
     #
     # @return [MB::ContextualModel]
-    def initialize(context, binding, &block)
+    def initialize(context, real_object, &block)
       super(context)
-      @binding = binding
+      @real_object = real_object
 
       instance_eval(&block)
-      binding
+      real_object
     end
 
     private
 
-      attr_reader :binding
+      attr_reader :real_object
 
       def set_attribute(name, value)
-        binding.send("#{name}=", value)
+        real_object.send("#{name}=", value)
       end
   end
 end

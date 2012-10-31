@@ -102,20 +102,20 @@ module MotherBrain
       #
       # @return [Set<String>]
       def recipe(value)
-        binding.add_recipe(value.to_s)
+        real_object.add_recipe(value.to_s)
       end
 
       # @param [#to_s] value
       #
       # @return [Set<String>]
       def role(value)
-        binding.add_role(value.to_s)
+        real_object.add_role(value.to_s)
       end
 
       # @param [#to_s] attr_key
       # @param [Object] attr_value
       def chef_attribute(attr_key, attr_value)
-        binding.add_chef_attribute(attr_key, attr_value)
+        real_object.add_chef_attribute(attr_key, attr_value)
       end
     end
   end

@@ -45,10 +45,10 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
-      bind_attribute :description
+      dsl_attr_writer :description
 
       def execute(&block)
-        binding.execute = block
+        real_object.execute = block
       end
     end
 
@@ -150,8 +150,8 @@ module MotherBrain
       # @api private
       class CleanRoom < CleanRoomBase
         # @param [MB::Context] context
-        # @param [MB::Plugin, MB::Component] binding
-        def initialize(context, binding, &block)
+        # @param [MB::Plugin, MB::Component] real_object
+        def initialize(context, real_object, &block)
           @actions = Array.new
 
           Gear.all.each do |klass|
@@ -165,12 +165,12 @@ module MotherBrain
             end
           end
 
-          super(context, binding, &block)
+          super(context, real_object, &block)
         end
 
         Gear.all.each do |klass|
           define_method Gear.get_fun(klass) do |*args|
-            binding.send(Gear.get_fun(klass), *args)
+            real_object.send(Gear.get_fun(klass), *args)
           end
         end
 

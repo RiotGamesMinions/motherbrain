@@ -86,16 +86,16 @@ module MotherBrain
       # @api private
       class CleanRoom < CleanRoomBase
         # @param [MB::Context] context
-        # @param [MB::Service] binding
+        # @param [MB::Service] real_object
         # @param [MB::Component] component
-        def initialize(context, binding, component, &block)
+        def initialize(context, real_object, component, &block)
           @component = component
-          super(context, binding, &block)
+          super(context, real_object, &block)
         end
 
         # @param [String] name
         def action(name, &block)
-          binding.add_action Action.new(context, name, component, &block)
+          real_object.add_action Action.new(context, name, component, &block)
         end
 
         private

@@ -158,19 +158,19 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
-      bind_attribute :description
+      dsl_attr_writer :description
 
       def group(name, &block)
-        binding.add_group Group.new(name, context, &block)
+        real_object.add_group Group.new(name, context, &block)
       end
 
       def command(name, &block)
-        binding.add_command Command.new(name, context, binding, &block)
+        real_object.add_command Command.new(name, context, real_object, &block)
       end
 
       Gear.all.each do |klass|
         define_method Gear.element_name(klass) do |*args, &block|
-          binding.add_gear(klass.new(context, binding, *args, &block))
+          real_object.add_gear(klass.new(context, real_object, *args, &block))
         end
       end
     end

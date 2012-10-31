@@ -181,26 +181,26 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
-      bind_attribute :name
-      bind_attribute :version
-      bind_attribute :description
-      bind_attribute :author
-      bind_attribute :email
+      dsl_attr_writer :name
+      dsl_attr_writer :version
+      dsl_attr_writer :description
+      dsl_attr_writer :author
+      dsl_attr_writer :email
 
       # @param [#to_s] name
       # @param [#to_s] constraint
       def depends(name, constraint)
-        binding.add_dependency(name, constraint)
+        real_object.add_dependency(name, constraint)
       end
 
       # @param [#to_s] name
       def command(name, &block)
-        binding.add_command Command.new(name, context, binding, &block)
+        real_object.add_command Command.new(name, context, real_object, &block)
       end
 
       # @param [#to_s] name
       def component(name, &block)
-        binding.add_component Component.new(name, context, &block)
+        real_object.add_component Component.new(name, context, &block)
       end
     end
   end
