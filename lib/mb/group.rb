@@ -84,7 +84,7 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        CleanRoom.new(context, self, &block)
+        CleanRoom.new(context, self).instance_eval(&block)
       end
 
       def attribute_escape(value)

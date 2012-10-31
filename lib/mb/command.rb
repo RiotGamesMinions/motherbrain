@@ -39,7 +39,7 @@ module MotherBrain
       attr_reader :scope
 
       def dsl_eval(&block)
-        CleanRoom.new(context, self, &block)
+        CleanRoom.new(context, self).instance_eval(&block)
       end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
@@ -118,7 +118,9 @@ module MotherBrain
           raise PluginSyntaxError, "Block required"
         end
 
-        actions = CleanRoom.new(context, scope, &block).actions
+        clean_room = CleanRoom.new(context, scope)
+        clean_room.instance_eval(&block)
+        actions = clean_room.actions
 
         nodes = group_names.map { |group_name| scope.group!(group_name) }.flat_map(&:nodes).uniq
 
@@ -151,7 +153,8 @@ module MotherBrain
       class CleanRoom < CleanRoomBase
         # @param [MB::Context] context
         # @param [MB::Plugin, MB::Component] real_model
-        def initialize(context, real_model, &block)
+        def initialize(context, real_model)
+          super(context, real_model)
           @actions = Array.new
 
           Gear.all.each do |klass|
@@ -164,8 +167,6 @@ module MotherBrain
               end
             end
           end
-
-          super(context, real_model, &block)
         end
 
         Gear.all.each do |klass|

@@ -172,7 +172,7 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        CleanRoom.new(context, self, &block)
+        CleanRoom.new(context, self).instance_eval(&block)
       end
 
     # A clean room bind the Plugin DSL syntax to. This clean room can later to

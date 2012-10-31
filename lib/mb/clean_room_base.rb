@@ -8,7 +8,7 @@ module MotherBrain
       # @param [Symbol] attribute
       def dsl_attr_writer(attribute)
         class_eval do
-          define_method attribute do |value|
+          define_method(attribute) do |value|
             set_attribute(attribute, value)
           end
         end
@@ -22,9 +22,6 @@ module MotherBrain
     def initialize(context, real_model, &block)
       super(context)
       @real_model = real_model
-
-      instance_eval(&block)
-      real_model
     end
 
     private
