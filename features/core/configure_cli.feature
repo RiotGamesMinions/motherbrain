@@ -9,10 +9,6 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
     And I type "https://api.opscode.com/organizations/vialstudio"
     And I type "reset"
     And I type "/Users/reset/.chef/reset.pem"
-    And I type "http://nexus.riotgames.com/nexus/"
-    And I type "riot"
-    And I type "deployer"
-    And I type "secr3tPassw0rd"
     And I type "root"
     And I type "secretpass"
     Then the output should contain:
@@ -24,10 +20,6 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
       | chef_api_url     | https://api.opscode.com/organizations/vialstudio |
       | chef_api_client  | reset                                            |
       | chef_api_key     | /Users/reset/.chef/reset.pem                     |
-      | nexus_api_url    | http://nexus.riotgames.com/nexus/                |
-      | nexus_repository | riot                                             |
-      | nexus_username   | deployer                                         |
-      | nexus_password   | secr3tPassw0rd                                   |
       | ssh_user         | root                                             |
       | ssh_password     | secretpass                                       |
 
@@ -47,10 +39,6 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
     And I type "https://api.opscode.com/organizations/vialstudio"
     And I type "reset"
     And I type "/Users/reset/.chef/reset.pem"
-    And I type "http://nexus.riotgames.com/nexus/"
-    And I type "riot"
-    And I type "deployer"
-    And I type "secr3tPassw0rd"
     And I type "root"
     And I type "secretpass"
     Then the output should contain:
@@ -62,9 +50,5 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
       | chef_api_url     | https://api.opscode.com/organizations/vialstudio |
       | chef_api_client  | reset                                            |
       | chef_api_key     | /Users/reset/.chef/reset.pem                     |
-      | nexus_api_url    | http://nexus.riotgames.com/nexus/                |
-      | nexus_repository | riot                                             |
-      | nexus_username   | deployer                                         |
-      | nexus_password   | secr3tPassw0rd                                   |
       | ssh_user         | root                                             |
       | ssh_password     | secretpass                                       |
