@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class RealObjectBase < ContextualModel
+  class RealModelBase < ContextualModel
     include Chozo::VariaModel
   end
 end

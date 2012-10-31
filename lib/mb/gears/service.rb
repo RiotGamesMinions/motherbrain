@@ -1,7 +1,7 @@
 module MotherBrain
   module Gear
     # @author Jamie Winsor <jamie@vialstudios.com>
-    class Service < RealObjectBase
+    class Service < RealModelBase
       include MB::Gear
       register_gear :service
 
@@ -86,16 +86,16 @@ module MotherBrain
       # @api private
       class CleanRoom < CleanRoomBase
         # @param [MB::Context] context
-        # @param [MB::Service] real_object
+        # @param [MB::Service] real_model
         # @param [MB::Component] component
-        def initialize(context, real_object, component, &block)
+        def initialize(context, real_model, component, &block)
           @component = component
-          super(context, real_object, &block)
+          super(context, real_model, &block)
         end
 
         # @param [String] name
         def action(name, &block)
-          real_object.add_action Action.new(context, name, component, &block)
+          real_model.add_action Action.new(context, name, component, &block)
         end
 
         private
@@ -105,7 +105,7 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class Action < RealObjectBase
+      class Action < RealModelBase
         # @return [String]
         attr_reader :name
         # @return [Set<Ridley::Node>]
@@ -167,7 +167,7 @@ module MotherBrain
 
         # @author Jamie Winsor <jamie@vialstudios.com>
         # @api private
-        class ActionRunner < RealObjectBase
+        class ActionRunner < RealModelBase
           include Logging
 
           # @return [Array<Proc>]

@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Command < RealObjectBase
+  class Command < RealModelBase
     attr_reader :name
 
     attribute :description,
@@ -48,13 +48,13 @@ module MotherBrain
       dsl_attr_writer :description
 
       def execute(&block)
-        real_object.execute = block
+        real_model.execute = block
       end
     end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
-    class CommandRunner < RealObjectBase
+    class CommandRunner < RealModelBase
       attr_reader :scope
 
       # @param [Object] scope
@@ -150,8 +150,8 @@ module MotherBrain
       # @api private
       class CleanRoom < CleanRoomBase
         # @param [MB::Context] context
-        # @param [MB::Plugin, MB::Component] real_object
-        def initialize(context, real_object, &block)
+        # @param [MB::Plugin, MB::Component] real_model
+        def initialize(context, real_model, &block)
           @actions = Array.new
 
           Gear.all.each do |klass|
@@ -165,12 +165,12 @@ module MotherBrain
             end
           end
 
-          super(context, real_object, &block)
+          super(context, real_model, &block)
         end
 
         Gear.all.each do |klass|
           define_method Gear.get_fun(klass) do |*args|
-            real_object.send(Gear.get_fun(klass), *args)
+            real_model.send(Gear.get_fun(klass), *args)
           end
         end
 

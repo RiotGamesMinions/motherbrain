@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Group < RealObjectBase
+  class Group < RealModelBase
     attr_reader :name
     attr_reader :roles
     attr_reader :recipes
@@ -102,20 +102,20 @@ module MotherBrain
       #
       # @return [Set<String>]
       def recipe(value)
-        real_object.add_recipe(value.to_s)
+        real_model.add_recipe(value.to_s)
       end
 
       # @param [#to_s] value
       #
       # @return [Set<String>]
       def role(value)
-        real_object.add_role(value.to_s)
+        real_model.add_role(value.to_s)
       end
 
       # @param [#to_s] attr_key
       # @param [Object] attr_value
       def chef_attribute(attr_key, attr_value)
-        real_object.add_chef_attribute(attr_key, attr_value)
+        real_model.add_chef_attribute(attr_key, attr_value)
       end
     end
   end

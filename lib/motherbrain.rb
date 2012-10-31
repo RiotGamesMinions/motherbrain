@@ -37,7 +37,7 @@ module MotherBrain
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
-  autoload :RealObjectBase, 'mb/real_object_base'
+  autoload :RealModelBase, 'mb/real_model_base'
 
   class << self
     attr_writer :ui

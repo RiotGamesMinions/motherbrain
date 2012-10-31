@@ -16,23 +16,23 @@ module MotherBrain
     end
 
     # @param [MB::Context] context
-    # @param [MB::ContextualModel] real_object
+    # @param [MB::ContextualModel] real_model
     #
     # @return [MB::ContextualModel]
-    def initialize(context, real_object, &block)
+    def initialize(context, real_model, &block)
       super(context)
-      @real_object = real_object
+      @real_model = real_model
 
       instance_eval(&block)
-      real_object
+      real_model
     end
 
     private
 
-      attr_reader :real_object
+      attr_reader :real_model
 
       def set_attribute(name, value)
-        real_object.send("#{name}=", value)
+        real_model.send("#{name}=", value)
       end
   end
 end

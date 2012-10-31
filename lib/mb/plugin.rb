@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Plugin < RealObjectBase
+  class Plugin < RealModelBase
     class << self
       # Create a new plugin instance from the given context and content
       #
@@ -190,17 +190,17 @@ module MotherBrain
       # @param [#to_s] name
       # @param [#to_s] constraint
       def depends(name, constraint)
-        real_object.add_dependency(name, constraint)
+        real_model.add_dependency(name, constraint)
       end
 
       # @param [#to_s] name
       def command(name, &block)
-        real_object.add_command Command.new(name, context, real_object, &block)
+        real_model.add_command Command.new(name, context, real_model, &block)
       end
 
       # @param [#to_s] name
       def component(name, &block)
-        real_object.add_component Component.new(name, context, &block)
+        real_model.add_component Component.new(name, context, &block)
       end
     end
   end

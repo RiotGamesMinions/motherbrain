@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Component < RealObjectBase
+  class Component < RealModelBase
     attr_reader :name
     attr_reader :groups
     attr_reader :commands
@@ -161,16 +161,16 @@ module MotherBrain
       dsl_attr_writer :description
 
       def group(name, &block)
-        real_object.add_group Group.new(name, context, &block)
+        real_model.add_group Group.new(name, context, &block)
       end
 
       def command(name, &block)
-        real_object.add_command Command.new(name, context, real_object, &block)
+        real_model.add_command Command.new(name, context, real_model, &block)
       end
 
       Gear.all.each do |klass|
         define_method Gear.element_name(klass) do |*args, &block|
-          real_object.add_gear(klass.new(context, real_object, *args, &block))
+          real_model.add_gear(klass.new(context, real_model, *args, &block))
         end
       end
     end
