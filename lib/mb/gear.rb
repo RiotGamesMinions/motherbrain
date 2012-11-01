@@ -16,8 +16,7 @@ module MotherBrain
   #
   # @example Plugin DSL usage
   #
-  #   component do
-  #     name "news_post"
+  #   component "news_post" do
   #
   #     twitter do
   #     ...
