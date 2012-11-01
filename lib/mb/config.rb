@@ -1,48 +1,42 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Config
+  class Config < Chozo::Config::JSON
     class << self
       def default_path
         ENV["MB_CONFIG"] || "~/.mb/config.json"
       end
     end
 
-    include Chozo::Config::JSON
+    attribute :chef_api_url,
+      default: "http://localhost:8080",
+      type: String,
+      required: true
 
-    attribute :chef_api_url, default: "http://localhost:8080"
-    validates_presence_of :chef_api_url
-    validates_format_of :chef_api_url, with: URI::regexp(%w(http https))
+    attribute :chef_api_client,
+      type: String,
+      required: true
 
-    attribute :chef_api_client
-    validates_presence_of :chef_api_client
+    attribute :chef_api_key,
+      type: String,
+      required: true
 
-    attribute :chef_api_key
-    validates_presence_of :chef_api_key
+    attribute :chef_organization,
+      type: String
 
-    attribute :chef_organization
-    
-    attribute :nexus_api_url
-    validates_presence_of :nexus_api_url
-    validates_format_of :nexus_api_url, with: URI::regexp(%w(http https))
+    attribute :plugin_paths,
+      default: PluginLoader.default_paths,
+      type: [ Array, Set ],
+      required: true
 
-    attribute :nexus_repository
-    validates_presence_of :nexus_repository
+    attribute :ssh_user,
+      type: String,
+      required: true
 
-    attribute :nexus_username
-    validates_presence_of :nexus_username
+    attribute :ssh_password,
+      type: String
 
-    attribute :nexus_password
-    validates_presence_of :nexus_password
-
-    attribute :plugin_paths, default: PluginLoader.default_paths
-
-    attribute :ssh_user
-    validates_presence_of :ssh_user
-
-    attribute :ssh_password
-    attribute :ssh_key
-
-    validates_with ConfigValidator
+    attribute :ssh_key,
+      type: String
 
     # Returns a connection hash for Ridley from the instance's attributes
     #

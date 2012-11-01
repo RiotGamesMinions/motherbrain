@@ -62,8 +62,8 @@ module MotherBrain
     end
 
     def message
-      msg = errors.full_messages.collect do |err|
-        "* #{err}"
+      msg = errors.collect do |key, messages|
+        "* #{key}: #{messages.join(', ')}"
       end
       msg.unshift "-----"
       msg.unshift "Invalid Configuration File"
