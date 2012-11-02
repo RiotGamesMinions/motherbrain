@@ -21,6 +21,7 @@ require 'mb/errors'
 module MotherBrain
   autoload :ChefRunner, 'mb/chef_runner'
   autoload :CleanRoomBase, 'mb/clean_room_base'
+  autoload :ClusterBootstrapper, 'mb/cluster_bootstrapper'
   autoload :Command, 'mb/command'
   autoload :Component, 'mb/component'
   autoload :ComponentInvoker, 'mb/component_invoker'

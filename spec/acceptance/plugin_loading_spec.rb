@@ -116,7 +116,7 @@ describe "loading a plugin", type: "acceptance" do
   context "when a component is not found" do
     it "raises a ComponentNotFound error" do
       lambda {
-        subject.component("not_there")
+        subject.component!("not_there")
       }.should raise_error(MB::ComponentNotFound)
     end
   end

@@ -60,6 +60,9 @@ module MotherBrain
     attribute :email,
       type: [String, Array]
 
+    attribute :bootstrapper,
+      type: MB::ClusterBootstrapper
+
     # @param [MB::Context] context
     def initialize(context, &block)
       super(context)
@@ -79,10 +82,19 @@ module MotherBrain
 
     # @param [String] name
     #
-    # @return [MB::Component]
+    # @return [MB::Component, nil]
     def component(name)
-      component = components.find { |component| component.name == name }
-      
+      components.find { |component| component.name == name }
+    end
+
+    # @param [String] name
+    #
+    # @raise [ComponentNotFound] if a component of the given name is not a part of this plugin
+    #
+    # @return [MB::Component]
+    def component!(name)
+      component = component(name)
+
       if component.nil?
         raise ComponentNotFound, "Component '#{name}' not found on plugin '#{self.name}' (#{self.version})"
       end
@@ -201,6 +213,10 @@ module MotherBrain
       # @param [#to_s] name
       def component(name, &block)
         real_model.add_component Component.new(name, context, &block)
+      end
+
+      def cluster_bootstrap(&block)
+        real_model.bootstrapper = ClusterBootstrapper.new(context, real_model, &block)
       end
     end
   end
