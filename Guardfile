@@ -1,5 +1,11 @@
 notification :off
 
+guard 'spork' do
+  watch('Gemfile')
+  watch('spec/spec_helper.rb')     { :rspec }
+  watch(%r{^spec/support/.+\.rb$}) { :rspec }
+end
+
 guard 'yard', stdout: '/dev/null', stderr: '/dev/null' do
   watch(%r{app/.+\.rb})
   watch(%r{lib/.+\.rb})
