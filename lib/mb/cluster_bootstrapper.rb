@@ -13,7 +13,7 @@ module MotherBrain
       end
     end
 
-    def run
+    def run(manifest)
       # run the tasks
     end
 
@@ -23,8 +23,8 @@ module MotherBrain
     # the returned array.
     #
     # @return [Array<Group>, Array<Array<Group>>]
-    def boot_order
-      @boot_order ||= expand_procs(task_procs)
+    def boot_queue
+      @boot_queue ||= expand_procs(task_procs)
     end
 
     private
@@ -58,7 +58,7 @@ module MotherBrain
       end
 
       def bootstrap(component, group)
-        self.task_procs << lambda {
+        self.task_procs.push lambda {
           real_model.plugin.component!(component).group!(group) 
         }
       end
@@ -67,7 +67,7 @@ module MotherBrain
         room = self.class.new(context, real_model)
         room.instance_eval(&block)
 
-        self.task_procs << room.task_procs
+        self.task_procs.push room.task_procs
       end
 
       protected

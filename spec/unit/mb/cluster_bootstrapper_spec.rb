@@ -53,20 +53,20 @@ describe MB::ClusterBootstrapper do
     end
 
     it "has an entry for each bootstrap or async function call" do
-      subject.boot_order.should have(3).items
+      subject.boot_queue.should have(3).items
     end
 
     it "has a group in the proper order for each bootstrap function call" do
-      subject.boot_order[2].should eql(nginx_master)
+      subject.boot_queue[2].should eql(nginx_master)
     end
 
     it "has an array of groups in the proper order for each async function call" do
-      subject.boot_order[0].should be_a(Array)
-      subject.boot_order[0][0].should eql(amq_master)
-      subject.boot_order[0][1].should eql(amq_slave)
-      subject.boot_order[1].should be_a(Array)
-      subject.boot_order[1][0].should eql(mysql_master)
-      subject.boot_order[1][1].should eql(mysql_slave)
+      subject.boot_queue[0].should be_a(Array)
+      subject.boot_queue[0][0].should eql(amq_master)
+      subject.boot_queue[0][1].should eql(amq_slave)
+      subject.boot_queue[1].should be_a(Array)
+      subject.boot_queue[1][0].should eql(mysql_master)
+      subject.boot_queue[1][1].should eql(mysql_slave)
     end
   end
 end
