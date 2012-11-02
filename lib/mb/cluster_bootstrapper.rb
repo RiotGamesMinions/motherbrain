@@ -2,12 +2,11 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class ClusterBootstrapper < RealModelBase
     attr_reader :plugin
-    attr_reader :boot_tasks
 
     def initialize(context, plugin, &block)
       super(context)
       @plugin = plugin
-      @boot_tasks = Array.new
+      @task_procs = Array.new
 
       if block_given?
         dsl_eval(&block)
@@ -18,12 +17,34 @@ module MotherBrain
       # run the tasks
     end
 
+    # Returns an array of groups or an array of an array groups representing the order in 
+    # which the cluster should be bootstrapped in. Groups which can be bootstrapped together
+    # are contained within an array. Groups should be bootstrapped starting from index 0 of
+    # the returned array.
+    #
+    # @return [Array<Group>, Array<Array<Group>>]
+    def boot_order
+      @boot_order ||= expand_procs(task_procs)
+    end
+
     private
+
+      attr_reader :task_procs
 
       def dsl_eval(&block)
         room = CleanRoom.new(context, self)
         room.instance_eval(&block)
-        @boot_tasks = room.send(:boot_tasks)
+        @task_procs = room.send(:task_procs)
+      end
+
+      def expand_procs(task_procs)
+        task_procs.map! do |task_proc|
+          if task_proc.is_a?(Array)
+            expand_procs(task_proc)
+          else
+            task_proc.call
+          end
+        end
       end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
@@ -33,11 +54,11 @@ module MotherBrain
       # @param [MB::Plugin, MB::Component] real_model
       def initialize(context, real_model)
         super(context, real_model)
-        @boot_tasks = Array.new
+        @task_procs = Array.new
       end
 
       def bootstrap(component, group)
-        self.boot_tasks << lambda { 
+        self.task_procs << lambda {
           real_model.plugin.component!(component).group!(group) 
         }
       end
@@ -46,12 +67,12 @@ module MotherBrain
         room = self.class.new(context, real_model)
         room.instance_eval(&block)
 
-        self.boot_tasks << room.boot_tasks
+        self.task_procs << room.task_procs
       end
 
       protected
 
-        attr_reader :boot_tasks
+        attr_reader :task_procs
     end
   end
 end

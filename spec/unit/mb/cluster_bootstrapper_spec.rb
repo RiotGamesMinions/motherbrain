@@ -31,6 +31,7 @@ describe MB::ClusterBootstrapper do
     plugin = double('plugin')
     plugin.stub(:component!).with("activemq").and_return(activemq)
     plugin.stub(:component!).with("mysql").and_return(mysql)
+    plugin.stub(:component!).with("nginx").and_return(nginx)
     plugin
   end
 
@@ -52,16 +53,20 @@ describe MB::ClusterBootstrapper do
     end
 
     it "has an entry for each bootstrap or async function call" do
-      subject.boot_tasks.should have(3).items
+      subject.boot_order.should have(3).items
     end
 
-    it "has a proc entry for each bootstrap function call" do
-      subject.boot_tasks[2].should be_a(Proc)
+    it "has a group in the proper order for each bootstrap function call" do
+      subject.boot_order[2].should eql(nginx_master)
     end
 
-    it "has an array of procs for each async function call" do
-      subject.boot_tasks[0].should each be_a(Proc)
-      subject.boot_tasks[1].should each be_a(Proc)
+    it "has an array of groups in the proper order for each async function call" do
+      subject.boot_order[0].should be_a(Array)
+      subject.boot_order[0][0].should eql(amq_master)
+      subject.boot_order[0][1].should eql(amq_slave)
+      subject.boot_order[1].should be_a(Array)
+      subject.boot_order[1][0].should eql(mysql_master)
+      subject.boot_order[1][1].should eql(mysql_slave)
     end
   end
 end
