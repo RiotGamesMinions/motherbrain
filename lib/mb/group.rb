@@ -25,12 +25,16 @@ module MotherBrain
       self.name.to_sym
     end
 
-    # Returns an Array of Hashes containing the node data from Chef about each
-    # node matching this instance of {Group}'s signature in the given environment.
+    # Returns an Array Ridley::Node objects from Chef that match this {Group}'s
+    # signature.
+    #
+    # A signature is any combination of a recipe(s) or role(s) in a node's run_list or
+    # an attribute(s) on a node.
+    #
     #
     # @param [String] environment
     #
-    # @return [Array<String>]
+    # @return [Array<Ridley::Node>]
     def nodes
       chef_conn.search(:node, search_query)
     end

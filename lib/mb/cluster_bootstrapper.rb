@@ -1,6 +1,23 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class ClusterBootstrapper < RealModelBase
+    autoload :Worker, 'mb/cluster_bootstrapper/worker'
+
+    class << self
+      # Reduce a manifest to a hash containing only key/value pairs where the initial
+      # keys matched the names of the given groups
+      #
+      # @param [Hash] manifest
+      # @param [Array<MB::Group>, MB::Group] groups
+      #
+      # @return [Hash]
+      def manifest_reduce(manifest, groups)
+        manifest.select do |name, nodes|
+          Array(groups).find { |group| group.name == name }
+        end
+      end
+    end
+
     attr_reader :plugin
 
     def initialize(context, plugin, &block)
@@ -13,8 +30,26 @@ module MotherBrain
       end
     end
 
-    def run(manifest)
-      # run the tasks
+    # Bootstrap every item in the {boot_queue} in order
+    #
+    # @param [Hash] manifest
+    #   a hash where the keys are node group names and the values are arrays of hostnames
+    # @param [Hash] options
+    #   options to pass to {concurrent_bootstrap}
+    #
+    # @return [Array<Hash>]
+    #   an array containing hashes from each item in the boot_queue. The hashes contain
+    #   keys for bootstrapped node groups and values that are the Ridley::SSH::ResultSet
+    #   which contains the result of bootstrapping each node.
+    def run(manifest, options = {})
+      responses = Array.new
+
+      until boot_queue.empty?
+        reduced_manifest = self.class.manifest_reduce(manifest, boot_queue.shift)
+        responses.push concurrent_bootstrap(reduced_manifest, options)
+      end
+
+      responses
     end
 
     # Returns an array of groups or an array of an array groups representing the order in 
@@ -25,6 +60,41 @@ module MotherBrain
     # @return [Array<Group>, Array<Array<Group>>]
     def boot_queue
       @boot_queue ||= expand_procs(task_procs)
+    end
+
+    # Concurrently bootstrap a grouped collection of nodes from a manifest and return
+    # their results. This function will block until all nodes have finished
+    # bootstrapping.
+    #
+    # @param [Hash] manifest
+    #   a hash where the keys are node group names and the values are arrays of hostnames
+    # @param [Hash] options
+    #   options to pass to a ClusterBootstrapper::Worker
+    #
+    # @return [Hash]
+    #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
+    def concurrent_bootstrap(manifest, options = {})
+      workers = Array.new
+      options[:server_url] ||= context.chef_conn.server_url
+
+      workers = manifest.collect do |group_name, nodes|
+        Worker.new(group_name, nodes, options)
+      end
+
+      futures = workers.collect do |worker|
+        [
+          worker.group_name,
+          worker.future.run
+        ]
+      end
+
+      {}.tap do |response|
+        futures.each do |future|
+          response[future[0]] = future[1].value
+        end
+      end
+    ensure
+      workers.map(&:terminate)
     end
 
     private

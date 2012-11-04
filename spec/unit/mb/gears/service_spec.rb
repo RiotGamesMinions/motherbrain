@@ -110,7 +110,7 @@ describe MB::Gear::Service do
       chef_runner.stub(:run).and_return([:success, []])
       MB::ChefRunner.stub(:new).and_return(chef_runner)
 
-      Ridley::Context.any_instance.stub(:find!).and_return(ridley_object)
+      Ridley::ChainLink.any_instance.stub(:find!).and_return(ridley_object)
     end
 
     describe "#run" do
