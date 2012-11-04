@@ -30,12 +30,12 @@ module MotherBrain
       end
     end
 
-    # Bootstrap every item in the {boot_queue} in order
+    # Bootstrap every item in the {#boot_queue} in order
     #
     # @param [Hash] manifest
     #   a hash where the keys are node group names and the values are arrays of hostnames
     # @param [Hash] options
-    #   options to pass to {concurrent_bootstrap}
+    #   options to pass to {#concurrent_bootstrap}
     #
     # @return [Array<Hash>]
     #   an array containing hashes from each item in the boot_queue. The hashes contain
