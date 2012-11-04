@@ -191,7 +191,11 @@ describe MB::ClusterBootstrapper do
     end
 
     let(:options) do
-      { ssh_user: "reset", ssh_keys: "/Users/reset/.ssh/id_rsa", validator_path: "/Users/reset/.chef/riot-validator.pem" }
+      {
+        ssh_user: "reset",
+        ssh_password: "fakepass",
+        validator_path: fixtures_path.join("fake_key.pem").to_s
+      }
     end
 
     it "returns a Hash containing a key for each group in the manifest" do
