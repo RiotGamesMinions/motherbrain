@@ -71,7 +71,5 @@ module MotherBrain
   end
 end
 
-unless defined?(MB)
-  # Alias for {MotherBrain}
-  MB = MotherBrain
-end
+# Alias for {MotherBrain}
+MB = MotherBrain
