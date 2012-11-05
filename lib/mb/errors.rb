@@ -70,6 +70,8 @@ module MotherBrain
       msg.join("\n")
     end
   end
+
   class ConfigNotFound < MBError; status_code(14); end
   class ConfigExists < MBError; status_code(15); end
+  class ChefConnectionError < MBError; status_code(16); end
 end
