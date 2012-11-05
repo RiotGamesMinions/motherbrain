@@ -6,10 +6,12 @@ module MotherBrain
       #
       # @return [MotherBrain::Context]
       def configure(options)
-        config = if options[:config].nil?
-          MB::Config.from_file(File.expand_path(MB::Config.default_path))
-        else
-          MB::Config.from_file(options[:config])
+        file = options[:config] || File.expand_path(MB::Config.default_path)
+
+        begin
+          config = MB::Config.from_file file
+        rescue Chozo::Errors::ConfigNotFound => e
+          raise e.class.new "#{e.message}\nCreate one with `mb configure`"
         end
 
         validate_config(config)
