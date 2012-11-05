@@ -32,6 +32,8 @@ module MotherBrain
         context.chef_conn.environment.find!(env_name)
       rescue Ridley::Errors::HTTPNotFound
         raise EnvironmentNotFound, "Environment: '#{env_name}' not found on Chef Server"
+      rescue Faraday::Error::ConnectionFailed => e
+        raise ChefConnectionError, "Could not connect to Chef server (#{context.chef_conn.server_url}): #{e}"
       end
   end
 end
