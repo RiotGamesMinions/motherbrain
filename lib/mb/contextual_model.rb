@@ -3,7 +3,7 @@ module MotherBrain
   class ContextualModel
     extend Forwardable
 
-    # @param [MB::Context] context
+    # @param [MotherBrain::Context] context
     def initialize(context)
       @context = context
     end

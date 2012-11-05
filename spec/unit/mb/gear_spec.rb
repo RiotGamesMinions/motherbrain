@@ -1,27 +1,27 @@
 require 'spec_helper'
 
-describe MB::Gear do
+describe MotherBrain::Gear do
   before(:each) do
-    @original = MB::Gear.all
-    MB::Gear.clear!
+    @original = MotherBrain::Gear.all
+    MotherBrain::Gear.clear!
   end
 
   after(:each) do
-    MB::Gear.clear!
+    MotherBrain::Gear.clear!
     @original.each do |k|
-      MB::Gear.register(k)
+      MotherBrain::Gear.register(k)
     end
   end
 
   describe "ClassMethods" do
-    subject { MB::Gear }
+    subject { MotherBrain::Gear }
 
     describe "::all" do
       it "returns a Set" do
         subject.all.should be_a(Set)
       end
 
-      context "when no Classes include MB::Gear" do
+      context "when no Classes include MotherBrain::Gear" do
         before(:each) { subject.clear! }
 
         it "returns an empty Set" do
@@ -29,15 +29,15 @@ describe MB::Gear do
         end
       end
 
-      context "when a Class includes MB::Gear" do
+      context "when a Class includes MotherBrain::Gear" do
         before(:each) do
           @descendant = Class.new do
-            include MB::Gear
+            include MotherBrain::Gear
             register_gear :fake_one
           end
 
           @descendant_2 = Class.new do
-            include MB::Gear
+            include MotherBrain::Gear
             register_gear :fake_two
           end
         end
@@ -49,11 +49,11 @@ describe MB::Gear do
         end
       end
 
-      context "when a Class includes MB::Gear multiple times" do
+      context "when a Class includes MotherBrain::Gear multiple times" do
         before(:each) do
           @descendant = Class.new do
-            include MB::Gear
-            include MB::Gear
+            include MotherBrain::Gear
+            include MotherBrain::Gear
             register_gear :fake_gear
           end
         end
@@ -75,7 +75,7 @@ describe MB::Gear do
     describe "::find_by_keyword" do
       before(:each) do
         @klass = Class.new do
-          include MB::Gear
+          include MotherBrain::Gear
 
           register_gear :fake_gear
         end
@@ -94,7 +94,7 @@ describe MB::Gear do
   describe "::register_gear" do
     it "sets the keyword class attribute" do
       @klass = Class.new do
-        include MB::Gear
+        include MotherBrain::Gear
         register_gear :racer
       end
 
@@ -104,28 +104,28 @@ describe MB::Gear do
     context "when registering a keyword that has already been used" do
       it "raises a DuplicateGearKeyword error" do
         Class.new do
-          include MB::Gear
+          include MotherBrain::Gear
           register_gear :racer
         end
 
         lambda {
           Class.new do
-            include MB::Gear
+            include MotherBrain::Gear
             register_gear :racer
           end
-        }.should raise_error(MB::DuplicateGearKeyword)
+        }.should raise_error(MotherBrain::DuplicateGearKeyword)
       end
     end
 
     context "when registering a RESERVED_KEYWORD" do
       it "raises a ReservedGearKeyword error" do
-        MB::Gear::RESERVED_KEYWORDS.each do |key|
+        MotherBrain::Gear::RESERVED_KEYWORDS.each do |key|
           lambda {
             Class.new do
-              include MB::Gear
+              include MotherBrain::Gear
               register_gear key
             end
-          }.should raise_error(MB::ReservedGearKeyword)
+          }.should raise_error(MotherBrain::ReservedGearKeyword)
         end
       end
     end

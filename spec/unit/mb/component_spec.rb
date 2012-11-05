@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe MB::Component do
+describe MotherBrain::Component do
   let(:environment) { 'mb-test' }
   let(:chef_conn) { double('chef_conn') }
 
   subject do
-    MB::Component.new("activemq", @context) do
+    MotherBrain::Component.new("activemq", @context) do
       group "masters" do
         # block
       end
@@ -14,7 +14,7 @@ describe MB::Component do
 
   describe "#groups" do
     subject do
-      MB::Component.new("activemq", @context) do
+      MotherBrain::Component.new("activemq", @context) do
         group "masters" do
           # block
         end
@@ -23,13 +23,13 @@ describe MB::Component do
 
     it "returns a Set of Group objects" do
       subject.groups.should be_a(Set)
-      subject.groups.should each be_a(MB::Group)
+      subject.groups.should each be_a(MotherBrain::Group)
     end
   end
 
   describe "#group" do
     subject do
-      MB::Component.new("activemq", @context) do
+      MotherBrain::Component.new("activemq", @context) do
         group "masters" do
           # block
         end
@@ -43,7 +43,7 @@ describe MB::Component do
 
   describe "#group!" do
     subject do
-      MB::Component.new("activemq", @context) do
+      MotherBrain::Component.new("activemq", @context) do
         group "masters" do
           # block
         end
@@ -55,7 +55,7 @@ describe MB::Component do
     end
 
     it "raises an exception on a missing group" do
-      lambda { subject.group!("slaves") }.should raise_error(MB::GroupNotFound)
+      lambda { subject.group!("slaves") }.should raise_error(MotherBrain::GroupNotFound)
     end
   end
 
@@ -72,7 +72,7 @@ describe MB::Component do
   end
 
   describe "#service" do
-    subject { MB::Component }
+    subject { MotherBrain::Component }
 
     it "returns a Set of services" do
       component = subject.new("activemq", @context) do
@@ -81,7 +81,7 @@ describe MB::Component do
         end
       end
 
-      component.gears(MB::Gear::Service).should be_a(Set)
+      component.gears(MotherBrain::Gear::Service).should be_a(Set)
     end
 
     it "contains each service defined" do
@@ -91,7 +91,7 @@ describe MB::Component do
         end
       end
 
-      component.gears(MB::Gear::Service).should have(1).item
+      component.gears(MotherBrain::Gear::Service).should have(1).item
     end
 
     it "does not allow duplicate services" do
@@ -105,7 +105,7 @@ describe MB::Component do
             # block
           end
         end
-      end.should raise_error(MB::DuplicateGear)
+      end.should raise_error(MotherBrain::DuplicateGear)
     end
   end
 end

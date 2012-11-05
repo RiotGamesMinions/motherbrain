@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-if MB.jruby?
-  describe MB::Gear::Jmx do
+if MotherBrain.jruby?
+  describe MotherBrain::Gear::Jmx do
 
     describe "Class" do
-      subject { MB::Gear::Jmx }
+      subject { MotherBrain::Gear::Jmx }
       
-      it "is registered with MB::Gear" do
-        MB::Gear.all.should include(subject)
+      it "is registered with MotherBrain::Gear" do
+        MotherBrain::Gear.all.should include(subject)
       end
 
       it "has the inferred keyword ':jmx' from it's Class name" do
@@ -16,17 +16,17 @@ if MB.jruby?
     end
 
     describe "#action" do
-      subject { MB::Gear::Jmx.new }
+      subject { MotherBrain::Gear::Jmx.new }
 
       it "returns a Gear::Jmx::Action" do
         subject.action(9001, "com.some.thing:name=thing") do |mbean|
-        end.should be_a(MB::Gear::Jmx::Action)
+        end.should be_a(MotherBrain::Gear::Jmx::Action)
       end
     end
   end
 
-  describe MB::Gear::Jmx::Action do
-    subject { MB::Gear::Jmx::Action }
+  describe MotherBrain::Gear::Jmx::Action do
+    subject { MotherBrain::Gear::Jmx::Action }
 
     describe "::new" do
       let(:port) { 9001 }
@@ -45,23 +45,23 @@ if MB.jruby?
       it "should be given a block" do
         lambda do 
           obj = subject.new(port, object_name)
-        end.should raise_error(MB::ArgumentError)
+        end.should raise_error(MotherBrain::ArgumentError)
       end
 
       it "should be given a block with 1 argument" do
         lambda do 
           obj = subject.new(port, object_name) do
           end
-        end.should raise_error(MB::ArgumentError)
+        end.should raise_error(MotherBrain::ArgumentError)
       end
 
       it "should complain if not on jruby" do
-        MB.stub(:jruby?).and_return(false)
+        MotherBrain.stub(:jruby?).and_return(false)
 
         lambda do 
           obj = subject.new(port, object_name) do |mbean|
           end
-        end.should raise_error(MB::ActionNotSupported)
+        end.should raise_error(MotherBrain::ActionNotSupported)
       end
     end
   end

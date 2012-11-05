@@ -9,13 +9,13 @@ module MotherBrain
         file = options[:config] || File.expand_path(MB::Config.default_path)
 
         begin
-          config = MB::Config.from_file file
+          config = MotherBrain::Config.from_file file
         rescue Chozo::Errors::ConfigNotFound => e
           raise e.class.new "#{e.message}\nCreate one with `mb configure`"
         end
 
         validate_config(config)
-        MB::Context.new(config)
+        MotherBrain::Context.new(config)
       end
 
       private

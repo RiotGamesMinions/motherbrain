@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe MB::Command do
+describe MotherBrain::Command do
   let(:scope) { double('plugin') }
 
   describe "ClassMethods" do
-    subject { MB::Command }
+    subject { MotherBrain::Command }
 
     describe "::new" do
       before(:each) do
@@ -32,7 +32,7 @@ describe MB::Command do
   end
 end
 
-describe MB::Command::CommandRunner do
+describe MotherBrain::Command::CommandRunner do
   let(:scope) { double('plugin', name: "plugin") }
 
   let(:action_1) { double('action_1', name: "action 1") }
@@ -48,10 +48,10 @@ describe MB::Command::CommandRunner do
   let(:master_group) { double('master_group', nodes: [ node_1, node_2 ]) }
   let(:slave_group) { double('slave_group', nodes: [ node_3 ]) }
 
-  subject { MB::Command::CommandRunner }
+  subject { MotherBrain::Command::CommandRunner }
 
   before(:each) do
-    MB::Command::CommandRunner::CleanRoom.stub_chain(:new, :actions).and_return(actions)
+    MotherBrain::Command::CommandRunner::CleanRoom.stub_chain(:new, :actions).and_return(actions)
   end
 
   describe "#on" do
@@ -60,7 +60,7 @@ describe MB::Command::CommandRunner do
         on("master_group")
       end
       
-      lambda { subject.new(@context, scope, command_block)}.should raise_error(MB::PluginSyntaxError)
+      lambda { subject.new(@context, scope, command_block)}.should raise_error(MotherBrain::PluginSyntaxError)
     end
 
     it "has a single group" do

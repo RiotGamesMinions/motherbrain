@@ -22,7 +22,7 @@ module MotherBrain
         end
 
         plugin.components.each do |component|
-          register_component MB::ComponentInvoker.fabricate(klass, component)
+          register_component MotherBrain::ComponentInvoker.fabricate(klass, component)
         end
 
         klass.class_eval do
@@ -32,7 +32,7 @@ module MotherBrain
             
             plugin.send(:context).environment = environment
 
-            MB.ui.say "Nodes in '#{environment}':"
+            MotherBrain.ui.say "Nodes in '#{environment}':"
 
             nodes = plugin.nodes.each do |component, groups|
               groups.each do |group, nodes|
@@ -40,7 +40,7 @@ module MotherBrain
               end
             end
 
-            MB.ui.say nodes.to_yaml
+            MotherBrain.ui.say nodes.to_yaml
           end
         end
 
@@ -65,7 +65,7 @@ module MotherBrain
 
     desc "version", "Display plugin version"
     def version
-      MB.ui.say self.class.plugin.version
+      MotherBrain.ui.say self.class.plugin.version
     end
   end
 end

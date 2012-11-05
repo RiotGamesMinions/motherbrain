@@ -15,6 +15,6 @@ When /^I run a command that requires a config$/ do
 end
 
 Then /^the exit status should be the code for error "(.*?)"$/ do |konstant|
-  exit_status = MB.const_get(konstant).status_code
+  exit_status = MotherBrain.const_get(konstant).status_code
   assert_exit_status(exit_status)
 end

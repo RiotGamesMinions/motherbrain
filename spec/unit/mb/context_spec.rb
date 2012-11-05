@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MB::Context do
+describe MotherBrain::Context do
   describe "ClassMethods" do
-    subject { MB::Context }
+    subject { MotherBrain::Context }
 
     describe "::new" do
       it "assigns the given config to the config attribute" do
@@ -24,7 +24,7 @@ describe MB::Context do
     end
   end
 
-  subject { MB::Context.new(@config) }
+  subject { MotherBrain::Context.new(@config) }
 
   it "allows dynamic attribute assignment and retrieval" do
     subject.thingy = "some_value"

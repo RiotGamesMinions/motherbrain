@@ -3,14 +3,14 @@ $:.push File.expand_path("../../lib", __FILE__)
 require 'motherbrain'
 
 begin
-  MB::Invoker.start
-rescue MB::InvalidConfig => e
-  MB.ui.say e.message, :red
+  MotherBrain::Invoker.start
+rescue MotherBrain::InvalidConfig => e
+  MotherBrain.ui.say e.message, :red
   exit e.status_code
-rescue MB::MBError => e
-  MB.ui.say e, :red
+rescue MotherBrain::MBError => e
+  MotherBrain.ui.say e, :red
   exit e.status_code
 rescue Chozo::Errors::ChozoError => e
-  MB.ui.say e, :red
+  MotherBrain.ui.say e, :red
   exit 1
 end

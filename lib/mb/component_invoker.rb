@@ -27,13 +27,13 @@ module MotherBrain
           define_method(:nodes) do |environment|
             assert_environment_exists(environment)
 
-            MB.ui.say "Nodes for '#{component.name}' in '#{environment}':"
+            MotherBrain.ui.say "Nodes for '#{component.name}' in '#{environment}':"
             
             nodes = component.nodes(environment).each do |group, nodes|
               nodes.collect! { |node| "#{node[:automatic][:fqdn]} (#{node[:automatic][:ipaddress]})" }
             end
 
-            MB.ui.say nodes.to_yaml
+            MotherBrain.ui.say nodes.to_yaml
           end
         end
 

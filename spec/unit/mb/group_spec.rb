@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::Group do
+describe MotherBrain::Group do
   let(:environment) { "mb-test" }
 
   before(:each) do
@@ -9,7 +9,7 @@ describe MB::Group do
   end
 
   describe "ClassMethods" do
-    subject { MB::Group }
+    subject { MotherBrain::Group }
 
     describe "::new" do
       context "given a block with multiple recipe calls" do
@@ -45,7 +45,7 @@ describe MB::Group do
               chef_attribute "pvpnet.database.master", true
               chef_attribute "pvpnet.database.master", false
             end
-          }.should raise_error(MB::DuplicateChefAttribute)
+          }.should raise_error(MotherBrain::DuplicateChefAttribute)
         end
       end
     end
@@ -53,7 +53,7 @@ describe MB::Group do
 
   describe "#name" do
     subject do
-      MB::Group.new("master_database", @context) do
+      MotherBrain::Group.new("master_database", @context) do
         # block
       end
     end
@@ -65,7 +65,7 @@ describe MB::Group do
 
   describe "#recipes" do
     subject do
-      MB::Group.new("pvpnet", @context) do
+      MotherBrain::Group.new("pvpnet", @context) do
         recipe "pvpnet::default"
         recipe "pvpnet::database"
         recipe "pvpnet::app"
@@ -85,7 +85,7 @@ describe MB::Group do
 
     context "when a recipe of the same name is defined" do
       subject do
-        MB::Group.new("pvpnet", @context) do
+        MotherBrain::Group.new("pvpnet", @context) do
           recipe "pvpnet::default"
           recipe "pvpnet::default"
         end
@@ -99,7 +99,7 @@ describe MB::Group do
 
   describe "#roles" do
     subject do
-      MB::Group.new("roles_are_poopy", @context) do
+      MotherBrain::Group.new("roles_are_poopy", @context) do
         role "stop"
         role "fucking"
         role "using"
@@ -121,7 +121,7 @@ describe MB::Group do
 
     context "when a role of the same name is defined" do
       subject do
-        MB::Group.new("roles_are_poopy", @context) do
+        MotherBrain::Group.new("roles_are_poopy", @context) do
           role "asshole_role"
           role "asshole_role"
         end
@@ -135,7 +135,7 @@ describe MB::Group do
 
   describe "#chef_attributes" do
     subject do
-      MB::Group.new("db_master", @context) do
+      MotherBrain::Group.new("db_master", @context) do
         chef_attribute "pvpnet.database.master", true
         chef_attribute "pvpnet.database.slave", false
       end
@@ -159,7 +159,7 @@ describe MB::Group do
   describe "#search_query" do
     context "with one chef attribute" do
       subject do
-        MB::Group.new("db_master", @context) do
+        MotherBrain::Group.new("db_master", @context) do
           chef_attribute "pvpnet.database.master", true
         end
       end
@@ -171,7 +171,7 @@ describe MB::Group do
 
     context "with multiple chef attributes" do
       subject do
-        MB::Group.new("db_master", @context) do
+        MotherBrain::Group.new("db_master", @context) do
           chef_attribute "pvpnet.database.master", true
           chef_attribute "pvpnet.database.slave", false
         end
@@ -184,7 +184,7 @@ describe MB::Group do
 
     context "with multiple recipes" do
       subject do
-        MB::Group.new("pvpnet", @context) do
+        MotherBrain::Group.new("pvpnet", @context) do
           recipe "pvpnet::default"
           recipe "pvpnet::database"
         end
@@ -197,7 +197,7 @@ describe MB::Group do
 
     context "with multiple roles" do
       subject do
-        MB::Group.new("roles", @context) do
+        MotherBrain::Group.new("roles", @context) do
           role "app_server"
           role "database_server"
         end

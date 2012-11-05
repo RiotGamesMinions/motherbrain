@@ -67,7 +67,7 @@ module MotherBrain
       def reload!
         clear!
         ObjectSpace.each_object(::Module).each do |mod|
-          if mod < MB::Gear
+          if mod < MotherBrain::Gear
             register(mod)
           end
         end

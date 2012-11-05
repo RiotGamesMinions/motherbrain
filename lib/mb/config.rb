@@ -41,7 +41,7 @@ module MotherBrain
     # Returns a connection hash for Ridley from the instance's attributes
     #
     # @example
-    #   config = MB::Config.new.tap do |o|
+    #   config = MotherBrain::Config.new.tap do |o|
     #     o.chef_api_url = "https://api.opscode.com"
     #     o.chef_api_client = "reset"
     #     o.chef_api_key = "/Users/reset/.chef/reset.pem"

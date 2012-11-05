@@ -2,11 +2,11 @@ require 'spec_helper'
 
 describe MotherBrain::PluginLoader do
   before(:each) do
-    @config.stub(:plugin_paths) { MB::PluginLoader.default_paths }
+    @config.stub(:plugin_paths) { MotherBrain::PluginLoader.default_paths }
   end
 
   describe "ClassMethods" do
-    subject { MB::PluginLoader }
+    subject { MotherBrain::PluginLoader }
 
     describe '::new' do
       it 'sets the paths attribute to a set of pathnames pointing to the default paths' do
@@ -42,8 +42,8 @@ describe MotherBrain::PluginLoader do
       end
 
       it "contains the elements of PluginLoader::DEFAULT_PLUGIN_PATHS" do
-        subject.default_paths.should have(MB::PluginLoader::DEFAULT_PLUGIN_PATHS.length).items
-        MB::PluginLoader::DEFAULT_PLUGIN_PATHS.each do |path|
+        subject.default_paths.should have(MotherBrain::PluginLoader::DEFAULT_PLUGIN_PATHS.length).items
+        MotherBrain::PluginLoader::DEFAULT_PLUGIN_PATHS.each do |path|
           subject.default_paths.should include(path)
         end
       end
@@ -59,7 +59,7 @@ describe MotherBrain::PluginLoader do
     end
   end
 
-  subject { MB::PluginLoader.new(@context) }
+  subject { MotherBrain::PluginLoader.new(@context) }
 
   describe '#load_all' do
     let(:paths) do
@@ -90,7 +90,7 @@ describe MotherBrain::PluginLoader do
       subject.load_all
 
       subject.plugins.should have(3).items
-      subject.plugins.should each be_a(MB::Plugin)
+      subject.plugins.should each be_a(MotherBrain::Plugin)
     end
   end
 
@@ -99,7 +99,7 @@ describe MotherBrain::PluginLoader do
     let(:plugin) { double('plugin', name: 'reset', version: '1.2.3', id: 'reset-1.2.3') }
 
     before(:each) do
-      MB::Plugin.stub(:from_file).with(@context, path).and_return(plugin)
+      MotherBrain::Plugin.stub(:from_file).with(@context, path).and_return(plugin)
     end
 
     it 'adds an instantiated plugin to the hash of plugins' do
@@ -114,7 +114,7 @@ describe MotherBrain::PluginLoader do
 
         lambda {
           subject.load(path)
-        }.should raise_error(MB::AlreadyLoaded)
+        }.should raise_error(MotherBrain::AlreadyLoaded)
       end
     end
   end
@@ -170,7 +170,7 @@ describe MotherBrain::PluginLoader do
     let(:plugin) { double('plugin', name: 'reset', version: '1.2.3', id: :'reset-1.2.3') }
 
     before(:each) do
-      MB::Plugin.stub(:from_file).with(@context, path).and_return(plugin)
+      MotherBrain::Plugin.stub(:from_file).with(@context, path).and_return(plugin)
       subject.load(path)
     end
 

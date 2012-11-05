@@ -7,7 +7,7 @@ module MotherBrain
     attr_reader :chef_attributes
 
     # @param [#to_s] name
-    # @param [MB::Context] context
+    # @param [MotherBrain::Context] context
     def initialize(name, context, &block)
       super(context)
       @name            = name.to_s

@@ -23,7 +23,7 @@ module MotherBrain
       end
     end
 
-    # @return [MB::Context]
+    # @return [MotherBrain::Context]
     attr_reader :context
 
     # @param [MotherBrain::Context] context
