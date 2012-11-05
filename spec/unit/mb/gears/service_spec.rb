@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe MB::Gear::Service do
+describe MotherBrain::Gear::Service do
   let(:component) { double('component', name: 'test-component') }
 
   describe "Class" do
-    subject { MB::Gear::Service }
+    subject { MotherBrain::Gear::Service }
 
-    it "is registered with MB::Gear" do
-      MB::Gear.all.should include(subject)
+    it "is registered with MotherBrain::Gear" do
+      MotherBrain::Gear.all.should include(subject)
     end
 
     it "has the inferred keyword ':service' from it's Class name" do
@@ -26,14 +26,14 @@ describe MB::Gear::Service do
   end
 
   subject do
-    MB::Gear::Service.new("service", @context, component) do
+    MotherBrain::Gear::Service.new("service", @context, component) do
       # block
     end
   end
 
   describe "#actions" do
     subject do
-      MB::Gear::Service.new("service", @context, component) do
+      MotherBrain::Gear::Service.new("service", @context, component) do
         action :start do
           node_attribute("key.one", true)
         end
@@ -47,13 +47,13 @@ describe MB::Gear::Service do
     it "returns a Set of Gear::Action::Service objects for each defined action" do
       subject.actions.should be_a(Set)
       subject.actions.should have(2).items
-      subject.actions.should each be_a(MB::Gear::Service::Action)
+      subject.actions.should each be_a(MotherBrain::Gear::Service::Action)
     end
   end
 
   describe "#action" do
     subject do
-      MB::Gear::Service.new("activemq", @context, component) do
+      MotherBrain::Gear::Service.new("activemq", @context, component) do
         action :start do
           node_attribute("key.one", true)
         end
@@ -61,14 +61,14 @@ describe MB::Gear::Service do
     end
 
     it "returns a Gear::Service::Action" do
-      subject.action(:start).should be_a(MB::Gear::Service::Action)
+      subject.action(:start).should be_a(MotherBrain::Gear::Service::Action)
     end
 
     context "given an action that does not exist" do
       it "raises an ActionNotFound error" do
         lambda {
           subject.action(:stop)
-        }.should raise_error(MB::ActionNotFound)
+        }.should raise_error(MotherBrain::ActionNotFound)
       end
     end
   end
@@ -89,12 +89,12 @@ describe MB::Gear::Service do
         lambda {
           subject.add_action(action_1)
           subject.add_action(action_1)
-        }.should raise_error(MB::DuplicateAction)
+        }.should raise_error(MotherBrain::DuplicateAction)
       end
     end
   end
 
-  describe MB::Gear::Service::Action do
+  describe MotherBrain::Gear::Service::Action do
     let(:action_name) { :start }
 
     let(:node_1) { double('node_1', name: 'reset.riotgames.com') }
@@ -108,14 +108,14 @@ describe MB::Gear::Service do
     before(:each) do
       chef_runner.stub(:test!)
       chef_runner.stub(:run).and_return([:success, []])
-      MB::ChefRunner.stub(:new).and_return(chef_runner)
+      MotherBrain::ChefRunner.stub(:new).and_return(chef_runner)
 
       Ridley::Context.any_instance.stub(:find!).and_return(ridley_object)
     end
 
     describe "#run" do
       it "returns true on success" do
-        MB::Gear::Service::Action.new(@context, action_name, component) do
+        MotherBrain::Gear::Service::Action.new(@context, action_name, component) do
           # block
         end.run(nodes).should be_true
       end
@@ -124,7 +124,7 @@ describe MB::Gear::Service do
         ridley_object.should_receive(:set_override_attribute)
         ridley_object.should_receive(:save)
 
-        MB::Gear::Service::Action.new(@context, action_name, component) do
+        MotherBrain::Gear::Service::Action.new(@context, action_name, component) do
           environment_attribute("some.attr", "val")
         end.run(nodes)
       end
@@ -133,7 +133,7 @@ describe MB::Gear::Service do
         ridley_object.should_receive(:set_attribute).exactly(3).times
         ridley_object.should_receive(:save).exactly(3).times
 
-        MB::Gear::Service::Action.new(@context, action_name, component) do
+        MotherBrain::Gear::Service::Action.new(@context, action_name, component) do
           node_attribute("some.attr", "val")
         end.run(nodes)
       end
@@ -144,7 +144,7 @@ describe MB::Gear::Service do
         ridley_object.should_receive(:set_override_attribute).with("some.attr", "before_val")
         ridley_object.should_receive(:save).exactly(2).times
 
-        MB::Gear::Service::Action.new(@context, action_name, component) do
+        MotherBrain::Gear::Service::Action.new(@context, action_name, component) do
           environment_attribute("some.attr", "val", toggle: true)
         end.run(nodes)
       end
@@ -155,7 +155,7 @@ describe MB::Gear::Service do
         ridley_object.should_receive(:set_attribute).with("some.attr", "before_val").exactly(3).times
         ridley_object.should_receive(:save).exactly(6).times
 
-        MB::Gear::Service::Action.new(@context, action_name, component) do
+        MotherBrain::Gear::Service::Action.new(@context, action_name, component) do
           node_attribute("some.attr", "val", toggle: true)
         end.run(nodes)
       end
@@ -169,7 +169,7 @@ describe MB::Gear::Service do
         ridley_object.should_receive(:set_override_attribute).with("some.attr", "before_val").exactly(1).times
         ridley_object.should_receive(:save).exactly(8).times
 
-        MB::Gear::Service::Action.new(@context, action_name, component) do
+        MotherBrain::Gear::Service::Action.new(@context, action_name, component) do
           node_attribute("some.attr", "val", toggle: true)
           environment_attribute("some.attr", "val", toggle: true)
         end.run(nodes)
@@ -181,7 +181,7 @@ describe MB::Gear::Service do
         ridley_object.should_receive(:set_attribute).with("some.attr", nil).exactly(3).times
         ridley_object.should_receive(:save).exactly(6).times
 
-        MB::Gear::Service::Action.new(@context, action_name, component) do
+        MotherBrain::Gear::Service::Action.new(@context, action_name, component) do
           node_attribute("some.attr", "val", toggle: true)
         end.run(nodes)
       end
@@ -192,7 +192,7 @@ describe MB::Gear::Service do
         ridley_object.should_receive(:set_attribute).with("some.attr", "before_val").exactly(3).times
         ridley_object.should_receive(:save).exactly(6).times
 
-        MB::Gear::Service::Action.new(@context, action_name, component) do
+        MotherBrain::Gear::Service::Action.new(@context, action_name, component) do
           node_attribute("some.attr", "val", toggle: true)
           this_does_not_exist!
         end.run(nodes)

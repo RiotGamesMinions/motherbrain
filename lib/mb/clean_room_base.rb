@@ -15,10 +15,10 @@ module MotherBrain
       end
     end
 
-    # @param [MB::Context] context
-    # @param [MB::ContextualModel] real_model
+    # @param [MotherBrain::Context] context
+    # @param [MotherBrain::ContextualModel] real_model
     #
-    # @return [MB::ContextualModel]
+    # @return [MotherBrain::ContextualModel]
     def initialize(context, real_model, &block)
       super(context)
       @real_model = real_model

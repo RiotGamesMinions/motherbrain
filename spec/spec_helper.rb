@@ -17,7 +17,7 @@ def setup_rspec
     config.filter_run focus: true
     config.run_all_when_everything_filtered = true
 
-    config.before(:all) { MB.set_logger(nil) }
+    config.before(:all) { MotherBrain.set_logger(nil) }
 
     config.before(:each) do
       clean_tmp_path
@@ -31,12 +31,12 @@ def setup_rspec
         ssh_password: 'whatever',
         ssh_key: nil
       )
-      @context = MB::Context.new(@config)
+      @context = MotherBrain::Context.new(@config)
     end
   end
 end
 
-if MB.jruby?
+if MotherBrain.jruby?
   setup_rspec
 else
   require 'spork'

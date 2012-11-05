@@ -10,7 +10,7 @@ module MotherBrain
       required: true
 
     # @param [#to_s] name
-    # @param [MB::Context] context
+    # @param [MotherBrain::Context] context
     def initialize(name, context, &block)
       super(context)
       @name     = name.to_s
@@ -37,7 +37,7 @@ module MotherBrain
     #
     # @raise [GroupNotFound] if the group is not found
     #
-    # @return [MB::Group]
+    # @return [MotherBrain::Group]
     def group!(group_name)
       group = group(group_name)
       
@@ -98,23 +98,23 @@ module MotherBrain
       self.groups.add(group)
     end
 
-    # @param [MB::Command] command
+    # @param [MotherBrain::Command] command
     def add_command(command)
       self.commands.add(command)
     end
 
     # Returns the gears of class klass defined on this component.
     #
-    # @param [MB::Gear] klass the class of the gears to find
+    # @param [MotherBrain::Gear] klass the class of the gears to find
     #
-    # @return [Array<MB::Gear>]
+    # @return [Array<MotherBrain::Gear>]
     def gears(klass)
       @gears[klass.keyword] ||= Set.new
     end
 
     # Adds a gear to this component.
     #
-    # @param [MB::Gear] gear the gear
+    # @param [MotherBrain::Gear] gear the gear
     def add_gear(gear)
       klass = gear.class
 
@@ -127,18 +127,18 @@ module MotherBrain
 
     # Finds a gear of class klass identified by *args.
     #
-    # @param [MB::Gear] klass the class of the gear to search for
+    # @param [MotherBrain::Gear] klass the class of the gear to search for
     # @param [Array] args the identifiers for the gear to find
     #
     # @example searching for a service gear
     #
-    #   get_gear(MB::Gear::Service, "service_name")
+    #   get_gear(MotherBrain::Gear::Service, "service_name")
     #
     # @example searching for a jmx gear
     #
-    #   get_gear(MB::Gear::Jmx)
+    #   get_gear(MotherBrain::Gear::Jmx)
     #
-    # @return [MB::Gear]
+    # @return [MotherBrain::Gear]
     def get_gear(klass, *args)
       klass.find(gears(klass), *args)
     end

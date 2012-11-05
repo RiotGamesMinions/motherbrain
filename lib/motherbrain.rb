@@ -54,7 +54,7 @@ module MotherBrain
 
     # @return [Logger]
     def logger
-      MB::Logging.logger
+      MotherBrain::Logging.logger
     end
     alias_method :log, :logger
 
@@ -62,16 +62,11 @@ module MotherBrain
     #
     # @return [Logger]
     def set_logger(obj)
-      MB::Logging.set_logger(obj)
+      MotherBrain::Logging.set_logger(obj)
     end
 
     def jruby?
       RUBY_ENGINE == 'jruby'
     end
   end
-end
-
-unless defined?(MB)
-  # Alias for {MotherBrain}
-  MB = MotherBrain
 end

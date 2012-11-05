@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MB::Plugin do
+describe MotherBrain::Plugin do
   describe "ClassMethods" do
-    subject { MB::Plugin }
+    subject { MotherBrain::Plugin }
 
     describe "::load" do
       let(:data) do
@@ -15,8 +15,8 @@ describe MB::Plugin do
         }
       end
 
-      it "returns an instance of MB::Plugin" do
-        subject.load(@context, &data).should be_a(MB::Plugin)
+      it "returns an instance of MotherBrain::Plugin" do
+        subject.load(@context, &data).should be_a(MotherBrain::Plugin)
       end
 
       it "sets the evaluated value for name" do
@@ -50,7 +50,7 @@ describe MB::Plugin do
         it "raises an PluginLoadError error" do
           lambda {
             subject.load(@context, &data)
-          }.should raise_error(MB::PluginLoadError)
+          }.should raise_error(MotherBrain::PluginLoadError)
         end
       end
     end
@@ -74,8 +74,8 @@ describe MB::Plugin do
         File.write(file, data)
       end
 
-      it "returns an instance of MB::Plugin" do
-        subject.from_file(@context, file).should be_a(MB::Plugin)
+      it "returns an instance of MotherBrain::Plugin" do
+        subject.from_file(@context, file).should be_a(MotherBrain::Plugin)
       end
 
       context "when the file does not exist" do
@@ -86,7 +86,7 @@ describe MB::Plugin do
         it "raises a PluginLoadError" do
           lambda {
             subject.from_file(@context, badfile)
-          }.should raise_error(MB::PluginLoadError)
+          }.should raise_error(MotherBrain::PluginLoadError)
         end
       end
     end

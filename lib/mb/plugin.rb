@@ -60,7 +60,7 @@ module MotherBrain
     attribute :email,
       type: [String, Array]
 
-    # @param [MB::Context] context
+    # @param [MotherBrain::Context] context
     def initialize(context, &block)
       super(context)
       @components   = Set.new
@@ -79,7 +79,7 @@ module MotherBrain
 
     # @param [String] name
     #
-    # @return [MB::Component]
+    # @return [MotherBrain::Component]
     def component(name)
       component = components.find { |component| component.name == name }
       
@@ -92,7 +92,7 @@ module MotherBrain
 
     # @param [String] name
     #
-    # @return [MB::Command]
+    # @return [MotherBrain::Command]
     def command(name)
       command = commands.find { |command| command.name == name }
 
@@ -140,12 +140,12 @@ module MotherBrain
       end
     end
 
-    # @param [MB::Component] component
+    # @param [MotherBrain::Component] component
     def add_component(component)
       self.components.add(component)
     end
 
-    # @param [MB::Command] command
+    # @param [MotherBrain::Command] command
     def add_command(command)
       self.commands.add(command)
     end

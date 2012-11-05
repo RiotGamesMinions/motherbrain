@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe MotherBrain::PluginInvoker do
   describe "ClassMethods" do
-    subject { Class.new(MB::PluginInvoker) }
+    subject { Class.new(MotherBrain::PluginInvoker) }
 
     let(:name) { "pvpnet" }
 

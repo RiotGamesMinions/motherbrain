@@ -21,7 +21,7 @@ module MotherBrain
         self.plugin_loader.load_all
 
         self.plugin_loader.plugins.each do |plugin|
-          self.register_plugin MB::PluginInvoker.fabricate(plugin)
+          self.register_plugin MotherBrain::PluginInvoker.fabricate(plugin)
         end
       end
 
@@ -59,23 +59,23 @@ module MotherBrain
       default: false,
       desc: "create a new configuration file even if one already exists."
     desc "configure", "create a new configuration file based on a set of interactive questions"
-    def configure(path = MB::Config.default_path)
+    def configure(path = MotherBrain::Config.default_path)
       path = File.expand_path(path)
 
       if File.exist?(path) && !options[:force]
-        raise MB::ConfigExists, "A configuration file already exists. Re-run with the --force flag if you wish to overwrite it."
+        raise MotherBrain::ConfigExists, "A configuration file already exists. Re-run with the --force flag if you wish to overwrite it."
       end
 
-      @config = MB::Config.new(path)
+      @config = MotherBrain::Config.new(path)
 
-      @config.chef_api_url     = MB.ui.ask "Enter a Chef API URL: "
-      @config.chef_api_client  = MB.ui.ask "Enter a Chef API Client: "
-      @config.chef_api_key     = MB.ui.ask "Enter the path to the client's Chef API Key: "
-      @config.ssh_user         = MB.ui.ask "Enter a SSH user: "
-      @config.ssh_password     = MB.ui.ask "Enter a SSH password: "
+      @config.chef_api_url     = MotherBrain.ui.ask "Enter a Chef API URL: "
+      @config.chef_api_client  = MotherBrain.ui.ask "Enter a Chef API Client: "
+      @config.chef_api_key     = MotherBrain.ui.ask "Enter the path to the client's Chef API Key: "
+      @config.ssh_user         = MotherBrain.ui.ask "Enter a SSH user: "
+      @config.ssh_password     = MotherBrain.ui.ask "Enter a SSH password: "
       @config.save
 
-      MB.ui.say "Config written to: '#{path}'"
+      MotherBrain.ui.say "Config written to: '#{path}'"
     end
 
     desc "plugins", "Display all installed plugins and versions"
@@ -83,33 +83,33 @@ module MotherBrain
       if self.class.plugin_loader.plugins.empty?
         paths = self.class.plugin_loader.paths.to_a.collect { |path| "'#{path}'" }
 
-        MB.ui.say "No MotherBrain plugins found in any of your configured plugin paths!"
-        MB.ui.say "\n"
-        MB.ui.say "Paths: #{paths.join(', ')}"
+        MotherBrain.ui.say "No MotherBrain plugins found in any of your configured plugin paths!"
+        MotherBrain.ui.say "\n"
+        MotherBrain.ui.say "Paths: #{paths.join(', ')}"
         exit(0)
       end
 
       self.class.plugin_loader.plugins.group_by(&:name).each do |name, plugins|
         versions = plugins.collect(&:version).reverse!
-        MB.ui.say "#{name}: #{versions.join(', ')}"
+        MotherBrain.ui.say "#{name}: #{versions.join(', ')}"
       end
     end
 
     desc "version", "Display version and license information"
     def version
-      MB.ui.say version_header
-      MB.ui.say "\n"
-      MB.ui.say license
+      MotherBrain.ui.say version_header
+      MotherBrain.ui.say "\n"
+      MotherBrain.ui.say license
     end
 
     private
 
       def version_header
-        "MotherBrain (#{MB::VERSION})"
+        "MotherBrain (#{MotherBrain::VERSION})"
       end
 
       def license
-        File.read(MB.root.join('LICENSE'))
+        File.read(MotherBrain.root.join('LICENSE'))
       end
   end
 end

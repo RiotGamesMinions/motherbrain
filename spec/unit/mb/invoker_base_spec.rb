@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MB::InvokerBase do
+describe MotherBrain::InvokerBase do
   describe "ClassMethods" do
-    subject { MB::InvokerBase }
+    subject { MotherBrain::InvokerBase }
 
     describe "default configuration path" do
       context "when the value of ENV['MB_CONFIG'] specifies a config file that exists" do
@@ -64,11 +64,11 @@ describe MB::InvokerBase do
     generate_valid_config(ENV['MB_CONFIG'])
   end
 
-  subject { MB::InvokerBase.new([], config: ENV['MB_CONFIG']) }
+  subject { MotherBrain::InvokerBase.new([], config: ENV['MB_CONFIG']) }
 
   describe "#context" do
-    it "returns an instance of MB::Context" do
-      subject.context.should be_a(MB::Context)
+    it "returns an instance of MotherBrain::Context" do
+      subject.context.should be_a(MotherBrain::Context)
     end
   end
 end

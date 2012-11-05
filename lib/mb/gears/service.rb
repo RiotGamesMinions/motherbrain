@@ -2,18 +2,18 @@ module MotherBrain
   module Gear
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Service < RealModelBase
-      include MB::Gear
+      include MotherBrain::Gear
       register_gear :service
 
       class << self
         # Finds a gear identified by name in the list of gears supplied.
         #
-        # @param [Array<MB::Gear::Service>] gears
+        # @param [Array<MotherBrain::Gear::Service>] gears
         #   the list of gears to search in
         # @param [#to_s] name
         #   the name of the gear to search for
         #
-        # @return [MB::Gear::Service]
+        # @return [MotherBrain::Gear::Service]
         def find(gears, name)
           gears.find { |obj| obj.name == name.to_s }
         end
@@ -25,8 +25,8 @@ module MotherBrain
       attr_reader :actions
 
       # @param [#to_s] name
-      # @param [MB::Context] context
-      # @param [MB::Component] component
+      # @param [MotherBrain::Context] context
+      # @param [MotherBrain::Component] component
       def initialize(context, component, name, &block)
         super(context)
 
@@ -107,7 +107,7 @@ module MotherBrain
         attr_reader :nodes
 
         # @param [String] name
-        # @param [MB::Component] component
+        # @param [MotherBrain::Component] component
         #
         # @raise [ArgumentError] if no block is given
         def initialize(context, name, component, &block)
@@ -168,9 +168,9 @@ module MotherBrain
           # @return [Array<Proc>]
           attr_reader :resets
 
-          # @param [MB::Context] context
+          # @param [MotherBrain::Context] context
           # @param [Gear::Action] action
-          # @param [MB::Component] component
+          # @param [MotherBrain::Component] component
           def initialize(context, action, component)
             super(context)
             @action    = action

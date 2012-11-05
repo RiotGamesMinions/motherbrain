@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe MB::ComponentInvoker do
+describe MotherBrain::ComponentInvoker do
   pending
 end

@@ -35,7 +35,7 @@ module MotherBrain
 
     def generate_valid_config(path)
       FileUtils.rm_rf(path)
-      MB::Config.new.tap do |mb|
+      MotherBrain::Config.new.tap do |mb|
         mb.chef_api_url = "https://api.opscode.com/organizations/vialstudio"
         mb.chef_api_client = "reset"
         mb.chef_api_key = "/Users/reset/.chef/reset.pem"
@@ -46,7 +46,7 @@ module MotherBrain
 
     def generate_invalid_config(path)
       FileUtils.rm_rf(path)
-      MB::Config.new.save(path)
+      MotherBrain::Config.new.save(path)
     end
 
     def generate_plugin(name, version, path)

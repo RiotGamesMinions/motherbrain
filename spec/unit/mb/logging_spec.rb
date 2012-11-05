@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MB::Logging do
+describe MotherBrain::Logging do
   describe "ClassMethods" do
-    subject { MB::Logging }
+    subject { MotherBrain::Logging }
 
     describe "::logger" do
       it "returns a Logger class" do
@@ -22,13 +22,13 @@ describe MB::Logging do
 
   subject do
     Class.new do
-      include MB::Logging
+      include MotherBrain::Logging
     end.new
   end
 
   describe "#logger" do
-    it "delegates to MB::Logging.logger" do
-      MB::Logging.should_receive(:logger)
+    it "delegates to MotherBrain::Logging.logger" do
+      MotherBrain::Logging.should_receive(:logger)
 
       subject.logger
     end

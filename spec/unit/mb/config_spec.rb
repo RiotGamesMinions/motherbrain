@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MB::Config do
+describe MotherBrain::Config do
   describe "ClassMethods" do
-    subject { MB::Config }
+    subject { MotherBrain::Config }
 
     describe "::new" do
       before(:each) do
@@ -14,13 +14,13 @@ describe MB::Config do
       end
 
       it "has a default value for plugin_paths equal to PluginLoader.default_paths" do
-        @config.plugin_paths.should eql(MB::PluginLoader.default_paths)
+        @config.plugin_paths.should eql(MotherBrain::PluginLoader.default_paths)
       end
     end
   end
 
   subject do
-    MB::Config.new.tap do |o|
+    MotherBrain::Config.new.tap do |o|
       o.chef_api_url = "https://api.opscode.com/organizations/vialstudio"
       o.chef_api_client = "reset"
       o.chef_api_key = "/Users/reset/.chef/reset.pem"
@@ -89,11 +89,11 @@ describe MB::Config do
   end
 
   describe "ClassMethods" do
-    subject { MB::Config }
+    subject { MotherBrain::Config }
 
     describe "::from_json" do
-      it "returns an instance of MB::Config" do
-        subject.from_json(json).should be_a(MB::Config)
+      it "returns an instance of MotherBrain::Config" do
+        subject.from_json(json).should be_a(MotherBrain::Config)
       end
     end
 
@@ -104,8 +104,8 @@ describe MB::Config do
         File.write(file, json)
       end
 
-      it "returns an instance of MB::Config" do
-        subject.from_file(file).should be_a(MB::Config)
+      it "returns an instance of MotherBrain::Config" do
+        subject.from_file(file).should be_a(MotherBrain::Config)
       end
 
       it "sets the object's path to the path of the loaded file" do
@@ -113,7 +113,7 @@ describe MB::Config do
       end
 
       context "given a file that does not exist" do
-        it "raises a MB::ConfigNotFound error" do
+        it "raises a MotherBrain::ConfigNotFound error" do
           lambda {
             subject.from_file(tmp_path.join("asdf.txt"))
           }.should raise_error(Chozo::Errors::ConfigNotFound)
@@ -201,7 +201,7 @@ describe MB::Config do
 
   describe "#to_ridley" do
     subject do
-      MB::Config.new.tap do |o|
+      MotherBrain::Config.new.tap do |o|
         o.chef_api_url = "https://api.opscode.com"
         o.chef_api_client = "reset"
         o.chef_api_key = "/Users/reset/.chef/reset.pem"
@@ -239,7 +239,7 @@ describe MB::Config do
 
     context "given the config has no value for organization" do
       subject do
-        MB::Config.new.tap do |o|
+        MotherBrain::Config.new.tap do |o|
           o.chef_api_url = "https://api.opscode.com"
           o.chef_api_client = "reset"
           o.chef_api_key = "/Users/reset/.chef/reset.pem"

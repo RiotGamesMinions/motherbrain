@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe MB::DynamicInvoker do
+describe MotherBrain::DynamicInvoker do
   describe "ClassMethods" do
     subject do
       Class.new do
-        include MB::DynamicInvoker
+        include MotherBrain::DynamicInvoker
       end
     end
 
@@ -12,7 +12,7 @@ describe MB::DynamicInvoker do
       it "raises an AbstractFunction error when not implemented" do
         lambda {
           subject.fabricate
-        }.should raise_error(MB::AbstractFunction)
+        }.should raise_error(MotherBrain::AbstractFunction)
       end
     end
   end

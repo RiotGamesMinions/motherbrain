@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe "loading a plugin", type: "acceptance" do
-  let(:context) { MB::Context.new(@config) }
+  let(:context) { MotherBrain::Context.new(@config) }
 
   let(:dsl_body) do
     proc {
@@ -66,7 +66,7 @@ describe "loading a plugin", type: "acceptance" do
   end
 
   before(:each) do
-    @plugin = MB::Plugin.load(context, &dsl_body)
+    @plugin = MotherBrain::Plugin.load(context, &dsl_body)
   end
 
   subject { @plugin }
@@ -101,14 +101,14 @@ describe "loading a plugin", type: "acceptance" do
     it "invokes an async command" do
       pending
 
-      subject.command("start").invoke.should be_a(MB::CommandRunner)
+      subject.command("start").invoke.should be_a(MotherBrain::CommandRunner)
     end
 
     context "when a command is not found" do
       it "raises a CommandNotFound error" do
         lambda {
           subject.command("not_there")
-        }.should raise_error(MB::CommandNotFound)
+        }.should raise_error(MotherBrain::CommandNotFound)
       end
     end
   end
@@ -117,7 +117,7 @@ describe "loading a plugin", type: "acceptance" do
     it "raises a ComponentNotFound error" do
       lambda {
         subject.component("not_there")
-      }.should raise_error(MB::ComponentNotFound)
+      }.should raise_error(MotherBrain::ComponentNotFound)
     end
   end
 
@@ -143,7 +143,7 @@ describe "loading a plugin", type: "acceptance" do
     end
 
     it { subject.commands.should have(2).items }
-    it { subject.commands.should each be_a(MB::Command) }
+    it { subject.commands.should each be_a(MotherBrain::Command) }
 
     describe "commands" do
       it { subject.command("start").should_not be_nil }
@@ -151,12 +151,12 @@ describe "loading a plugin", type: "acceptance" do
 
       it "invokes an async command" do
         pending
-        subject.command("start").invoke.should be_a(MB::CommandRunner)
+        subject.command("start").invoke.should be_a(MotherBrain::CommandRunner)
       end
 
       it "invokes a sync command" do
         pending
-        subject.command("stop").invoke.should be_a(MB::CommandRunner)
+        subject.command("stop").invoke.should be_a(MotherBrain::CommandRunner)
       end
     end
   end

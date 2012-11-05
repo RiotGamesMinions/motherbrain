@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe MB::CleanRoomBase do
+describe MotherBrain::CleanRoomBase do
   let(:context) { double('context') }
   let(:real_model) { double('real_model') }
   let(:block) { double('block') }
 
   describe "ClassMethods" do
-    subject { MB::CleanRoomBase }
+    subject { MotherBrain::CleanRoomBase }
 
     describe "::dsl_attr_writer" do
       it "creates a function of the given name on the instance of clean room" do

@@ -26,7 +26,7 @@ module MotherBrain
 
     # @return [Logger]
     def logger
-      MB::Logging.logger
+      MotherBrain::Logging.logger
     end
     alias_method :log, :logger
   end

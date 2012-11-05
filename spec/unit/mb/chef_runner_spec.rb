@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::ChefRunner do
+describe MotherBrain::ChefRunner do
   let(:valid_options) do
     {
       user: "reset",
@@ -9,7 +9,7 @@ describe MB::ChefRunner do
   end
 
   describe "ClassMethods" do
-    subject { MB::ChefRunner }
+    subject { MotherBrain::ChefRunner }
 
     describe "::new" do
       it "validates the given options" do
@@ -66,7 +66,7 @@ describe MB::ChefRunner do
         it "raises an ArgumentError" do
           lambda {
             subject.validate_options(options)
-          }.should raise_error(MB::ArgumentError)
+          }.should raise_error(MotherBrain::ArgumentError)
         end
       end
 
@@ -76,7 +76,7 @@ describe MB::ChefRunner do
         it "raises an ArgumentError" do
           lambda {
             subject.validate_options(options)
-          }.should raise_error(MB::ArgumentError)
+          }.should raise_error(MotherBrain::ArgumentError)
         end
       end
 
@@ -90,7 +90,7 @@ describe MB::ChefRunner do
         it "raises an ArgumentError" do
           lambda {
             subject.validate_options(options)
-          }.should raise_error(MB::ArgumentError)
+          }.should raise_error(MotherBrain::ArgumentError)
         end
       end
     end
@@ -200,7 +200,7 @@ describe MB::ChefRunner do
     double('node', automatic: automatic_attributes, eucalyptus?: false, ec2?: false)
   end
 
-  subject { MB::ChefRunner.new(valid_options) }
+  subject { MotherBrain::ChefRunner.new(valid_options) }
 
   describe "#add_node" do
     it "returns a Rye::Set" do
@@ -214,12 +214,12 @@ describe MB::ChefRunner do
     end
 
     context "given a node that does not have a value for ipaddress at the given address_attribute" do
-      subject { MB::ChefRunner.new(valid_options.merge(address_attribute: 'network.en0.ipaddress')) }
+      subject { MotherBrain::ChefRunner.new(valid_options.merge(address_attribute: 'network.en0.ipaddress')) }
 
       it "raises an error" do
         lambda {
           subject.add_node(node)
-        }.should raise_error(MB::NoValueForAddressAttribute)
+        }.should raise_error(MotherBrain::NoValueForAddressAttribute)
       end
     end
   end
