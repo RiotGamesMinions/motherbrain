@@ -48,6 +48,13 @@ module MotherBrain
       group
     end
 
+    # @param [#to_s] name
+    #
+    # @return [Boolean]
+    def has_group?(name)
+      group(name.to_s).present?
+    end
+
     # @param [#to_sym] name
     def command(name)
       self.commands.find { |command| command.name == name }

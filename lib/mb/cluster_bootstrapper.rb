@@ -12,14 +12,45 @@ module MotherBrain
       #
       # @return [Hash]
       def manifest_reduce(manifest, groups)
-        manifest.select do |name, nodes|
-          Array(groups).find { |group| group.name == name }
+        manifest.select do |scoped_group, nodes|
+          component_name, group_name = scoped_group.split('::')
+
+          Array(groups).find do |group|
+            group.name == group_name && group.component.name == component_name
+          end
         end
+      end
+
+      # Validate the given bootstrap manifest hash
+      #
+      # @param [Hash] manifest
+      # @param [MB::Plugin] plugin
+      #
+      # @raise [InvalidBootstrapManifest]
+      #
+      # @return [Boolean]
+      def validate_manifest(manifest, plugin)
+        manifest.keys.each do |scoped_group|
+          component, group = scoped_group.split('::')
+
+          unless plugin.has_component?(component)
+            raise InvalidBootstrapManifest, "Manifest describes the component: '#{component}' but '#{plugin.name}' does not have this component"
+          end
+
+          unless plugin.component(component).has_group?(group)
+            raise InvalidBootstrapManifest, "Manifest describes the group: '#{group}' in the component '#{component}' but the component does not have this group"
+          end
+        end
+
+        true
       end
     end
 
+    # @return [MB::Plugin]
     attr_reader :plugin
 
+    # @param [MB::Context] context
+    # @param [MB::Plugin] plugin
     def initialize(context, plugin, &block)
       super(context)
       @plugin = plugin
@@ -37,11 +68,15 @@ module MotherBrain
     # @param [Hash] options
     #   options to pass to {#concurrent_bootstrap}
     #
+    # @raise [InvalidBootstrapManifest] if the given manifest does not pass validation
+    #
     # @return [Array<Hash>]
     #   an array containing hashes from each item in the boot_queue. The hashes contain
     #   keys for bootstrapped node groups and values that are the Ridley::SSH::ResultSet
     #   which contains the result of bootstrapping each node.
     def run(manifest, options = {})
+      self.class.validate_manifest(manifest, self.plugin)
+
       responses = Array.new
 
       until boot_queue.empty?
@@ -69,7 +104,7 @@ module MotherBrain
     # @param [Hash] manifest
     #   a hash where the keys are node group names and the values are arrays of hostnames
     # @param [Hash] options
-    #   options to pass to a ClusterBootstrapper::Worker
+    #   options to pass to a {ClusterBootstrapper::Worker}
     #
     # @return [Hash]
     #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet

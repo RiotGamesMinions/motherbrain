@@ -102,6 +102,13 @@ module MotherBrain
       component
     end
 
+    # @param [#to_s] name
+    #
+    # @return [Boolean]
+    def has_component?(name)
+      component(name.to_s).present?
+    end
+
     # @param [String] name
     #
     # @return [MB::Command]

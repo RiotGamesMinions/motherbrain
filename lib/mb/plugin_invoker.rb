@@ -42,6 +42,26 @@ module MotherBrain
 
             MB.ui.say nodes.to_yaml
           end
+
+          if plugin.bootstrapper.present?
+            desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
+            define_method(:bootstrap) do |environment, manifest_file|
+              manifest_file = File.expand_path(manifest_file)
+
+              unless File.exist?(manifest_file)
+                raise InvalidBootstrapManifest, "No bootstrap manifest found at: #{manifest_file}"
+              end
+
+              assert_environment_exists(environment)
+
+              manifest = MultiJson.load(File.read(manifest_file))
+              bootstrap_options = Hash.new
+
+              MB.ui.say "Starting bootstrap of nodes on: #{environment}"
+              p plugin.bootstrapper.run(manifest, bootstrap_options)
+              MB.ui.say "Bootstrap finished"
+            end
+          end
         end
 
         klass

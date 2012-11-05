@@ -1,51 +1,40 @@
 require 'spec_helper'
 
 describe MB::ClusterBootstrapper do
+  let(:plugin) { MB::Plugin.new(@context) }
+
+  let(:activemq) { MB::Component.new('activemq', @context) }
+  let(:mysql) { MB::Component.new('mysql', @context) }
+  let(:nginx) { MB::Component.new('nginx', @context) }
+
   let(:amq_master) do
-    master = double('amq_master', name: 'activemq_master')
-    master.stub(:nodes).and_return([
-      double('one', public_hostname: "33.33.33.10"),
-      double('two', public_hostname: "33.33.33.11")
-    ])
-    master
+    double('amq_master',
+      name: 'master',
+      nodes: [
+        double('one', public_hostname: "33.33.33.10"),
+        double('two', public_hostname: "33.33.33.11")
+      ],
+      component: activemq
+    )
   end
 
   let(:amq_slave) do
-    slave = double('amq_slave', name: 'activemq_slave')
-    slave.stub(:nodes).and_return([])
-    slave
+    double('amq_slave',
+      name: 'slave',
+      nodes: [],
+      component: activemq
+    )
   end
 
-  let(:mysql_master) { double('mysql_master') }
-  let(:mysql_slave) { double('mysql_slave') }
-  let(:nginx_master) { double('nginx_master', name: 'nginx_master') }
+  let(:mysql_master) { double('mysql_master', name: 'master', component: mysql) }
+  let(:mysql_slave) { double('mysql_slave', name: 'slave', component: mysql) }
+  let(:nginx_master) { double('nginx_master', name: 'master', component: nginx) }
 
-  let(:activemq) do
-    activemq = double('activemq')
-    activemq.stub(:group!).with("master").and_return(amq_master)
-    activemq.stub(:group!).with("slave").and_return(amq_slave)
-    activemq
-  end
-
-  let(:mysql) do
-    mysql = double('mysql')
-    mysql.stub(:group!).with("master").and_return(mysql_master)
-    mysql.stub(:group!).with("slave").and_return(mysql_slave)
-    mysql
-  end
-
-  let(:nginx) do
-    nginx = double('nginx')
-    nginx.stub(:group!).with("master").and_return(nginx_master)
-    nginx
-  end
-
-  let(:plugin) do
-    plugin = double('plugin')
-    plugin.stub(:component!).with("activemq").and_return(activemq)
-    plugin.stub(:component!).with("mysql").and_return(mysql)
-    plugin.stub(:component!).with("nginx").and_return(nginx)
-    plugin
+  before(:each) do
+    plugin.stub(:components).and_return([activemq, mysql, nginx])
+    activemq.stub(:groups).and_return([amq_master, amq_slave])
+    mysql.stub(:groups).and_return([mysql_master, mysql_slave])
+    nginx.stub(:groups).and_return([nginx_master])
   end
 
   describe "DSL evaluation" do
@@ -85,15 +74,15 @@ describe MB::ClusterBootstrapper do
 
   let(:manifest) do
     {
-      "activemq_master" => [
+      "activemq::master" => [
         "amq1.riotgames.com",
         "amq2.riotgames.com"
       ],
-      "activemq_slave" => [
+      "activemq::slave" => [
         "amqs1.riotgames.com",
         "amqs2.riotgames.com"
       ],
-      "nginx_master" => [
+      "nginx::master" => [
         "nginx1.riotgames.com"
       ]
     }
@@ -114,7 +103,7 @@ describe MB::ClusterBootstrapper do
       end
 
       it "returns only the key value pairs matched by the given groups" do
-        manifest.delete("nginx_master")
+        manifest.delete("nginx::master")
         groups = [
           amq_master,
           amq_slave,
@@ -123,11 +112,60 @@ describe MB::ClusterBootstrapper do
         reduced = subject.manifest_reduce(manifest, groups)
 
         reduced.should have(2).items
-        reduced.should_not have_key("nginx_master")
+        reduced.should_not have_key("nginx")
       end
       
       it "accepts a single group instead of an array of groups" do
         subject.manifest_reduce(manifest, amq_master).should have(1).item
+      end
+    end
+
+    describe "::validate_manifest" do
+      let(:manifest) do
+        {
+          "activemq::master" => [
+            "amq1.riotgames.com"
+          ],
+          "nginx::master" => [
+            "nginx1.riotgames.com"
+          ]
+        }
+      end
+
+      before(:each) do
+        plugin.stub(:has_component?).with("activemq").and_return(true)
+        plugin.stub(:has_component?).with("nginx").and_return(true)
+        activemq.stub(:has_group?).with("master").and_return(true)
+        nginx.stub(:has_group?).with("master").and_return(true)
+      end
+
+      it "returns true if the manifest is valid" do
+        subject.validate_manifest(manifest, plugin).should be_true
+      end
+
+      context "when manifest contains a component that is not part of the plugin" do
+        before(:each) do
+          plugin.stub(:has_component?).with("activemq").and_return(false)
+          plugin.stub(:has_component?).with("nginx").and_return(false)
+        end
+
+        it "raises an InvalidBootstrapManifest error" do
+          lambda {
+            subject.validate_manifest(manifest, plugin)
+          }.should raise_error(MB::InvalidBootstrapManifest)
+        end
+      end
+
+      context "when manifest contains a group that is not part of a component" do
+        before(:each) do
+          activemq.stub(:has_group?).with("master").and_return(false)
+        end
+
+        it "raises an InvalidBootstrapManifest error" do
+          lambda {
+            subject.validate_manifest(manifest, plugin)
+          }.should raise_error(MB::InvalidBootstrapManifest)
+        end
       end
     end
   end
@@ -171,9 +209,9 @@ describe MB::ClusterBootstrapper do
     it "has a hash with a key for each node group of each boot_queue item" do
       result = subject.run(manifest, bootstrap_options)
 
-      result[0].should have_key("activemq_master")
-      result[0].should have_key("activemq_slave")
-      result[1].should have_key("nginx_master")
+      result[0].should have_key("activemq::master")
+      result[0].should have_key("activemq::slave")
+      result[1].should have_key("nginx::master")
     end
   end
 
