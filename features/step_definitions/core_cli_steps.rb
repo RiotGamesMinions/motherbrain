@@ -1,3 +1,7 @@
+When /^I run MB with no arguments$/ do
+  run_simple(unescape("mb"), false)
+end
+
 When /^I run the "(.*?)" command$/ do |command|
   run_simple(unescape("mb #{command}"), false)
 end
