@@ -62,12 +62,6 @@ describe MB::Config do
       subject.should_not be_valid
     end
 
-    it "is invalid if the ssh_user is blank" do
-      subject.ssh_user = ''
-
-      subject.should_not be_valid
-    end
-
     it "is invalid if the ssh_key and ssh_password is blank" do
       pending
 

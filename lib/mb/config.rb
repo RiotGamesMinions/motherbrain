@@ -29,8 +29,7 @@ module MotherBrain
       required: true
 
     attribute :ssh_user,
-      type: String,
-      required: true
+      type: String
 
     attribute :ssh_password,
       type: String
