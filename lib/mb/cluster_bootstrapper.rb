@@ -3,20 +3,22 @@ module MotherBrain
   class ClusterBootstrapper < RealModelBase
     autoload :Worker, 'mb/cluster_bootstrapper/worker'
 
+    class BootTask < Struct.new(:id, :group); end
+
     class << self
       # Reduce a manifest to a hash containing only key/value pairs where the initial
       # keys matched the names of the given groups
       #
       # @param [Hash] manifest
-      # @param [Array<MB::Group>, MB::Group] groups
+      # @param [Array<BootTask>, BootTask] boot_task
       #
       # @return [Hash]
-      def manifest_reduce(manifest, groups)
-        manifest.select do |scoped_group, nodes|
-          component_name, group_name = scoped_group.split('::')
-
-          Array(groups).find do |group|
-            group.name == group_name && group.component.name == component_name
+      def manifest_reduce(manifest, boot_task)
+        manifest.select do |id, nodes|
+          if boot_task.is_a?(Array)
+            boot_task.find { |task| task.id == id }
+          else
+            boot_task.id == id
           end
         end
       end
@@ -162,9 +164,12 @@ module MotherBrain
         @task_procs = Array.new
       end
 
-      def bootstrap(component, group)
+      # @param [String] scoped_group
+      def bootstrap(scoped_group)
         self.task_procs.push lambda {
-          real_model.plugin.component!(component).group!(group) 
+          component_name, group_name = scoped_group.split('::')
+
+          BootTask.new(scoped_group, real_model.plugin.component!(component_name).group!(group_name))
         }
       end
 

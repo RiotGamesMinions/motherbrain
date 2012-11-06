@@ -13,22 +13,20 @@ describe MB::ClusterBootstrapper do
       nodes: [
         double('one', public_hostname: "33.33.33.10"),
         double('two', public_hostname: "33.33.33.11")
-      ],
-      component: activemq
+      ]
     )
   end
 
   let(:amq_slave) do
     double('amq_slave',
       name: 'slave',
-      nodes: [],
-      component: activemq
+      nodes: []
     )
   end
 
-  let(:mysql_master) { double('mysql_master', name: 'master', component: mysql) }
-  let(:mysql_slave) { double('mysql_slave', name: 'slave', component: mysql) }
-  let(:nginx_master) { double('nginx_master', name: 'master', component: nginx) }
+  let(:mysql_master) { double('mysql_master', name: 'master') }
+  let(:mysql_slave) { double('mysql_slave', name: 'slave') }
+  let(:nginx_master) { double('nginx_master', name: 'master') }
 
   before(:each) do
     plugin.stub(:components).and_return([activemq, mysql, nginx])
@@ -41,16 +39,16 @@ describe MB::ClusterBootstrapper do
     subject do
       described_class.new(@context, plugin) do
         async do
-          bootstrap("activemq", "master")
-          bootstrap("activemq", "slave")
+          bootstrap("activemq::master")
+          bootstrap("activemq::slave")
         end
 
         async do
-          bootstrap("mysql", "master")
-          bootstrap("mysql", "slave")
+          bootstrap("mysql::master")
+          bootstrap("mysql::slave")
         end
 
-        bootstrap("nginx", "master")
+        bootstrap("nginx::master")
       end
     end
 
@@ -58,17 +56,21 @@ describe MB::ClusterBootstrapper do
       subject.boot_queue.should have(3).items
     end
 
-    it "has a group in the proper order for each bootstrap function call" do
-      subject.boot_queue[2].should eql(nginx_master)
-    end
-
-    it "has an array of groups in the proper order for each async function call" do
-      subject.boot_queue[0].should be_a(Array)
-      subject.boot_queue[0][0].should eql(amq_master)
-      subject.boot_queue[0][1].should eql(amq_slave)
-      subject.boot_queue[1].should be_a(Array)
-      subject.boot_queue[1][0].should eql(mysql_master)
-      subject.boot_queue[1][1].should eql(mysql_slave)
+    context "each entry" do
+      it "is in FIFO order" do
+        subject.boot_queue[0].should be_a(Array)
+        subject.boot_queue[0][0].group.should eql(amq_master)
+        subject.boot_queue[0][0].id.should eql("activemq::master")
+        subject.boot_queue[0][1].group.should eql(amq_slave)
+        subject.boot_queue[0][1].id.should eql("activemq::slave")
+        subject.boot_queue[1].should be_a(Array)
+        subject.boot_queue[1][0].group.should eql(mysql_master)
+        subject.boot_queue[1][0].id.should eql("mysql::master")
+        subject.boot_queue[1][1].group.should eql(mysql_slave)
+        subject.boot_queue[1][1].id.should eql("mysql::slave")
+        subject.boot_queue[2].group.should eql(nginx_master)
+        subject.boot_queue[2].id.should eql("nginx::master")
+      end
     end
   end
 
@@ -94,7 +96,7 @@ describe MB::ClusterBootstrapper do
     describe "::manifest_reduce" do
       let(:boot_groups) do
         [
-          amq_master
+          double('boot_task_one', id: 'activemq::master', group: amq_master)
         ]
       end
 
@@ -102,21 +104,23 @@ describe MB::ClusterBootstrapper do
         subject.manifest_reduce(manifest, boot_groups).should be_a(Hash)
       end
 
-      it "returns only the key value pairs matched by the given groups" do
+      it "contains only key/values where keys matched the id's of the given boot_task(s)" do
         manifest.delete("nginx::master")
-        groups = [
-          amq_master,
-          amq_slave,
-          nginx_master
+        boot_tasks = [
+          double('bt_1', id: 'activemq::master', group: amq_master),
+          double('bt_2', id: 'activemq::slave', group: amq_slave),
+          double('bt_3', id: 'nginx::master', group: nginx_master)
         ]
-        reduced = subject.manifest_reduce(manifest, groups)
+        reduced = subject.manifest_reduce(manifest, boot_tasks)
 
         reduced.should have(2).items
-        reduced.should_not have_key("nginx")
+        reduced.should_not have_key("nginx::master")
       end
       
-      it "accepts a single group instead of an array of groups" do
-        subject.manifest_reduce(manifest, amq_master).should have(1).item
+      it "accepts a single boot task instead of an array of boot tasks" do
+        boot_task = double('bt_1', id: 'activemq::master', group: amq_master)
+
+        subject.manifest_reduce(manifest, boot_task).should have(1).item
       end
     end
 
@@ -130,13 +134,6 @@ describe MB::ClusterBootstrapper do
             "nginx1.riotgames.com"
           ]
         }
-      end
-
-      before(:each) do
-        plugin.stub(:has_component?).with("activemq").and_return(true)
-        plugin.stub(:has_component?).with("nginx").and_return(true)
-        activemq.stub(:has_group?).with("master").and_return(true)
-        nginx.stub(:has_group?).with("master").and_return(true)
       end
 
       it "returns true if the manifest is valid" do
@@ -184,10 +181,10 @@ describe MB::ClusterBootstrapper do
     let(:boot_queue) do
       [
         [
-          amq_master,
-          amq_slave
+          double('bt_1', id: 'activemq::master', group: amq_master),
+          double('bt_2', id: 'activemq::slave', group: amq_slave)
         ],
-        nginx_master
+        double('bt_3', id: 'nginx::master', group: nginx_master)
       ]
     end
 
@@ -218,11 +215,11 @@ describe MB::ClusterBootstrapper do
   describe "#concurrent_bootstrap" do
     let(:manifest) do
       {
-        "activemq_master" => [
+        "activemq::master" => [
           "amq1.riotgames.com",
           "amq2.riotgames.com"
         ],
-        "nginx_master" => [
+        "nginx::master" => [
           "nginx1.riotgames.com"
         ]
       }
@@ -240,15 +237,15 @@ describe MB::ClusterBootstrapper do
       result = subject.concurrent_bootstrap(manifest, options)
 
       result.should have(2).items
-      result.should have_key("activemq_master")
-      result.should have_key("nginx_master")
+      result.should have_key("activemq::master")
+      result.should have_key("nginx::master")
     end
 
     it "has a Ridley::SSH::ResponseSet for each value" do
       result = subject.concurrent_bootstrap(manifest, options)
 
-      result["activemq_master"].should be_a(Ridley::SSH::ResponseSet)
-      result["nginx_master"].should be_a(Ridley::SSH::ResponseSet)
+      result["activemq::master"].should be_a(Ridley::SSH::ResponseSet)
+      result["nginx::master"].should be_a(Ridley::SSH::ResponseSet)
     end
   end
 end
