@@ -98,7 +98,7 @@ module MotherBrain
               }
 
               MB.ui.say "Starting bootstrap of nodes on: #{environment}"
-              p plugin.bootstrapper.run(manifest, bootstrap_options)
+              MB.ui.say plugin.bootstrapper.run(manifest, bootstrap_options)
               MB.ui.say "Bootstrap finished"
             end
           end
