@@ -24,6 +24,13 @@ class Default < Thor
     Rake::Task["release"].execute
   end
 
+  desc "ci", "Run all tests"
+  def ci
+    ENV['CI'] = 'true' # Travis-CI also sets this, but set it here for local testing
+    exec "rspec --tag ~focus --color --format=documentation spec"
+    exec "cucumber --format pretty"
+  end
+
   class Cucumber < Thor
     namespace :cucumber
     default_task :all
