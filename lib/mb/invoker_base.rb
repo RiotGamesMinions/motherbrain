@@ -45,6 +45,10 @@ module MotherBrain
       unless NOCONFIG_TASKS.include? config[:current_task].try(:name)
         @context = self.class.configure(self.options)
       end
+
+      if @options[:verbose]
+        MB.log.level = Logger::DEBUG
+      end
     end
 
     class_option :config,
@@ -52,5 +56,10 @@ module MotherBrain
       desc: "Path to a MotherBrain JSON configuration file.",
       aliases: "-c",
       banner: "PATH"
+    class_option :verbose,
+      type: :boolean,
+      desc: "Increase verbosity of output.",
+      default: false,
+      aliases: "-v"
   end
 end
