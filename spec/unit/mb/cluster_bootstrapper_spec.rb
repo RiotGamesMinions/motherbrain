@@ -7,26 +7,11 @@ describe MB::ClusterBootstrapper do
   let(:mysql) { MB::Component.new('mysql', @context) }
   let(:nginx) { MB::Component.new('nginx', @context) }
 
-  let(:amq_master) do
-    double('amq_master',
-      name: 'master',
-      nodes: [
-        double('one', public_hostname: "33.33.33.10"),
-        double('two', public_hostname: "33.33.33.11")
-      ]
-    )
-  end
-
-  let(:amq_slave) do
-    double('amq_slave',
-      name: 'slave',
-      nodes: []
-    )
-  end
-
-  let(:mysql_master) { double('mysql_master', name: 'master') }
-  let(:mysql_slave) { double('mysql_slave', name: 'slave') }
-  let(:nginx_master) { double('nginx_master', name: 'master') }
+  let(:amq_master) { MB::Group.new('master', @context) }
+  let(:amq_slave) { MB::Group.new('slave', @context) }
+  let(:mysql_master) { MB::Group.new('master', @context) }
+  let(:mysql_slave) { MB::Group.new('slave', @context) }
+  let(:nginx_master) { MB::Group.new('master', @context) }
 
   before(:each) do
     plugin.stub(:components).and_return([activemq, mysql, nginx])

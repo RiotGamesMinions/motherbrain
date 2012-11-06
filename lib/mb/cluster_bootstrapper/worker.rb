@@ -31,7 +31,7 @@ module MotherBrain
       # @return [Array]
       def run
         if nodes && nodes.any?
-          MB.log.debug "Bootstrapping group: '#{group_id}' [ #{nodes.join(', ')} ]"
+          MB.log.debug "Bootstrapping group: '#{group_id}' [ #{nodes.join(', ')} ] with options: '#{options}'"
           Ridley::Bootstrapper.new(nodes, options).run
         else
           MB.log.debug "No nodes in group: '#{group_id}'. Skipping bootstrap task"

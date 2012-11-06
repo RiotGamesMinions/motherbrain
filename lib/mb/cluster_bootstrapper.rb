@@ -37,7 +37,7 @@ module MotherBrain
         manifest.keys.each do |scoped_group|
           match = scoped_group.match(NODE_GROUP_ID_REGX)
           
-          if match.nil?
+          unless match
             raise InvalidBootstrapManifest, "Manifest contained an entry: '#{scoped_group}'. This is not in the proper format 'component::group'"
           end
 
@@ -144,7 +144,11 @@ module MotherBrain
     def concurrent_bootstrap(manifest, options = {})
       workers = Array.new
       workers = manifest.collect do |group_id, nodes|
-        Worker.new(group_id, nodes, options)
+        component_name, group_name = group_id.split('::')
+        group = plugin.component(component_name).group(group_name)
+
+        worker_options = options.merge(run_list: group.run_list, attributes: group.chef_attributes)
+        Worker.new(group_id, nodes, worker_options)
       end
 
       futures = workers.collect do |worker|
@@ -155,12 +159,12 @@ module MotherBrain
       end
 
       {}.tap do |response|
-        futures.each do |future|
-          response[future[0]] = future[1].value
+        futures.each do |group_id, future|
+          response[group_id] = future.value
         end
       end
     ensure
-      workers.map(&:terminate)
+      workers.map(&:terminate) if workers
     end
 
     private
