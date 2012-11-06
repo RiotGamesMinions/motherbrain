@@ -19,14 +19,18 @@ module MotherBrain
 
           @sql = sql
           @options = options
+
+          validate_options!
         end
 
-        def adapter
-          MB.jruby? ? "jdbcmysql" : "mysql2"
-        end
+        def validate_options!
+          unless options.key? :data_bag
+            raise GearError, "You are missing a :data_bag key in your MySQL options!"
+          end
 
-        def connection_info(node)
-          options[:connection].merge({adapter: adapter, host: node.public_hostname})
+          unless options[:data_bag].key? :name
+            raise GearError, "You are missing a :name key in your MySQL data bag options!"
+          end
         end
 
         def run(nodes)
@@ -34,6 +38,47 @@ module MotherBrain
             ActiveRecord::Base.establish_connection(connection_info(node))
             ActiveRecord::Base.connection.execute(sql)
           end
+        end
+
+        def connection_info(node)
+          connection_spec = {
+            adapter: adapter,
+            host: node.public_hostname
+          }
+
+          connection_spec
+        end
+
+        def adapter
+          MB.jruby? ? "jdbcmysql" : "mysql2"
+        end
+
+        def data_bag_keys
+          hash = data_bag_spec[:location][:hash]
+
+          if hash
+            Hash[data_bag_spec[:location][:keys].map { |k, v| [k, "#{hash}.#{v}"] }]
+          else
+            data_bag_spec[:location][:keys]
+          end
+        end
+
+        def data_bag_spec
+          @data_bag_spec ||= options[:data_bag].deep_merge(default_data_bag_spec)
+        end
+
+        def default_data_bag_spec
+          {
+            item: self.environment,
+            location: {
+              keys: {
+                username: "username",
+                password: "password",
+                database: "database",
+                port: "port"
+              }
+            }
+          }
         end
       end
     end
