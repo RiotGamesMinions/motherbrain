@@ -164,6 +164,25 @@ describe MB::ClusterBootstrapper do
           }.should raise_error(MB::InvalidBootstrapManifest)
         end
       end
+
+      context "when a key is not in {component}::{group} format" do
+        let(:manifest) do
+          {
+            "activemq" => [
+              "amq1.riotgames.com"
+            ],
+            "nginx::master" => [
+              "nginx1.riotgames.com"
+            ]
+          }
+        end
+
+        it "raises an InvalidBootstrapManifest error" do
+          lambda {
+            subject.validate_manifest(manifest, plugin)
+          }.should raise_error(MB::InvalidBootstrapManifest)
+        end
+      end
     end
   end
 

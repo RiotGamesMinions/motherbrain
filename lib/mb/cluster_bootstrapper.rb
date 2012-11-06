@@ -5,6 +5,8 @@ module MotherBrain
 
     class BootTask < Struct.new(:id, :group); end
 
+    NODE_GROUP_ID_REGX = /^(.+)::(.+)$/
+
     class << self
       # Reduce a manifest to a hash containing only key/value pairs where the initial
       # keys matched the names of the given groups
@@ -33,7 +35,14 @@ module MotherBrain
       # @return [Boolean]
       def validate_manifest(manifest, plugin)
         manifest.keys.each do |scoped_group|
-          component, group = scoped_group.split('::')
+          match = scoped_group.match(NODE_GROUP_ID_REGX)
+          
+          if match.nil?
+            raise InvalidBootstrapManifest, "Manifest contained an entry: '#{scoped_group}'. This is not in the proper format 'component::group'"
+          end
+
+          component = match[1]
+          group     = match[2]
 
           unless plugin.has_component?(component)
             raise InvalidBootstrapManifest, "Manifest describes the component: '#{component}' but '#{plugin.name}' does not have this component"
