@@ -114,15 +114,35 @@ module MotherBrain
     #
     # @param [Hash] manifest
     #   a hash where the keys are node group names and the values are arrays of hostnames
-    # @param [Hash] options
-    #   options to pass to a {ClusterBootstrapper::Worker}
+    # @option options [String] :server_url
+    #   URL to the Chef API to bootstrap the target node(s) to
+    # @option options [String] :ssh_user
+    #   a shell user that will login to each node and perform the bootstrap command on
+    # @option options [String] :ssh_password
+    #   the password for the shell user that will perform the bootstrap"
+    # @option options [Array<String>, String] :ssh_keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :ssh_timeout
+    #   timeout value for SSH bootstrap (default: 1.5)
+    # @option options [String] :validator_client
+    #   the name of the Chef validator client to use in bootstrapping
+    # @option options [String] :validator_path
+    #   filepath to the validator used to bootstrap the node (required)
+    # @option options [String] :bootstrap_proxy
+    #   URL to a proxy server to bootstrap through (default: nil)
+    # @option options [String] :encrypted_data_bag_secret_path
+    #   filepath on your host machine to your organizations encrypted data bag secret (default: nil)
+    # @option options [Hash] :hints
+    #   a hash of Ohai hints to place on the bootstrapped node (default: Hash.new)
+    # @option options [Boolean] :sudo
+    #   bootstrap with sudo (default: true)
+    # @option options [String] :template
+    #   bootstrap template to use (default: omnibus)
     #
     # @return [Hash]
     #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
     def concurrent_bootstrap(manifest, options = {})
       workers = Array.new
-      options[:server_url] ||= context.chef_conn.server_url
-
       workers = manifest.collect do |group_name, nodes|
         Worker.new(group_name, nodes, options)
       end
