@@ -26,15 +26,14 @@ end
 describe MB::Gear::Mysql::Action do
   subject { MB::Gear::Mysql::Action }
   let(:sql) { "select * from boxes" }
+  let(:base_options) { {data_bag: {name: "creds"}} }
 
   describe "::new" do
-    let(:options) { {data_bag: {name: "creds"}} }
-
     it "should set its attributes" do
-      obj = subject.new(@context, sql, options)
+      obj = subject.new(@context, sql, base_options)
 
       obj.sql.should == sql
-      obj.options.should == options
+      obj.options.should == base_options
     end
   end
 
@@ -55,7 +54,6 @@ describe MB::Gear::Mysql::Action do
 
   describe "#connection_info" do
     let(:node) { double("node", public_hostname: "some.node.com") }
-    let(:base_options) { {data_bag: {name: "creds"}} }
 
     before(:each) do
       subject.any_instance.stub(:environment).and_return("test_env")
@@ -81,7 +79,6 @@ describe MB::Gear::Mysql::Action do
   end
 
   describe "#data_bag_keys" do
-    let(:base_options) { {data_bag: {name: "creds"}} }
     let(:keys) { [:username, :password, :database, :port] }
 
     it "should have all of the keys" do
