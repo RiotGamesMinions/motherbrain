@@ -6,7 +6,11 @@ Feature: running the MotherBrain (MB) command line interface (CLI)
   Scenario: running with no command and no configuration
     Given a MotherBrain configuration does not exist
     When I run MB with no arguments
-    Then the output should not contain:
+    Then the output should contain:
+      """
+      Tasks:
+      """
+    And the output should not contain:
       """
       No configuration found
       """
