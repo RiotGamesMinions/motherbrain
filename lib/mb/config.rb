@@ -23,6 +23,18 @@ module MotherBrain
     attribute :chef_organization,
       type: String
 
+    attribute :chef_validator_client,
+      type: String
+
+    attribute :chef_validator_path,
+      type: String
+
+    attribute :chef_bootstrap_proxy,
+      type: String
+
+    attribute :chef_encrypted_data_bag_secret_path,
+      type: String
+
     attribute :plugin_paths,
       default: PluginLoader.default_paths,
       type: [ Array, Set ],
@@ -36,6 +48,9 @@ module MotherBrain
 
     attribute :ssh_key,
       type: String
+
+    attribute :ssh_sudo,
+      type: Boolean
 
     # Returns a connection hash for Ridley from the instance's attributes
     #
