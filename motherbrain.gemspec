@@ -23,4 +23,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'activesupport'
   s.add_runtime_dependency 'rye'
   s.add_runtime_dependency 'thor', '>= 0.16.0'
+  s.add_runtime_dependency 'activerecord', '~> 3.2.8'
+  s.add_runtime_dependency 'mysql2'
 end

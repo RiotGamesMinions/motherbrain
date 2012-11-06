@@ -4,6 +4,7 @@ gemspec
 
 platforms :ruby do
   gem 'yajl-ruby'
+  gem 'mysql2'
 end
 
 platforms :jruby do

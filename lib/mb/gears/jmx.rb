@@ -8,25 +8,18 @@ end
 
 module MotherBrain
   module Gear
-    class Jmx
+    class Jmx < RealModelBase
       include MB::Gear
       register_gear :jmx
-
-      class << self
-        # @return [MB::Gear::Jmx]
-        def find(gears)
-          Jmx.new
-        end
-      end
 
       # @see [MB::Gear::Jmx::Action]
       #
       # @return [MB::Gear::Jmx::Action]
       def action(port, object_name, &block)
-        Action.new(port, object_name, &block)
+        Action.new(context, port, object_name, &block)
       end
 
-      class Action
+      class Action < RealModelBase
         attr_reader :port
         attr_reader :object_name
         attr_reader :block
@@ -36,7 +29,9 @@ module MotherBrain
         #
         # @raise [ActionNotSupported] if not running JRuby
         # @raise [ArgumentError]
-        def initialize(port, object_name, &block)
+        def initialize(context, port, object_name, &block)
+          super(context)
+
           unless MB.jruby?
             raise ActionNotSupported, "The jmx action is only supported on JRuby"
           end
