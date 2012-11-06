@@ -6,6 +6,7 @@ require 'bundler/setup'
 require 'thor/rake_compat'
 
 class Default < Thor
+  include Thor::Actions
   include Thor::RakeCompat
   Bundler::GemHelper.install_tasks
 
@@ -27,8 +28,8 @@ class Default < Thor
   desc "ci", "Run all tests"
   def ci
     ENV['CI'] = 'true' # Travis-CI also sets this, but set it here for local testing
-    exec "rspec --tag ~focus --color --format=documentation spec"
-    exec "cucumber --format pretty"
+    run "rspec --tag ~focus --color --format=documentation spec"
+    run "cucumber --format pretty"
   end
 
   class Cucumber < Thor
