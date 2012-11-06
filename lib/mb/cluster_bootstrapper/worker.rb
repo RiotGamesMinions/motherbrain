@@ -6,23 +6,35 @@ module MotherBrain
       include Celluloid
       include Celluloid::Logger
 
-      attr_reader :group_name
+      # @return [String]
+      attr_reader :group_id
+      # @return [Array<String>]
       attr_reader :nodes
+      # @return [Hash]
       attr_reader :options
 
-      def initialize(group_name, nodes, options = {})
-        @group_name = group_name
-        @nodes      = nodes
-        @options    = options
+      # @param [String] group_id
+      #   a string containing a group_id for the nodes being bootstrapped
+      #     'activemq::master'
+      #     'mysql::slave'
+      # @param [Array<String>] nodes
+      #   an array of hostnames or ipaddresses to bootstrap
+      #     [ '33.33.33.10', 'reset.riotgames.com' ]
+      # @param [Hash] options
+      #   hash of options that will be passed to Ridley::Bootstrapper#new
+      def initialize(group_id, nodes, options = {})
+        @group_id = group_id
+        @nodes    = nodes
+        @options  = options
       end
 
       # @return [Array]
       def run
         if nodes && nodes.any?
-          MB.log.debug "Bootstrapping group: #{group_name} [ #{nodes.join(', ')} ]"
+          MB.log.debug "Bootstrapping group: '#{group_id}' [ #{nodes.join(', ')} ]"
           Ridley::Bootstrapper.new(nodes, options).run
         else
-          MB.log.debug "No nodes in group: '#{group_name}'. Skipping bootstrap task"
+          MB.log.debug "No nodes in group: '#{group_id}'. Skipping bootstrap task"
           [ :ok, [] ]
         end
       end

@@ -143,13 +143,13 @@ module MotherBrain
     #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
     def concurrent_bootstrap(manifest, options = {})
       workers = Array.new
-      workers = manifest.collect do |group_name, nodes|
-        Worker.new(group_name, nodes, options)
+      workers = manifest.collect do |group_id, nodes|
+        Worker.new(group_id, nodes, options)
       end
 
       futures = workers.collect do |worker|
         [
-          worker.group_name,
+          worker.group_id,
           worker.future.run
         ]
       end
@@ -196,9 +196,9 @@ module MotherBrain
       # @param [String] scoped_group
       def bootstrap(scoped_group)
         self.task_procs.push lambda {
-          component_name, group_name = scoped_group.split('::')
+          component, group = scoped_group.split('::')
 
-          BootTask.new(scoped_group, real_model.plugin.component!(component_name).group!(group_name))
+          BootTask.new(scoped_group, real_model.plugin.component!(component).group!(group))
         }
       end
 
