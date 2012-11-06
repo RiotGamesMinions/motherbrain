@@ -85,6 +85,17 @@ module MotherBrain
       self.chef_attributes.fetch(name.to_sym, nil)
     end
 
+    # Combines the recipes and roles of this group into a run_list that can be passed to
+    # Chef or Ridley
+    #
+    #   [ "role[web_server]", "recipe[nginx::default]" ]
+    #
+    # @return [Array<String>]
+    def run_list
+      self.roles.collect { |role| "role[#{role}]" } +
+        self.recipes.collect { |recipe| "recipe[#{recipe}]" }
+    end
+
     private
 
       def dsl_eval(&block)
