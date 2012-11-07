@@ -31,8 +31,6 @@ module MotherBrain
       # @param [MB::Plugin] plugin
       #
       # @raise [InvalidBootstrapManifest]
-      #
-      # @return [Boolean]
       def validate_manifest(manifest, plugin)
         manifest.keys.each do |scoped_group|
           match = scoped_group.match(NODE_GROUP_ID_REGX)
@@ -52,8 +50,6 @@ module MotherBrain
             raise InvalidBootstrapManifest, "Manifest describes the group: '#{group}' in the component '#{component}' but the component does not have this group"
           end
         end
-
-        true
       end
     end
 
