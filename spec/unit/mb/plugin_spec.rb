@@ -89,6 +89,20 @@ describe MB::Plugin do
           }.should raise_error(MB::PluginLoadError)
         end
       end
+    end    
+  end
+
+  describe "DSL evaluate: cluster_bootstrap" do
+    subject do
+      MB::Plugin.new(@context) do
+        cluster_bootstrap do
+          # block
+        end
+      end
+    end
+
+    it "has a ClusterBootstrapper for the value of bootstrapper" do
+      subject.bootstrapper.should be_a(MB::ClusterBootstrapper)
     end
   end
 end

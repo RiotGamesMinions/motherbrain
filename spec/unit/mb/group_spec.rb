@@ -208,4 +208,39 @@ describe MB::Group do
       end
     end
   end
+
+  subject { MB::Group.new("test-group", @context) }
+
+  describe "#run_list" do
+    subject do
+      MB::Group.new("test-group", @context) do
+        role "role_one"
+        role "role_two"
+        recipe "test::default"
+        recipe "test::special"
+      end
+    end
+
+    it "returns an array" do
+      subject.run_list.should be_a(Array)
+    end
+
+    it "contains an item for each role and recipe on the group" do
+      subject.run_list.should have(4).items
+    end
+
+    describe "each role element" do
+      it "is wrapped in the string 'role[]'" do
+        subject.run_list[0].should eql("role[role_one]")
+        subject.run_list[1].should eql("role[role_two]")
+      end
+    end
+
+    describe "each recipe element" do
+      it "is wrapped in the string 'recipe[]'" do
+        subject.run_list[2].should eql("recipe[test::default]")
+        subject.run_list[3].should eql("recipe[test::special]")
+      end
+    end
+  end
 end
