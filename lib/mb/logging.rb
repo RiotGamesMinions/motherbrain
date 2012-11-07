@@ -10,7 +10,7 @@ module MotherBrain
       def logger
         @logger ||= begin
           log = Logger.new(STDOUT)
-          log.level = Logger::INFO
+          log.level = Logger::WARN
           log.formatter = BasicFormat.new
           log
         end
