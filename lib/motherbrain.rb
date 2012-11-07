@@ -73,3 +73,6 @@ end
 
 # Alias for {MotherBrain}
 MB = MotherBrain
+
+Ridley.set_logger(MB.logger)
+Celluloid.logger = MB.logger
