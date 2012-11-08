@@ -32,14 +32,12 @@ module MotherBrain
             
             plugin.send(:context).environment = environment
 
-            MB.ui.say "Nodes in '#{environment}':"
-
+            MB.ui.say "Listing nodes in '#{environment}':"
             nodes = plugin.nodes.each do |component, groups|
               groups.each do |group, nodes|
-                nodes.collect! { |node| "#{node[:automatic][:fqdn]} (#{node[:automatic][:ipaddress]})" }
+                nodes.collect! { |node| "#{node.public_hostname} (#{node.public_ipv4})" }
               end
             end
-
             MB.ui.say nodes.to_yaml
           end
 
