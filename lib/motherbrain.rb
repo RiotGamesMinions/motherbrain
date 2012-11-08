@@ -19,6 +19,7 @@ require 'mb/errors'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
+  autoload :ChefMutex, 'mb/chef_mutex'
   autoload :ChefRunner, 'mb/chef_runner'
   autoload :CleanRoomBase, 'mb/clean_room_base'
   autoload :Command, 'mb/command'
@@ -34,7 +35,6 @@ module MotherBrain
   autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
   autoload :Logging, 'mb/logging'
-  autoload :Mutex, 'mb/mutex'
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'

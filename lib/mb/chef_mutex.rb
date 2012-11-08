@@ -1,5 +1,5 @@
 module MotherBrain
-  class Mutex
+  class ChefMutex
     DATA_BAG = "locks"
 
     attr_reader :chef_connection, :client_name, :name
