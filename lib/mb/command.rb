@@ -1,7 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Command < RealModelBase
-    attr_reader :name
+    attr_reader :context, :name
 
     attribute :description,
       type: String,
@@ -16,6 +16,7 @@ module MotherBrain
     # @param [MB::Plugin, MB::Component] scope
     def initialize(name, context, scope, &block)
       super(context)
+      @context = context
       @name  = name.to_s
       @scope = scope
 
@@ -31,7 +32,9 @@ module MotherBrain
 
     # Run the proc stored in execute with the given arguments
     def invoke(*args)
-      CommandRunner.new(context, scope, execute)
+      ChefMutex.new(name, context.chef_conn).synchronize do
+        CommandRunner.new(context, scope, execute)
+      end
     end
 
     private
