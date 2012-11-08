@@ -192,10 +192,14 @@ describe MB::Gear::Service do
         ridley_object.should_receive(:set_attribute).with("some.attr", "before_val").exactly(3).times
         ridley_object.should_receive(:save).exactly(6).times
 
-        MB::Gear::Service::Action.new(@context, action_name, component) do
+        action = MB::Gear::Service::Action.new(@context, action_name, component) do
           node_attribute("some.attr", "val", toggle: true)
           this_does_not_exist!
-        end.run(nodes)
+        end
+
+        lambda {
+          action.run(nodes)
+        }.should raise_error(NoMethodError)
       end
     end
   end
