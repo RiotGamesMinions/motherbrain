@@ -1,79 +1,105 @@
 module MotherBrain
+  # @author Justin Campbell <justin@justincampbell.me>
+  #
+  # Allows for MotherBrain clients to lock a chef resource
   class ChefMutex
     DATA_BAG = "locks"
 
     attr_reader :chef_connection, :client_name, :name
 
+    # @param [#to_s] name
+    # @param [Ridley::Connection] chef_connection
     def initialize(name, chef_connection)
       @chef_connection = chef_connection
       @client_name = chef_connection.client_name
       @name = name
     end
 
+    # Attempts to create a lock. Fails if the lock already exists.
+    #
+    # @return [Boolean]
     def lock
       attempt_lock
     end
 
+    # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
+    # held by someone else
+    #
+    # @return [Boolean]
     def unlock
       attempt_unlock
     end
 
-    def attempt_lock
-      current_lock = read name
+    private
 
-      return current_lock["client_name"] == client_name if current_lock
+      # @return [Boolean]
+      def attempt_lock
+        current_lock = read name
 
-      write name, client_name, time
-    end
+        return current_lock["client_name"] == client_name if current_lock
 
-    def attempt_unlock
-      current_lock = read name
+        write
+      end
 
-      return unless current_lock
-      return unless current_lock["client_name"] == client_name
+      # @return [Boolean]
+      def attempt_unlock
+        current_lock = read name
 
-      delete name
-    end
+        return unless current_lock
+        return unless current_lock["client_name"] == client_name
 
-    def data_bag
-      chef_connection.data_bag
-    end
+        delete
+      end
 
-    def delete
-      return true unless locks
+      # @return [Ridley::ChainLink]
+      def data_bag
+        chef_connection.data_bag
+      end
 
-      locks.delete name
-    end
+      # Delete the lock from the data bag.
+      #
+      # @return [Boolean]
+      def delete
+        return true unless locks
 
-    def ensure_data_bag_exists
-      data_bag.create name: DATA_BAG unless locks
-    end
+        locks.delete name
+      end
 
-    def locks
-      result = data_bag.find DATA_BAG
+      # Create our data bag if it doesn't already exist
+      def ensure_data_bag_exists
+        data_bag.create name: DATA_BAG unless locks
+      end
 
-      return unless result
+      # @return [Ridley::DBIChainLink] if the data bag exists
+      # @return [nil] if it does not
+      def locks
+        result = data_bag.find DATA_BAG
 
-      result.item
-    end
+        return unless result
 
-    def read
-      return unless locks
+        result.item
+      end
 
-      result = locks.find name
+      # Read the lock from the data bag.
+      #
+      # @return [Hash] if the lock exists
+      # @return [nil] if it does not
+      def read
+        return unless locks
 
-      result.to_hash if result
-    end
+        result = locks.find name
 
-    def time
-      Time.now
-    end
+        result.to_hash if result
+      end
 
-    def write
-      ensure_data_bag_exists
+      # Write the lock to the data bag.
+      #
+      # @return [Boolean]
+      def write
+        ensure_data_bag_exists
 
-      current_lock = locks.new id: name, client_name: client_name, time: time
-      current_lock.save
-    end
+        current_lock = locks.new id: name, client_name: client_name, time: Time.now
+        current_lock.save
+      end
   end
 end

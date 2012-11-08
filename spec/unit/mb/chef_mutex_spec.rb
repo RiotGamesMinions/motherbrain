@@ -65,7 +65,7 @@ describe MB::ChefMutex do
   end
 
   describe "#attempt_lock" do
-    subject(:attempt_lock) { chef_mutex.attempt_lock }
+    subject(:attempt_lock) { chef_mutex.send :attempt_lock }
 
     context "with no lock" do
       before do
@@ -111,7 +111,7 @@ describe MB::ChefMutex do
   end
 
   describe "#attempt_unlock" do
-    subject(:attempt_unlock) { chef_mutex.attempt_unlock }
+    subject(:attempt_unlock) { chef_mutex.send :attempt_unlock }
 
     context "with no lock" do
       before do
@@ -158,7 +158,7 @@ describe MB::ChefMutex do
   end
 
   describe "#delete" do
-    subject(:delete) { chef_mutex.delete }
+    subject(:delete) { chef_mutex.send :delete }
 
     it "deletes the data bag item" do
       locks_stub.should_receive :delete
@@ -175,7 +175,7 @@ describe MB::ChefMutex do
   end
 
   describe "#write" do
-    subject(:write) { chef_mutex.write }
+    subject(:write) { chef_mutex.send :write }
 
     before do
     end
