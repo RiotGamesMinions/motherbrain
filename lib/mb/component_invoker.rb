@@ -28,13 +28,11 @@ module MotherBrain
             assert_environment_exists(environment)
 
             component.send(:context).environment = environment
-
-            MB.ui.say "Nodes for '#{component.name}' in '#{environment}':"
-            
             nodes = component.nodes.each do |group, nodes|
-              nodes.collect! { |node| "#{node[:automatic][:fqdn]} (#{node[:automatic][:ipaddress]})" }
+              nodes.collect! { |node| "#{node.public_hostname} (#{node.public_ipv4})" }
             end
 
+            MB.ui.say "Nodes for '#{component.name}' in '#{environment}':"
             MB.ui.say nodes.to_yaml
           end
         end
