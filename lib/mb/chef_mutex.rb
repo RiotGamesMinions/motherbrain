@@ -34,7 +34,7 @@ module MotherBrain
 
       # @return [Boolean]
       def attempt_lock
-        current_lock = read name
+        current_lock = read
 
         return current_lock["client_name"] == client_name if current_lock
 
@@ -43,7 +43,7 @@ module MotherBrain
 
       # @return [Boolean]
       def attempt_unlock
-        current_lock = read name
+        current_lock = read
 
         return unless current_lock
         return unless current_lock["client_name"] == client_name
