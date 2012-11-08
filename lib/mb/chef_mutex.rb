@@ -1,7 +1,29 @@
 module MotherBrain
   # @author Justin Campbell <justin@justincampbell.me>
   #
-  # Allows for MotherBrain clients to lock a chef resource
+  # Allows for MotherBrain clients to lock a chef resource. A mutex is created
+  # with a name. Sending #lock to the mutex will then store a data bag item
+  # with mutex name, chef_connection.client_name, and the current time.
+  # An attempt to lock an already-locked name will fail if the lock
+  # is owner by someone else, or succeed if the lock is owned by the current
+  # user.
+  #
+  # @example Creating a mutex and obtaining a lock
+  #
+  #   mutex = ChefMutex.new "my_resource", chef_connection
+  #
+  #   mutex.lock # => true
+  #   # do stuff
+  #   mutex.unlock # => true
+  #
+  # @example Running a block within an obtained lock
+  #
+  #   mutex = ChefMutex.new "my_resource", chef_connection
+  #
+  #   mutex.synchronize do
+  #     # do stuff
+  #   end
+  #
   class ChefMutex
     DATA_BAG = "locks"
 
