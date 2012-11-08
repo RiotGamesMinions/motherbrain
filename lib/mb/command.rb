@@ -120,7 +120,7 @@ module MotherBrain
 
         clean_room = CleanRoom.new(context, scope)
         clean_room.instance_eval(&block)
-        actions = clean_room.actions
+        actions = clean_room.send(:actions)
 
         nodes = group_names.map { |group_name| scope.group!(group_name) }.flat_map(&:nodes).uniq
 
@@ -134,6 +134,8 @@ module MotherBrain
         
         options[:max_concurrent] ||= nodes.count
         node_groups = nodes.each_slice(options[:max_concurrent]).to_a
+
+        MB.log.warn actions.first.run(nodes)
 
         @on_procs << lambda do
           node_groups.each do |nodes|
@@ -162,7 +164,7 @@ module MotherBrain
 
             klass.instance_eval do
               define_method :run do |*args, &block|
-                clean_room.actions << action = action(*args, &block)
+                clean_room.send(:actions) << action = action(*args, &block)
                 action
               end
             end

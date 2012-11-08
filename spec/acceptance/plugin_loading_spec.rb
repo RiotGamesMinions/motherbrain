@@ -14,6 +14,10 @@ describe "loading a plugin", type: "acceptance" do
       depends "pvpnet", "~> 1.2.3"
       depends "activemq", "= 4.2.1"
 
+      cluster_bootstrap do
+        bootstrap("activemq::master_broker")
+      end
+
       command "start" do
         description "Start all services"
 
@@ -85,6 +89,9 @@ describe "loading a plugin", type: "acceptance" do
 
   it { subject.dependencies.should have(2).items }
 
+  it { subject.bootstrapper.should_not be_nil }
+  it { subject.bootstrapper.boot_queue.should have(1).item }
+
   describe "dependencies" do
     subject { @plugin.dependencies }
 
@@ -116,7 +123,7 @@ describe "loading a plugin", type: "acceptance" do
   context "when a component is not found" do
     it "raises a ComponentNotFound error" do
       lambda {
-        subject.component("not_there")
+        subject.component!("not_there")
       }.should raise_error(MB::ComponentNotFound)
     end
   end

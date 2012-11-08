@@ -1,9 +1,3 @@
-require 'json'
-require 'fileutils'
-require 'pathname'
-require 'forwardable'
-require 'set'
-require 'ostruct'
 require 'chozo'
 require 'ridley'
 require 'solve'
@@ -13,6 +7,17 @@ require 'active_support/inflector'
 require 'active_support/core_ext/hash'
 require 'rye'
 require 'mb/rye_ext'
+require 'fileutils'
+require 'pathname'
+require 'forwardable'
+require 'set'
+require 'ostruct'
+
+if jruby?
+  require 'json/pure'
+else
+  require 'json/ext'
+end
 
 require 'mb/version'
 require 'mb/errors'
@@ -22,6 +27,7 @@ module MotherBrain
   autoload :ChefMutex, 'mb/chef_mutex'
   autoload :ChefRunner, 'mb/chef_runner'
   autoload :CleanRoomBase, 'mb/clean_room_base'
+  autoload :ClusterBootstrapper, 'mb/cluster_bootstrapper'
   autoload :Command, 'mb/command'
   autoload :Component, 'mb/component'
   autoload :ComponentInvoker, 'mb/component_invoker'
@@ -74,3 +80,6 @@ end
 
 # Alias for {MotherBrain}
 MB = MotherBrain
+
+Ridley.set_logger(MB.logger)
+Celluloid.logger = MB.logger

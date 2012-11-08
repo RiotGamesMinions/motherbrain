@@ -8,7 +8,7 @@ module MotherBrain
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
-        if (args & InvokerBase::NOCONFIG_TASKS).empty?
+        if args.any? and (args & InvokerBase::NOCONFIG_TASKS).empty?
           setup(configure(opts))
         end
         
