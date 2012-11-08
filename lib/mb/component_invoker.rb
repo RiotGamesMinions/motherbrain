@@ -27,9 +27,11 @@ module MotherBrain
           define_method(:nodes) do |environment|
             assert_environment_exists(environment)
 
+            component.send(:context).environment = environment
+
             MB.ui.say "Nodes for '#{component.name}' in '#{environment}':"
             
-            nodes = component.nodes(environment).each do |group, nodes|
+            nodes = component.nodes.each do |group, nodes|
               nodes.collect! { |node| "#{node[:automatic][:fqdn]} (#{node[:automatic][:ipaddress]})" }
             end
 
