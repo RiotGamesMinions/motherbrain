@@ -99,6 +99,7 @@ module MotherBrain
       def delete
         return true unless locks
 
+        MB.log.debug "Deleting lock (#{name})"
         locks.delete name
       end
 
@@ -129,7 +130,7 @@ module MotherBrain
         return unless locks
 
         result = locks.find name
-
+        MB.log.debug "Read lock (#{name}) #{result ? result.to_hash : nil.inspect}"
         result.to_hash if result
       end
 
@@ -140,6 +141,7 @@ module MotherBrain
         ensure_data_bag_exists
 
         current_lock = locks.new id: name, client_name: client_name, time: Time.now
+        MB.log.debug "Writing lock (#{name}) #{current_lock.to_hash}"
         current_lock.save
       end
   end
