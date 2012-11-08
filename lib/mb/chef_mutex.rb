@@ -25,7 +25,7 @@ module MotherBrain
   #   end
   #
   class ChefMutex
-    DATA_BAG = "locks"
+    DATA_BAG = "_motherbrain_locks_"
 
     attr_reader :chef_connection, :client_name, :name
 
