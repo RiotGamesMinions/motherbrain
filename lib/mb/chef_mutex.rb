@@ -50,7 +50,7 @@ module MotherBrain
     # completes.
     def synchronize
       begin
-        raise ClusterBusy.new unless lock
+        raise ResourceLocked.new(read) unless lock
         yield if block_given?
       ensure
         unlock

@@ -75,4 +75,21 @@ module MotherBrain
   class ConfigExists < MBError; status_code(15); end
   class ChefConnectionError < MBError; status_code(16); end
   class InvalidBootstrapManifest < MBError; status_code(17); end
+
+  class ResourceLocked < MBError
+    attr_reader :lock
+
+    def initialize(lock)
+      @lock = lock
+    end
+
+    def message
+      <<-MESSAGE.gsub /^\s+/, ''
+        Resource "#{lock['id']}
+        locked by #{lock['client_name']}
+        since #{lock['time']}"
+        (Use --force/-f to override)
+      MESSAGE
+    end
+  end
 end
