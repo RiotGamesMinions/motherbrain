@@ -19,7 +19,20 @@ module MotherBrain
     #
     # @return [Boolean]
     def lock
+      return true if externally_testing?
+
       attempt_lock
+    end
+
+    # Obtains a lock, runs the block, and releases the lock when the block
+    # completes.
+    def synchronize
+      begin
+        raise ClusterBusy.new unless lock
+        yield if block_given?
+      ensure
+        unlock
+      end
     end
 
     # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
@@ -27,6 +40,8 @@ module MotherBrain
     #
     # @return [Boolean]
     def unlock
+      return true if externally_testing?
+
       attempt_unlock
     end
 
@@ -68,6 +83,10 @@ module MotherBrain
       # Create our data bag if it doesn't already exist
       def ensure_data_bag_exists
         data_bag.create name: DATA_BAG unless locks
+      end
+
+      def externally_testing?
+        ENV['RUBY_ENV'] == 'test'
       end
 
       # @return [Ridley::DBIChainLink] if the data bag exists

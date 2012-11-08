@@ -191,7 +191,9 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        CleanRoom.new(context, self).instance_eval(&block)
+        ChefMutex.new(name, context.chef_conn).synchronize do
+          CleanRoom.new(context, self).instance_eval(&block)
+        end
       end
 
     # A clean room bind the Plugin DSL syntax to. This clean room can later to

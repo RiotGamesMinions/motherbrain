@@ -18,6 +18,7 @@ describe MB::ChefMutex do
 
   before do
     chef_mutex.stub locks: locks_stub
+    chef_mutex.stub externally_testing?: false
   end
 
   its(:name) { should == name }
