@@ -79,6 +79,8 @@ module MotherBrain
   class InvalidBootstrapManifest < MBError; status_code(17); end
 
   class ResourceLocked < MBError
+    status_code 18
+
     attr_reader :lock
 
     def initialize(lock)
@@ -87,10 +89,8 @@ module MotherBrain
 
     def message
       <<-MESSAGE.gsub /^\s+/, ''
-        Resource "#{lock['id']}
-        locked by #{lock['client_name']}
-        since #{lock['time']}"
-        (Use --force/-f to override)
+        Resource "#{lock['id']}" locked by #{lock['client_name']} since #{lock['time']}
+        (Try again in a few moments, or use --force/-f to override)
       MESSAGE
     end
   end
