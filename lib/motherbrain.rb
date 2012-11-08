@@ -7,12 +7,17 @@ require 'active_support/inflector'
 require 'active_support/core_ext/hash'
 require 'rye'
 require 'mb/rye_ext'
-require 'json/pure'
 require 'fileutils'
 require 'pathname'
 require 'forwardable'
 require 'set'
 require 'ostruct'
+
+if jruby?
+  require 'json/pure'
+else
+  require 'json/ext'
+end
 
 require 'mb/version'
 require 'mb/errors'
