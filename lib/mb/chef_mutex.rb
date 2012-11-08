@@ -48,10 +48,10 @@ module MotherBrain
 
     # Obtains a lock, runs the block, and releases the lock when the block
     # completes.
-    def synchronize
+    def synchronize(&block)
       begin
         raise ResourceLocked.new(read) unless lock
-        yield if block_given?
+        yield
       ensure
         unlock
       end
