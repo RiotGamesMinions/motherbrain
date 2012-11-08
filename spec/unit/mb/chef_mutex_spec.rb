@@ -51,6 +51,26 @@ describe MB::ChefMutex do
     end
   end
 
+  describe "#synchronize" do
+    subject(:synchronize) { chef_mutex.synchronize &test_block }
+
+    TestProbe = Struct.new :testing
+
+    let(:test_block) { -> { TestProbe.testing } }
+
+    it "runs the block" do
+      TestProbe.should_receive :testing
+
+      synchronize
+    end
+
+    it "raises an error if the lock is unobtainable" do
+      chef_mutex.stub lock: false
+
+      -> { synchronize }.should raise_error MB::ResourceLocked
+    end
+  end
+
   describe "#unlock" do
     subject(:unlock) { chef_mutex.unlock }
 
