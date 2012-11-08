@@ -47,4 +47,5 @@ group :test do
 
   gem 'spork'
   gem 'rspec'
+  gem 'timecop'
 end
