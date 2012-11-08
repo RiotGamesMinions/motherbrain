@@ -151,7 +151,6 @@ GEM
       storable
     terminal-notifier-guard (1.5.3)
     thor (0.16.0)
-    timecop (0.5.3)
     timers (1.0.1)
     webmock (1.8.11)
       addressable (>= 2.2.7)
@@ -181,6 +180,5 @@ DEPENDENCIES
   rspec
   spork
   terminal-notifier-guard (~> 1.5.3)
-  timecop
   webmock
   yard

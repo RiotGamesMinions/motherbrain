@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'timecop'
 
 describe MB::ChefMutex do
   subject { chef_mutex }
@@ -9,7 +8,6 @@ describe MB::ChefMutex do
 
   let(:client_name) { "johndoe" }
   let(:name) { "my_lock" }
-  let(:time) { Time.parse "2012-01-01 00:00" }
 
   let(:chef_connection_stub) { stub client_name: client_name }
   let(:locks_stub) { stub(
@@ -19,8 +17,6 @@ describe MB::ChefMutex do
   ) }
 
   before do
-    Timecop.freeze time
-
     chef_mutex.stub locks: locks_stub
   end
 
