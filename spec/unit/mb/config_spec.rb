@@ -200,6 +200,7 @@ describe MB::Config do
         o.chef_api_client = "reset"
         o.chef_api_key = "/Users/reset/.chef/reset.pem"
         o.chef_organization = "vialstudios"
+        o.chef_encrypted_data_bag_secret_path = File.join(fixtures_path, "fake_key.pem")
       end
     end
 
@@ -222,6 +223,13 @@ describe MB::Config do
 
       obj.should have_key(:client_key)
       obj[:client_key].should eql(subject.chef_api_key)
+    end
+
+    it "returns a hash with a 'encrypted_data_bag_secret_path' key mapping to chef_encrypted_data_bag_secret_path" do
+      obj = subject.to_ridley
+
+      obj.should have_key(:encrypted_data_bag_secret_path)
+      obj[:encrypted_data_bag_secret_path].should eql(subject.chef_encrypted_data_bag_secret_path)
     end
 
     it "returns a hash with an 'organization' key mapping to chef_organization" do
