@@ -24,7 +24,9 @@ describe MB::ChefMutex do
   its(:name) { should == name }
 
   describe "#lock" do
-    subject(:lock) { chef_mutex.lock }
+    subject(:lock) { chef_mutex.lock options }
+
+    let(:options) { Hash.new }
 
     it "attempts a lock" do
       chef_mutex.should_receive :attempt_lock
@@ -45,17 +47,26 @@ describe MB::ChefMutex do
     end
 
     context "with an existing lock" do
-      before { chef_mutex.stub read: {} }
+      before { chef_mutex.stub read: {}, write: true }
 
       it { should be_false }
+
+      context "and passed force: true" do
+        before do
+          options[:force] = true
+        end
+
+        it { should be_true }
+      end
     end
   end
 
   describe "#synchronize" do
-    let(:synchronize) { chef_mutex.synchronize &test_block }
+    subject(:synchronize) { chef_mutex.synchronize options, &test_block }
 
     TestProbe = Object.new
 
+    let(:options) { Hash.new }
     let(:test_block) { -> { TestProbe.testing } }
 
     before do
@@ -96,6 +107,18 @@ describe MB::ChefMutex do
       it "raises a ResourceLocked error" do
         -> { synchronize }.should raise_error MB::ResourceLocked
       end
+
+      context "and passed force: true" do
+        before do
+          options[:force] = true
+        end
+
+        it "locks with force: true" do
+          chef_mutex.should_receive(:lock).with(force: true).and_return(true)
+
+          synchronize
+        end
+      end
     end
 
     context "on block failure" do
@@ -114,7 +137,9 @@ describe MB::ChefMutex do
       end
 
       context "and passed unlock_on_failure: false" do
-        let(:synchronize) { chef_mutex.synchronize unlock_on_failure: false, &test_block }
+        before do
+          options[:unlock_on_failure] = false
+        end
 
         it "does not release the lock" do
           chef_mutex.should_not_receive :unlock

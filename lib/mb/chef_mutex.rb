@@ -40,10 +40,10 @@ module MotherBrain
     # Attempts to create a lock. Fails if the lock already exists.
     #
     # @return [Boolean]
-    def lock
+    def lock(options = {})
       return true if externally_testing?
 
-      attempt_lock
+      attempt_lock options
     end
 
     # Obtains a lock, runs the block, and releases the lock when the block
@@ -58,7 +58,7 @@ module MotherBrain
       options.reverse_merge! unlock_on_failure: true
 
       begin
-        unless lock
+        unless lock options.slice(:force)
           current_lock = read
 
           raise ResourceLocked,
@@ -82,29 +82,33 @@ module MotherBrain
     # held by someone else
     #
     # @return [Boolean]
-    def unlock
+    def unlock(options = {})
       return true if externally_testing?
 
-      attempt_unlock
+      attempt_unlock options
     end
 
     private
 
       # @return [Boolean]
-      def attempt_lock
-        current_lock = read
+      def attempt_lock(options = {})
+        unless options[:force]
+          current_lock = read
 
-        return current_lock["client_name"] == client_name if current_lock
+          return current_lock["client_name"] == client_name if current_lock
+        end
 
         write
       end
 
       # @return [Boolean]
-      def attempt_unlock
-        current_lock = read
+      def attempt_unlock(options = {})
+        unless options[:force]
+          current_lock = read
 
-        return unless current_lock
-        return unless current_lock["client_name"] == client_name
+          return unless current_lock
+          return unless current_lock["client_name"] == client_name
+        end
 
         delete
       end
