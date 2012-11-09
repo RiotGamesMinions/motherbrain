@@ -125,13 +125,16 @@ module MotherBrain
         # Run this action on the specified nodes.
         #
         # @param [Array<Ridley::Node>] nodes the nodes to run this action on
+        #
+        # @return [Service::Action]
         def run(nodes)
           @nodes = nodes
           runner.instance_eval(&block)
           chef_run(nodes)
+
+          self
         ensure
           runner.reset!
-          return self
         end
 
         # Run chef on the specified nodes.
