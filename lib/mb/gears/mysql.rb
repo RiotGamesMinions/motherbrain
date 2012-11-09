@@ -23,7 +23,7 @@ module MotherBrain
         # @param [String] sql the sql to run
         #
         # @option options [Hash] :data_bag
-        #   specifiy the data bag, item, and location inside the item to find the MySQL credentials
+        #   specify the data bag, item, and location inside the item to find the MySQL credentials
         def initialize(context, sql, options)
           super(context)
 
