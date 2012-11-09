@@ -91,5 +91,6 @@ module MotherBrain
         (Try again in a few moments, or use --force/-f to override)
       MESSAGE
     end
+    alias to_s message
   end
 end
