@@ -115,6 +115,12 @@ module MotherBrain
         data_bag.create name: DATA_BAG unless locks
       end
 
+      # To prevent tests on code that use locks from actually locking anything,
+      # we provide the #externally_testing? method that reflects the status, and
+      # we can stub it to return false if we actually want to test the locking
+      # code.
+      #
+      # @return [Boolean]
       def externally_testing?
         ENV['RUBY_ENV'] == 'test'
       end
