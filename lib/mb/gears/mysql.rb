@@ -62,21 +62,25 @@ module MotherBrain
         # @param [Ridley::Node] node 
         #   the node to to find connection information for
         #
-        # @raise [MB::ArgumentError] if any MySQL credentials are missing
-        #
         # @return [Hash] MySQL connection information for the node
         def connection_info(node)
-          connection_spec = {
-            adapter: adapter,
-            host: node.public_hostname
-          }
+          credentials.merge({adapter: adapter, host: node.public_hostname})
+        end
+
+        # Retrieves the MySQL credentials from the data bag.
+        #
+        # @raise [MB::ArgumentError] if any MySQL credentials are missing
+        #
+        # @return [Hash] MySQL credentials
+        def credentials
+          return @credentials if @credentials
 
           data_bag = context.chef_conn.data_bag.find!(data_bag_spec[:name])
           dbi = data_bag.encrypted_item.find!(data_bag_spec[:item]).attributes
 
-          credentials = Hash[data_bag_keys.map { |key, dbi_key| [key, dbi.dig(dbi_key)] }]
+          @credentials = Hash[data_bag_keys.map { |key, dbi_key| [key, dbi.dig(dbi_key)] }]
 
-          credentials.each do |key, value|
+          @credentials.each do |key, value|
             if value.nil?
               err_msg = "Missing a MySQL credential.  Could not find a #{key} at the location you specified. "
               err_msg << "You specified that the #{key} can be found at '#{data_bag_keys[key]}' "
@@ -86,8 +90,7 @@ module MotherBrain
             end
           end
 
-          connection_spec = credentials.merge(connection_spec)
-          connection_spec
+          @credentials
         end
 
         # @return [#to_s] the adapter to use for MySQL connections
