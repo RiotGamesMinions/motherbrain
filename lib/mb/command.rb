@@ -155,8 +155,6 @@ module MotherBrain
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
       class CleanRoom < CleanRoomBase
-        attr_reader :actions
-
         # @param [MB::Context] context
         # @param [MB::Plugin, MB::Component] real_model
         def initialize(context, real_model)
@@ -180,6 +178,10 @@ module MotherBrain
             real_model.send(Gear.get_fun(klass), *args)
           end
         end
+
+        protected
+
+          attr_reader :actions
       end
     end
   end
