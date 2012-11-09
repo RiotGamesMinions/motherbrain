@@ -86,7 +86,7 @@ module MotherBrain
             end
           end
 
-          connection_spec = connection_spec.merge(credentials)
+          connection_spec = credentials.merge(connection_spec)
           connection_spec
         end
 
