@@ -108,7 +108,7 @@ module MotherBrain
 
         # @return [Hash] where to find the MySQL connection information
         def data_bag_spec
-          @data_bag_spec ||= options[:data_bag].deep_merge(default_data_bag_spec)
+          @data_bag_spec ||= default_data_bag_spec.deep_merge(options[:data_bag])
         end
 
         # @return [Hash] the default specification for where to find MySQL connection information
