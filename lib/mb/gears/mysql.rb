@@ -109,7 +109,7 @@ module MotherBrain
           @data_bag_spec ||= options[:data_bag].deep_merge(default_data_bag_spec)
         end
 
-        # @return [Hash]
+        # @return [Hash] the default specification for where to find MySQL connection information
         def default_data_bag_spec
           {
             item: self.environment,
