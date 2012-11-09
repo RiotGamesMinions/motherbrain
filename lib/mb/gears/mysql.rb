@@ -6,14 +6,24 @@ module MotherBrain
       include MB::Gear
       register_gear :mysql
 
+      # @see [MB::Gear::Mysql::Action]
+      #
+      # @return [MB::Gear::Mysql::Action]
       def action(sql, options)
         Action.new(context, sql, options)
       end
 
       class Action < RealModelBase
+        # @return [String]
         attr_reader :sql
+        # @return [Hash]
         attr_reader :options
 
+        # @param [MB::Context] context
+        # @param [String] sql the sql to run
+        #
+        # @option options [Hash] :data_bag
+        #   specifiy the data bag, item, and location inside the item to find the MySQL credentials
         def initialize(context, sql, options)
           super(context)
 
@@ -23,6 +33,9 @@ module MotherBrain
           validate_options!
         end
 
+        # Ensures valid options were passed to the action.
+        #
+        # @raise [GearError] if the options are invalid
         def validate_options!
           unless options.key? :data_bag
             raise GearError, "You are missing a :data_bag key in your MySQL gear options!"
@@ -33,6 +46,9 @@ module MotherBrain
           end
         end
 
+        # Run this action on the specified nodes
+        #
+        # @param [Array<Ridley::Node>] nodes the nodes to run this action on
         def run(nodes)
           nodes.each do |node|
             ActiveRecord::Base.establish_connection(connection_info(node))
@@ -40,6 +56,13 @@ module MotherBrain
           end
         end
 
+        # The MySQL connection information/credentials for the specified node.
+        #
+        # @param [Ridley::Node] node the node to to find connection information for
+        #
+        # @raise [GearError] if any MySQL credentials are missing
+        #
+        # @return [Hash] MySQL connection information for the node
         def connection_info(node)
           connection_spec = {
             adapter: adapter,
@@ -65,10 +88,12 @@ module MotherBrain
           connection_spec
         end
 
+        # @return [#to_s] the adapter to use for MySQL connections
         def adapter
           MB.jruby? ? "jdbcmysql" : "mysql2"
         end
 
+        # @return [Hash] The keys used to look up MySQL connection information in a data bag item.
         def data_bag_keys
           hash = data_bag_spec[:location][:hash]
 
@@ -79,10 +104,12 @@ module MotherBrain
           end
         end
 
+        # @return [Hash] where to find the MySQL connection information
         def data_bag_spec
           @data_bag_spec ||= options[:data_bag].deep_merge(default_data_bag_spec)
         end
 
+        # @return [Hash]
         def default_data_bag_spec
           {
             item: self.environment,
