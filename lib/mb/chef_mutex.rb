@@ -47,8 +47,16 @@ module MotherBrain
     end
 
     # Obtains a lock, runs the block, and releases the lock when the block
-    # completes.
-    def synchronize(&block)
+    # completes. Raises a ResourceLocked error if the lock was unobtainable.
+    # If the block raises an error, the resource is unlocked, unless
+    # unlock_on_failure: true is passed in to the option hash.
+    #
+    # @param [Hash] options
+    # @param [block] block
+    # @raise [MotherBrain::ResourceLocked] if the lock is unobtainable
+    def synchronize(options = {}, &block)
+      options.reverse_merge! unlock_on_failure: true
+
       begin
         unless lock
           current_lock = read
@@ -59,8 +67,14 @@ module MotherBrain
         end
 
         yield
-      ensure
+
         unlock
+      rescue ResourceLocked
+        raise
+      rescue
+        unlock if options[:unlock_on_failure]
+
+        raise
       end
     end
 

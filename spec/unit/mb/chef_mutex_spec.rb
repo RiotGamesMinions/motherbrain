@@ -52,7 +52,7 @@ describe MB::ChefMutex do
   end
 
   describe "#synchronize" do
-    subject(:synchronize) { chef_mutex.synchronize &test_block }
+    let(:synchronize) { chef_mutex.synchronize &test_block }
 
     TestProbe = Object.new
 
@@ -82,10 +82,46 @@ describe MB::ChefMutex do
       synchronize
     end
 
-    it "raises an error if the lock is unobtainable" do
-      chef_mutex.stub lock: false, read: {}
+    context "when the lock is unobtainable" do
+      before do
+        chef_mutex.stub lock: false, read: {}
+      end
 
-      -> { synchronize }.should raise_error MB::ResourceLocked
+      it "does not attempt to release the lock" do
+        chef_mutex.should_not_receive :unlock
+
+        -> { synchronize }.should raise_error MB::ResourceLocked
+      end
+
+      it "raises a ResourceLocked error" do
+        -> { synchronize }.should raise_error MB::ResourceLocked
+      end
+    end
+
+    context "on block failure" do
+      before do
+        TestProbe.stub(:testing).and_raise(RuntimeError)
+      end
+
+      it "raises the error" do
+        -> { synchronize }.should raise_error RuntimeError
+      end
+
+      it "releases the lock" do
+        chef_mutex.should_receive :unlock
+
+        -> { synchronize }.should raise_error RuntimeError
+      end
+
+      context "and passed unlock_on_failure: false" do
+        let(:synchronize) { chef_mutex.synchronize unlock_on_failure: false, &test_block }
+
+        it "does not release the lock" do
+          chef_mutex.should_not_receive :unlock
+
+          -> { synchronize }.should raise_error RuntimeError
+        end
+      end
     end
   end
 
