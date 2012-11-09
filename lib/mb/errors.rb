@@ -75,22 +75,5 @@ module MotherBrain
   class ConfigExists < MBError; status_code(15); end
   class ChefConnectionError < MBError; status_code(16); end
   class InvalidBootstrapManifest < MBError; status_code(17); end
-
-  class ResourceLocked < MBError
-    status_code 18
-
-    attr_reader :lock
-
-    def initialize(lock)
-      @lock = lock
-    end
-
-    def message
-      <<-MESSAGE.gsub /^\s+/, ''
-        Resource "#{lock['id']}" locked by #{lock['client_name']} since #{lock['time']}
-        (Try again in a few moments, or use --force/-f to override)
-      MESSAGE
-    end
-    alias to_s message
-  end
+  class ResourceLocked < MBError; status_code(18); end
 end

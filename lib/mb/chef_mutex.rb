@@ -50,7 +50,14 @@ module MotherBrain
     # completes.
     def synchronize(&block)
       begin
-        raise ResourceLocked.new(read) unless lock
+        unless lock
+          current_lock = read
+
+          raise ResourceLocked,
+            "Resource '#{current_lock['id']} locked by #{current_lock['client_name']} since #{current_lock['time']}\n" +
+            "(Try again in a few moments, or use --force/-f to override)"
+        end
+
         yield
       ensure
         unlock
