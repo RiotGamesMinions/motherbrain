@@ -20,7 +20,8 @@ module MotherBrain
         attr_reader :options
 
         # @param [MB::Context] context
-        # @param [String] sql the sql to run
+        # @param [String] sql 
+        #   the sql to run
         #
         # @option options [Hash] :data_bag
         #   specify the data bag, item, and location inside the item to find the MySQL credentials
@@ -58,7 +59,8 @@ module MotherBrain
 
         # The MySQL connection information/credentials for the specified node.
         #
-        # @param [Ridley::Node] node the node to to find connection information for
+        # @param [Ridley::Node] node 
+        #   the node to to find connection information for
         #
         # @raise [MB::ArgumentError] if any MySQL credentials are missing
         #
