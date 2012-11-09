@@ -9,9 +9,7 @@ module MotherBrain
       end
     end
 
-    def to_s
-      message
-    end
+    alias_method :message, :to_s
   end
 
   class InternalError < MBError; status_code(99); end
