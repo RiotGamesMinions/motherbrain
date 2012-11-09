@@ -1,4 +1,4 @@
-if MB.jruby?
+if jruby?
   begin
     require 'jmx4r'
   rescue LoadError
@@ -32,7 +32,7 @@ module MotherBrain
         def initialize(context, port, object_name, &block)
           super(context)
 
-          unless MB.jruby?
+          unless jruby?
             raise ActionNotSupported, "The jmx action is only supported on JRuby"
           end
 

@@ -92,7 +92,7 @@ module MotherBrain
 
         # @return [#to_s] the adapter to use for MySQL connections
         def adapter
-          MB.jruby? ? "jdbcmysql" : "mysql2"
+          jruby? ? "jdbcmysql" : "mysql2"
         end
 
         # @return [Hash] The keys used to look up MySQL connection information in a data bag item.

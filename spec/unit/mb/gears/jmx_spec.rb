@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-if MB.jruby?
+if jruby?
   describe MB::Gear::Jmx do
 
     describe "Class" do
@@ -56,7 +56,7 @@ if MB.jruby?
       end
 
       it "should complain if not on jruby" do
-        MB.stub(:jruby?).and_return(false)
+        subject.any_instance.stub(:jruby?).and_return(false)
 
         lambda do 
           obj = subject.new(@context, port, object_name) do |mbean|

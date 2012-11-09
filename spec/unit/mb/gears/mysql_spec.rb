@@ -87,7 +87,7 @@ describe MB::Gear::Mysql::Action do
       it "should have the correct adapter" do
         connection_info = subject.connection_info(node)
 
-        if MB.jruby?
+        if jruby?
           connection_info[:adapter].should == "jdbcmysql"
         else
           connection_info[:adapter].should == "mysql2"
