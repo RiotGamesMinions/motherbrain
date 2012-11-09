@@ -54,26 +54,53 @@ describe MB::Gear::Mysql::Action do
 
   describe "#connection_info" do
     let(:node) { double("node", public_hostname: "some.node.com") }
+    let(:data_bag_item) { double("data_bag_item") }
+    subject { described_class.new(@context, sql, base_options) }
 
     before(:each) do
-      subject.any_instance.stub(:environment).and_return("test_env")
+      subject.stub(:environment).and_return("test_env")
+      Ridley::DataBag.stub_chain(:find!, :encrypted_item, :find!).and_return(data_bag_item)
     end
 
-    it "should have a host" do
-      obj = subject.new(@context, sql, base_options)
+    context "the data bag is empty" do
+      before(:each) do
+        data_bag_item.stub(:attributes).and_return({})
+      end
 
-      connection_info = obj.connection_info(node)
-      connection_info[:host].should == "some.node.com"
+      it "should raise a GearError" do
+        lambda { subject.connection_info(node) }.should raise_error(MB::GearError)
+      end
     end
 
-    it "should have the correct adapter" do
-      obj = subject.new(@context, sql, base_options)
+    context "the data bag is not empty" do
+      before(:each) do
+        data_bag_hash = {username: "user", password: "pass", database: "db", port: 3306}
+        data_bag_item.stub(:attributes).and_return(data_bag_hash)
+      end
 
-      connection_info = obj.connection_info(node)
-      if MB.jruby?
-        connection_info[:adapter].should == "jdbcmysql"
-      else
-        connection_info[:adapter].should == "mysql2"
+      it "should have a host" do
+        connection_info = subject.connection_info(node)
+
+        connection_info[:host].should == "some.node.com"
+      end
+
+      it "should have the correct adapter" do
+        connection_info = subject.connection_info(node)
+
+        if MB.jruby?
+          connection_info[:adapter].should == "jdbcmysql"
+        else
+          connection_info[:adapter].should == "mysql2"
+        end
+      end
+
+      it "should retrieve the credentials from the data bag" do
+        connection_info = subject.connection_info(node)
+
+        connection_info[:username].should == "user"
+        connection_info[:password].should == "pass"
+        connection_info[:database].should == "db"
+        connection_info[:port].should == 3306
       end
     end
   end
