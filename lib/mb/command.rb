@@ -1,7 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Command < RealModelBase
-    attr_reader :context, :name
+    attr_reader :name
 
     attribute :description,
       type: String,
@@ -16,7 +16,6 @@ module MotherBrain
     # @param [MB::Plugin, MB::Component] scope
     def initialize(name, context, scope, &block)
       super(context)
-      @context = context
       @name  = name.to_s
       @scope = scope
 
