@@ -7,7 +7,7 @@ PATH
       chozo (>= 0.2.2)
       mysql2
       nexus_cli (~> 0.3.0)
-      ridley (>= 0.4.1)
+      ridley (>= 0.5.1)
       rye
       solve (>= 0.3.1)
       thor (>= 0.16.0)
