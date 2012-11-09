@@ -35,14 +35,14 @@ module MotherBrain
 
         # Ensures valid options were passed to the action.
         #
-        # @raise [GearError] if the options are invalid
+        # @raise [MB::ArgumentError] if the options are invalid
         def validate_options!
           unless options.key? :data_bag
-            raise GearError, "You are missing a :data_bag key in your MySQL gear options!"
+            raise ArgumentError, "You are missing a :data_bag key in your MySQL gear options!"
           end
 
           unless options[:data_bag].key? :name
-            raise GearError, "You are missing a :name key in your MySQL gear data bag options!"
+            raise ArgumentError, "You are missing a :name key in your MySQL gear data bag options!"
           end
         end
 
@@ -60,7 +60,7 @@ module MotherBrain
         #
         # @param [Ridley::Node] node the node to to find connection information for
         #
-        # @raise [GearError] if any MySQL credentials are missing
+        # @raise [MB::ArgumentError] if any MySQL credentials are missing
         #
         # @return [Hash] MySQL connection information for the node
         def connection_info(node)

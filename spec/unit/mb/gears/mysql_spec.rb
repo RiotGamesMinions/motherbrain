@@ -40,15 +40,15 @@ describe MB::Gear::Mysql::Action do
   describe "options" do
     it "should describe a data bag" do
       options = {}
-      lambda { subject.new(@context, sql, options) }.should raise_error(MB::GearError)
+      lambda { subject.new(@context, sql, options) }.should raise_error(MB::ArgumentError)
     end
 
     it "should have a data bag name" do
       options = {data_bag: {}}
-      lambda { subject.new(@context, sql, options) }.should raise_error(MB::GearError)
+      lambda { subject.new(@context, sql, options) }.should raise_error(MB::ArgumentError)
 
       options = {data_bag: {name: "creds"}}
-      lambda { subject.new(@context, sql, options) }.should_not raise_error(MB::GearError)
+      lambda { subject.new(@context, sql, options) }.should_not raise_error(MB::ArgumentError)
     end
   end
 
