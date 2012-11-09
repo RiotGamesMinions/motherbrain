@@ -54,9 +54,15 @@ describe MB::ChefMutex do
   describe "#synchronize" do
     subject(:synchronize) { chef_mutex.synchronize &test_block }
 
-    TestProbe = Struct.new :testing
+    TestProbe = Object.new
 
     let(:test_block) { -> { TestProbe.testing } }
+
+    before do
+      chef_mutex.stub lock: true, unlock: true
+
+      TestProbe.stub :testing
+    end
 
     it "runs the block" do
       TestProbe.should_receive :testing
@@ -64,8 +70,20 @@ describe MB::ChefMutex do
       synchronize
     end
 
+    it "obtains a lock" do
+      chef_mutex.should_receive :lock
+
+      synchronize
+    end
+
+    it "releases the lock" do
+      chef_mutex.should_receive :unlock
+
+      synchronize
+    end
+
     it "raises an error if the lock is unobtainable" do
-      chef_mutex.stub lock: false
+      chef_mutex.stub lock: false, read: {}
 
       -> { synchronize }.should raise_error MB::ResourceLocked
     end
@@ -195,6 +213,7 @@ describe MB::ChefMutex do
     subject(:write) { chef_mutex.send :write }
 
     before do
+      locks_stub.stub new: stub(save: nil, to_hash: nil)
     end
 
     it "ensures that the data bag exists" do
