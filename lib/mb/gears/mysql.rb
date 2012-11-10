@@ -19,6 +19,22 @@ module MotherBrain
         # @return [Hash]
         attr_reader :options
 
+        class << self
+          # @param [Hash] options
+          #   the options to validate
+          #
+          # @raise [MB::ArgumentError] if the options are invalid
+          def validate_options(options)
+            unless options.key? :data_bag
+              raise ArgumentError, "You are missing a :data_bag key in your MySQL gear options!"
+            end
+
+            unless options[:data_bag].key? :name
+              raise ArgumentError, "You are missing a :name key in your MySQL gear data bag options!"
+            end
+          end
+        end
+
         # @param [MB::Context] context
         # @param [String] sql 
         #   the sql to run
@@ -28,23 +44,10 @@ module MotherBrain
         def initialize(context, sql, options)
           super(context)
 
+          self.class.validate_options(options)
+
           @sql = sql
           @options = options
-
-          validate_options!
-        end
-
-        # Ensures valid options were passed to the action.
-        #
-        # @raise [MB::ArgumentError] if the options are invalid
-        def validate_options!
-          unless options.key? :data_bag
-            raise ArgumentError, "You are missing a :data_bag key in your MySQL gear options!"
-          end
-
-          unless options[:data_bag].key? :name
-            raise ArgumentError, "You are missing a :name key in your MySQL gear data bag options!"
-          end
         end
 
         # Run this action on the specified nodes
