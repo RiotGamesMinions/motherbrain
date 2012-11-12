@@ -39,6 +39,9 @@ module MotherBrain
 
     # Attempts to create a lock. Fails if the lock already exists.
     #
+    # @param [Hash] options
+    # @option options [Boolean] :force
+    #   Force the lock to be written, even if it already exists.
     # @return [Boolean]
     def lock(options = {})
       return true if externally_testing?
@@ -52,6 +55,11 @@ module MotherBrain
     # unlock_on_failure: true is passed in to the option hash.
     #
     # @param [Hash] options
+    # @option options [Boolean] :force
+    #   Force the lock to be written, even if it already exists.
+    # @option options [Boolean] :unlock_on_failure
+    #   Defaults to true. If false and the block raises an error, the lock will
+    #   persist.
     # @param [block] block
     # @raise [MotherBrain::ResourceLocked] if the lock is unobtainable
     def synchronize(options = {}, &block)
@@ -81,6 +89,9 @@ module MotherBrain
     # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
     # held by someone else
     #
+    # @param [Hash] options
+    # @option options [Boolean] :force
+    #   Force the lock to be deleted, even if it's owned by someone else.
     # @return [Boolean]
     def unlock(options = {})
       return true if externally_testing?
@@ -90,6 +101,9 @@ module MotherBrain
 
     private
 
+      # @param [Hash] options
+      # @option options [Boolean] :force
+      #   Force the lock to be written, even if it already exists.
       # @return [Boolean]
       def attempt_lock(options = {})
         unless options[:force]
@@ -101,6 +115,9 @@ module MotherBrain
         write
       end
 
+      # @param [Hash] options
+      # @option options [Boolean] :force
+      #   Force the lock to be deleted, even if it's owned by someone else.
       # @return [Boolean]
       def attempt_unlock(options = {})
         unless options[:force]
