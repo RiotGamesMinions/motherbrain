@@ -2,7 +2,14 @@ source :rubygems
 
 gemspec
 
-gem 'jmx4r', platforms: :jruby
+platforms :ruby do
+  gem 'yajl-ruby'
+end
+
+platforms :jruby do
+  gem 'jmx4r'
+  gem 'json-jruby'
+end
 
 group :development do
   gem 'cucumber'

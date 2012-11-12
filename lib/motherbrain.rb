@@ -14,9 +14,9 @@ require 'set'
 require 'ostruct'
 
 if jruby?
-  require 'json/pure'
+  require 'json'
 else
-  require 'json/ext'
+  require 'yajl'
 end
 
 require 'mb/version'
