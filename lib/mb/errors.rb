@@ -75,4 +75,5 @@ module MotherBrain
   class ConfigExists < MBError; status_code(15); end
   class ChefConnectionError < MBError; status_code(16); end
   class InvalidBootstrapManifest < MBError; status_code(17); end
+  class ResourceLocked < MBError; status_code(18); end
 end
