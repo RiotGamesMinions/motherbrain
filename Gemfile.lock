@@ -150,6 +150,7 @@ GEM
     sysinfo (0.8.0)
       drydock
       storable
+    terminal-notifier-guard (1.5.3)
     thor (0.16.0)
     timers (1.0.1)
     webmock (1.9.0)
@@ -183,6 +184,7 @@ DEPENDENCIES
   redcarpet
   rspec
   spork
+  terminal-notifier-guard (~> 1.5.3)
   webmock
   yajl-ruby
   yard
