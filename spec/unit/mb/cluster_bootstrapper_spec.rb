@@ -175,8 +175,8 @@ describe MB::ClusterBootstrapper do
     {
       server_url: "https://api.opscode.com/organizations/vialstudios",
       ssh_user: "reset",
-      ssh_keys: "/Users/reset/.ssh/id_rsa",
-      validator_path: "/Users/reset/.chef/riot-validator.pem"
+      ssh_keys: fixtures_path.join("fake_id_rsa").to_s,
+      validator_path: fixtures_path.join("fake_key.pem").to_s
     }
   end
 
