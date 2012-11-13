@@ -137,8 +137,6 @@ module MotherBrain
         options[:max_concurrent] ||= nodes.count
         node_groups = nodes.each_slice(options[:max_concurrent]).to_a
 
-        MB.log.warn actions.first.run(nodes)
-
         @on_procs << lambda do
           node_groups.each do |nodes|
             actions.each do |action|
