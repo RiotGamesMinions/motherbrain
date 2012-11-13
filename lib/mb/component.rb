@@ -147,7 +147,11 @@ module MotherBrain
     #
     # @return [MB::Gear]
     def get_gear(klass, *args)
-      klass.find(gears(klass), *args)
+      if klass.respond_to? :find
+        klass.find(gears(klass), *args)
+      else
+        klass.new(context, *args)
+      end
     end
 
     Gear.all.each do |klass|

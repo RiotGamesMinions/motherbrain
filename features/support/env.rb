@@ -27,7 +27,7 @@ def setup_env
   end
 end
 
-if MB.jruby?
+if jruby?
   setup_env
 else
   require 'spork'

@@ -37,6 +37,8 @@ module MotherBrain
 
   class ActionNotSupported < MBError; status_code(103); end
 
+  class GearError < MBError; status_code(104); end
+
   class ChefRunFailure < MBError
     status_code(103)
 

@@ -4,11 +4,14 @@ gemspec
 
 platforms :ruby do
   gem 'yajl-ruby'
+  gem 'mysql2'
+  gem 'yajl-ruby'
 end
 
 platforms :jruby do
   gem 'jmx4r'
   gem 'json-jruby'
+  gem 'jdbc-mysql'
 end
 
 group :development do

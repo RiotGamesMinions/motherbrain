@@ -76,6 +76,7 @@ module MotherBrain
         ridley_opts[:server_url] = self.chef_api_url
         ridley_opts[:client_name] = self.chef_api_client
         ridley_opts[:client_key] = self.chef_api_key
+        ridley_opts[:encrypted_data_bag_secret_path] = self.chef_encrypted_data_bag_secret_path
 
         unless self.chef_organization.nil?
           ridley_opts[:organization] = self.chef_organization
