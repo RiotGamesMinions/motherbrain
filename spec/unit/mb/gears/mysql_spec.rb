@@ -84,16 +84,6 @@ describe MB::Gear::Mysql::Action do
         connection_info[:host].should == "some.node.com"
       end
 
-      it "should have the correct adapter" do
-        connection_info = subject.connection_info(node)
-
-        if jruby?
-          connection_info[:adapter].should == "jdbcmysql"
-        else
-          connection_info[:adapter].should == "mysql2"
-        end
-      end
-
       it "should retrieve the credentials from the data bag" do
         connection_info = subject.connection_info(node)
 

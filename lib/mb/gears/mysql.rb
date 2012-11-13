@@ -1,4 +1,9 @@
-require 'active_record'
+if jruby?
+  require 'jdbc/mysql'
+  require 'java'
+else
+  require 'mysql2'
+end
 
 module MotherBrain
   module Gear
@@ -54,10 +59,15 @@ module MotherBrain
         #
         # @param [Array<Ridley::Node>] nodes the nodes to run this action on
         def run(nodes)
-          nodes.each do |node|
-            ActiveRecord::Base.establish_connection(connection_info(node))
-            ActiveRecord::Base.connection.execute(sql)
+          threads = []
+
+          nodes.each do |node| 
+            threads << Thread.new(node) do |node|
+              query(sql, node)
+            end
           end
+
+          threads.each(&:join)
         end
 
         # The MySQL connection information/credentials for the specified node.
@@ -67,38 +77,7 @@ module MotherBrain
         #
         # @return [Hash] MySQL connection information for the node
         def connection_info(node)
-          credentials.merge({adapter: adapter, host: node.public_hostname})
-        end
-
-        # Retrieves the MySQL credentials from the data bag.
-        #
-        # @raise [MB::ArgumentError] if any MySQL credentials are missing
-        #
-        # @return [Hash] MySQL credentials
-        def credentials
-          return @credentials if @credentials
-
-          data_bag = context.chef_conn.data_bag.find!(data_bag_spec[:name])
-          dbi = data_bag.encrypted_item.find!(data_bag_spec[:item]).attributes
-
-          @credentials = Hash[data_bag_keys.map { |key, dbi_key| [key, dbi.dig(dbi_key)] }]
-
-          @credentials.each do |key, value|
-            if value.nil?
-              err_msg = "Missing a MySQL credential.  Could not find a #{key} at the location you specified. "
-              err_msg << "You specified that the #{key} can be found at '#{data_bag_keys[key]}' "
-              err_msg << "in the '#{data_bag_spec[:item]}' data bag item inside the '#{data_bag_spec[:name]}' "
-              err_msg << "data bag."
-              raise GearError, err_msg
-            end
-          end
-
-          @credentials
-        end
-
-        # @return [#to_s] the adapter to use for MySQL connections
-        def adapter
-          jruby? ? "jdbcmysql" : "mysql2"
+          credentials.merge({host: node.public_hostname})
         end
 
         # @return [Hash] The keys used to look up MySQL connection information in a data bag item.
@@ -112,25 +91,87 @@ module MotherBrain
           end
         end
 
-        # @return [Hash] where to find the MySQL connection information
-        def data_bag_spec
-          @data_bag_spec ||= default_data_bag_spec.deep_merge(options[:data_bag])
-        end
+        private
+          # Runs a sql query on a node.
+          #
+          # @param [String] sql
+          #   the sql query
+          # @param [Ridley::Node] node
+          #   the node to run the query on
+          def query(sql, node)
+            jruby? ? jdbc_query(sql, node) : mysql2_query(sql, node)
+          end
 
-        # @return [Hash] the default specification for where to find MySQL connection information
-        def default_data_bag_spec
-          {
-            item: self.environment,
-            location: {
-              keys: {
-                username: "username",
-                password: "password",
-                database: "database",
-                port: "port"
+          # Runs a sql query on a node using jdbc.
+          #
+          # @param [String] sql
+          #   the sql query
+          # @param [Ridley::Node] node
+          #   the node to run the query on
+          def jdbc_query(sql, node)
+            info = connection_info(node)
+            Java::com.mysql.jdbc.Driver
+            connection_url = "jdbc:mysql://#{info[:host]}:#{info[:port]}/#{info[:database]}"
+            connection = java.sql.DriverManager.get_connection(connection_url, info[:username], info[:password])
+            connection.create_statement.execute(sql)
+          end
+
+          # Runs a sql query on a node using mysql2.
+          #
+          # @param [String] sql
+          #   the sql query
+          # @param [Ridley::Node] node
+          #   the node to run the query on
+          def mysql2_query(sql, node)
+            connection = Mysql2::Client.new(connection_info(node))
+            connection.query(sql)
+          end
+
+          # Retrieves the MySQL credentials from the data bag.
+          #
+          # @raise [MB::ArgumentError] if any MySQL credentials are missing
+          #
+          # @return [Hash] MySQL credentials
+          def credentials
+            return @credentials if @credentials
+
+            data_bag = context.chef_conn.data_bag.find!(data_bag_spec[:name])
+            dbi = data_bag.encrypted_item.find!(data_bag_spec[:item]).attributes
+
+            @credentials = Hash[data_bag_keys.map { |key, dbi_key| [key, dbi.dig(dbi_key)] }]
+
+            @credentials.each do |key, value|
+              if value.nil?
+                err_msg = "Missing a MySQL credential.  Could not find a #{key} at the location you specified. "
+                err_msg << "You specified that the #{key} can be found at '#{data_bag_keys[key]}' "
+                err_msg << "in the '#{data_bag_spec[:item]}' data bag item inside the '#{data_bag_spec[:name]}' "
+                err_msg << "data bag."
+                raise GearError, err_msg
+              end
+            end
+
+            @credentials
+          end
+
+          # @return [Hash] where to find the MySQL connection information
+          def data_bag_spec
+            @data_bag_spec ||= default_data_bag_spec.deep_merge(options[:data_bag])
+          end
+
+          # @return [Hash] the default specification for where to find MySQL connection information
+          def default_data_bag_spec
+            {
+              item: self.environment,
+              location: {
+                keys: {
+                  username: "username",
+                  password: "password",
+                  database: "database",
+                  port: "port"
+                }
               }
             }
-          }
-        end
+          end
       end
     end
   end

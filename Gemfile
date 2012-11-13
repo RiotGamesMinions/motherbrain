@@ -11,6 +11,7 @@ end
 platforms :jruby do
   gem 'jmx4r'
   gem 'json-jruby'
+  gem 'jdbc-mysql'
 end
 
 group :development do
