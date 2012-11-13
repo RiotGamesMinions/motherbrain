@@ -38,7 +38,7 @@ def setup_rspec
   end
 end
 
-if MB.jruby?
+if jruby?
   setup_rspec
 else
   require 'spork'

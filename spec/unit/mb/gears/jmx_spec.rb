@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-if MB.jruby?
+if jruby?
   describe MB::Gear::Jmx do
 
     describe "Class" do
@@ -16,7 +16,7 @@ if MB.jruby?
     end
 
     describe "#action" do
-      subject { MB::Gear::Jmx.new }
+      subject { MB::Gear::Jmx.new(@context) }
 
       it "returns a Gear::Jmx::Action" do
         subject.action(9001, "com.some.thing:name=thing") do |mbean|
@@ -33,7 +33,7 @@ if MB.jruby?
       let(:object_name) { "com.some.thing:name=thing" }
 
       it "should set its attributes" do
-        obj = subject.new(port, object_name) do |mbean|
+        obj = subject.new(@context, port, object_name) do |mbean|
           mbean.do_a_thing
         end
 
@@ -44,22 +44,22 @@ if MB.jruby?
 
       it "should be given a block" do
         lambda do 
-          obj = subject.new(port, object_name)
+          obj = subject.new(@context, port, object_name)
         end.should raise_error(MB::ArgumentError)
       end
 
       it "should be given a block with 1 argument" do
         lambda do 
-          obj = subject.new(port, object_name) do
+          obj = subject.new(@context, port, object_name) do
           end
         end.should raise_error(MB::ArgumentError)
       end
 
       it "should complain if not on jruby" do
-        MB.stub(:jruby?).and_return(false)
+        subject.any_instance.stub(:jruby?).and_return(false)
 
         lambda do 
-          obj = subject.new(port, object_name) do |mbean|
+          obj = subject.new(@context, port, object_name) do |mbean|
           end
         end.should raise_error(MB::ActionNotSupported)
       end

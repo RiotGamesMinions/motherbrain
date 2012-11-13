@@ -7,7 +7,7 @@ describe MB::InvokerBase do
     describe "default configuration path" do
       context "when the value of ENV['MB_CONFIG'] specifies a config file that exists" do
         before(:each) do
-          set_mb_config_path(mb_config_path.join('config.json'))
+          set_mb_config_path(mb_config_path)
           generate_valid_config(ENV['MB_CONFIG'])
         end
 

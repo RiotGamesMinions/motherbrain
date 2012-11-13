@@ -71,10 +71,6 @@ module MotherBrain
     def set_logger(obj)
       MB::Logging.set_logger(obj)
     end
-
-    def jruby?
-      RUBY_ENGINE == 'jruby'
-    end
   end
 end
 
