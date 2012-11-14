@@ -225,6 +225,12 @@ module MotherBrain
       def cluster_bootstrap(&block)
         real_model.bootstrapper = ClusterBootstrapper.new(context, real_model, &block)
       end
+
+      private
+
+        def method_missing(method, *args, &block)
+          raise ValidationFailed, "(#{real_model.name} #{real_model.version}) Invalid plugin command '#{method}'"
+        end
     end
   end
 end
