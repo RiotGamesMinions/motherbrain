@@ -45,6 +45,8 @@ module MotherBrain
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
+  autoload :Provisioner, 'mb/provisioner'
+  autoload :Provisioners, 'mb/provisioners'
   autoload :RealModelBase, 'mb/real_model_base'
 
   class << self
