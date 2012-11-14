@@ -100,6 +100,21 @@ module MotherBrain
               MB.ui.say "Bootstrap finished"
             end
           end
+
+          desc("provision ENVIRONMENT MANIFEST", "Provision a cluster of nodes with the given manifest")
+          define_method(:provision) do |environment, manifest_file|
+            manifest_file = File.expand_path(manifest_file)
+
+            unless File.exist?(manifest_file)
+              raise InvalidProvisionManifest, "No provision manifest found at: #{manifest_file}"
+            end
+
+            assert_environment_exists(environment)
+
+            MB.ui.say "Starting provision of nodes in environment: #{environment}"
+            MB.provision(environment, manifest_file, options)
+            MB.ui.say "Provision finished"
+          end
         end
 
         klass

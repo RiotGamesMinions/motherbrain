@@ -78,4 +78,5 @@ module MotherBrain
   class ChefConnectionError < MBError; status_code(16); end
   class InvalidBootstrapManifest < MBError; status_code(17); end
   class ResourceLocked < MBError; status_code(18); end
+  class InvalidProvisionManifest < MBError; status_code(19); end
 end

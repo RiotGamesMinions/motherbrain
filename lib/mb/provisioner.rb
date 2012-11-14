@@ -1,4 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  module Provisioner; end
+  module Provisioner
+    autoload :Manifest, 'mb/provisioner/manifest'
+  end
 end

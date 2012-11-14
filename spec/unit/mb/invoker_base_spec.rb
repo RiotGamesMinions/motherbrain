@@ -35,7 +35,7 @@ describe MB::InvokerBase do
 
     describe "specifying a configuration file" do
       before(:each) do
-        set_mb_config_path(mb_config_path.join('config.json'))
+        set_mb_config_path(mb_config_path)
         generate_valid_config(ENV['MB_CONFIG'])
       end
 
@@ -60,7 +60,7 @@ describe MB::InvokerBase do
   end
 
   before(:each) do
-    set_mb_config_path(mb_config_path.join('config.json'))
+    set_mb_config_path(mb_config_path)
     generate_valid_config(ENV['MB_CONFIG'])
   end
 
