@@ -101,18 +101,38 @@ module MotherBrain
             end
           end
 
+          method_option :api_url,
+            type: :string,
+            desc: "URL to the Environment Factory API endpoint",
+            required: true
+          method_option :api_key,
+            type: :string,
+            desc: "API authentication key for the Environment Factory",
+            required: true
+          method_option :ssl_verify,
+            type: :boolean,
+            desc: "Should we verify SSL connections?",
+            default: false
           desc("provision ENVIRONMENT MANIFEST", "Provision a cluster of nodes with the given manifest")
           define_method(:provision) do |environment, manifest_file|
             manifest_file = File.expand_path(manifest_file)
-
             unless File.exist?(manifest_file)
               raise InvalidProvisionManifest, "No provision manifest found at: #{manifest_file}"
             end
 
             assert_environment_exists(environment)
 
+            manifest = Provisioner::Manifest.from_file(manifest_file)
+            provisioner_options = {
+              api_url: options[:api_url],
+              api_key: options[:api_key],
+              ssl: {
+                verify: options[:ssl_verify]
+              }
+            }
+
             MB.ui.say "Starting provision of nodes in environment: #{environment}"
-            MB.provision(environment, manifest_file, options)
+            MB::Application.provisioner.provision(environment, manifest, provisioner_options)
             MB.ui.say "Provision finished"
           end
         end

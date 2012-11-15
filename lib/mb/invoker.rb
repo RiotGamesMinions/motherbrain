@@ -12,6 +12,7 @@ module MotherBrain
           setup(configure(opts))
         end
         
+        MB::Application.run!
         super
       end
 

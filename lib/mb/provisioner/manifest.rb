@@ -2,11 +2,21 @@ module MotherBrain
   module Provisioner
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Manifest
+      class << self
+        def from_file(path)
+          path = File.expand_path(path)
+          data = File.read(path)
+          new(path).from_json(data)
+        end
+      end
+
       attr_reader :path
+      attr_reader :attributes
 
       # @param [#to_s] path
       def initialize(path = nil)
         @path = path.to_s
+        @attributes = Hash.new
       end
 
       def save
@@ -19,6 +29,11 @@ module MotherBrain
           f.write(self.to_json(pretty: true))
         end
 
+        self
+      end
+
+      def from_json(json, options = {})
+        @attributes = MultiJson.decode(json, options)
         self
       end
     end
