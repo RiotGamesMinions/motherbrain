@@ -63,5 +63,9 @@ module MotherBrain
         EOH
       end
     end
+
+    def klass
+      described_class
+    end
   end
 end
