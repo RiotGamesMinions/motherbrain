@@ -37,6 +37,18 @@ describe MB::Plugin do
           -> { plugin }.should raise_error(MB::PluginLoadError)
         end
       end
+
+      context "with an unknown command" do
+        let(:data) {
+          proc {
+            wat do
+              huh
+            end
+          }
+        }
+
+        it { -> { plugin }.should raise_error MB::PluginLoadError }
+      end
     end
 
     describe "::from_file" do

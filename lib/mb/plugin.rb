@@ -229,7 +229,16 @@ module MotherBrain
       private
 
         def method_missing(method, *args, &block)
-          raise ValidationFailed, "(#{real_model.name} #{real_model.version}) Invalid plugin command '#{method}'"
+          error_message = ErrorHandler.new(ValidationFailed,
+            caller_array: caller,
+            method_name: method,
+            name: real_model.name,
+            path: nil, # TODO
+            text: "Invalid plugin command '#{method}'",
+            version: real_model.version
+          ).message
+
+          raise ValidationFailed, error_message
         end
     end
   end
