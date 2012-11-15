@@ -41,7 +41,7 @@ module MotherBrain
       #
       # @return [Class, nil]
       def get(id)
-        all.find { |klass| klass.provisioner_id == id }
+        all.find { |klass| klass.provisioner_id == id.to_sym }
       end
 
       # Return the default provisioner if one has been registered as the default

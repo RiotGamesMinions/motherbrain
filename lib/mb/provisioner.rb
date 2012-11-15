@@ -7,6 +7,7 @@ module MotherBrain
     class << self
       def included(base)
         base.extend(ClassMethods)
+        base.send(:include, Celluloid)
       end
     end
 
@@ -18,9 +19,13 @@ module MotherBrain
 
       # @param [#to_sym] provisioner_id
       def register_provisioner(provisioner_id, options = {})
-        @provisioner_id = provisioner_id
+        @provisioner_id = provisioner_id.to_sym
         Provisioners.register(self, options)
       end
+    end
+
+    def run(environment, manifest)
+      raise AbstractFunction
     end
   end
 end

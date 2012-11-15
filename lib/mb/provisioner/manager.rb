@@ -4,8 +4,21 @@ module MotherBrain
     class Manager
       include Celluloid
 
-      def provision(nodes, options = {})
-        options[:with] ||= Provisioners.default
+      # @param [String] environment
+      # @param [Hash] manifest
+      # @option options [#to_sym] :with
+      #   id of provisioner to use
+      #
+      # @return [Celluloid::Future]
+      def provision(environment, manifest, options = {})
+        provisioner_klass = unless options[:with].nil?
+          Provisioners.get(options[:with])
+        else
+          Provisioners.default
+        end
+
+        provisioner = provisioner_klass.new_link(options)
+        provisioner.future(:run, environment, manifest)
       end
     end
   end
