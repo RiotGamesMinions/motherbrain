@@ -4,7 +4,7 @@ module MotherBrain
     class EnvironmentFactory
       include Provisioner
 
-      register_provisioner Provisioners::DEFAULT_PROVISIONER_ID
+      register_provisioner :environment_factory, default: true
     end
   end
 end

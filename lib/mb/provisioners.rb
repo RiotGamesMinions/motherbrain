@@ -4,20 +4,52 @@ module MotherBrain
     DEFAULT_PROVISIONER_ID = :environment_factory
     
     class << self
-      def register(klass)
+      attr_reader :default_id
+
+      # @param [Class] klass
+      # @option options [Boolean] :default
+      #
+      # @raise [ProvisionerRegistrationError] if a provisioner is registered as the default provisioner when
+      #   a default provisioner already exists
+      #
+      # @return [Set]
+      def register(klass, options = {})
         validate_provisioner_class(klass)
+
+        unless get(klass.provisioner_id).nil?
+          raise ProvisionerRegistrationError, "A provisioner with the id '#{klass.provisioner_id}' has already been registered"
+        end
+
+        if options[:default]
+          unless default.nil?
+            raise ProvisionerRegistrationError, "A default provisioner has already been defined (#{default_id})"
+          end
+
+          @default_id = klass.provisioner_id
+        end
 
         all.add(klass)
       end
 
-      def default
-        get(DEFAULT_PROVISIONER_ID)
-      end
-
+      # List of all the registered provisioners
       # @return [Set]
       def all
         @all ||= Set.new
       end
+
+      # Get registered provisioner class from the given ID
+      #
+      # @return [Class, nil]
+      def get(id)
+        all.find { |klass| klass.provisioner_id == id }
+      end
+
+      # Return the default provisioner if one has been registered as the default
+      #
+      # @return [Class, nil]
+      def default
+        self.default_id ? get(self.default_id) : nil
+      end      
 
       # Clears all of the registered Provisioners.
       #

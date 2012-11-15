@@ -17,9 +17,9 @@ module MotherBrain
       attr_reader :provisioner_id
 
       # @param [#to_sym] provisioner_id
-      def register_provisioner(provisioner_id)
+      def register_provisioner(provisioner_id, options = {})
         @provisioner_id = provisioner_id
-        Provisioners.register(self)
+        Provisioners.register(self, options)
       end
     end
   end
