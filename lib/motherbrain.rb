@@ -36,6 +36,7 @@ module MotherBrain
   autoload :Context, 'mb/context'
   autoload :ContextualModel, 'mb/contextual_model'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
+  autoload :ErrorHandler, 'mb/error_handler'
   autoload :Gear, 'mb/gear'
   autoload :Group, 'mb/group'
   autoload :InvokerBase, 'mb/invoker_base'
