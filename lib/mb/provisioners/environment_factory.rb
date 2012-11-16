@@ -1,8 +1,8 @@
 require 'ef/rest'
 
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
   module Provisioners
+    # @author Jamie Winsor <jamie@vialstudios.com>
     class EnvironmentFactory
       class << self
         # Convert the given provisioner manifest to a hash usable by Environment Factory

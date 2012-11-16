@@ -42,6 +42,7 @@ module MotherBrain
   autoload :Group, 'mb/group'
   autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
+  autoload :JSONManifest, 'mb/json_manifest'
   autoload :Logging, 'mb/logging'
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
