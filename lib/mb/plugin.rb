@@ -240,7 +240,7 @@ module MotherBrain
 
       def method_missing(method_name, *args, &block)
         ErrorHandler.wrap PluginSyntaxError.new,
-          caller_array: caller,
+          backtrace: caller,
           method_name: method_name,
           plugin_name: real_model.name,
           plugin_version: real_model.version,

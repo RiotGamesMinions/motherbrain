@@ -8,7 +8,7 @@ describe MotherBrain::ErrorHandler do
   let(:error) { ZeroDivisionError.new }
   let(:options) {
     {
-      caller_array: caller_array,
+      backtrace: backtrace,
       method_name: method_name,
       plugin_name: plugin_name,
       file_path: file_path,
@@ -17,7 +17,7 @@ describe MotherBrain::ErrorHandler do
     }
   }
 
-  let(:caller_array) { nil }
+  let(:backtrace) { nil }
   let(:method_name) { nil }
   let(:plugin_name) { nil }
   let(:file_path) { nil }
@@ -32,7 +32,7 @@ describe MotherBrain::ErrorHandler do
     it { should be_a String }
 
     context "with all options" do
-      let(:caller_array) {
+      let(:backtrace) {
         ["(eval):123:in `block in from_file'"]
       }
       let(:method_name) { :wat }
@@ -51,7 +51,7 @@ describe MotherBrain::ErrorHandler do
     end
 
     context "with a caller array" do
-      let(:caller_array) {
+      let(:backtrace) {
         ["(eval):123:in `block in from_file'"]
       }
 
@@ -93,7 +93,7 @@ describe MotherBrain::ErrorHandler do
   describe "#line_number" do
     subject { error_handler.line_number }
 
-    let(:caller_array) { [line] }
+    let(:backtrace) { [line] }
 
     context "with an eval'd line" do
       let(:line) { "(eval):123:in `block in from_file'" }

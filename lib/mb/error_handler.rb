@@ -57,7 +57,7 @@ module MotherBrain
     attr_reader :error
 
     OPTIONS = %w[
-      caller_array
+      backtrace
       file_path
       method_name
       plugin_name
@@ -71,7 +71,7 @@ module MotherBrain
 
     # @param [StandardError] error
     #
-    # @option options [Array] caller_array
+    # @option options [Array] backtrace
     #   An array of strings containing filenames, line numbers, and method
     #   names. Typically comes from `caller`.
     #
@@ -121,7 +121,7 @@ module MotherBrain
         end
       end
 
-      @caller_array ||= error.backtrace
+      @backtrace ||= error.backtrace
       @method_name ||= error.name if error.respond_to? :name
       @text ||= error.message
     end
@@ -161,11 +161,11 @@ module MotherBrain
       "#{plugin_name} (#{plugin_version})" if plugin_name and plugin_version
     end
 
-    # Extracts the first line number from caller_array.
+    # Extracts the first line number from the backtrace.
     #
     # @return [Fixnum]
     def line_number
-      caller_array[0].split(":")[1].to_i if caller_array
+      backtrace[0].split(":")[1].to_i if backtrace
     end
   end
 end
