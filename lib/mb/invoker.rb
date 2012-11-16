@@ -96,6 +96,31 @@ module MotherBrain
       end
     end
 
+    method_option :api_url,
+      type: :string,
+      desc: "URL to the Environment Factory API endpoint",
+      required: true
+    method_option :api_key,
+      type: :string,
+      desc: "API authentication key for the Environment Factory",
+      required: true
+    method_option :ssl_verify,
+      type: :boolean,
+      desc: "Should we verify SSL connections?",
+      default: false
+    desc "destroy ENVIRONMENT", "Destroy a provisioned environment"
+    def destroy(environment)
+      provisioner_options = {
+        api_url: options[:api_url],
+        api_key: options[:api_key],
+        ssl: {
+          verify: options[:ssl_verify]
+        }
+      }
+
+      MB::Application.provisioner.destroy(environment, provisioner_options)
+    end
+
     desc "version", "Display version and license information"
     def version
       MB.ui.say version_header

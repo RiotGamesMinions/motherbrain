@@ -46,6 +46,9 @@ module MotherBrain
         @connection = EF::REST.connection(options)
       end
 
+      # Create an environment of the given name and provision nodes in based on the contents
+      # of the given manifest
+      #
       # @param [String] env_name
       # @param [Provisioner::Manifest] manifest
       #
@@ -58,6 +61,15 @@ module MotherBrain
         end
 
         connection.environment.find(env_name)
+      end
+
+      # Tear down the given environment and the nodes in it
+      #
+      # @param [String] env_name
+      #
+      # @return [Hash, nil]
+      def down(env_name)
+        connection.environment.destroy(env_name)
       end
     end
   end

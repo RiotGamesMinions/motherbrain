@@ -11,15 +11,29 @@ module MotherBrain
       #
       # @return [Celluloid::Future]
       def provision(environment, manifest, options = {})
-        provisioner_klass = unless options[:with].nil?
-          Provisioners.get(options[:with])
-        else
-          Provisioners.default
-        end
+        provisioner_klass = choose_provisioner(options[:with])
 
         provisioner = provisioner_klass.new_link(options)
         provisioner.future(:run, environment, manifest)
       end
+
+      # @param [String] environment
+      # @option options [#to_sym] :with
+      #   id of provisioner to use
+      #
+      # @return [Celluloid::Future]
+      def destroy(environment, options = {})
+        provisioner_klass = choose_provisioner(options[:with])
+
+        provisioner = provisioner_klass.new_link(options)
+        provisioner.future(:down, environment)
+      end
+
+      protected
+
+        def choose_provisioner(id)
+          id.nil? ? Provisioners.default : Provisioners.get(id)
+        end
     end
   end
 end
