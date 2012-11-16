@@ -190,6 +190,11 @@ module MotherBrain
       self
     end
 
+    # Creates an error message from an error hash, where the keys are attributes
+    # and the values are an array of error messages.
+    #
+    # @param [Hash] errors
+    # @return [String]
     def messages_from_errors(errors)
       buffer = []
 
