@@ -19,6 +19,7 @@ module MotherBrain
   class DuplicateGearKeyword < InternalError; end
   class InvalidProvisionerClass < InternalError; end
   class ProvisionerRegistrationError < InternalError; end
+  class ProvisionerNotRegistered < InternalError; end
 
   class PluginSyntaxError < MBError; status_code(100); end
   class DuplicateGroup < PluginSyntaxError; end

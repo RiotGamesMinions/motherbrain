@@ -32,16 +32,36 @@ module MotherBrain
       end
 
       # List of all the registered provisioners
+      #
       # @return [Set]
       def all
         @all ||= Set.new
       end
 
-      # Get registered provisioner class from the given ID
+      # Get registered provisioner class from the given ID. Return nil if no provisioner with
+      # the corresponding ID is found
+      #
+      # @param [#to_sym] id
       #
       # @return [Class, nil]
       def get(id)
         all.find { |klass| klass.provisioner_id == id.to_sym }
+      end
+
+      # Get registered provisioner class fromt he given ID. Raise an error if no provisioner with
+      # the corresponding ID is found
+      #
+      # @raise [ProvisionerNotRegistered] if no provisioner with the corresponding ID is found
+      #
+      # @return [Class]
+      def get!(id)
+        provisioner = get(id)
+
+        if provisioner.nil?
+          raise ProvisionerNotRegistered, "No provisioner registered with the ID: '#{id}'"
+        end
+
+        provisioner
       end
 
       # Return the default provisioner if one has been registered as the default

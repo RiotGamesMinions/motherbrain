@@ -2,6 +2,20 @@ module MotherBrain
   module Provisioner
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Manager
+      class << self
+        # Returns a provisioner for the given ID. The default provisioner will be returned
+        # if nil is provided
+        #
+        # @param [#to_sym, nil] id
+        #
+        # @raise [ProvisionerNotRegistered] if no provisioner is registered with the given ID
+        #
+        # @return [Class]
+        def choose_provisioner(id)
+          id.nil? ? Provisioners.default : Provisioners.get!(id)
+        end
+      end
+
       include Celluloid
 
       # @param [String] environment
@@ -11,7 +25,7 @@ module MotherBrain
       #
       # @return [Celluloid::Future]
       def provision(environment, manifest, options = {})
-        provisioner_klass = choose_provisioner(options[:with])
+        provisioner_klass = self.class.choose_provisioner(options[:with])
 
         provisioner = provisioner_klass.new_link(options)
         provisioner.future(:up, environment, manifest)
@@ -23,17 +37,11 @@ module MotherBrain
       #
       # @return [Celluloid::Future]
       def destroy(environment, options = {})
-        provisioner_klass = choose_provisioner(options[:with])
+        provisioner_klass = self.class.choose_provisioner(options[:with])
 
         provisioner = provisioner_klass.new_link(options)
         provisioner.future(:down, environment)
       end
-
-      protected
-
-        def choose_provisioner(id)
-          id.nil? ? Provisioners.default : Provisioners.get(id)
-        end
     end
   end
 end
