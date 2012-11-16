@@ -3,7 +3,6 @@ require 'spec_helper'
 describe MB::ChefMutex do
   subject { chef_mutex }
 
-  let(:klass) { described_class }
   let(:chef_mutex) { klass.new name, chef_connection_stub }
 
   let(:client_name) { "johndoe" }
