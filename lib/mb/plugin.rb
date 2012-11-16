@@ -11,8 +11,10 @@ module MotherBrain
       # @yieldreturn [MotherBrain::Plugin]
       def load(context, &block)
         new(context, &block).validate!
-      rescue => e
-        raise PluginLoadError, e
+      rescue Errno::ENOENT => error
+        ErrorHandler.wrap PluginLoadError.new
+      rescue => error
+        ErrorHandler.wrap error
       end
 
       # Load a plugin from the given file
@@ -28,6 +30,8 @@ module MotherBrain
           eval(File.read(path))
         }
         load(context, &block)
+      rescue => error
+        ErrorHandler.wrap error, file_path: path
       end
 
       def key_for(name, version)
@@ -181,11 +185,24 @@ module MotherBrain
     def validate!
       errors = self.validate
 
-      unless errors.empty?
-        raise errors
-      end
+      raise PluginLoadError, messages_from_errors(errors) if errors.any?
 
       self
+    end
+
+    # Creates an error message from an error hash, where the keys are attributes
+    # and the values are an array of error messages.
+    #
+    # @param [Hash] errors
+    # @return [String]
+    def messages_from_errors(errors)
+      buffer = []
+
+      errors.each do |attribute, messages|
+        buffer |= messages
+      end
+
+      buffer.join "\n"
     end
 
     private
@@ -224,6 +241,15 @@ module MotherBrain
 
       def cluster_bootstrap(&block)
         real_model.bootstrapper = ClusterBootstrapper.new(context, real_model, &block)
+      end
+
+      def method_missing(method_name, *args, &block)
+        ErrorHandler.wrap PluginSyntaxError.new,
+          backtrace: caller,
+          method_name: method_name,
+          plugin_name: real_model.name,
+          plugin_version: real_model.version,
+          text: "'#{method_name}' is not a valid keyword"
       end
     end
   end
