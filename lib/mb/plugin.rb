@@ -31,7 +31,7 @@ module MotherBrain
         }
         load(context, &block)
       rescue => error
-        ErrorHandler.wrap error, plugin_path: path
+        ErrorHandler.wrap error, file_path: path
       end
 
       def key_for(name, version)

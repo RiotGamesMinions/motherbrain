@@ -11,8 +11,8 @@ module MotherBrain
 
     OPTIONS = %w[
       caller_array
+      file_path
       method_name
-      plugin_path
       plugin_name
       plugin_version
       text
@@ -56,7 +56,7 @@ module MotherBrain
     def message
       [
         plugin_name_and_plugin_version,
-        plugin_path_and_line_number_and_method_name,
+        file_path_and_line_number_and_method_name,
         text
       ].compact.join "\n"
     end
@@ -72,9 +72,9 @@ module MotherBrain
       end
     end
 
-    def plugin_path_and_line_number_and_method_name
+    def file_path_and_line_number_and_method_name
       buffer = []
-      buffer << plugin_path if plugin_path
+      buffer << file_path if file_path
       buffer << "on line #{line_number}" if line_number
       buffer << "in '#{method_name}'" if method_name
       buffer.join ", "

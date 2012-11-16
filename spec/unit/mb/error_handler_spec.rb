@@ -11,7 +11,7 @@ describe MotherBrain::ErrorHandler do
       caller_array: caller_array,
       method_name: method_name,
       plugin_name: plugin_name,
-      plugin_path: plugin_path,
+      file_path: file_path,
       plugin_version: plugin_version,
       text: text
     }
@@ -20,7 +20,7 @@ describe MotherBrain::ErrorHandler do
   let(:caller_array) { nil }
   let(:method_name) { nil }
   let(:plugin_name) { nil }
-  let(:plugin_path) { nil }
+  let(:file_path) { nil }
   let(:plugin_version) { nil }
   let(:text) { nil }
 
@@ -37,7 +37,7 @@ describe MotherBrain::ErrorHandler do
       }
       let(:method_name) { :wat }
       let(:plugin_name) { "abc" }
-      let(:plugin_path) { "/a/b/c.rb" }
+      let(:file_path) { "/a/b/c.rb" }
       let(:plugin_version) { "1.2.3" }
       let(:text) { "There was an error" }
 
@@ -72,9 +72,9 @@ describe MotherBrain::ErrorHandler do
     end
 
     context "with a path" do
-      let(:plugin_path) { "/a/b/c.rb" }
+      let(:file_path) { "/a/b/c.rb" }
 
-      it { should include plugin_path }
+      it { should include file_path }
     end
 
     context "with text" do
