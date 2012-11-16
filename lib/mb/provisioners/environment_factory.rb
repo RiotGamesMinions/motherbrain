@@ -53,7 +53,7 @@ module MotherBrain
       # @param [Provisioner::Manifest] manifest
       #
       # @return [Hash]
-      def run(env_name, manifest)
+      def up(env_name, manifest)
         connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
         until connection.environment.created?(env_name)

@@ -24,7 +24,11 @@ module MotherBrain
       end
     end
 
-    def run(environment, manifest)
+    def up(environment, manifest)
+      raise AbstractFunction
+    end
+
+    def down(environment)
       raise AbstractFunction
     end
   end

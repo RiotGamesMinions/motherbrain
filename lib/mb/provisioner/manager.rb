@@ -14,7 +14,7 @@ module MotherBrain
         provisioner_klass = choose_provisioner(options[:with])
 
         provisioner = provisioner_klass.new_link(options)
-        provisioner.future(:run, environment, manifest)
+        provisioner.future(:up, environment, manifest)
       end
 
       # @param [String] environment

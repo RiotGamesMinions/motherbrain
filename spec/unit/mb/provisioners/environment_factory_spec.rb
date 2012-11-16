@@ -40,7 +40,7 @@ describe MB::Provisioners::EnvironmentFactory do
 
   subject { described_class.new(options) }
 
-  describe "#run" do
+  describe "#up" do
     let(:env_name) { "mbtest" }
 
     it "creates an environment with the given name and converted manifest" do
@@ -53,7 +53,7 @@ describe MB::Provisioners::EnvironmentFactory do
       connection.stub_chain(:environment, :find).with(env_name).and_return(environment)
       subject.connection = connection
 
-      subject.run(env_name, manifest)
+      subject.up(env_name, manifest)
     end
   end
 end
