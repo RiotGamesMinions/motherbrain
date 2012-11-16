@@ -38,11 +38,12 @@ module MotherBrain
       attr_accessor :connection
 
       # @option options [#to_f] :interval
+      #   set a polling interval to see if the environment is ready (default: 30.0)
       # @option options [#to_s] :api_url
       # @option options [#to_s] :api_key
       # @option options [Hash] :ssl
       def initialize(options = {})
-        @interval   = (options.delete(:interval) || 5.0).to_f
+        @interval   = (options.delete(:interval) || 30.0).to_f
         @connection = EF::REST.connection(options)
       end
 
