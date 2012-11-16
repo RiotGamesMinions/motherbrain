@@ -56,4 +56,16 @@ describe MB::Provisioners::EnvironmentFactory do
       subject.up(env_name, manifest)
     end
   end
+
+  describe "#down" do
+    let(:env_name) { "mbtest" }
+
+    it "sends a destroy command to environment factory with the given environment" do
+      connection = double('connection')
+      connection.stub_chain(:environment, :destroy).with(env_name).and_return(Hash.new)
+      subject.connection = connection
+
+      subject.down(env_name)
+    end
+  end
 end
