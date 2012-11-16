@@ -8,6 +8,10 @@ module MotherBrain
           data = File.read(path)
           new(path).from_json(data)
         end
+
+        def validate(manifest_hash)
+          true
+        end
       end
 
       attr_reader :path
@@ -33,7 +37,10 @@ module MotherBrain
       end
 
       def from_json(json, options = {})
-        @attributes = MultiJson.decode(json, options)
+        attributes = MultiJson.decode(json, options)
+        self.class.validate(attributes)
+        @attributes = attributes
+
         self
       end
     end

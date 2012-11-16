@@ -4,6 +4,25 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   module Provisioners
     class EnvironmentFactory
+      class << self
+        # Convert the given provisioner manifest to a hash usable by Environment Factory
+        #
+        # @param [Provisioner::Manifest] manifest
+        #
+        # @return [Hash]
+        def convert_manifest(manifest)
+          [].tap do |ef_manifest|
+            manifest.attributes.each do |instance_size, groups|
+              groups.each do |name, amount|
+                amount.times do
+                  ef_manifest << { instance_size: instance_size }
+                end
+              end
+            end
+          end
+        end
+      end
+
       include Provisioner
 
       register_provisioner :environment_factory,
@@ -28,10 +47,11 @@ module MotherBrain
       end
 
       # @param [String] env_name
-      # @param [Hash] manifest
+      # @param [Provisioner::Manifest] manifest
+      #
       # @return [Hash]
       def run(env_name, manifest)
-        connection.environment.create(env_name, manifest)
+        connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
         until connection.environment.created?(env_name)
           sleep self.interval
