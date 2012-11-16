@@ -47,7 +47,7 @@ describe MB::Plugin do
           }
         }
 
-        it { -> { plugin }.should raise_error MB::PluginLoadError }
+        it { -> { plugin }.should raise_error MB::PluginSyntaxError }
       end
     end
 

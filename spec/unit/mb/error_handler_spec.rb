@@ -3,26 +3,26 @@ require 'spec_helper'
 describe MotherBrain::ErrorHandler do
   subject { error_handler }
 
-  let(:error_handler) { klass.new error_class, options }
+  let(:error_handler) { klass.new error, options }
 
-  let(:error_class) { ZeroDivisionError }
+  let(:error) { ZeroDivisionError.new }
   let(:options) {
     {
       caller_array: caller_array,
       method_name: method_name,
-      name: name,
-      path: path,
-      text: text,
-      version: version
+      plugin_name: plugin_name,
+      plugin_path: plugin_path,
+      plugin_version: plugin_version,
+      text: text
     }
   }
 
   let(:caller_array) { nil }
   let(:method_name) { nil }
-  let(:name) { nil }
-  let(:path) { nil }
+  let(:plugin_name) { nil }
+  let(:plugin_path) { nil }
+  let(:plugin_version) { nil }
   let(:text) { nil }
-  let(:version) { nil }
 
   it { should be_a klass }
 
@@ -36,9 +36,9 @@ describe MotherBrain::ErrorHandler do
         ["(eval):123:in `block in from_file'"]
       }
       let(:method_name) { :wat }
-      let(:name) { "abc" }
-      let(:version) { "1.2.3" }
-      let(:path) { "/a/b/c.rb" }
+      let(:plugin_name) { "abc" }
+      let(:plugin_path) { "/a/b/c.rb" }
+      let(:plugin_version) { "1.2.3" }
       let(:text) { "There was an error" }
 
       it {
@@ -65,16 +65,16 @@ describe MotherBrain::ErrorHandler do
     end
 
     context "with a name and version" do
-      let(:name) { "abc" }
-      let(:version) { "1.2.3" }
+      let(:plugin_name) { "abc" }
+      let(:plugin_version) { "1.2.3" }
 
       it { should include "abc (1.2.3)" }
     end
 
     context "with a path" do
-      let(:path) { "/a/b/c.rb" }
+      let(:plugin_path) { "/a/b/c.rb" }
 
-      it { should include path }
+      it { should include plugin_path }
     end
 
     context "with text" do
@@ -84,10 +84,10 @@ describe MotherBrain::ErrorHandler do
     end
   end
 
-  describe "#render" do
-    subject { error_handler.render }
+  describe ".wrap" do
+    subject { klass.wrap error, options }
 
-    it { -> { subject }.should raise_error error_class }
+    it { -> { subject }.should raise_error error.class }
   end
 
   describe "#line_number" do

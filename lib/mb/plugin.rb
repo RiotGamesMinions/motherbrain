@@ -11,8 +11,10 @@ module MotherBrain
       # @yieldreturn [MotherBrain::Plugin]
       def load(context, &block)
         new(context, &block).validate!
-      rescue => e
-        raise PluginLoadError, e
+      rescue Errno::ENOENT => error
+        ErrorHandler.wrap PluginLoadError.new
+      rescue => error
+        ErrorHandler.wrap error
       end
 
       # Load a plugin from the given file
@@ -28,6 +30,8 @@ module MotherBrain
           eval(File.read(path))
         }
         load(context, &block)
+      rescue => error
+        ErrorHandler.wrap error, plugin_path: path
       end
 
       def key_for(name, version)
@@ -181,11 +185,19 @@ module MotherBrain
     def validate!
       errors = self.validate
 
-      unless errors.empty?
-        raise errors
-      end
+      raise PluginLoadError, messages_from_errors(errors) if errors.any?
 
       self
+    end
+
+    def messages_from_errors(errors)
+      buffer = []
+
+      errors.each do |attribute, messages|
+        buffer |= messages
+      end
+
+      buffer.join "\n"
     end
 
     private
@@ -226,20 +238,14 @@ module MotherBrain
         real_model.bootstrapper = ClusterBootstrapper.new(context, real_model, &block)
       end
 
-      private
-
-        def method_missing(method, *args, &block)
-          error_message = ErrorHandler.new(ValidationFailed,
-            caller_array: caller,
-            method_name: method,
-            name: real_model.name,
-            path: nil, # TODO
-            text: "Invalid plugin command '#{method}'",
-            version: real_model.version
-          ).message
-
-          raise ValidationFailed, error_message
-        end
+      def method_missing(method_name, *args, &block)
+        ErrorHandler.wrap PluginSyntaxError.new,
+          caller_array: caller,
+          method_name: method_name,
+          plugin_name: real_model.name,
+          plugin_version: real_model.version,
+          text: "'#{method_name}' is not a valid keyword"
+      end
     end
   end
 end
