@@ -12,7 +12,7 @@ module MotherBrain
         # @return [Hash]
         def convert_manifest(manifest)
           [].tap do |ef_manifest|
-            manifest.attributes.each do |instance_size, groups|
+            manifest.each_pair do |instance_size, groups|
               groups.each do |name, amount|
                 amount.times do
                   ef_manifest << { instance_size: instance_size }
