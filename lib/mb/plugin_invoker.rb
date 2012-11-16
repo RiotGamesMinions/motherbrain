@@ -120,8 +120,6 @@ module MotherBrain
               raise InvalidProvisionManifest, "No provision manifest found at: #{manifest_file}"
             end
 
-            assert_environment_exists(environment)
-
             manifest = Provisioner::Manifest.from_file(manifest_file)
             provisioner_options = {
               api_url: options[:api_url],
@@ -132,7 +130,7 @@ module MotherBrain
             }
 
             MB.ui.say "Starting provision of nodes in environment: #{environment}"
-            MB::Application.provisioner.provision(environment, manifest, provisioner_options)
+            MB::Application.provisioner.provision(environment, manifest, provisioner_options).value
             MB.ui.say "Provision finished"
           end
         end
