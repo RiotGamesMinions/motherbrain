@@ -101,7 +101,7 @@ describe MotherBrain::ErrorHandler do
       it { should == 123 }
     end
 
-    context "with an sourced line" do
+    context "with a sourced line" do
       let(:line) { "/Users/JohnDoe/a/b/c.rb:123:in `method'" }
 
       it { should == 123 }
