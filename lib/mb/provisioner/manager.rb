@@ -60,9 +60,13 @@ module MotherBrain
         provisioner_klass = self.class.choose_provisioner(options[:with])
         provisioner       = provisioner_klass.new_link(options)
 
-        nodes = provisioner.up(environment, manifest)
-        self.class.validate_create(nodes)
-        nodes
+        status, body = response = provisioner.up(environment, manifest)
+
+        if status == :ok
+          self.class.validate_create(body)
+        end
+
+        response
       end
 
       # @param [String] environment

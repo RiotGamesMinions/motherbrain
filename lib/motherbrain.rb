@@ -24,6 +24,7 @@ require 'mb/errors'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
+  autoload :ActorUtil, 'mb/actor_util'
   autoload :Application, 'mb/application'
   autoload :ChefMutex, 'mb/chef_mutex'
   autoload :ChefRunner, 'mb/chef_runner'

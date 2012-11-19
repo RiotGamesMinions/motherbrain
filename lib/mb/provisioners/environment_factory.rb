@@ -69,13 +69,15 @@ module MotherBrain
       #
       # @return [Hash]
       def up(env_name, manifest)
-        connection.environment.create(env_name, self.class.convert_manifest(manifest))
+        safe_return(EF::REST::Error) do
+          connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
-        until connection.environment.created?(env_name)
-          sleep self.interval
+          until connection.environment.created?(env_name)
+            sleep self.interval
+          end
+
+          self.class.handle_created(connection.environment.find(env_name))
         end
-
-        self.class.handle_created(connection.environment.find(env_name))
       end
 
       # Tear down the given environment and the nodes in it
@@ -84,7 +86,9 @@ module MotherBrain
       #
       # @return [Hash, nil]
       def down(env_name)
-        self.class.handle_destroyed(connection.environment.destroy(env_name))
+        safe_return(EF::REST::Error) do
+          self.class.handle_destroyed(connection.environment.destroy(env_name))
+        end
       end
     end
   end

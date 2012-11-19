@@ -130,8 +130,14 @@ module MotherBrain
             }
 
             MB.ui.say "Starting provision of nodes in environment: #{environment}"
-            MB::Application.provisioner.provision(environment, manifest, provisioner_options)
-            MB.ui.say "Provision finished"
+            status, body = MB::Application.provisioner.provision(environment, manifest, provisioner_options)
+
+            if status == :ok
+              MB.ui.say "Provision finished"
+            else
+              MB.ui.error body
+              exit 1
+            end
           end
         end
 
