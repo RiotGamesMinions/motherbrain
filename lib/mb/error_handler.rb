@@ -114,7 +114,7 @@ module MotherBrain
     # overwrite existing instance variables.
     def extract_data_from_error
       OPTIONS.each do |option|
-        data = error.send option if error.respond_to? option
+        data = error.instance_variable_get "@_error_handler_#{option}"
 
         unless instance_variable_get "@#{option}"
           instance_variable_set "@#{option}", data
@@ -132,7 +132,6 @@ module MotherBrain
         data = instance_variable_get "@#{option}"
 
         if data
-          error.instance_eval "def #{option}; @_error_handler_#{option}; end"
           error.instance_variable_set "@_error_handler_#{option}", data
         end
       end
