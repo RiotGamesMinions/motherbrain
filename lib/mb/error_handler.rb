@@ -156,8 +156,7 @@ module MotherBrain
 
     # @return [String]
     def file_contents
-      return unless file_path
-      return unless File.exist? file_path
+      return unless file_path and File.exist? file_path
 
       File.read file_path
     end
@@ -205,8 +204,7 @@ module MotherBrain
     #
     # @return [Fixnum]
     def line_number
-      return unless backtrace
-      return unless backtrace[0]
+      return unless backtrace and backtrace[0]
 
       backtrace[0].split(":")[1].to_i
     end
