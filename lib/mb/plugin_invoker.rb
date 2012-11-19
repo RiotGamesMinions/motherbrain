@@ -130,7 +130,7 @@ module MotherBrain
             }
 
             MB.ui.say "Starting provision of nodes in environment: #{environment}"
-            MB::Application.provisioner.provision(environment, manifest, provisioner_options).value
+            MB::Application.provisioner.provision(environment, manifest, provisioner_options)
             MB.ui.say "Provision finished"
           end
         end

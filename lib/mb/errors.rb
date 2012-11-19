@@ -82,4 +82,20 @@ module MotherBrain
   class InvalidBootstrapManifest < MBError; status_code(17); end
   class ResourceLocked < MBError; status_code(18); end
   class InvalidProvisionManifest < MBError; status_code(19); end
+  
+  class UnexpectedProvisionCount < MBError
+    status_code(20)
+
+    attr_reader :expected
+    attr_reader :got
+
+    def initialize(expected, got)
+      @expected = expected
+      @got      = got
+    end
+
+    def message
+      "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
+    end
+  end
 end

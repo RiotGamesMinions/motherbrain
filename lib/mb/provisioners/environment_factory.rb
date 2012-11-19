@@ -21,6 +21,20 @@ module MotherBrain
             end
           end
         end
+
+        # @param [Hash] ef_response
+        #
+        # @return [Array<Hash>]
+        def handle_created(ef_response)
+          ef_response[:nodes]
+        end
+
+        # @param [Hash] ef_response
+        #
+        # @return [Boolean]
+        def handle_destroyed(ef_response)
+          true
+        end
       end
 
       include Provisioner
@@ -61,7 +75,7 @@ module MotherBrain
           sleep self.interval
         end
 
-        connection.environment.find(env_name)
+        self.class.handle_created(connection.environment.find(env_name))
       end
 
       # Tear down the given environment and the nodes in it
@@ -70,7 +84,7 @@ module MotherBrain
       #
       # @return [Hash, nil]
       def down(env_name)
-        connection.environment.destroy(env_name)
+        self.class.handle_destroyed(connection.environment.destroy(env_name))
       end
     end
   end

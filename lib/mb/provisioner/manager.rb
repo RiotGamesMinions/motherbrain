@@ -14,33 +14,67 @@ module MotherBrain
         def choose_provisioner(id)
           id.nil? ? Provisioners.default : Provisioners.get!(id)
         end
+
+        # Validate that the created environment factory environment contains the expected number
+        # of instance types
+        #
+        # @param [Array<Hash>] created
+        # @param [Provisioner::Manifest] manifest
+        #
+        # @raise [UnexpectedProvisionCount] if an unexpected amount of nodes was returned by the
+        #   request to the provisioner
+        #
+        # @return [Boolean]
+        def validate_create(created, manifest)
+          unless created.length == manifest.node_count
+            raise UnexpectedProvisionCount.new(manifest.node_count, created.length)
+          end
+
+          true
+        end
       end
 
       include Celluloid
 
+      # @example value of future
+      #   {
+      #     "activemq::master" => [
+      #       "amq1.riotgames.com",
+      #       "amq2.riotgames.com",
+      #       "amq3.riotgames.com",
+      #       "amq4.riotgames.com"
+      #     ],
+      #     "activemq::slave" => [
+      #       "amqs1.riotgames.com",
+      #       "amqs2.riotgames.com"
+      #     ]
+      #   }
+      #
       # @param [String] environment
       # @param [Hash] manifest
       # @option options [#to_sym] :with
       #   id of provisioner to use
       #
-      # @return [Celluloid::Future]
+      # @return [Array]
       def provision(environment, manifest, options = {})
         provisioner_klass = self.class.choose_provisioner(options[:with])
+        provisioner       = provisioner_klass.new_link(options)
 
-        provisioner = provisioner_klass.new_link(options)
-        provisioner.future(:up, environment, manifest)
+        nodes = provisioner.up(environment, manifest)
+        self.class.validate_create(nodes)
+        nodes
       end
 
       # @param [String] environment
       # @option options [#to_sym] :with
       #   id of provisioner to use
       #
-      # @return [Celluloid::Future]
+      # @return [Boolean]
       def destroy(environment, options = {})
         provisioner_klass = self.class.choose_provisioner(options[:with])
+        provisioner       = provisioner_klass.new_link(options)
 
-        provisioner = provisioner_klass.new_link(options)
-        provisioner.future(:down, environment)
+        provisioner.down(environment)
       end
     end
   end
