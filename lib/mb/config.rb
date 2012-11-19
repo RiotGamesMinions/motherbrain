@@ -49,6 +49,9 @@ module MotherBrain
     attribute :ssh_key,
       type: String
 
+    attribute :ssh_keys,
+      type: [ Array, Set ]
+
     attribute :ssh_sudo,
       type: Boolean
 
