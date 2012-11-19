@@ -42,6 +42,9 @@ module MotherBrain
   #
   #
   class ErrorHandler
+    NEWLINE = "\n"
+    SOURCE_RANGE = 5
+
     class << self
       # Wraps an error with additional data and raises it.
       #
@@ -139,11 +142,49 @@ module MotherBrain
 
     # @return [String]
     def message
-      [
+      result = [
         plugin_name_and_plugin_version,
         file_path_and_line_number_and_method_name,
-        text
-      ].compact.join "\n"
+        text,
+        relevant_source_lines
+      ].compact.join NEWLINE
+
+      result << NEWLINE unless result.end_with? NEWLINE
+
+      result
+    end
+
+    # @return [String]
+    def file_contents
+      return unless file_path
+      return unless File.exist? file_path
+
+      File.read file_path
+    end
+
+    # @return [String]
+    def relevant_source_lines
+      return unless file_contents and line_number
+
+      beginning = line_number - (SOURCE_RANGE / 2) - 1
+      beginning = [beginning, 0].max
+      numbered_source_lines[beginning, SOURCE_RANGE].join NEWLINE
+    end
+
+    # @return [Array]
+    def numbered_source_lines
+      lines = file_contents.lines.to_a.map(&:rstrip)
+      rjust_size = lines.count.to_s.length
+
+      result = []
+
+      lines.each_with_index do |line, index|
+        line_number = index + 1
+
+        result << "#{line_number.to_s.rjust rjust_size}: #{line}"
+      end
+
+      result
     end
 
     # @return [String]
