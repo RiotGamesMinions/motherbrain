@@ -183,9 +183,15 @@ module MotherBrain
     #
     # @return [self]
     def validate!
-      errors = self.validate
+      errors = validate
 
-      raise PluginLoadError, messages_from_errors(errors) if errors.any?
+      if errors.any?
+        ErrorHandler.wrap PluginSyntaxError.new,
+          backtrace: [],
+          plugin_name: try(:name),
+          plugin_version: try(:version),
+          text: messages_from_errors(errors)
+      end
 
       self
     end
