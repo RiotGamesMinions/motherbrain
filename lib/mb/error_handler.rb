@@ -164,7 +164,10 @@ module MotherBrain
     #
     # @return [Fixnum]
     def line_number
-      backtrace[0].split(":")[1].to_i if backtrace
+      return unless backtrace
+      return unless backtrace[0]
+
+      backtrace[0].split(":")[1].to_i
     end
   end
 end
