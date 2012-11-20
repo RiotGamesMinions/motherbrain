@@ -99,44 +99,88 @@ module MotherBrain
               MB.ui.say plugin.bootstrapper.run(manifest, bootstrap_options)
               MB.ui.say "Bootstrap finished"
             end
-          end
 
-          method_option :api_url,
-            type: :string,
-            desc: "URL to the Environment Factory API endpoint",
-            required: true
-          method_option :api_key,
-            type: :string,
-            desc: "API authentication key for the Environment Factory",
-            required: true
-          method_option :ssl_verify,
-            type: :boolean,
-            desc: "Should we verify SSL connections?",
-            default: false
-          desc("provision ENVIRONMENT MANIFEST", "Provision a cluster of nodes with the given manifest")
-          define_method(:provision) do |environment, manifest_file|
-            manifest_file = File.expand_path(manifest_file)
-            unless File.exist?(manifest_file)
-              raise InvalidProvisionManifest, "No provision manifest found at: #{manifest_file}"
-            end
+            method_option :api_url,
+              type: :string,
+              desc: "URL to the Environment Factory API endpoint",
+              required: true
+            method_option :api_key,
+              type: :string,
+              desc: "API authentication key for the Environment Factory",
+              required: true
+            method_option :ssl_verify,
+              type: :boolean,
+              desc: "Should we verify SSL connections?",
+              default: false
+            method_option :skip_bootstrap,
+              type: :boolean,
+              desc: "Nodes will be created and added to the Chef environment but not bootstrapped",
+              default: false
+            method_option :ssh_user,
+              type: :string,
+              desc: "A shell user that will login to each node and perform the bootstrap command on",
+              aliases: "-u"
+            method_option :ssh_password,
+              type: :string,
+              desc: "The password for the shell user that will perform the bootstrap",
+              aliases: "-p"
+            method_option :ssh_keys,
+              type: :array,
+              desc: "An array of keys (or a single key) to authenticate the ssh user with instead of a password"
+            method_option :validator_client,
+              type: :string,
+              desc: "The name of the Chef validator client to use in bootstrapping"
+            method_option :validator_path,
+              type: :string,
+              desc: "The filepath to the Chef validator client's private key to use in bootstrapping"
+            method_option :bootstrap_proxy,
+              type: :string,
+              desc: "A proxy server for the node being bootstrapped"
+            method_option :encrypted_data_bag_secret_path,
+              type: :string,
+              alises: "-secret",
+              desc: "The filepath to your organizations encrypted data bag secret key"
+            method_option :sudo,
+              type: :boolean,
+              default: true,
+              desc: "Should we execute the bootstrap with sudo?"
+            desc("provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment")
+            define_method(:provision) do |environment, manifest_file|
+              manifest_file = File.expand_path(manifest_file)
+              unless File.exist?(manifest_file)
+                raise InvalidProvisionManifest, "No provision manifest found at: #{manifest_file}"
+              end
 
-            manifest = Provisioner::Manifest.from_file(manifest_file)
-            provisioner_options = {
-              api_url: options[:api_url],
-              api_key: options[:api_key],
-              ssl: {
-                verify: options[:ssl_verify]
+              manifest = Provisioner::Manifest.from_file(manifest_file)
+              provisioner_options = {
+                api_url: options[:api_url],
+                api_key: options[:api_key],
+                ssl: {
+                  verify: options[:ssl_verify]
+                }
               }
-            }
 
-            MB.ui.say "Starting provision of nodes in environment: #{environment}"
-            status, body = MB::Application.provisioner.provision(environment, manifest, provisioner_options)
+              MB.ui.say "Starting provision of nodes in environment: #{environment}"
+              status, body = MB::Application.provisioner.provision(environment, manifest, provisioner_options)
 
-            if status == :ok
-              MB.ui.say "Provision finished"
-            else
-              MB.ui.error body
-              exit 1
+              if status == :ok
+                MB.ui.say "Provision finished"
+
+                if options[:skip_bootstrap]
+                  MB.ui.say "Skipping bootstrap"
+                  exit 1
+                end
+
+                bootstrap_manifest = Tempfile.new('bootstrap_manifest')
+                File.open(bootstrap_manifest, 'w+') do |f|
+                  f.write MultiJson.dump(body)
+                end
+
+                invoke(:bootstrap, [environment, bootstrap_manifest], options)
+              else
+                MB.ui.error body
+                exit 1
+              end
             end
           end
         end
