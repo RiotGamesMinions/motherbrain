@@ -51,7 +51,7 @@ describe MB::Provisioners::EnvironmentFactory do
       described_class.should_receive(:handle_created).with(environment).and_return(Array.new)
       connection.stub_chain(:environment, :create).with(env_name, converted_manifest).and_return(Hash.new)
       connection.stub_chain(:environment, :created?).with(env_name).and_return(true)
-      connection.stub_chain(:environment, :find).with(env_name).and_return(environment)
+      connection.stub_chain(:environment, :find).with(env_name, force: true).and_return(environment)
       subject.connection = connection
 
       subject.up(env_name, manifest)

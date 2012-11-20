@@ -76,7 +76,7 @@ module MotherBrain
             sleep self.interval
           end
 
-          self.class.handle_created(connection.environment.find(env_name))
+          self.class.handle_created(connection.environment.find(env_name, force: true))
         end
       end
 
