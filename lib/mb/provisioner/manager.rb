@@ -58,7 +58,7 @@ module MotherBrain
       # @return [Array]
       def provision(environment, manifest, options = {})
         provisioner_klass = self.class.choose_provisioner(options[:with])
-        provisioner       = provisioner_klass.new_link(options)
+        provisioner       = provisioner_klass.new(options)
 
         status, body = response = provisioner.up(environment, manifest)
 
@@ -76,7 +76,7 @@ module MotherBrain
       # @return [Boolean]
       def destroy(environment, options = {})
         provisioner_klass = self.class.choose_provisioner(options[:with])
-        provisioner       = provisioner_klass.new_link(options)
+        provisioner       = provisioner_klass.new(options)
 
         provisioner.down(environment)
       end
