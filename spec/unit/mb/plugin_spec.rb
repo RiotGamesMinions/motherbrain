@@ -33,9 +33,7 @@ describe MB::Plugin do
           }
         }
 
-        it "raises an PluginLoadError error" do
-          -> { plugin }.should raise_error(MB::PluginLoadError)
-        end
+        it { -> { plugin }.should raise_error MB::PluginSyntaxError }
       end
 
       context "with an unknown command" do
