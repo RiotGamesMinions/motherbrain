@@ -35,6 +35,7 @@ module MotherBrain
       end
 
       include Celluloid
+      include ActorUtil
 
       # @example value of future
       #   {
@@ -63,10 +64,13 @@ module MotherBrain
         status, body = response = provisioner.up(environment, manifest)
 
         if status == :ok
-          self.class.validate_create(body)
+          safe_return do
+            self.class.validate_create(body)
+            body
+          end
+        else
+          response
         end
-
-        response
       end
 
       # @param [String] environment
