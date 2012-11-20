@@ -42,7 +42,7 @@ describe MotherBrain::ErrorHandler do
       let(:text) { "There was an error" }
 
       it {
-        message.should == <<-MESSAGE.gsub(/^\s+/, '').strip
+        message.should == <<-MESSAGE.gsub(/^\s+/, '')
          abc (1.2.3)
          /a/b/c.rb, on line 123, in 'wat'
          There was an error
@@ -106,5 +106,62 @@ describe MotherBrain::ErrorHandler do
 
       it { should == 123 }
     end
+  end
+
+  describe "#file_contents" do
+    subject { error_handler.file_contents }
+
+    let(:file_contents) { "abc123" }
+    let(:file_path) { "/a/b/c.rb" }
+
+    before :each do
+      File.stub(:exist?).with(file_path).and_return(true)
+      File.stub(:read).with(file_path).and_return(file_contents)
+    end
+
+    it { should == file_contents }
+
+    context "with no file_path" do
+      let(:file_path) { nil }
+
+      it { should be_nil }
+    end
+  end
+
+  describe "#relevant_source_lines" do
+    subject { error_handler.relevant_source_lines }
+
+    let(:backtrace) { ["something:6:something"] }
+    let(:file_contents) {
+      <<-FILE.gsub(/^\s{8}/, '')
+        require 'motherbrain'
+
+        module MyModule
+          class MyClass
+            def my_method
+              do :one
+              do :two
+              do :three
+            end
+          end
+        end
+      FILE
+    }
+    let(:file_path) { "/a/b/c.rb" }
+
+    before :each do
+      File.stub(:exist?).with(file_path).and_return(true)
+      File.stub(:read).with(file_path).and_return(file_contents)
+    end
+
+    it {
+      should == <<-OUTPUT.gsub(/^\s{8}/, '').rstrip
+         4:     def my_method
+         5:       do :one
+         6:       do :two
+         7:       do :three
+         8:     end
+      OUTPUT
+    }
   end
 end
