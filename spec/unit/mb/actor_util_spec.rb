@@ -31,16 +31,17 @@ describe MB::ActorUtil do
     end
 
     context "when an exception is thrown" do
+      let(:exception) { ArgumentError.new("my error message") }
       let(:result) do
-        subject.safe_return { raise ArgumentError, "my error message" }
+        subject.safe_return { raise exception }
       end
 
       it "has the symbol :error at index 0" do
         result[0].should eql(:error)
       end
 
-      it "has the error message of the exception at index 1" do
-        result[1].should eql("my error message")
+      it "has the exception at index 1" do
+        result[1].should eql(exception)
       end
     end
 

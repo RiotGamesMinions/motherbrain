@@ -6,7 +6,7 @@ module MotherBrain
     # If the given block evaluates without exception the response array will contain the ':ok' status.
     #
     # If the given block raises an exception the response array will contain the ':error' status and
-    # the body of the response array will contain a stringified version of the exception.
+    # the body of the response array will contain the exception.
     #
     # @param [Array] exceptions
     #
@@ -25,7 +25,7 @@ module MotherBrain
 
       [ :ok, yield ]
     rescue *exceptions => e
-      [ :error, e.to_s ]
+      [ :error, e ]
     end
   end
 end
