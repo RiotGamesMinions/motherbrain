@@ -70,8 +70,8 @@ module MotherBrain
               type: :boolean,
               default: true,
               desc: "Should we execute the bootstrap with sudo?"
-            desc "bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups"
-            def bootstrap(environment, manifest_file)
+            desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
+            define_method(:bootstrap) do |environment, manifest_file|
               assert_environment_exists(environment)
               manifest = ClusterBootstrapper::Manifest.from_file(manifest_file)
 
@@ -137,8 +137,8 @@ module MotherBrain
               type: :boolean,
               default: true,
               desc: "Should we execute the bootstrap with sudo?"
-            desc "provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment"
-            def provision(environment, manifest_file)
+            desc("provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment")
+            define_method(:provision) do |environment, manifest_file|
               manifest = Provisioner::Manifest.from_file(manifest_file)
               provisioner_options = {
                 api_url: options[:api_url],
