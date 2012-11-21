@@ -23,9 +23,9 @@ module MotherBrain
         exceptions = [ ::Exception ]
       end
 
-      [ :ok, yield ]
+      SafeReturn.new(:ok, yield)
     rescue *exceptions => e
-      [ :error, e ]
+      SafeReturn.new(:error, e)
     end
   end
 end

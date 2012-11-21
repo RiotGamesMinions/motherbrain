@@ -55,23 +55,23 @@ module MotherBrain
       #
       # @return [Array]
       def provision(environment, manifest, plugin, options = {})
-        status, body = response = safe_return(InvalidProvisionManifest) do
+        response = safe_return(InvalidProvisionManifest) do
           Provisioner::Manifest.validate(manifest, plugin)
         end
 
-        if status == :error
+        if response.error?
           return response
         end
 
         provisioner_klass = self.class.choose_provisioner(options[:with])
         provisioner       = provisioner_klass.new(options)
 
-        status, body = response = provisioner.up(environment, manifest)
+        response = provisioner.up(environment, manifest)
 
-        if status == :ok
+        if response.ok?
           safe_return do
-            self.class.validate_create(body, manifest)
-            body
+            self.class.validate_create(response.body, manifest)
+            response.body
           end
         else
           response
