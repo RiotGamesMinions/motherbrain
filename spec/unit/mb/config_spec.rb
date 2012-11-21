@@ -37,7 +37,7 @@ describe MB::Config do
     end
 
     it "is invalid if chef_api_url is blank" do
-      subject.chef_api_url = ''
+      subject.chef_api_url = nil
 
       subject.should_not be_valid
     end
@@ -51,13 +51,13 @@ describe MB::Config do
     end
 
     it "is invalid if chef_api_client is blank" do
-      subject.chef_api_client = ''
+      subject.chef_api_client = nil
 
       subject.should_not be_valid
     end
 
     it "is invalid if chef_api_key is blank" do
-      subject.chef_api_key = ''
+      subject.chef_api_key = nil
 
       subject.should_not be_valid
     end
