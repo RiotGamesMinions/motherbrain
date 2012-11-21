@@ -65,20 +65,6 @@ describe MotherBrain::PluginInvoker do
           it "has a 'provision' task" do
             subject.fabricate(plugin).tasks.should have_key("provision") 
           end
-
-          describe "provision task" do
-            let(:fabclass) { subject.fabricate(plugin).new }
-            let(:environment) { "mbtest" }
-            let(:manifest) { MB::Provisioner::Manifest.new(tmp_path.join("prov_manifest.json")).save }
-
-            it "raises an InvalidProvisionManifest error if the filepath to a manifest does not exist" do
-              notexist_manifest = tmp_path.join("nomanifest_HERE").to_s
-
-              expect {
-                fabclass.invoke(:provision, [environment, notexist_manifest])
-              }.to raise_error(MB::InvalidProvisionManifest)
-            end
-          end
         end
 
         context "when a plugin does not have a bootstrapper" do
