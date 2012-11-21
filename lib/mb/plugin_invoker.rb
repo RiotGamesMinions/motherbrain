@@ -161,7 +161,7 @@ module MotherBrain
               }
 
               MB.ui.say "Provisioning nodes and adding them to: #{environment}"
-              status, body = MB::Application.provisioner.provision(environment, manifest, provisioner_options)
+              status, body = MB::Application.provisioner.provision(environment, manifest, plugin, provisioner_options)
 
               if status == :ok
                 MB.ui.say "Provision finished"

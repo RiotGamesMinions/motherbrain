@@ -52,12 +52,21 @@ module MotherBrain
       #   }
       #
       # @param [String] environment
-      # @param [Hash] manifest
+      # @param [Provisioner::Manifest] manifest
+      # @param [MotherBrain::Plugin] plugin
       # @option options [#to_sym] :with
       #   id of provisioner to use
       #
       # @return [Array]
-      def provision(environment, manifest, options = {})
+      def provision(environment, manifest, plugin, options = {})
+        status, body = response = safe_return(InvalidProvisionManifest) do
+          manifest.validate(plugin)
+        end
+
+        if status == :error
+          return response
+        end
+
         provisioner_klass = self.class.choose_provisioner(options[:with])
         provisioner       = provisioner_klass.new(options)
 

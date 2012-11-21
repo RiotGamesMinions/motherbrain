@@ -56,7 +56,6 @@ module MotherBrain
     #
     # @return [Provisioner::Manifest]
     def from_hash(hash)
-      self.class.validate(hash)
       mass_assign(hash)
 
       self
