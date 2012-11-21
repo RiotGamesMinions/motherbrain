@@ -1,7 +1,5 @@
 require 'spec_helper'
 
-require 'spec_helper'
-
 describe MB::JSONManifest do
   let(:valid_json) do
     <<-JSON
