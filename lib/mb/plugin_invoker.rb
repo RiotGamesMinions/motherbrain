@@ -64,7 +64,7 @@ module MotherBrain
               desc: "A proxy server for the node being bootstrapped"
             method_option :encrypted_data_bag_secret_path,
               type: :string,
-              alises: "-secret",
+              aliases: "--secret",
               desc: "The filepath to your organizations encrypted data bag secret key"
             method_option :sudo,
               type: :boolean,
@@ -131,7 +131,7 @@ module MotherBrain
               desc: "A proxy server for the node being bootstrapped"
             method_option :encrypted_data_bag_secret_path,
               type: :string,
-              alises: "-secret",
+              aliases: "--secret",
               desc: "The filepath to your organizations encrypted data bag secret key"
             method_option :sudo,
               type: :boolean,
