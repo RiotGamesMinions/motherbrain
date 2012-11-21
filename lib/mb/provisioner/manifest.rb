@@ -54,12 +54,9 @@ module MotherBrain
       #
       # @return [Integer]
       def node_count
-        count = 0
-        self.each_pair do |type, node_groups|
-          count += node_groups.values.inject(:+)
-        end
-
-        count
+        self.collect do |type, node_groups| 
+          node_groups.values.inject(:+) 
+        end.inject(:+)
       end
     end
   end
