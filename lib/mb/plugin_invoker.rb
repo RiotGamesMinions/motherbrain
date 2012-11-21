@@ -70,8 +70,8 @@ module MotherBrain
               type: :boolean,
               default: true,
               desc: "Should we execute the bootstrap with sudo?"
-            desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
-            define_method(:bootstrap) do |environment, manifest_file|
+            desc "bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups"
+            def bootstrap(environment, manifest_file)
               manifest_file = File.expand_path(manifest_file)
 
               unless File.exist?(manifest_file)
@@ -144,8 +144,8 @@ module MotherBrain
               type: :boolean,
               default: true,
               desc: "Should we execute the bootstrap with sudo?"
-            desc("provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment")
-            define_method(:provision) do |environment, manifest_file|
+            desc "provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment"
+            def provision(environment, manifest_file)
               manifest_file = File.expand_path(manifest_file)
               unless File.exist?(manifest_file)
                 raise InvalidProvisionManifest, "No provision manifest found at: #{manifest_file}"
@@ -177,7 +177,7 @@ module MotherBrain
 
                 invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
               else
-                MB.ui.error response.body
+                MB.ui.error response.body.to_s
                 exit 1
               end
             end
