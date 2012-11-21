@@ -23,12 +23,12 @@ module MotherBrain
 
     # @return [Boolean]
     def error?
-      self[0] == :error
+      status == :error
     end
 
     # @return [Boolean]
     def ok?
-      self[0] == :ok
+      status == :ok
     end
   end
 end
