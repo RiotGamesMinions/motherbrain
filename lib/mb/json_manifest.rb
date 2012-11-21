@@ -4,11 +4,15 @@ module MotherBrain
     class << self
       # @param [#to_s] path
       #
+      # @raise [ManifestNotFound] if the manifest file is not found
+      #
       # @return [Provisioner::Manifest]
       def from_file(path)
         path = File.expand_path(path.to_s)
         data = File.read(path)
         new(path).from_json(data)
+      rescue Errno::ENOENT
+        raise ManifestNotFound, "No manifest found at: '#{path}'"
       end
 
       # Validate the given parameter contains a Hash or Manifest with a valid structure

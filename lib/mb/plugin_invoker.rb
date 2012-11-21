@@ -72,14 +72,7 @@ module MotherBrain
               desc: "Should we execute the bootstrap with sudo?"
             desc "bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups"
             def bootstrap(environment, manifest_file)
-              manifest_file = File.expand_path(manifest_file)
-
-              unless File.exist?(manifest_file)
-                raise InvalidBootstrapManifest, "No bootstrap manifest found at: #{manifest_file}"
-              end
-
               assert_environment_exists(environment)
-
               manifest = ClusterBootstrapper::Manifest.from_file(manifest_file)
 
               bootstrap_options = {
@@ -146,11 +139,6 @@ module MotherBrain
               desc: "Should we execute the bootstrap with sudo?"
             desc "provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment"
             def provision(environment, manifest_file)
-              manifest_file = File.expand_path(manifest_file)
-              unless File.exist?(manifest_file)
-                raise InvalidProvisionManifest, "No provision manifest found at: #{manifest_file}"
-              end
-
               manifest = Provisioner::Manifest.from_file(manifest_file)
               provisioner_options = {
                 api_url: options[:api_url],

@@ -82,6 +82,7 @@ module MotherBrain
   class InvalidBootstrapManifest < MBError; status_code(17); end
   class ResourceLocked < MBError; status_code(18); end
   class InvalidProvisionManifest < MBError; status_code(19); end
+  class ManifestNotFound < MBError; status_code(20); end
   
   class UnexpectedProvisionCount < MBError
     status_code(20)
