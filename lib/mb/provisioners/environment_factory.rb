@@ -22,6 +22,21 @@ module MotherBrain
           end
         end
 
+        # Convert the created environment response from environment factory into a usable format
+        # for MotherBrain internals
+        #
+        # @example
+        #   [
+        #     {
+        #       instance_type: "m1.large",
+        #       public_hostname: "node1.riotgames.com"
+        #     },
+        #     {
+        #       instance_type: "m1.small",
+        #       public_hostname: "node2.riotgames.com"
+        #     }
+        #   ]
+        #
         # @param [Hash] ef_response
         #
         # @return [Array<Hash>]
@@ -32,13 +47,6 @@ module MotherBrain
               public_hostname: node[:automatic][:eucalyptus][:public_hostname]
             }
           end
-        end
-
-        # @param [Hash] ef_response
-        #
-        # @return [Boolean]
-        def handle_destroyed(ef_response)
-          true
         end
       end
 
@@ -92,7 +100,7 @@ module MotherBrain
       # @return [Hash, nil]
       def down(env_name)
         safe_return(EF::REST::Error) do
-          self.class.handle_destroyed(connection.environment.destroy(env_name))
+          connection.environment.destroy(env_name)
         end
       end
     end
