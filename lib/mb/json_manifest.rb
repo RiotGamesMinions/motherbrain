@@ -16,14 +16,10 @@ module MotherBrain
       # @param [Hash] manifest_hash
       #
       # @raise [InvalidProvisionManifest] if the given Hash is not well formed
-      #
-      # @return [Boolean]
       def validate(manifest_hash)
         unless manifest_hash.is_a?(Hash)
           raise InvalidProvisionManifest, "Provisioner manifest must be a Hash"
         end
-
-        true
       end
     end
 

@@ -34,6 +34,33 @@ module MotherBrain
             end
           end
         end
+
+        # Validate the given bootstrap manifest hash
+        #
+        # @param [Hash] manifest
+        # @param [MB::Plugin] plugin
+        #
+        # @raise [InvalidBootstrapManifest]
+        def validate(manifest, plugin)
+          manifest.keys.each do |scoped_group|
+            match = scoped_group.match(Plugin::NODE_GROUP_ID_REGX)
+            
+            unless match
+              raise InvalidBootstrapManifest, "Manifest contained an entry: '#{scoped_group}'. This is not in the proper format 'component::group'"
+            end
+
+            component = match[1]
+            group     = match[2]
+
+            unless plugin.has_component?(component)
+              raise InvalidBootstrapManifest, "Manifest describes the component: '#{component}' but '#{plugin.name}' does not have this component"
+            end
+
+            unless plugin.component(component).has_group?(group)
+              raise InvalidBootstrapManifest, "Manifest describes the group: '#{group}' in the component '#{component}' but the component does not have this group"
+            end
+          end
+        end
       end
     end
   end

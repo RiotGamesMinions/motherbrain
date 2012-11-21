@@ -18,8 +18,6 @@ module MotherBrain
         # @param [MotherBrain::Plugin] plugin
         #
         # @raise [InvalidProvisionManifest] if the given manifest is not well formed
-        #
-        # @return [Boolean]
         def validate(manifest, plugin)
           super(manifest)
 
@@ -29,7 +27,7 @@ module MotherBrain
             end
 
             node_groups.each_pair do |name, value|
-              match = name.match(ClusterBootstrapper::NODE_GROUP_ID_REGX)
+              match = name.match(Plugin::NODE_GROUP_ID_REGX)
               
               unless match
                 raise InvalidProvisionManifest, "Provision manifest contained an entry not in the proper format: '#{name}'. Expected: 'component::group'"
@@ -60,15 +58,6 @@ module MotherBrain
         end
 
         count
-      end
-
-      # @param [MotherBrain::Plugin] plugin
-      #
-      # @raise [InvalidProvisionManifest] if the given manifest is not well formed
-      #
-      # @return [Boolean]
-      def validate(plugin)
-        self.class.validate(self, plugin)
       end
     end
   end

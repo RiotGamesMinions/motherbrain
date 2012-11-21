@@ -43,26 +43,6 @@ JSON
     end
 
     describe "::validate" do
-      let(:valid_manifest) do
-        {
-          "m1.large" => {
-            "activemq::master" => 1,
-            "activemq::slave" => 2
-          },
-          "m1.small" => {
-            "nginx::master" => 1
-          }
-        }
-      end
-
-      it "returns true given a hash in the proper format" do
-        subject.validate(valid_manifest).should be_true
-      end
-
-      it "accepts a JSONManifest" do
-        subject.validate(described_class.new).should be_true
-      end
-
       it "raises InvalidProvisionManifest if given a non-hash value" do
         expect {
           subject.validate(1)

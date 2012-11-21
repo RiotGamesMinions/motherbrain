@@ -60,7 +60,7 @@ module MotherBrain
       # @return [Array]
       def provision(environment, manifest, plugin, options = {})
         status, body = response = safe_return(InvalidProvisionManifest) do
-          manifest.validate(plugin)
+          Provisioner::Manifest.validate(manifest, plugin)
         end
 
         if status == :error
