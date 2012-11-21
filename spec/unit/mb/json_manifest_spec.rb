@@ -42,14 +42,6 @@ JSON
       end
     end
 
-    describe "::validate" do
-      it "raises InvalidProvisionManifest if given a non-hash value" do
-        expect {
-          subject.validate(1)
-        }.to raise_error(MB::InvalidProvisionManifest)
-      end
-    end
-
     describe "::from_file" do
       pending
     end
@@ -82,7 +74,7 @@ JSON
       it "raises" do
         expect {
           subject.from_json("sdf")
-        }.to raise_error(MB::InvalidProvisionManifest)
+        }.to raise_error(MB::InvalidJSONManifest)
       end
     end
   end

@@ -21,7 +21,9 @@ module MotherBrain
         #
         # @raise [InvalidProvisionManifest] if the given manifest is not well formed
         def validate(manifest, plugin)
-          super(manifest)
+          unless manifest.is_a?(Hash)
+            raise InvalidProvisionManifest, "Provisioner manifest needs to be type of Hash. You gave: '#{manifest.class}'"
+          end
 
           manifest.each_pair do |instance_type, node_groups|
             unless node_groups.is_a?(Hash)

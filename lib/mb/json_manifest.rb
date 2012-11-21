@@ -14,17 +14,6 @@ module MotherBrain
       rescue Errno::ENOENT
         raise ManifestNotFound, "No manifest found at: '#{path}'"
       end
-
-      # Validate the given parameter contains a Hash or Manifest with a valid structure
-      #
-      # @param [Hash] manifest_hash
-      #
-      # @raise [InvalidProvisionManifest] if the given Hash is not well formed
-      def validate(manifest_hash)
-        unless manifest_hash.is_a?(Hash)
-          raise InvalidProvisionManifest, "Provisioner manifest must be a Hash"
-        end
-      end
     end
 
     # return [String]
@@ -49,7 +38,7 @@ module MotherBrain
     def from_json(json, options = {})
       from_hash(MultiJson.decode(json, options))
     rescue MultiJson::DecodeError => e
-      raise InvalidProvisionManifest, e
+      raise InvalidJSONManifest, e
     end
 
     # @param [Hash] hash

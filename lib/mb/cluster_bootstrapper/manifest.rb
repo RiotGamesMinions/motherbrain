@@ -39,7 +39,7 @@ module MotherBrain
 
         # Validate the given bootstrap manifest hash
         #
-        # @param [Hash] manifest
+        # @param [ClusterBootstrapper::Manifest] manifest
         # @param [MB::Plugin] plugin
         #
         # @raise [InvalidBootstrapManifest]
