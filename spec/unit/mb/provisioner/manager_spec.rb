@@ -21,7 +21,7 @@ describe MB::Provisioner::Manager do
     end
     
     describe "::validate_create" do
-      it "is true if the number of nodes in the response matches the expected in manifest" do
+      it "does not raise an error if the number of nodes in the response matches the expected in manifest" do
         manifest = MB::Provisioner::Manifest.new.from_json({
           "x1.large" => {
             "activemq::master" => 2,
@@ -45,7 +45,9 @@ describe MB::Provisioner::Manager do
           }
         ]
 
-        subject.validate_create(response, manifest).should be_true
+        expect {
+          subject.validate_create(response, manifest)
+        }.to_not raise_error
       end
 
       it "raises an error if there are less nodes than the manifest expects" do

@@ -23,14 +23,10 @@ module MotherBrain
         #
         # @raise [UnexpectedProvisionCount] if an unexpected amount of nodes was returned by the
         #   request to the provisioner
-        #
-        # @return [Boolean]
         def validate_create(created, manifest)
           unless created.length == manifest.node_count
             raise UnexpectedProvisionCount.new(manifest.node_count, created.length)
           end
-
-          true
         end
       end
 
