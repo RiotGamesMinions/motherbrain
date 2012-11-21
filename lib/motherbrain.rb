@@ -24,6 +24,8 @@ require 'mb/errors'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
+  autoload :ActorUtil, 'mb/actor_util'
+  autoload :Application, 'mb/application'
   autoload :ChefMutex, 'mb/chef_mutex'
   autoload :ChefRunner, 'mb/chef_runner'
   autoload :CleanRoomBase, 'mb/clean_room_base'
@@ -41,11 +43,15 @@ module MotherBrain
   autoload :Group, 'mb/group'
   autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
+  autoload :JSONManifest, 'mb/json_manifest'
   autoload :Logging, 'mb/logging'
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
+  autoload :Provisioner, 'mb/provisioner'
+  autoload :Provisioners, 'mb/provisioners'
   autoload :RealModelBase, 'mb/real_model_base'
+  autoload :SafeReturn, 'mb/safe_return'
 
   class << self
     attr_writer :ui

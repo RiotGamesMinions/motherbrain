@@ -1,11 +1,10 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class ClusterBootstrapper < RealModelBase
+    autoload :Manifest, 'mb/cluster_bootstrapper/manifest'
     autoload :Worker, 'mb/cluster_bootstrapper/worker'
 
     class BootTask < Struct.new(:id, :group); end
-
-    NODE_GROUP_ID_REGX = /^(.+)::(.+)$/
 
     class << self
       # Reduce a manifest to a hash containing only key/value pairs where the initial
@@ -21,33 +20,6 @@ module MotherBrain
             boot_task.find { |task| task.id == id }
           else
             boot_task.id == id
-          end
-        end
-      end
-
-      # Validate the given bootstrap manifest hash
-      #
-      # @param [Hash] manifest
-      # @param [MB::Plugin] plugin
-      #
-      # @raise [InvalidBootstrapManifest]
-      def validate_manifest(manifest, plugin)
-        manifest.keys.each do |scoped_group|
-          match = scoped_group.match(NODE_GROUP_ID_REGX)
-          
-          unless match
-            raise InvalidBootstrapManifest, "Manifest contained an entry: '#{scoped_group}'. This is not in the proper format 'component::group'"
-          end
-
-          component = match[1]
-          group     = match[2]
-
-          unless plugin.has_component?(component)
-            raise InvalidBootstrapManifest, "Manifest describes the component: '#{component}' but '#{plugin.name}' does not have this component"
-          end
-
-          unless plugin.component(component).has_group?(group)
-            raise InvalidBootstrapManifest, "Manifest describes the group: '#{group}' in the component '#{component}' but the component does not have this group"
           end
         end
       end
@@ -82,7 +54,7 @@ module MotherBrain
     #   keys for bootstrapped node groups and values that are the Ridley::SSH::ResultSet
     #   which contains the result of bootstrapping each node.
     def run(manifest, options = {})
-      self.class.validate_manifest(manifest, self.plugin)
+      ClusterBootstrapper::Manifest.validate(manifest, self.plugin)
 
       responses = Array.new
 

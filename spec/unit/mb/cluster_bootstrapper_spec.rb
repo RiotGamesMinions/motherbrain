@@ -108,67 +108,6 @@ describe MB::ClusterBootstrapper do
         subject.manifest_reduce(manifest, boot_task).should have(1).item
       end
     end
-
-    describe "::validate_manifest" do
-      let(:manifest) do
-        {
-          "activemq::master" => [
-            "amq1.riotgames.com"
-          ],
-          "nginx::master" => [
-            "nginx1.riotgames.com"
-          ]
-        }
-      end
-
-      it "returns true if the manifest is valid" do
-        subject.validate_manifest(manifest, plugin).should be_true
-      end
-
-      context "when manifest contains a component that is not part of the plugin" do
-        before(:each) do
-          plugin.stub(:has_component?).with("activemq").and_return(false)
-          plugin.stub(:has_component?).with("nginx").and_return(false)
-        end
-
-        it "raises an InvalidBootstrapManifest error" do
-          lambda {
-            subject.validate_manifest(manifest, plugin)
-          }.should raise_error(MB::InvalidBootstrapManifest)
-        end
-      end
-
-      context "when manifest contains a group that is not part of a component" do
-        before(:each) do
-          activemq.stub(:has_group?).with("master").and_return(false)
-        end
-
-        it "raises an InvalidBootstrapManifest error" do
-          lambda {
-            subject.validate_manifest(manifest, plugin)
-          }.should raise_error(MB::InvalidBootstrapManifest)
-        end
-      end
-
-      context "when a key is not in {component}::{group} format" do
-        let(:manifest) do
-          {
-            "activemq" => [
-              "amq1.riotgames.com"
-            ],
-            "nginx::master" => [
-              "nginx1.riotgames.com"
-            ]
-          }
-        end
-
-        it "raises an InvalidBootstrapManifest error" do
-          lambda {
-            subject.validate_manifest(manifest, plugin)
-          }.should raise_error(MB::InvalidBootstrapManifest)
-        end
-      end
-    end
   end
 
   let(:bootstrap_options) do
