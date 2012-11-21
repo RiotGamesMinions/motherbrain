@@ -1,9 +1,20 @@
+GIT
+  remote: git@github.com:RiotGames/ef-rest.git
+  revision: add037b34d3066c446ea8d17f599df2fc78679cb
+  specs:
+    ef-rest (0.0.1)
+      activesupport
+      addressable
+      faraday
+      multi_json
+
 PATH
   remote: .
   specs:
     motherbrain (0.0.1)
       activesupport
       chozo (>= 0.2.2)
+      ef-rest
       nexus_cli (~> 0.3.0)
       ridley (>= 0.5.1)
       rye
@@ -33,7 +44,7 @@ GEM
       timers (>= 1.0.0)
     childprocess (0.3.6)
       ffi (~> 1.0, >= 1.0.6)
-    chozo (0.2.2)
+    chozo (0.2.3)
       activesupport (>= 3.2.0)
       hashie
       multi_json (>= 1.3.0)
@@ -112,7 +123,7 @@ GEM
     redcarpet (2.2.2)
     rest-client (1.6.7)
       mime-types (>= 1.16)
-    ridley (0.5.1)
+    ridley (0.5.2)
       activemodel (>= 3.2.0)
       activesupport (>= 3.2.0)
       addressable
@@ -166,6 +177,7 @@ DEPENDENCIES
   aruba
   coolline
   cucumber
+  ef-rest!
   fuubar
   growl
   guard (>= 1.5.0)

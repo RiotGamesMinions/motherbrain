@@ -2,6 +2,8 @@ source :rubygems
 
 gemspec
 
+gem 'ef-rest', git: 'git@github.com:RiotGames/ef-rest.git'
+
 platforms :ruby do
   gem 'yajl-ruby'
   gem 'mysql2'
