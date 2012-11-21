@@ -26,7 +26,12 @@ module MotherBrain
         #
         # @return [Array<Hash>]
         def handle_created(ef_response)
-          ef_response[:nodes]
+          ef_response[:nodes].collect do |node|
+            {
+              instance_type: node[:automatic][:eucalyptus][:instance_type],
+              public_hostname: node[:automatic][:eucalyptus][:public_hostname]
+            }
+          end
         end
 
         # @param [Hash] ef_response

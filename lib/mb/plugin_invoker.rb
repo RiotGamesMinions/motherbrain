@@ -80,7 +80,7 @@ module MotherBrain
 
               assert_environment_exists(environment)
 
-              manifest = MultiJson.load(File.read(manifest_file))
+              manifest = ClusterBootstrapper::Manifest.from_file(manifest_file)
 
               bootstrap_options = {
                 environment: environment,
@@ -160,7 +160,7 @@ module MotherBrain
                 }
               }
 
-              MB.ui.say "Starting provision of nodes in environment: #{environment}"
+              MB.ui.say "Provisioning nodes and adding them to: #{environment}"
               status, body = MB::Application.provisioner.provision(environment, manifest, provisioner_options)
 
               if status == :ok
@@ -168,15 +168,14 @@ module MotherBrain
 
                 if options[:skip_bootstrap]
                   MB.ui.say "Skipping bootstrap"
-                  exit 1
+                  exit 0
                 end
 
-                bootstrap_manifest = Tempfile.new('bootstrap_manifest')
-                File.open(bootstrap_manifest, 'w+') do |f|
-                  f.write MultiJson.dump(body)
-                end
+                bootstrap_manifest = ClusterBootstrapper::Manifest.from_provisioner(body, manifest)
+                bootstrap_manifest.path = Tempfile.new('bootstrap_manifest')
+                bootstrap_manifest.save
 
-                invoke(:bootstrap, [environment, bootstrap_manifest], options)
+                invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
               else
                 MB.ui.error body
                 exit 1

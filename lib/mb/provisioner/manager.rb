@@ -65,7 +65,7 @@ module MotherBrain
 
         if status == :ok
           safe_return do
-            self.class.validate_create(body)
+            self.class.validate_create(body, manifest)
             body
           end
         else

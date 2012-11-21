@@ -1,6 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class ClusterBootstrapper < RealModelBase
+    autoload :Manifest, 'mb/cluster_bootstrapper/manifest'
     autoload :Worker, 'mb/cluster_bootstrapper/worker'
 
     class BootTask < Struct.new(:id, :group); end

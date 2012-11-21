@@ -28,7 +28,7 @@ module MotherBrain
     end
 
     # return [String]
-    attr_reader :path
+    attr_accessor :path
 
     # @param [#to_s] path
     def initialize(path = nil, attributes = Hash.new)
