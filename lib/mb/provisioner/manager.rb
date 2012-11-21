@@ -20,6 +20,18 @@ module MotherBrain
           id.nil? ? Provisioners.default : Provisioners.get!(id)
         end
 
+        # Instantiate a new provisioner based on the given options
+        #
+        # @param [Hash] options
+        #   see {choose_provisioner} and the initializer provisioner you are attempting to
+        #   initialize
+        #
+        # @return [~Provisioner]
+        def new_provisioner(options)
+          id = options.delete(:with)
+          choose_provisioner(id).new(options)
+        end
+
         # Validate that the created environment factory environment contains the expected number
         # of instance types
         #
@@ -72,10 +84,7 @@ module MotherBrain
           return response
         end
 
-        provisioner_klass = self.class.choose_provisioner(options[:with])
-        provisioner       = provisioner_klass.new(options)
-
-        response = provisioner.up(environment.to_s, manifest)
+        response = self.class.new_provisioner(options).up(environment.to_s, manifest)
 
         if response.ok?
           safe_return do
@@ -94,10 +103,7 @@ module MotherBrain
       #
       # @return [Boolean]
       def destroy(environment, options = {})
-        provisioner_klass = self.class.choose_provisioner(options[:with])
-        provisioner       = provisioner_klass.new(options)
-
-        provisioner.down(environment.to_s)
+        self.class.new_provisioner(options).down(environment.to_s)
       end
     end
   end
