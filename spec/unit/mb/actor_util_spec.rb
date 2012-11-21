@@ -65,10 +65,10 @@ describe MB::ActorUtil do
     end
 
     context "given no block" do
-      it "raises an ArgumentError" do
+      it "raises an LocalJumpError" do
         expect {
           subject.safe_return
-        }.to raise_error(MB::ArgumentError)
+        }.to raise_error(LocalJumpError)
       end
     end
   end

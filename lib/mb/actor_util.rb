@@ -10,13 +10,13 @@ module MotherBrain
     #
     # @param [Array] exceptions
     #
-    # @raise [MB::ArgumentError] if no block is given
+    # @raise [LocalJumpError] if no block is given
     #
     # @return [Array]
     #   Return a response array containing a status at index 0 and body at index 1
     def safe_return(*exceptions)
       unless block_given?
-        raise MB::ArgumentError, "Safe return requires a block"
+        raise ::LocalJumpError, "no block given (yield)"
       end
 
       if exceptions.nil? || exceptions.empty?
