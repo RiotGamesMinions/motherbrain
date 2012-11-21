@@ -1,6 +1,11 @@
 module MotherBrain
   module Provisioner
     # @author Jamie Winsor <jamie@vialstudios.com>
+    #
+    # Handles provisioning of nodes and joining them to a Chef Server. Requests are
+    # delegated to a provisioner of the desired type or 'Environment Factory' by
+    # default.
+    #
     class Manager
       class << self
         # Returns a provisioner for the given ID. The default provisioner will be returned
@@ -33,27 +38,31 @@ module MotherBrain
       include Celluloid
       include ActorUtil
 
-      # @example value of future
-      #   {
-      #     "activemq::master" => [
-      #       "amq1.riotgames.com",
-      #       "amq2.riotgames.com",
-      #       "amq3.riotgames.com",
-      #       "amq4.riotgames.com"
-      #     ],
-      #     "activemq::slave" => [
-      #       "amqs1.riotgames.com",
-      #       "amqs2.riotgames.com"
-      #     ]
-      #   }
+      # Returns a SafeReturn array whose body is an array of hashes representing the nodes
+      # created for the given manifest
       #
-      # @param [String] environment
+      # @example body of success
+      #   [
+      #     {
+      #       instance_type: "m1.large",
+      #       public_hostname: "node1.riotgames.com"
+      #     },
+      #     {
+      #       instance_type: "m1.small",
+      #       public_hostname: "node2.riotgames.com"
+      #     }
+      #   ]
+      #
+      # @param [#to_s] environment
+      #   name of the environment to create or append to
       # @param [Provisioner::Manifest] manifest
+      #   manifest of nodes to create
       # @param [MotherBrain::Plugin] plugin
+      #   the plugin we are creating these nodes for
       # @option options [#to_sym] :with
       #   id of provisioner to use
       #
-      # @return [Array]
+      # @return [SafeReturn]
       def provision(environment, manifest, plugin, options = {})
         response = safe_return(InvalidProvisionManifest) do
           Provisioner::Manifest.validate(manifest, plugin)
@@ -66,7 +75,7 @@ module MotherBrain
         provisioner_klass = self.class.choose_provisioner(options[:with])
         provisioner       = provisioner_klass.new(options)
 
-        response = provisioner.up(environment, manifest)
+        response = provisioner.up(environment.to_s, manifest)
 
         if response.ok?
           safe_return do
@@ -78,7 +87,8 @@ module MotherBrain
         end
       end
 
-      # @param [String] environment
+      # @param [#to_s] environment
+      #   name of the environment to destroy
       # @option options [#to_sym] :with
       #   id of provisioner to use
       #
@@ -87,7 +97,7 @@ module MotherBrain
         provisioner_klass = self.class.choose_provisioner(options[:with])
         provisioner       = provisioner_klass.new(options)
 
-        provisioner.down(environment)
+        provisioner.down(environment.to_s)
       end
     end
   end

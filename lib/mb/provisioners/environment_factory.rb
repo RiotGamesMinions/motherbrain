@@ -3,6 +3,10 @@ require 'ef/rest'
 module MotherBrain
   module Provisioners
     # @author Jamie Winsor <jamie@vialstudios.com>
+    #
+    # Provisioner adapter for Environment Factory. Node/Environment creation will be
+    # delegated to an Environment Factory server.
+    #
     class EnvironmentFactory
       class << self
         # Convert the given provisioner manifest to a hash usable by Environment Factory

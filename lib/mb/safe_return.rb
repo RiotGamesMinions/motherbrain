@@ -1,5 +1,9 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
+  #
+  # A thin wrapper around an Array to provide a few helper functions for values
+  # returned by {ActorUtil#safe_return}.
+  #
   class SafeReturn < Array
     # @param [Symbol] status
     # @param [Object] body

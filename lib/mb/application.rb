@@ -1,4 +1,8 @@
 module MotherBrain
+  # @author Jamie Winsor <jamie@vialstudios.com>
+  #
+  # Main Application supervisor for MotherBrain.
+  #
   class Application < Celluloid::SupervisionGroup
     class << self
       # @return [Celluloid::Actor]
