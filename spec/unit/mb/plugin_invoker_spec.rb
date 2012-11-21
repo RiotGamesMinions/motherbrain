@@ -27,48 +27,58 @@ describe MotherBrain::PluginInvoker do
         subject.fabricate(plugin).should be_a(Class)
       end
 
-      it "sets the plugin class attribute to the given plugin" do
+      it "sets the plugin class attribute of the fabricated class to the given plugin" do
         subject.fabricate(plugin).plugin.should eql(plugin)
       end
 
-      it "sets the namespace to the name of the given plugin" do
+      it "sets the namespace of the fabricated class to the name of the given plugin" do
         subject.fabricate(plugin).namespace.should eql(plugin.name)
       end
 
-      it "creates a task for each of the plugin's commands" do
-        tasks = subject.fabricate(plugin).tasks
+      describe "fabricated class" do
+        it "has a task for each of the fabricated class' plugin's commands" do
+          tasks = subject.fabricate(plugin).tasks
 
-        commands.each do |command|
-          tasks.should include(command.name)
-        end
-      end
-
-      it "creates a new subcommand for every component" do
-        subcommands = subject.fabricate(plugin).subcommands
-
-        subcommands.should have(components.length).items
-        components.each do |component|
-          subcommands.should include(component.name)
-        end
-      end
-
-      context "when the plugin has a bootstrapper" do
-        before(:each) do
-          plugin.stub(:bootstrapper).and_return(double('bootstrapper'))
+          commands.each do |command|
+            tasks.should have_key(command.name)
+          end
         end
 
-        it "has a bootstrap task" do
-          subject.fabricate(plugin).tasks.should have_key("bootstrap")
-        end
-      end
+        it "has a new for every component of the fabricated class' plugin" do
+          subcommands = subject.fabricate(plugin).subcommands
 
-      context "when a plugin does not have a bootstrapper" do
-        before(:each) do
-          plugin.stub(:bootstrapper).and_return(nil)
+          subcommands.should have(components.length).items
+          components.each do |component|
+            subcommands.should include(component.name)
+          end
         end
 
-        it "does not have a bootstrap task" do
-          subject.fabricate(plugin).tasks.should_not have_key("bootstrap")
+        context "when the plugin has a bootstrapper" do
+          before(:each) do
+            plugin.stub(:bootstrapper).and_return(double('bootstrapper'))
+          end
+
+          it "has a bootstrap task" do
+            subject.fabricate(plugin).tasks.should have_key("bootstrap")
+          end
+
+          it "has a 'provision' task" do
+            subject.fabricate(plugin).tasks.should have_key("provision") 
+          end
+        end
+
+        context "when a plugin does not have a bootstrapper" do
+          before(:each) do
+            plugin.stub(:bootstrapper).and_return(nil)
+          end
+
+          it "does not have a 'bootstrap' task" do
+            subject.fabricate(plugin).tasks.should_not have_key("bootstrap")
+          end
+
+          it "does not have a 'provision' task" do
+            subject.fabricate(plugin).tasks.should_not have_key("provision")
+          end
         end
       end
     end

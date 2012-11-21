@@ -64,7 +64,7 @@ module MotherBrain
               desc: "A proxy server for the node being bootstrapped"
             method_option :encrypted_data_bag_secret_path,
               type: :string,
-              alises: "-secret",
+              aliases: "--secret",
               desc: "The filepath to your organizations encrypted data bag secret key"
             method_option :sudo,
               type: :boolean,
@@ -72,15 +72,8 @@ module MotherBrain
               desc: "Should we execute the bootstrap with sudo?"
             desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
             define_method(:bootstrap) do |environment, manifest_file|
-              manifest_file = File.expand_path(manifest_file)
-
-              unless File.exist?(manifest_file)
-                raise InvalidBootstrapManifest, "No bootstrap manifest found at: #{manifest_file}"
-              end
-
               assert_environment_exists(environment)
-
-              manifest = MultiJson.load(File.read(manifest_file))
+              manifest = ClusterBootstrapper::Manifest.from_file(manifest_file)
 
               bootstrap_options = {
                 environment: environment,
@@ -98,6 +91,83 @@ module MotherBrain
               MB.ui.say "Starting bootstrap of nodes on: #{environment}"
               MB.ui.say plugin.bootstrapper.run(manifest, bootstrap_options)
               MB.ui.say "Bootstrap finished"
+            end
+
+            method_option :api_url,
+              type: :string,
+              desc: "URL to the Environment Factory API endpoint",
+              required: true
+            method_option :api_key,
+              type: :string,
+              desc: "API authentication key for the Environment Factory",
+              required: true
+            method_option :ssl_verify,
+              type: :boolean,
+              desc: "Should we verify SSL connections?",
+              default: false
+            method_option :skip_bootstrap,
+              type: :boolean,
+              desc: "Nodes will be created and added to the Chef environment but not bootstrapped",
+              default: false
+            method_option :ssh_user,
+              type: :string,
+              desc: "A shell user that will login to each node and perform the bootstrap command on",
+              aliases: "-u"
+            method_option :ssh_password,
+              type: :string,
+              desc: "The password for the shell user that will perform the bootstrap",
+              aliases: "-p"
+            method_option :ssh_keys,
+              type: :array,
+              desc: "An array of keys (or a single key) to authenticate the ssh user with instead of a password"
+            method_option :validator_client,
+              type: :string,
+              desc: "The name of the Chef validator client to use in bootstrapping"
+            method_option :validator_path,
+              type: :string,
+              desc: "The filepath to the Chef validator client's private key to use in bootstrapping"
+            method_option :bootstrap_proxy,
+              type: :string,
+              desc: "A proxy server for the node being bootstrapped"
+            method_option :encrypted_data_bag_secret_path,
+              type: :string,
+              aliases: "--secret",
+              desc: "The filepath to your organizations encrypted data bag secret key"
+            method_option :sudo,
+              type: :boolean,
+              default: true,
+              desc: "Should we execute the bootstrap with sudo?"
+            desc("provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment")
+            define_method(:provision) do |environment, manifest_file|
+              manifest = Provisioner::Manifest.from_file(manifest_file)
+              provisioner_options = {
+                api_url: options[:api_url],
+                api_key: options[:api_key],
+                ssl: {
+                  verify: options[:ssl_verify]
+                }
+              }
+
+              MB.ui.say "Provisioning nodes and adding them to: #{environment}"
+              response = MB::Application.provisioner.provision(environment, manifest, plugin, provisioner_options)
+
+              if response.ok?
+                MB.ui.say "Provision finished"
+
+                if options[:skip_bootstrap]
+                  MB.ui.say "Skipping bootstrap"
+                  exit 0
+                end
+
+                bootstrap_manifest = ClusterBootstrapper::Manifest.from_provisioner(response.body, manifest)
+                bootstrap_manifest.path = Tempfile.new('bootstrap_manifest')
+                bootstrap_manifest.save
+
+                invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
+              else
+                MB.ui.error response.body.to_s
+                exit 1
+              end
             end
           end
         end

@@ -39,6 +39,8 @@ module MotherBrain
       end
     end
 
+    NODE_GROUP_ID_REGX = /^(.+)::(.+)$/.freeze
+
     attr_reader :components
     attr_reader :commands
     attr_reader :dependencies

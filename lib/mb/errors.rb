@@ -9,7 +9,13 @@ module MotherBrain
       end
     end
 
-    alias_method :message, :to_s
+    def message
+      self.class.to_s
+    end
+
+    def to_s
+      self.message
+    end
   end
 
   class InternalError < MBError; status_code(99); end
@@ -17,6 +23,9 @@ module MotherBrain
   class AbstractFunction < InternalError; end
   class ReservedGearKeyword < InternalError; end
   class DuplicateGearKeyword < InternalError; end
+  class InvalidProvisionerClass < InternalError; end
+  class ProvisionerRegistrationError < InternalError; end
+  class ProvisionerNotRegistered < InternalError; end
 
   class PluginSyntaxError < MBError; status_code(100); end
   class DuplicateGroup < PluginSyntaxError; end
@@ -78,4 +87,23 @@ module MotherBrain
   class ChefConnectionError < MBError; status_code(16); end
   class InvalidBootstrapManifest < MBError; status_code(17); end
   class ResourceLocked < MBError; status_code(18); end
+  class InvalidProvisionManifest < MBError; status_code(19); end
+  class ManifestNotFound < MBError; status_code(20); end
+  class InvalidJSONManifest < MBError; status_code(21); end
+  
+  class UnexpectedProvisionCount < MBError
+    status_code(20)
+
+    attr_reader :expected
+    attr_reader :got
+
+    def initialize(expected, got)
+      @expected = expected
+      @got      = got
+    end
+
+    def message
+      "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
+    end
+  end
 end
