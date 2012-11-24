@@ -1,5 +1,5 @@
 module MotherBrain
-  class ClusterBootstrapper
+  module Bootstrap
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class Worker

@@ -97,8 +97,8 @@ describe MB::Plugin do
       end
     end
 
-    it "has a ClusterBootstrapper for the value of bootstrapper" do
-      subject.bootstrapper.should be_a(MB::ClusterBootstrapper)
+    it "has a Bootstrap::Routine for the value of bootstrap_routine" do
+      subject.bootstrap_routine.should be_a(MB::Bootstrap::Routine)
     end
   end
 end

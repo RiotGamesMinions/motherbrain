@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::ClusterBootstrapper::Manifest do
+describe MB::Bootstrap::Manifest do
   let(:plugin) { MB::Plugin.new(@context) }
 
   let(:activemq) { MB::Component.new('activemq', @context) }
@@ -51,8 +51,8 @@ describe MB::ClusterBootstrapper::Manifest do
       @result = subject.from_provisioner(response, provisioner_manifest)
     end
 
-    it "returns a ClusterBootstrapper::Manifest" do
-      @result.should be_a(MB::ClusterBootstrapper::Manifest)
+    it "returns a Bootstrap::Manifest" do
+      @result.should be_a(MB::Bootstrap::Manifest)
     end
 
     it "has a key for each node type from the provisioner manifest" do

@@ -1,5 +1,5 @@
 module MotherBrain
-  class ClusterBootstrapper
+  module Bootstrap
     # @author Jamie Winsor <jamie@vialstudios.com>
     #
     # Manifest for bootstrapping a collection of nodes as a specified node group

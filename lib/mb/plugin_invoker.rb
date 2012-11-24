@@ -41,7 +41,7 @@ module MotherBrain
             MB.ui.say nodes.to_yaml
           end
 
-          if plugin.bootstrapper.present?
+          if plugin.bootstrap_routine.present?
             method_option :ssh_user,
               type: :string,
               desc: "A shell user that will login to each node and perform the bootstrap command on",
@@ -89,7 +89,7 @@ module MotherBrain
               }
 
               MB.ui.say "Starting bootstrap of nodes on: #{environment}"
-              MB.ui.say plugin.bootstrapper.run(manifest, bootstrap_options)
+              MB.ui.say plugin.bootstrap_routine.run(manifest, bootstrap_options)
               MB.ui.say "Bootstrap finished"
             end
 

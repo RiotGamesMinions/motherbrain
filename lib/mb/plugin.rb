@@ -66,8 +66,8 @@ module MotherBrain
     attribute :email,
       type: [String, Array]
 
-    attribute :bootstrapper,
-      type: MB::ClusterBootstrapper
+    attribute :bootstrap_routine,
+      type: MB::Bootstrap::Routine
 
     # @param [MB::Context] context
     def initialize(context, &block)
@@ -248,7 +248,7 @@ module MotherBrain
       end
 
       def cluster_bootstrap(&block)
-        real_model.bootstrapper = ClusterBootstrapper.new(context, real_model, &block)
+        real_model.bootstrap_routine = Bootstrap::Routine.new(context, real_model, &block)
       end
 
       def method_missing(method_name, *args, &block)

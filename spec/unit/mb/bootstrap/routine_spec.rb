@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::ClusterBootstrapper do
+describe MB::Bootstrap::Routine do
   let(:plugin) { MB::Plugin.new(@context) }
 
   let(:activemq) { MB::Component.new('activemq', @context) }

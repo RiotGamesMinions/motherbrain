@@ -89,8 +89,8 @@ describe "loading a plugin", type: "acceptance" do
 
   it { subject.dependencies.should have(2).items }
 
-  it { subject.bootstrapper.should_not be_nil }
-  it { subject.bootstrapper.boot_queue.should have(1).item }
+  it { subject.bootstrap_routine.should_not be_nil }
+  it { subject.bootstrap_routine.boot_queue.should have(1).item }
 
   describe "dependencies" do
     subject { @plugin.dependencies }
