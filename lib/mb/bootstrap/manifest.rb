@@ -21,8 +21,10 @@ module MotherBrain
         # @param [Provisioner::Manifest] manifest
         #
         # @return [Bootstrap::Manifest]
-        def from_provisioner(nodes, manifest)
-          new.tap do |boot_manifest|
+        def from_provisioner(nodes, manifest, path = nil)
+          nodes, manifest = nodes.dup, manifest.dup
+
+          new(path).tap do |boot_manifest|
             manifest.each_pair do |instance_type, groups|
               groups.each_pair do |name, count|
                 boot_manifest[name] = Array.new

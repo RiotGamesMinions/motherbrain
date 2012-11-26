@@ -6,14 +6,15 @@ describe MB::Bootstrap::Manifest do
 
     describe "::from_provisioner" do
       let(:provisioner_manifest) do
-        {
+        MB::Provisioner::Manifest.new(
+          '/tmp/manifest',
           "m1.large" => {
             "activemq::master" => 2
           },
           "m1.small" => {
             "activemq::slave" => 1
           }
-        }
+        )
       end
 
       let(:response) do
@@ -50,6 +51,16 @@ describe MB::Bootstrap::Manifest do
       it "has a node item for each expected node from provisioner manifest" do
         @result["activemq::master"].should have(2).items
         @result["activemq::slave"].should have(1).items
+      end
+
+      context "given a value for the path argument" do
+        before(:each) do
+          @result = subject.from_provisioner(response, provisioner_manifest, '/tmp/path')
+        end
+
+        it "sets the path value" do
+          @result.path.should eql('/tmp/path')
+        end
       end
     end
   end

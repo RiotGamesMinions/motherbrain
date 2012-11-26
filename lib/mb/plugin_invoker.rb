@@ -159,8 +159,11 @@ module MotherBrain
                   exit 0
                 end
 
-                bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(response.body, manifest)
-                bootstrap_manifest.path = Tempfile.new('bootstrap_manifest')
+                bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(
+                  response.body,
+                  manifest,
+                  Tempfile.new('bootstrap_manifest').path
+                )
                 bootstrap_manifest.save
 
                 invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
