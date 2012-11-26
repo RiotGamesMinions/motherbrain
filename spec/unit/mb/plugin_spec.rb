@@ -97,8 +97,21 @@ describe MB::Plugin do
       end
     end
 
-    it "has a ClusterBootstrapper for the value of bootstrapper" do
-      subject.bootstrapper.should be_a(MB::ClusterBootstrapper)
+    it "has a Bootstrap::Routine for the value of bootstrap_routine" do
+      subject.bootstrap_routine.should be_a(MB::Bootstrap::Routine)
+    end
+  end
+
+  describe "#to_s" do
+    subject do
+      described_class.new(@context) do
+        name "pvpnet"
+        version "1.2.3"
+      end
+    end
+
+    it "returns the name and version of the plugin" do
+      subject.to_s.should eql("pvpnet (1.2.3)")
     end
   end
 end
