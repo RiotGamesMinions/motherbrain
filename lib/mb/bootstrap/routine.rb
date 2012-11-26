@@ -2,8 +2,6 @@ module MotherBrain
   module Bootstrap
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Routine < RealModelBase
-      class BootTask < Struct.new(:id, :group); end
-
       # @return [MB::Plugin]
       attr_reader :plugin
 
@@ -24,7 +22,7 @@ module MotherBrain
       # are contained within an array. Groups should be bootstrapped starting from index 0 of
       # the returned array.
       #
-      # @return [Array<BootTask>, Array<Array<BootTask>>]
+      # @return [Array<Bootstrap::BootTask>, Array<Array<Bootstrap::BootTask>>]
       def task_queue
         @task_queue ||= MB.expand_procs(task_procs)
       end
@@ -66,7 +64,7 @@ module MotherBrain
           @task_procs = Array.new
         end
 
-        # Add a BootTask for bootstrapping nodes in the given node group to the {Routine}
+        # Add a Bootstrap::BootTask for bootstrapping nodes in the given node group to the {Routine}
         #
         # @example
         #   Routine.new(...) do
@@ -82,7 +80,7 @@ module MotherBrain
           }
         end
 
-        # Add an array of BootTasks to be executed asyncronously to the {Routine}
+        # Add an array of Bootstrap::BootTasks to be executed asyncronously to the {Routine}
         #
         # @example
         #   Routine.new(...) do

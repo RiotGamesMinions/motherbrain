@@ -95,7 +95,7 @@ describe MB::Bootstrap::Routine do
       it "returns an array of arrays of boot tasks" do
         subject.task_queue.should have(1).item
         subject.task_queue[0].should have(2).items
-        subject.task_queue[0].should each be_a(MB::Bootstrap::Routine::BootTask)
+        subject.task_queue[0].should each be_a(MB::Bootstrap::BootTask)
       end
     end
 
@@ -109,7 +109,7 @@ describe MB::Bootstrap::Routine do
 
       it "returns an array of boot tasks" do
         subject.task_queue.should have(2).items
-        subject.task_queue.should each be_a(MB::Bootstrap::Routine::BootTask)
+        subject.task_queue.should each be_a(MB::Bootstrap::BootTask)
       end
     end
   end
