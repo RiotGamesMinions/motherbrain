@@ -1,5 +1,5 @@
 module MotherBrain
-  class ClusterBootstrapper
+  module Bootstrap
     # @author Jamie Winsor <jamie@vialstudios.com>
     #
     # Manifest for bootstrapping a collection of nodes as a specified node group
@@ -36,33 +36,33 @@ module MotherBrain
             end
           end
         end
+      end
 
-        # Validate the given bootstrap manifest hash
-        #
-        # @param [ClusterBootstrapper::Manifest] manifest
-        # @param [MB::Plugin] plugin
-        #
-        # @raise [InvalidBootstrapManifest]
-        def validate(manifest, plugin)
-          manifest.keys.each do |scoped_group|
-            match = scoped_group.match(Plugin::NODE_GROUP_ID_REGX)
-            
-            unless match
-              raise InvalidBootstrapManifest, "Manifest contained an entry: '#{scoped_group}'. This is not in the proper format 'component::group'"
-            end
+      # Validates that the instance of manifest describes a layout for the given routine
+      #
+      # @param [Bootstrap::Routine] routine
+      #
+      # @raise [InvalidBootstrapManifest]
+      #
+      # @return [self]
+      def validate!(routine)
+        self.keys.each do |node_group|
+          match = node_group.match(Plugin::NODE_GROUP_ID_REGX)
+          
+          unless match
+            msg = "Manifest contained the entry: '#{node_group}' which is not"
+            msg << " in the proper node group format: 'component::group'"
+            raise InvalidBootstrapManifest, msg
+          end
 
-            component = match[1]
-            group     = match[2]
-
-            unless plugin.has_component?(component)
-              raise InvalidBootstrapManifest, "Manifest describes the component: '#{component}' but '#{plugin.name}' does not have this component"
-            end
-
-            unless plugin.component(component).has_group?(group)
-              raise InvalidBootstrapManifest, "Manifest describes the group: '#{group}' in the component '#{component}' but the component does not have this group"
-            end
+          unless routine.has_task?(node_group)
+            msg = "Manifest describes the node group '#{node_group}' which is not found"
+            msg << " in the given routine for '#{routine.plugin}'"
+            raise InvalidBootstrapManifest, msg
           end
         end
+
+        self
       end
     end
   end

@@ -26,10 +26,10 @@ require 'mb/errors'
 module MotherBrain
   autoload :ActorUtil, 'mb/actor_util'
   autoload :Application, 'mb/application'
+  autoload :Bootstrap, 'mb/bootstrap'
   autoload :ChefMutex, 'mb/chef_mutex'
   autoload :ChefRunner, 'mb/chef_runner'
   autoload :CleanRoomBase, 'mb/clean_room_base'
-  autoload :ClusterBootstrapper, 'mb/cluster_bootstrapper'
   autoload :Command, 'mb/command'
   autoload :Component, 'mb/component'
   autoload :ComponentInvoker, 'mb/component_invoker'
@@ -77,6 +77,47 @@ module MotherBrain
     # @return [Logger]
     def set_logger(obj)
       MB::Logging.set_logger(obj)
+    end
+
+    # Takes an array of procs or a an array of arrays of procs and calls them returning their evaluated
+    # values in an array at the same depth.
+    #
+    # @example
+    #   procs = [
+    #     -> { :one },
+    #     -> { :two },
+    #     [
+    #       -> { :nested },
+    #       [
+    #         -> { :deep_nested }
+    #       ]
+    #     ]
+    #   ]
+    #
+    #   expand_procs(procs) => [
+    #     :one,
+    #     :two,
+    #     [
+    #       :nested,
+    #       [
+    #         :deep_nested
+    #       ]
+    #     ]
+    #   ]
+    #
+    # @param [Array<Proc>, Array<Array<Proc>>] procs
+    #   an array of nested arrays and procs
+    #
+    # @return [Array]
+    #   an array of nested arrays and their evaluated values
+    def expand_procs(procs)
+      procs.map! do |l_proc|
+        if l_proc.is_a?(Array)
+          expand_procs(l_proc)
+        else
+          l_proc.call
+        end
+      end
     end
   end
 end

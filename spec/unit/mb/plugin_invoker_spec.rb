@@ -19,7 +19,7 @@ describe MotherBrain::PluginInvoker do
     end
 
     let(:plugin) do
-      double('plugin', name: name, commands: commands, components: components, bootstrapper: nil)
+      double('plugin', name: name, commands: commands, components: components, bootstrap_routine: nil)
     end
 
     describe "::fabricate" do
@@ -53,9 +53,9 @@ describe MotherBrain::PluginInvoker do
           end
         end
 
-        context "when the plugin has a bootstrapper" do
+        context "when the plugin has a bootstrap_routine" do
           before(:each) do
-            plugin.stub(:bootstrapper).and_return(double('bootstrapper'))
+            plugin.stub(:bootstrap_routine).and_return(double('routine'))
           end
 
           it "has a bootstrap task" do
@@ -67,9 +67,9 @@ describe MotherBrain::PluginInvoker do
           end
         end
 
-        context "when a plugin does not have a bootstrapper" do
+        context "when a plugin does not have a bootstrap_routine" do
           before(:each) do
-            plugin.stub(:bootstrapper).and_return(nil)
+            plugin.stub(:bootstrap_routine).and_return(nil)
           end
 
           it "does not have a 'bootstrap' task" do
