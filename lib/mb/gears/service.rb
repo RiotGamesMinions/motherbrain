@@ -144,7 +144,6 @@ module MotherBrain
           runner_options = {}.tap do |opts|
             opts[:nodes]    = nodes
             opts[:user]     = config.ssh_user
-            opts[:key]      = config.ssh_key if config.ssh_key
             opts[:keys]     = config.ssh_keys if config.ssh_keys
             opts[:password] = config.ssh_password if config.ssh_password
           end
