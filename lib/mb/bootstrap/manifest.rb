@@ -20,7 +20,7 @@ module MotherBrain
         # @param [Hash] nodes
         # @param [Provisioner::Manifest] manifest
         #
-        # @return [ClusterBootstrapper::Manifest]
+        # @return [Bootstrap::Manifest]
         def from_provisioner(nodes, manifest)
           new.tap do |boot_manifest|
             manifest.each_pair do |instance_type, groups|

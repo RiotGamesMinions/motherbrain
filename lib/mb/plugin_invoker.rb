@@ -73,7 +73,7 @@ module MotherBrain
             desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
             define_method(:bootstrap) do |environment, manifest_file|
               assert_environment_exists(environment)
-              manifest = ClusterBootstrapper::Manifest.from_file(manifest_file)
+              manifest = MB::Bootstrap::Manifest.from_file(manifest_file)
 
               bootstrap_options = {
                 environment: environment,
@@ -159,7 +159,7 @@ module MotherBrain
                   exit 0
                 end
 
-                bootstrap_manifest = ClusterBootstrapper::Manifest.from_provisioner(response.body, manifest)
+                bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(response.body, manifest)
                 bootstrap_manifest.path = Tempfile.new('bootstrap_manifest')
                 bootstrap_manifest.save
 
