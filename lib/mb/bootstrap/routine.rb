@@ -33,10 +33,10 @@ module MotherBrain
       #   name for a bootstrap task to check for
       #
       # @return [Boolean]
-      def has_task?(node_group)
+      def has_task?(node_group, task_queue = self.task_queue)
         !task_queue.find do |task|
           if task.is_a?(Array)
-            task.find { |task | task.id == node_group }
+            has_task?(node_group, task)
           else
             task.id == node_group
           end

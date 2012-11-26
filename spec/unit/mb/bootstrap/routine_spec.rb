@@ -128,5 +128,23 @@ describe MB::Bootstrap::Routine do
     it "returns nil if a task with a matching ID is not present" do
       subject.has_task?("not::defined").should be_false
     end
+
+    context "given a routine with async tasks" do
+      subject do
+        described_class.new(@context, plugin) do
+          async do
+            bootstrap("activemq::master")
+            bootstrap("activemq::slave")
+          end
+          bootstrap("nginx::master")
+        end
+      end
+
+      it "has the nested async tasks and the top level tasks" do
+        subject.should have_task("activemq::master")
+        subject.should have_task("activemq::slave")
+        subject.should have_task("nginx::master")
+      end
+    end
   end
 end
