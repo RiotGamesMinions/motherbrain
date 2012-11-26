@@ -62,15 +62,15 @@ describe MB::Config do
       subject.should_not be_valid
     end
 
-    it "is invalid if the ssh_key and ssh_password is blank" do
+    it "is invalid if ssh_keys is blank or empty and ssh_password is blank" do
       pending
 
-      subject.ssh_key = ''
+      subject.ssh_keys = []
       subject.ssh_password = ''
 
       subject.should_not be_valid
       subject.errors[:ssh_password].should =~ ["You must specify an SSH password or an SSH key"]
-      subject.errors[:ssh_key].should =~ ["You must specify an SSH password or an SSH key"]
+      subject.errors[:ssh_keys].should =~ ["You must specify an SSH password or an SSH key"]
     end
 
     it "is invalid if ssh_timeout is a non-integer non-float" do
