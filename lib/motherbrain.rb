@@ -34,7 +34,6 @@ module MotherBrain
   autoload :Component, 'mb/component'
   autoload :ComponentInvoker, 'mb/component_invoker'
   autoload :Config, 'mb/config'
-  autoload :ConfigValidator, 'mb/config_validator'
   autoload :Context, 'mb/context'
   autoload :ContextualModel, 'mb/contextual_model'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
