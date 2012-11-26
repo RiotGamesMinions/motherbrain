@@ -46,14 +46,16 @@ module MotherBrain
     attribute :ssh_password,
       type: String
 
-    attribute :ssh_key,
-      type: String
-
     attribute :ssh_keys,
       type: [ Array, Set ]
 
     attribute :ssh_sudo,
+      default: true,
       type: Boolean
+
+    attribute :ssh_timeout,
+      default: 10.0,
+      type: [ Integer, Float ]
 
     # Returns a connection hash for Ridley from the instance's attributes
     #
