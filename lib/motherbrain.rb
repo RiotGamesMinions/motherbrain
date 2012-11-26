@@ -81,17 +81,17 @@ module MotherBrain
 
     # Recursively call a nested array of procs and return their results in a nested array
     #
-    # @param [Array<Proc>, Array<Array<Proc>>]
+    # @param [Array<Proc>, Array<Array<Proc>>] procs
     #   an array of nested arrays and procs
     #
     # @return [Array]
     #   an array of nested arrays and their evaluated values
-    def expand_procs(task_procs)
-      task_procs.map! do |task_proc|
-        if task_proc.is_a?(Array)
-          expand_procs(task_proc)
+    def expand_procs(procs)
+      procs.map! do |l_proc|
+        if l_proc.is_a?(Array)
+          expand_procs(l_proc)
         else
-          task_proc.call
+          l_proc.call
         end
       end
     end
