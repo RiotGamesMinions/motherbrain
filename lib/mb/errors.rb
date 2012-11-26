@@ -8,14 +8,6 @@ module MotherBrain
         define_singleton_method(:status_code) { code }
       end
     end
-
-    def message
-      self.class.to_s
-    end
-
-    def to_s
-      self.message
-    end
   end
 
   class InternalError < MBError; status_code(99); end

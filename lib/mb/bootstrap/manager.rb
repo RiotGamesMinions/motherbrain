@@ -10,6 +10,7 @@ module MotherBrain
       #
       # @param [Bootstrap::Manifest] manifest
       #   a hash where the keys are node group names and the values are arrays of hostnames
+      # @param [Bootstrap::Routine] routine
       # @param [Hash] options
       #   options to pass to {#concurrent_bootstrap}
       #
@@ -19,12 +20,12 @@ module MotherBrain
       #   an array containing hashes from each item in the task_queue. The hashes contain
       #   keys for bootstrapped node groups and values that are the Ridley::SSH::ResultSet
       #   which contains the result of bootstrapping each node.
-      def bootstrap(manifest, boot_routine, options = {})
-        Bootstrap::Manifest.validate(manifest, boot_routine)
+      def bootstrap(manifest, routine, options = {})
+        manifest.validate!(routine)
 
         responses = Array.new
 
-        until boot_routine.task_queue.empty?
+        until routine.task_queue.empty?
           reduced_manifest = self.class.manifest_reduce(manifest, task_queue.shift)
           responses.push concurrent_bootstrap(reduced_manifest, plugin, options)
         end

@@ -1,130 +1,140 @@
 require 'spec_helper'
 
 describe MB::Bootstrap::Manifest do
-  subject { described_class }
+  describe "ClassMethods" do
+    subject { described_class }
 
-  describe "::from_provisioner" do
-    let(:provisioner_manifest) do
-      {
-        "m1.large" => {
-          "activemq::master" => 2
-        },
-        "m1.small" => {
-          "activemq::slave" => 1
+    describe "::from_provisioner" do
+      let(:provisioner_manifest) do
+        {
+          "m1.large" => {
+            "activemq::master" => 2
+          },
+          "m1.small" => {
+            "activemq::slave" => 1
+          }
         }
-      }
-    end
+      end
 
-    let(:response) do
-      [
-        {
-          instance_type: "m1.large",
-          public_hostname: "euca-10-20-37-171.eucalyptus.cloud.riotgames.com"
-        },
-        {
-          instance_type: "m1.large",
-          public_hostname: "euca-10-20-37-172.eucalyptus.cloud.riotgames.com"
-        },
-        {
-          instance_type: "m1.small",
-          public_hostname: "euca-10-20-37-169.eucalyptus.cloud.riotgames.com"
-        }
-      ]
-    end
+      let(:response) do
+        [
+          {
+            instance_type: "m1.large",
+            public_hostname: "euca-10-20-37-171.eucalyptus.cloud.riotgames.com"
+          },
+          {
+            instance_type: "m1.large",
+            public_hostname: "euca-10-20-37-172.eucalyptus.cloud.riotgames.com"
+          },
+          {
+            instance_type: "m1.small",
+            public_hostname: "euca-10-20-37-169.eucalyptus.cloud.riotgames.com"
+          }
+        ]
+      end
 
-    before(:each) do
-      @result = subject.from_provisioner(response, provisioner_manifest)
-    end
+      before(:each) do
+        @result = subject.from_provisioner(response, provisioner_manifest)
+      end
 
-    it "returns a Bootstrap::Manifest" do
-      @result.should be_a(MB::Bootstrap::Manifest)
-    end
+      it "returns a Bootstrap::Manifest" do
+        @result.should be_a(MB::Bootstrap::Manifest)
+      end
 
-    it "has a key for each node type from the provisioner manifest" do
-      @result.should have(2).items
-      @result.should have_key("activemq::master")
-      @result.should have_key("activemq::slave")      
-    end
+      it "has a key for each node type from the provisioner manifest" do
+        @result.should have(2).items
+        @result.should have_key("activemq::master")
+        @result.should have_key("activemq::slave")      
+      end
 
-    it "has a node item for each expected node from provisioner manifest" do
-      @result["activemq::master"].should have(2).items
-      @result["activemq::slave"].should have(1).items
+      it "has a node item for each expected node from provisioner manifest" do
+        @result["activemq::master"].should have(2).items
+        @result["activemq::slave"].should have(1).items
+      end
     end
   end
 
-  describe "::validate" do
-    let(:manifest) do
-      {
+  describe "::validate!" do
+    subject do
+      described_class.new(
+        nil,
         "activemq::master" => [
           "amq1.riotgames.com"
         ],
         "nginx::master" => [
           "nginx1.riotgames.com"
         ]
-      }
+      )
     end
 
-    let(:plugin) { MB::Plugin.new(@context) }
-    let(:routine) { MB::Bootstrap::Routine.new(@context, plugin) }
+    let(:plugin) do
+      MB::Plugin.new(@context) do
+        name "pvpnet"
+        version "1.2.3"
 
-    let(:activemq) { MB::Component.new('activemq', @context) }
-    let(:nginx) { MB::Component.new('nginx', @context) }
+        component "activemq" do
+          group "master"
+        end
 
-    let(:amq_master) { MB::Group.new('master', @context) }
-    let(:amq_slave) { MB::Group.new('slave', @context) }
-    let(:nginx_master) { MB::Group.new('master', @context) }
-
-    before(:each) do
-      plugin.stub(:components).and_return([activemq, nginx])
-      activemq.stub(:groups).and_return([amq_master, amq_slave])
-      nginx.stub(:groups).and_return([nginx_master])
+        component "nginx" do
+          group "master"
+        end
+      end
     end
 
-    it "does not raise an exception if the manifest is well formed and for the given routine" do
-      subject.validate(manifest, routine).should be_true
+    let(:routine) do
+      MB::Bootstrap::Routine.new(@context, plugin) do
+        bootstrap("activemq::master")
+        bootstrap("nginx::master")
+      end
     end
 
-    context "when manifest contains a component that is not part of the routine" do
-      before(:each) do
-        plugin.stub(:has_component?).with("activemq").and_return(false)
-        plugin.stub(:has_component?).with("nginx").and_return(false)
+    it "does not raise if the manifest is well formed and contains only node groups from the given routine" do
+      expect {
+        subject.validate!(routine)
+      }.to_not raise_error
+    end
+
+    context "when manifest contains a node group that is not part of the routine" do
+      subject do
+        described_class.new(
+          nil,
+          "not::defined" => [
+            "one.riotgames.com"
+          ]
+        )
       end
 
       it "raises an InvalidBootstrapManifest error" do
         lambda {
-          subject.validate(manifest, routine)
-        }.should raise_error(MB::InvalidBootstrapManifest)
+          subject.validate!(routine)
+        }.should raise_error(
+          MB::InvalidBootstrapManifest,
+          "Manifest describes the node group 'not::defined' which is not found in the given routine for 'pvpnet (1.2.3)'"
+        )
       end
     end
 
-    context "when manifest contains a group that is not part of a component" do
-      before(:each) do
-        activemq.stub(:has_group?).with("master").and_return(false)
-      end
-
-      it "raises an InvalidBootstrapManifest error" do
-        lambda {
-          subject.validate(manifest, routine)
-        }.should raise_error(MB::InvalidBootstrapManifest)
-      end
-    end
-
-    context "when a key is not in {component}::{group} format" do
-      let(:manifest) do
-        {
+    context "when a key is not in proper node group format: '{component}::{group}'" do
+      subject do
+        described_class.new(
+          nil,
           "activemq" => [
             "amq1.riotgames.com"
           ],
           "nginx::master" => [
             "nginx1.riotgames.com"
           ]
-        }
+        )
       end
 
       it "raises an InvalidBootstrapManifest error" do
         lambda {
-          subject.validate(manifest, plugin)
-        }.should raise_error(MB::InvalidBootstrapManifest)
+          subject.validate!(plugin)
+        }.should raise_error(
+          MB::InvalidBootstrapManifest,
+          "Manifest contained the entry: 'activemq' which is not in the proper node group format: 'component::group'"
+        )
       end
     end
   end
