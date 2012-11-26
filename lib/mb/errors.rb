@@ -8,6 +8,8 @@ module MotherBrain
         define_singleton_method(:status_code) { code }
       end
     end
+
+    alias_method :mesage, :to_s
   end
 
   class InternalError < MBError; status_code(99); end
@@ -64,7 +66,7 @@ module MotherBrain
       @errors = errors
     end
 
-    def message
+    def to_s
       msg = errors.collect do |key, messages|
         "* #{key}: #{messages.join(', ')}"
       end
@@ -94,7 +96,7 @@ module MotherBrain
       @got      = got
     end
 
-    def message
+    def to_s
       "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
     end
   end
