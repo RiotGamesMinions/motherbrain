@@ -79,7 +79,31 @@ module MotherBrain
       MB::Logging.set_logger(obj)
     end
 
-    # Recursively call a nested array of procs and return their results in a nested array
+    # Takes an array of procs or a an array of arrays of procs and calls them returning their evaluated
+    # values in an array at the same depth.
+    #
+    # @example
+    #   procs = [
+    #     -> { :one },
+    #     -> { :two },
+    #     [
+    #       -> { :nested },
+    #       [
+    #         -> { :deep_nested }
+    #       ]
+    #     ]
+    #   ]
+    #
+    #   expand_procs(procs) => [
+    #     :one,
+    #     :two,
+    #     [
+    #       :nested,
+    #       [
+    #         :deep_nested
+    #       ]
+    #     ]
+    #   ]
     #
     # @param [Array<Proc>, Array<Array<Proc>>] procs
     #   an array of nested arrays and procs
