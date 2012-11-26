@@ -71,27 +71,15 @@ module MotherBrain
         # @return [Hash]
         #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
         def concurrent_bootstrap(manifest, boot_tasks, options = {})
-          workers = case boot_tasks
-          when Array
-            boot_tasks.collect do |boot_task|
-              nodes = manifest[boot_task.id]
-              worker_options = options.merge(
-                run_list: boot_task.group.run_list,
-                attributes: boot_task.group.chef_attributes
-              )
-
-              Worker.new(boot_task.id, nodes, worker_options)
-            end
-          else
-            nodes = manifest[boot_tasks.id]
+          workers = Array.new
+          workers = Array(boot_tasks).collect do |boot_task|
+            nodes = manifest[boot_task.id]
             worker_options = options.merge(
-              run_list: boot_tasks.group.run_list,
-              attributes: boot_tasks.group.chef_attributes
+              run_list: boot_task.group.run_list,
+              attributes: boot_task.group.chef_attributes
             )
-
-            [
-              Worker.new(boot_tasks.id, nodes, worker_options)
-            ]
+            
+            Worker.new(boot_task.id, nodes, worker_options)
           end
 
           futures = workers.collect do |worker|
