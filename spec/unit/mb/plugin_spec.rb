@@ -101,4 +101,17 @@ describe MB::Plugin do
       subject.bootstrap_routine.should be_a(MB::Bootstrap::Routine)
     end
   end
+
+  describe "#to_s" do
+    subject do
+      described_class.new(@context) do
+        name "pvpnet"
+        version "1.2.3"
+      end
+    end
+
+    it "returns the name and version of the plugin" do
+      subject.to_s.should eql("pvpnet (1.2.3)")
+    end
+  end
 end

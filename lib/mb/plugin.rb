@@ -213,6 +213,10 @@ module MotherBrain
       buffer.join "\n"
     end
 
+    def to_s
+      "#{self.name} (#{self.version})"
+    end
+
     private
 
       def dsl_eval(&block)
