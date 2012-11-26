@@ -11,34 +11,6 @@ module MotherBrain
       # @param [Bootstrap::Manifest] manifest
       #   a hash where the keys are node group names and the values are arrays of hostnames
       # @param [Bootstrap::Routine] routine
-      # @param [Hash] options
-      #   options to pass to {#concurrent_bootstrap}
-      #
-      # @raise [InvalidBootstrapManifest] if the given manifest does not pass validation
-      #
-      # @return [Array<Hash>]
-      #   an array containing hashes from each item in the task_queue. The hashes contain
-      #   keys for bootstrapped node groups and values that are the Ridley::SSH::ResultSet
-      #   which contains the result of bootstrapping each node.
-      def bootstrap(manifest, routine, options = {})
-        manifest.validate!(routine)
-
-        responses = Array.new
-
-        until routine.task_queue.empty?
-          reduced_manifest = self.class.manifest_reduce(manifest, task_queue.shift)
-          responses.push concurrent_bootstrap(reduced_manifest, plugin, options)
-        end
-
-        responses
-      end
-
-      # Concurrently bootstrap a grouped collection of nodes from a manifest and return
-      # their results. This function will block until all nodes have finished
-      # bootstrapping.
-      #
-      # @param [Bootstrap::Manifest] manifest
-      #   a hash where the keys are node group names and the values are arrays of hostnames
       # @option options [String] :server_url
       #   URL to the Chef API to bootstrap the target node(s) to
       # @option options [String] :ssh_user
@@ -64,33 +36,77 @@ module MotherBrain
       # @option options [String] :template
       #   bootstrap template to use (default: omnibus)
       #
-      # @return [Hash]
-      #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
-      def concurrent_bootstrap(manifest, plugin, options = {})
-        workers = Array.new
-        workers = manifest.collect do |group_id, nodes|
-          component_name, group_name = group_id.split('::')
-          group = plugin.component(component_name).group(group_name)
+      # @raise [InvalidBootstrapManifest] if the given manifest does not pass validation
+      #
+      # @return [Array<Hash>]
+      #   an array containing hashes from each item in the task_queue. The hashes contain
+      #   keys for bootstrapped node groups and values that are the Ridley::SSH::ResultSet
+      #   which contains the result of bootstrapping each node.
+      def bootstrap(manifest, routine, options = {})
+        manifest.validate!(routine)
 
-          worker_options = options.merge(run_list: group.run_list, attributes: group.chef_attributes)
-          Worker.new(group_id, nodes, worker_options)
+        responses = Array.new
+        task_queue = routine.task_queue.dup
+
+        until task_queue.empty?
+          responses.push concurrent_bootstrap(manifest, task_queue.shift, options)
         end
 
-        futures = workers.collect do |worker|
-          [
-            worker.group_id,
-            worker.future.run
-          ]
-        end
-
-        {}.tap do |response|
-          futures.each do |group_id, future|
-            response[group_id] = future.value
-          end
-        end
-      ensure
-        workers.map(&:terminate) if workers
+        responses
       end
+
+      private
+
+        # Concurrently bootstrap a grouped collection of nodes from a manifest and return
+        # their results. This function will block until all nodes have finished
+        # bootstrapping.
+        #
+        # @param [BootTask, Array<BootTask>] boot_task
+        #   a hash where the keys are node group names and the values are arrays of hostnames
+        # @param [Hash] options
+        #   see {#bootstrap}
+        #
+        # @return [Hash]
+        #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
+        def concurrent_bootstrap(manifest, boot_tasks, options = {})
+          workers = case boot_tasks
+          when Array
+            boot_tasks.collect do |boot_task|
+              nodes = manifest[boot_task.id]
+              worker_options = options.merge(
+                run_list: boot_task.group.run_list,
+                attributes: boot_task.group.chef_attributes
+              )
+
+              Worker.new(boot_task.id, nodes, worker_options)
+            end
+          else
+            nodes = manifest[boot_tasks.id]
+            worker_options = options.merge(
+              run_list: boot_tasks.group.run_list,
+              attributes: boot_tasks.group.chef_attributes
+            )
+
+            [
+              Worker.new(boot_tasks.id, nodes, worker_options)
+            ]
+          end
+
+          futures = workers.collect do |worker|
+            [
+              worker.group_id,
+              worker.future.run
+            ]
+          end
+
+          {}.tap do |response|
+            futures.each do |group_id, future|
+              response[group_id] = future.value
+            end
+          end
+        ensure
+          workers.map(&:terminate) if workers
+        end
     end
   end
 end

@@ -4,25 +4,6 @@ module MotherBrain
     class Routine < RealModelBase
       class BootTask < Struct.new(:id, :group); end
 
-      class << self
-        # Reduce a manifest to a hash containing only key/value pairs where the initial
-        # keys matched the names of the given groups
-        #
-        # @param [Bootstrap::Manifest] manifest
-        # @param [Array<BootTask>, BootTask] boot_task
-        #
-        # @return [Hash]
-        def manifest_reduce(manifest, boot_task)
-          manifest.select do |id, nodes|
-            if boot_task.is_a?(Array)
-              boot_task.find { |task| task.id == id }
-            else
-              boot_task.id == id
-            end
-          end
-        end
-      end
-
       # @return [MB::Plugin]
       attr_reader :plugin
 
@@ -55,7 +36,13 @@ module MotherBrain
       #
       # @return [Boolean]
       def has_task?(node_group)
-        !task_queue.find { |task| task.id == node_group }.nil?
+        !task_queue.find do |task|
+          if task.is_a?(Array)
+            task.find { |task | task.id == node_group }
+          else
+            task.id == node_group
+          end
+        end.nil?
       end
 
       private

@@ -75,41 +75,6 @@ describe MB::Bootstrap::Routine do
     }
   end
 
-  describe "ClassMethods" do
-    subject { described_class }
-
-    describe "::manifest_reduce" do
-      let(:boot_groups) do
-        [
-          double('boot_task_one', id: 'activemq::master', group: amq_master)
-        ]
-      end
-
-      it "returns a Hash" do
-        subject.manifest_reduce(manifest, boot_groups).should be_a(Hash)
-      end
-
-      it "contains only key/values where keys matched the id's of the given boot_task(s)" do
-        manifest.delete("nginx::master")
-        boot_tasks = [
-          double('bt_1', id: 'activemq::master', group: amq_master),
-          double('bt_2', id: 'activemq::slave', group: amq_slave),
-          double('bt_3', id: 'nginx::master', group: nginx_master)
-        ]
-        reduced = subject.manifest_reduce(manifest, boot_tasks)
-
-        reduced.should have(2).items
-        reduced.should_not have_key("nginx::master")
-      end
-      
-      it "accepts a single boot task instead of an array of boot tasks" do
-        boot_task = double('bt_1', id: 'activemq::master', group: amq_master)
-
-        subject.manifest_reduce(manifest, boot_task).should have(1).item
-      end
-    end
-  end
-
   subject { described_class.new(@context, plugin) }
 
   describe "#task_queue" do
