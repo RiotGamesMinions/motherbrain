@@ -37,13 +37,13 @@ module MotherBrain
           end
         end
 
-        # Validate the given bootstrap manifest hash
+        # Validates that the given manifest describes a layout for the given routine
         #
-        # @param [ClusterBootstrapper::Manifest] manifest
-        # @param [MB::Plugin] plugin
+        # @param [Bootstrap::Manifest] manifest
+        # @param [Bootstrap::Routine] routine
         #
         # @raise [InvalidBootstrapManifest]
-        def validate(manifest, plugin)
+        def validate(manifest, routine)
           manifest.keys.each do |scoped_group|
             match = scoped_group.match(Plugin::NODE_GROUP_ID_REGX)
             
@@ -54,15 +54,24 @@ module MotherBrain
             component = match[1]
             group     = match[2]
 
-            unless plugin.has_component?(component)
-              raise InvalidBootstrapManifest, "Manifest describes the component: '#{component}' but '#{plugin.name}' does not have this component"
+            unless routine.plugin.has_component?(component)
+              raise InvalidBootstrapManifest, "Manifest describes the component: '#{component}' but '#{routine.plugin.name}' does not have this component"
             end
 
-            unless plugin.component(component).has_group?(group)
+            unless routine.plugin.component(component).has_group?(group)
               raise InvalidBootstrapManifest, "Manifest describes the group: '#{group}' in the component '#{component}' but the component does not have this group"
             end
           end
         end
+      end
+
+      # Validates that the instance of manifest describes a layout for the given routine
+      #
+      # @param [Bootstrap::Routine] routine
+      #
+      # @raise [InvalidBootstrapManifest]
+      def validate(routine)
+        self.class.validate(self, routine)
       end
     end
   end

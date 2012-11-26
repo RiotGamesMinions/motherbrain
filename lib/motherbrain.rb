@@ -78,6 +78,23 @@ module MotherBrain
     def set_logger(obj)
       MB::Logging.set_logger(obj)
     end
+
+    # Recursively call a nested array of procs and return their results in a nested array
+    #
+    # @param [Array<Proc>, Array<Array<Proc>>]
+    #   an array of nested arrays and procs
+    #
+    # @return [Array]
+    #   an array of nested arrays and their evaluated values
+    def expand_procs(task_procs)
+      task_procs.map! do |task_proc|
+        if task_proc.is_a?(Array)
+          expand_procs(task_proc)
+        else
+          task_proc.call
+        end
+      end
+    end
   end
 end
 
