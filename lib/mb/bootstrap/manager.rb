@@ -61,7 +61,9 @@ module MotherBrain
         # their results. This function will block until all nodes have finished
         # bootstrapping.
         #
-        # @param [BootTask, Array<BootTask>] boot_task
+        # @param [Bootstrap::Manifest] manifest
+        #   a hash where the keys are node group names and the values are arrays of hostnames
+        # @param [BootTask, Array<BootTask>] boot_tasks
         #   a hash where the keys are node group names and the values are arrays of hostnames
         # @param [Hash] options
         #   see {#bootstrap}
