@@ -53,6 +53,9 @@ module MotherBrain
             method_option :ssh_keys,
               type: :array,
               desc: "An array of keys (or a single key) to authenticate the ssh user with instead of a password"
+            method_option :ssh_timeout,
+              type: :numeric,
+              desc: "The timeout for communicating to nodes over SSH"
             method_option :validator_client,
               type: :string,
               desc: "The name of the Chef validator client to use in bootstrapping"
@@ -81,6 +84,7 @@ module MotherBrain
                 ssh_user: options[:ssh_user] || context.config[:ssh_user],
                 ssh_password: options[:ssh_password] || context.config[:ssh_password],
                 ssh_keys: options[:ssh_keys] || context.config[:ssh_keys],
+                ssh_timeout: options[:ssh_timeout] || context.config[:ssh_timeout],
                 validator_client: options[:validator_client] || context.config[:chef_validator_client],
                 validator_path: options[:validator_path] || context.config[:chef_validator_path],
                 bootstrap_proxy: options[:bootstrap_proxy] || context.config[:chef_bootstrap_proxy],
@@ -120,6 +124,9 @@ module MotherBrain
             method_option :ssh_keys,
               type: :array,
               desc: "An array of keys (or a single key) to authenticate the ssh user with instead of a password"
+            method_option :ssh_timeout,
+              type: :numeric,
+              desc: "The timeout for communicating to nodes over SSH"
             method_option :validator_client,
               type: :string,
               desc: "The name of the Chef validator client to use in bootstrapping"

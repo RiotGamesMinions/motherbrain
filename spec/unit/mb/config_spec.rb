@@ -72,6 +72,24 @@ describe MB::Config do
       subject.errors[:ssh_password].should =~ ["You must specify an SSH password or an SSH key"]
       subject.errors[:ssh_key].should =~ ["You must specify an SSH password or an SSH key"]
     end
+
+    it "is invalid if ssh_timeout is a non-integer non-float" do
+      subject.ssh_timeout = "string"
+
+      subject.should_not be_valid
+    end
+
+    it "is valid if ssh_timeout is an integer" do
+      subject.ssh_timeout = 1
+
+      subject.should be_valid
+    end
+
+    it "is valid if ssh_timeout is a float" do
+      subject.ssh_timeout = 1.0
+
+      subject.should be_valid
+    end
   end
 
   let(:json) do
