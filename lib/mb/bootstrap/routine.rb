@@ -48,6 +48,16 @@ module MotherBrain
         @task_queue ||= MB.expand_procs(task_procs)
       end
 
+      # Checks if the routine contains a boot task for the given node group
+      #
+      # @param [String] node_group
+      #   name for a bootstrap task to check for
+      #
+      # @return [Boolean]
+      def has_task?(node_group)
+        !task_queue.find { |task| task.id == node_group }.nil?
+      end
+
       private
 
         # @return [Array<Proc>]

@@ -148,4 +148,20 @@ describe MB::Bootstrap::Routine do
       end
     end
   end
+
+  describe "#has_task?" do
+    subject do
+      described_class.new(@context, plugin) do
+        bootstrap("activemq::master")
+      end
+    end
+
+    it "returns a BootTask if a task with a matching ID is present" do
+      subject.has_task?("activemq::master").should be_true
+    end
+
+    it "returns nil if a task with a matching ID is not present" do
+      subject.has_task?("not::defined").should be_false
+    end
+  end
 end
