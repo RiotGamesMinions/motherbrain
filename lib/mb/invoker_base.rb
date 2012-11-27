@@ -46,8 +46,8 @@ module MotherBrain
         @context = self.class.configure(self.options)
       end
 
-      MB.log.level = Logger::DEBUG if @options[:debug]
       MB.log.level = Logger::INFO if @options[:verbose]
+      MB.log.level = Logger::DEBUG if @options[:debug]
     end
 
     class_option :config,
