@@ -55,15 +55,15 @@ module MotherBrain
       desc: "Path to a MotherBrain JSON configuration file.",
       aliases: "-c",
       banner: "PATH"
-    class_option :debug,
-      type: :boolean,
-      desc: "Output all log messages.",
-      default: false,
-      aliases: "-d"
     class_option :verbose,
       type: :boolean,
       desc: "Increase verbosity of output.",
       default: false,
       aliases: "-v"
+    class_option :debug,
+      type: :boolean,
+      desc: "Output all log messages.",
+      default: false,
+      aliases: "-d"
   end
 end
