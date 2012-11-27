@@ -1,6 +1,6 @@
 GIT
   remote: git@github.com:RiotGames/ef-rest.git
-  revision: add037b34d3066c446ea8d17f599df2fc78679cb
+  revision: 53f6eb82382b5c04612685aae406d4f11601a27d
   specs:
     ef-rest (0.0.1)
       activesupport
