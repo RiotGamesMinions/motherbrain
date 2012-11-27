@@ -188,7 +188,7 @@ module MotherBrain
       errors = validate
 
       if errors.any?
-        ErrorHandler.wrap PluginSyntaxError.new,
+        ErrorHandler.wrap PluginSyntaxError,
           backtrace: [],
           plugin_name: try(:name),
           plugin_version: try(:version),
@@ -256,7 +256,7 @@ module MotherBrain
       end
 
       def method_missing(method_name, *args, &block)
-        ErrorHandler.wrap PluginSyntaxError.new,
+        ErrorHandler.wrap PluginSyntaxError,
           backtrace: caller,
           method_name: method_name,
           plugin_name: real_model.name,
