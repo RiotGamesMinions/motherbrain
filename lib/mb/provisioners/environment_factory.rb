@@ -1,4 +1,5 @@
 require 'ef/rest'
+EF::REST.set_logger(MB.logger)
 
 module MotherBrain
   module Provisioners
