@@ -46,9 +46,8 @@ module MotherBrain
         @context = self.class.configure(self.options)
       end
 
-      if @options[:verbose]
-        MB.log.level = Logger::DEBUG
-      end
+      MB.log.level = Logger::INFO if @options[:verbose]
+      MB.log.level = Logger::DEBUG if @options[:debug]
     end
 
     class_option :config,
@@ -61,5 +60,10 @@ module MotherBrain
       desc: "Increase verbosity of output.",
       default: false,
       aliases: "-v"
+    class_option :debug,
+      type: :boolean,
+      desc: "Output all log messages.",
+      default: false,
+      aliases: "-d"
   end
 end
