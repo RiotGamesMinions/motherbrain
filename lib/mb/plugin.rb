@@ -254,15 +254,6 @@ module MotherBrain
       def cluster_bootstrap(&block)
         real_model.bootstrap_routine = Bootstrap::Routine.new(context, real_model, &block)
       end
-
-      def method_missing(method_name, *args, &block)
-        ErrorHandler.wrap PluginSyntaxError,
-          backtrace: caller,
-          method_name: method_name,
-          plugin_name: real_model.name,
-          plugin_version: real_model.version,
-          text: "'#{method_name}' is not a valid keyword"
-      end
     end
   end
 end
