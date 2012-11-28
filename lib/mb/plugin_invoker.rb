@@ -81,6 +81,8 @@ module MotherBrain
               bootstrap_options = {
                 environment: environment,
                 server_url: context.chef_conn.server_url,
+                client_name: context.chef_conn.client_name,
+                client_key: context.chef_conn.client_key,
                 ssh_user: options[:ssh_user] || context.config[:ssh_user],
                 ssh_password: options[:ssh_password] || context.config[:ssh_password],
                 ssh_keys: options[:ssh_keys] || context.config[:ssh_keys],
@@ -163,6 +165,7 @@ module MotherBrain
 
                 if options[:skip_bootstrap]
                   MB.ui.say "Skipping bootstrap"
+                  MB.ui.say response.body
                   exit 0
                 end
 
