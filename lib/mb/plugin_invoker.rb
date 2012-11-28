@@ -94,7 +94,9 @@ module MotherBrain
 
               MB.ui.say "Starting bootstrap of nodes on: #{environment}"
 
-              MB::Application.bootstrapper.bootstrap(manifest, plugin.bootstrap_routine, bootstrap_options)
+              ChefMutex.new(environment, context.chef_conn).synchronize do
+                MB::Application.bootstrapper.bootstrap(manifest, plugin.bootstrap_routine, bootstrap_options)
+              end
 
               MB.ui.say "Bootstrap finished"
             end
