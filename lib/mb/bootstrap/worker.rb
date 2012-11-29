@@ -79,16 +79,8 @@ module MotherBrain
       # @return [Array]
       def bootstrap_type_filter
         client_names  = chef_conn.client.all.map(&:name)
-        full_nodes    = Array.new
-        partial_nodes = Array.new
-
-        self.nodes.each do |node|
-          if client_names.include?(node)
-            partial_nodes << node
-          else
-            full_nodes << node
-          end
-        end
+        partial_nodes = self.nodes.select { |node| client_names.include?(node) }
+        full_nodes    = self.nodes - partial_nodes
 
         [ full_nodes, partial_nodes ]
       end
