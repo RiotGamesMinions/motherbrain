@@ -5,6 +5,11 @@ module MotherBrain
   #
   class Application < Celluloid::SupervisionGroup
     class << self
+      extend Forwardable
+
+      def_delegator :provisioner_manager, :provision
+      def_delegator :bootstrap_manager, :bootstrap
+
       # @return [Celluloid::Actor]
       def provisioner_manager
         Celluloid::Actor[:provisioner_manager]

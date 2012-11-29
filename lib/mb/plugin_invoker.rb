@@ -102,7 +102,7 @@ module MotherBrain
               }
 
               MB.ui.say "Starting bootstrap of nodes on: #{environment}"
-              MB.ui.say MB::Application.bootstrapper.bootstrap(manifest, plugin.bootstrap_routine, bootstrap_options)
+              MB.ui.say MB::Application.bootstrap(manifest, plugin.bootstrap_routine, bootstrap_options)
               MB.ui.say "Bootstrap finished"
             end
 
@@ -165,7 +165,7 @@ module MotherBrain
               }
 
               MB.ui.say "Provisioning nodes and adding them to: #{environment}"
-              response = MB::Application.provisioner.provision(environment, manifest, plugin, provisioner_options)
+              response = MB::Application.provision(environment, manifest, plugin, provisioner_options)
 
               if response.ok?
                 MB.ui.say "Provision finished"
