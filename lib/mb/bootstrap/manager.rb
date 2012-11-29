@@ -31,7 +31,7 @@ module MotherBrain
         :validator_client,
         :validator_path,
         :ssh_user
-      ]
+      ].freeze
 
       # Options given to {#bootstrap} to be passed to Ridley
       RIDLEY_OPT_KEYS = [
