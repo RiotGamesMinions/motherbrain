@@ -42,7 +42,8 @@ module MotherBrain
         :validator_client,
         :validator_path,
         :encrypted_data_bag_secret_path,
-        :thread_count
+        :thread_count,
+        :ssl
       ].freeze
 
       # Bootstrap a collection of nodes described in the given manifest by performing

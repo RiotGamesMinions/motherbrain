@@ -42,6 +42,10 @@ module MotherBrain
           end
 
           if plugin.bootstrap_routine.present?
+            method_option :ssl_verify,
+              type: :boolean,
+              desc: "Should we verify SSL connections?",
+              default: false
             method_option :ssh_user,
               type: :string,
               desc: "A shell user that will login to each node and perform the bootstrap command on",
@@ -91,7 +95,10 @@ module MotherBrain
                 validator_path: options[:validator_path] || context.config[:chef_validator_path],
                 bootstrap_proxy: options[:bootstrap_proxy] || context.config[:chef_bootstrap_proxy],
                 encrypted_data_bag_secret_path: options[:encrypted_data_bag_secret_path] || context.config[:chef_encrypted_data_bag_secret_path],
-                sudo: options[:sudo] || context.config[:ssh_sudo]
+                sudo: options[:sudo] || context.config[:ssh_sudo],
+                ssl: {
+                  verify: options[:ssl_verify]
+                }
               }
 
               MB.ui.say "Starting bootstrap of nodes on: #{environment}"
