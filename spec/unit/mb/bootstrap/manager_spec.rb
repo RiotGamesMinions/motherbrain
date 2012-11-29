@@ -1,6 +1,31 @@
 require 'spec_helper'
 
 describe MB::Bootstrap::Manager do
+  describe "ClassMethods" do
+    subject { described_class }
+
+    describe "::validate_options" do
+      let(:valid_options) do
+        {
+          server_url: "",
+          client_name: "",
+          client_key: "",
+          validator_client: "",
+          validator_path: "",
+          ssh_user: ""
+        }
+      end
+
+      it "raises an argument error if any of the required options is not provided" do
+        valid_options.keys.each do |opt|
+          options = valid_options.dup
+          options.delete(opt)
+          expect { subject.validate_options(options) }.to raise_error(MB::ArgumentError)
+        end
+      end
+    end
+  end
+
   let(:plugin) do
     MB::Plugin.new(@context) do
       name "pvpnet"
@@ -48,9 +73,12 @@ describe MB::Bootstrap::Manager do
   let(:bootstrap_options) do
     {
       server_url: "https://api.opscode.com/organizations/vialstudios",
+      client_name: "reset",
+      client_key: "",
+      validator_client: "",
+      validator_path: fixtures_path.join("fake_key.pem").to_s,
       ssh_user: "reset",
-      ssh_keys: fixtures_path.join("fake_id_rsa").to_s,
-      validator_path: fixtures_path.join("fake_key.pem").to_s
+      ssh_keys: fixtures_path.join("fake_id_rsa").to_s
     }
   end
 

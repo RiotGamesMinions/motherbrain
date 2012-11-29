@@ -42,6 +42,10 @@ module MotherBrain
           end
 
           if plugin.bootstrap_routine.present?
+            method_option :ssl_verify,
+              type: :boolean,
+              desc: "Should we verify SSL connections?",
+              default: false
             method_option :ssh_user,
               type: :string,
               desc: "A shell user that will login to each node and perform the bootstrap command on",
@@ -81,6 +85,8 @@ module MotherBrain
               bootstrap_options = {
                 environment: environment,
                 server_url: context.chef_conn.server_url,
+                client_name: context.chef_conn.client_name,
+                client_key: context.chef_conn.client_key,
                 ssh_user: options[:ssh_user] || context.config[:ssh_user],
                 ssh_password: options[:ssh_password] || context.config[:ssh_password],
                 ssh_keys: options[:ssh_keys] || context.config[:ssh_keys],
@@ -89,11 +95,14 @@ module MotherBrain
                 validator_path: options[:validator_path] || context.config[:chef_validator_path],
                 bootstrap_proxy: options[:bootstrap_proxy] || context.config[:chef_bootstrap_proxy],
                 encrypted_data_bag_secret_path: options[:encrypted_data_bag_secret_path] || context.config[:chef_encrypted_data_bag_secret_path],
-                sudo: options[:sudo] || context.config[:ssh_sudo]
+                sudo: options[:sudo] || context.config[:ssh_sudo],
+                ssl: {
+                  verify: options[:ssl_verify]
+                }
               }
 
               MB.ui.say "Starting bootstrap of nodes on: #{environment}"
-              MB.ui.say MB::Application.bootstrapper.bootstrap(manifest, plugin.bootstrap_routine, bootstrap_options)
+              MB.ui.say MB::Application.bootstrap(manifest, plugin.bootstrap_routine, bootstrap_options)
               MB.ui.say "Bootstrap finished"
             end
 
@@ -156,13 +165,14 @@ module MotherBrain
               }
 
               MB.ui.say "Provisioning nodes and adding them to: #{environment}"
-              response = MB::Application.provisioner.provision(environment, manifest, plugin, provisioner_options)
+              response = MB::Application.provision(environment, manifest, plugin, provisioner_options)
 
               if response.ok?
                 MB.ui.say "Provision finished"
 
                 if options[:skip_bootstrap]
                   MB.ui.say "Skipping bootstrap"
+                  MB.ui.say response.body
                   exit 0
                 end
 
