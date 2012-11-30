@@ -4,12 +4,13 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   module Logging
     autoload :BasicFormat, 'mb/logging/basic_format'
+    autoload :MultiLogger, 'mb/logging/multi_logger'
 
     class << self
       # @return [Logger]
       def logger
         @logger ||= begin
-          log = Logger.new(STDOUT)
+          log = MultiLogger.new(STDOUT)
           log.level = Logger::WARN
           log.formatter = BasicFormat.new
           log
