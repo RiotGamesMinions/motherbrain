@@ -44,6 +44,7 @@ module MotherBrain
   autoload :Invoker, 'mb/invoker'
   autoload :JSONManifest, 'mb/json_manifest'
   autoload :Logging, 'mb/logging'
+  autoload :NodeQuerier, 'mb/node_querier'
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
   autoload :PluginLoader, 'mb/plugin_loader'
@@ -60,9 +61,18 @@ module MotherBrain
       @ui ||= Thor::Shell::Color.new
     end
 
+    # Path to the root directory of MotherBrain
+    #
     # @return [Pathname]
     def root
       @root ||= Pathname.new(File.expand_path('../', File.dirname(__FILE__)))
+    end
+
+    # Path to the scripts directory
+    #
+    # @return [Pathname]
+    def scripts
+      root.join('scripts')
     end
 
     # @return [Logger]
