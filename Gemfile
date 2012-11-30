@@ -2,6 +2,7 @@ source :rubygems
 
 gemspec
 
+gem 'ridley', git: 'git://github.com/reset/ridley.git'
 gem 'ef-rest', git: 'git@github.com:RiotGames/ef-rest.git'
 
 platforms :ruby do
