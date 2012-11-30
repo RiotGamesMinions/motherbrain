@@ -26,6 +26,12 @@ describe MotherBrain::ErrorHandler do
 
   it { should be_a klass }
 
+  context "when passed an error class" do
+    let(:error) { ZeroDivisionError }
+
+    its(:error) { should be_instance_of error }
+  end
+
   describe "#message" do
     subject(:message) { error_handler.message }
 

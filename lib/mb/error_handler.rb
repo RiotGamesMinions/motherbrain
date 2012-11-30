@@ -94,6 +94,8 @@ module MotherBrain
     #   A custom error message to display to the user.
     #
     def initialize(error, options = {})
+      error = error.new if error.is_a? Class
+
       @error = error
 
       extract_data_from_options options
