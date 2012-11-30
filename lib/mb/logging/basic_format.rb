@@ -2,6 +2,8 @@ module MotherBrain
   module Logging
     class BasicFormat < Logger::Formatter
       def call(severity, datetime, progname, msg)
+        msg = msg.to_s
+
         if match = msg.match(/NODE\[.+?\]/)
           "#{msg.lines.to_a.map { |line| line.start_with?(match.to_s) ? line : "#{match} #{line}" }.join}"
         else
