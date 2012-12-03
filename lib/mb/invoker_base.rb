@@ -46,7 +46,13 @@ module MotherBrain
         @context = self.class.configure(self.options)
       end
 
-      MB::Logging.setup @options.slice(:logfile, :verbose, :debug)
+      level = nil
+      level = Logging::INFO if @options[:verbose]
+      level = Logging::DEBUG if @options[:debug]
+
+      location = @options[:location]
+
+      MB::Logging.setup level: level, location: location
     end
 
     class_option :config,

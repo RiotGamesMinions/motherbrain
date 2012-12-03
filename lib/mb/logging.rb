@@ -5,6 +5,11 @@ module MotherBrain
   module Logging
     autoload :BasicFormat, 'mb/logging/basic_format'
 
+    DEFAULTS = {
+      level: Logger::WARN,
+      location: STDOUT
+    }
+
     class << self
       # @return [Logger]
       def logger
@@ -22,11 +27,10 @@ module MotherBrain
       #
       # @return [Logger]
       def setup(options = {})
-        level = Logger::WARN
-        level = Logger::INFO if options[:verbose]
-        level = Logger::DEBUG if options[:debug]
+        options.reverse_merge! DEFAULTS
 
-        location = options.fetch :logfile, STDOUT
+        level    = options[:level]
+        location = options[:location]
 
         if %w[STDERR STDOUT].include? location
           location = location.constantize

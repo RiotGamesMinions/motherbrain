@@ -27,14 +27,14 @@ describe MB::Logging do
         logger.warn?.should be_true
       end
 
-      context "with :verbose" do
-        let(:options) { { verbose: true } }
+      context "with level: INFO" do
+        let(:options) { { level: Logger::INFO } }
 
         its(:info?) { should be_true }
       end
 
-      context "with :debug" do
-        let(:options) { { debug: true } }
+      context "with level: Logger::DEBUG" do
+        let(:options) { { level: Logger::DEBUG } }
 
         its(:debug?) { should be_true }
       end
@@ -44,7 +44,7 @@ describe MB::Logging do
       end
 
       context "when passed STDOUT as a string" do
-        let(:options) { { logfile: "STDOUT" } }
+        let(:options) { { location: "STDOUT" } }
 
         it "constantizes STDOUT" do
           logger.instance_variable_get(:@logdev).dev.should == STDOUT
@@ -52,7 +52,7 @@ describe MB::Logging do
       end
 
       context "when passed STDERR as a string" do
-        let(:options) { { logfile: "STDERR" } }
+        let(:options) { { location: "STDERR" } }
 
         it "constantizes STDERR" do
           logger.instance_variable_get(:@logdev).dev.should == STDERR
@@ -60,11 +60,11 @@ describe MB::Logging do
       end
 
       context "with a path" do
-        let(:logfile) { File.join tmp_path, "log.txt" }
-        let(:options) { { logfile: logfile } }
+        let(:location) { File.join tmp_path, "log.txt" }
+        let(:options) { { location: location } }
 
         it "logs to the path" do
-          logger.instance_variable_get(:@logdev).dev.path.should == logfile
+          logger.instance_variable_get(:@logdev).dev.path.should == location
         end
       end
     end
