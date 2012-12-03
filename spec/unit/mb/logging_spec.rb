@@ -19,6 +19,14 @@ describe MB::Logging do
 
       let(:options) { Hash.new }
 
+      it "remembers options when called multiple times" do
+        klass.setup level: Logger::DEBUG, location: STDERR
+        klass.setup Hash.new
+
+        logger.instance_variable_get(:@logdev).dev.should == STDERR
+        logger.debug?.should be_true
+      end
+
       before :each do
         klass.setup options
       end

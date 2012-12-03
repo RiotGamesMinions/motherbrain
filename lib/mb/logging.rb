@@ -19,6 +19,7 @@ module MotherBrain
       # @return [nil]
       def reset
         @logger = nil
+        @preserved_options = nil
       end
 
       # @option [Boolean] verbose
@@ -27,7 +28,7 @@ module MotherBrain
       #
       # @return [Logger]
       def setup(options = {})
-        options.reverse_merge! DEFAULTS
+        options = preserve(options).reverse_merge(DEFAULTS)
 
         level    = options[:level]
         location = options[:location]
@@ -47,6 +48,19 @@ module MotherBrain
       # @return [Logger]
       def set_logger(obj)
         @logger = (obj.nil? ? Logger.new('/dev/null') : obj)
+      end
+
+      private
+
+      # Stores and returns an updated hash, so that #setup can be called
+      # multiple times
+      #
+      # @param [Hash] options
+      #
+      # @return [Hash]
+      def preserve(options)
+        @preserved_options ||= Hash.new
+        @preserved_options.reverse_merge! options
       end
     end
 

@@ -50,7 +50,7 @@ module MotherBrain
       level = Logger::INFO if @options[:verbose]
       level = Logger::DEBUG if @options[:debug]
 
-      location = @options[:location]
+      location = @options[:logfile]
 
       MB::Logging.setup level: level, location: location
     end
