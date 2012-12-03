@@ -26,12 +26,10 @@ module MotherBrain
         level = Logger::INFO if options[:verbose]
         level = Logger::DEBUG if options[:debug]
 
-        location = options[:logfile]
+        location = options.fetch :logfile, STDOUT
 
-        if location
-          location = location.constantize if location.start_with? "STD"
-        else
-          location = STDOUT
+        if %w[STDERR STDOUT].include? location
+          location = location.constantize
         end
 
         @logger = Logger.new(location).tap do |log|

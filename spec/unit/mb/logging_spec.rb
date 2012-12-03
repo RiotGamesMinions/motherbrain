@@ -51,6 +51,14 @@ describe MB::Logging do
         end
       end
 
+      context "when passed STDERR as a string" do
+        let(:options) { { logfile: "STDERR" } }
+
+        it "constantizes STDERR" do
+          logger.instance_variable_get(:@logdev).dev.should == STDERR
+        end
+      end
+
       context "with a path" do
         let(:logfile) { File.join tmp_path, "log.txt" }
         let(:options) { { logfile: logfile } }
