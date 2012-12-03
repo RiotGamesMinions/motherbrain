@@ -47,8 +47,8 @@ module MotherBrain
       end
 
       level = nil
-      level = Logging::INFO if @options[:verbose]
-      level = Logging::DEBUG if @options[:debug]
+      level = Logger::INFO if @options[:verbose]
+      level = Logger::DEBUG if @options[:debug]
 
       location = @options[:location]
 
