@@ -32,6 +32,10 @@ module MotherBrain
     # @param [#to_s] name
     # @param [Ridley::Connection] chef_connection
     def initialize(name, chef_connection)
+      name.downcase!
+      name.gsub! /[^\w]+/, "-" # dasherize
+      name.gsub! /^-+|-+$/, "" # remove dashes from beginning/end
+
       @chef_connection = chef_connection
       @client_name = chef_connection.client_name
       @name = name
@@ -45,6 +49,8 @@ module MotherBrain
     # @return [Boolean]
     def lock(options = {})
       return true if externally_testing?
+
+      MB.log.info "Locking #{name}"
 
       attempt_lock options
     end
@@ -96,6 +102,8 @@ module MotherBrain
     def unlock(options = {})
       return true if externally_testing?
 
+      MB.log.info "Unlocking #{name}"
+
       attempt_unlock options
     end
 
@@ -141,7 +149,6 @@ module MotherBrain
       def delete
         return true unless locks
 
-        MB.log.info "Deleting lock (#{name})"
         locks.delete name
       end
 
@@ -178,7 +185,7 @@ module MotherBrain
         return unless locks
 
         result = locks.find name
-        MB.log.info "Read lock (#{name}) #{result ? result.to_hash : nil.inspect}"
+
         result.to_hash if result
       end
 
@@ -189,7 +196,6 @@ module MotherBrain
         ensure_data_bag_exists
 
         current_lock = locks.new id: name, client_name: client_name, time: Time.now
-        MB.log.info "Writing lock (#{name}) #{current_lock.to_hash}"
         current_lock.save
       end
   end

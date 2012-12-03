@@ -5,14 +5,41 @@ module MotherBrain
   module Logging
     autoload :BasicFormat, 'mb/logging/basic_format'
 
+    DEFAULTS = {
+      level: Logger::WARN,
+      location: STDOUT
+    }
+
     class << self
       # @return [Logger]
       def logger
-        @logger ||= begin
-          log = Logger.new(STDOUT)
-          log.level = Logger::WARN
+        @logger ||= setup
+      end
+
+      # @return [nil]
+      def reset
+        @logger = nil
+        @preserved_options = nil
+      end
+
+      # @option [Boolean] verbose
+      # @option [Boolean] debug
+      # @option [String] logfile
+      #
+      # @return [Logger]
+      def setup(options = {})
+        options = preserve(options).reverse_merge(DEFAULTS)
+
+        level    = options[:level]
+        location = options[:location]
+
+        if %w[STDERR STDOUT].include? location
+          location = location.constantize
+        end
+
+        @logger = Logger.new(location).tap do |log|
+          log.level = level
           log.formatter = BasicFormat.new
-          log
         end
       end
 
@@ -21,6 +48,19 @@ module MotherBrain
       # @return [Logger]
       def set_logger(obj)
         @logger = (obj.nil? ? Logger.new('/dev/null') : obj)
+      end
+
+      private
+
+      # Stores and returns an updated hash, so that #setup can be called
+      # multiple times
+      #
+      # @param [Hash] options
+      #
+      # @return [Hash]
+      def preserve(options)
+        @preserved_options ||= Hash.new
+        @preserved_options.reverse_merge! options
       end
     end
 

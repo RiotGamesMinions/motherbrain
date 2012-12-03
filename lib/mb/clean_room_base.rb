@@ -31,5 +31,12 @@ module MotherBrain
       def set_attribute(name, value)
         real_model.send("#{name}=", value)
       end
+
+      def method_missing(method_name, *args, &block)
+        ErrorHandler.wrap PluginSyntaxError,
+          backtrace: caller,
+          method_name: method_name,
+          text: "'#{method_name}' is not a valid keyword"
+      end
   end
 end

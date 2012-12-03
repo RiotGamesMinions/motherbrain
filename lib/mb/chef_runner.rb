@@ -209,6 +209,7 @@ module MotherBrain
       status, errors = self.class.handle_response(self.connection.uptime)
 
       if status == :error
+        MB.log.error errors
         raise ChefTestRunFailure.new(errors)
       end
 

@@ -46,8 +46,13 @@ module MotherBrain
         @context = self.class.configure(self.options)
       end
 
-      MB.log.level = Logger::INFO if @options[:verbose]
-      MB.log.level = Logger::DEBUG if @options[:debug]
+      level = nil
+      level = Logger::INFO if @options[:verbose]
+      level = Logger::DEBUG if @options[:debug]
+
+      location = @options[:logfile]
+
+      MB::Logging.setup level: level, location: location
     end
 
     class_option :config,
@@ -65,5 +70,11 @@ module MotherBrain
       desc: "Output all log messages.",
       default: false,
       aliases: "-d"
+    class_option :logfile,
+      type: :string,
+      desc: "Set the log file location.",
+      default: "STDOUT",
+      aliases: "-L",
+      banner: "PATH"
   end
 end
