@@ -31,7 +31,7 @@ module MotherBrain
 
     # Run the proc stored in execute with the given arguments
     def invoke(*args)
-      ChefMutex.new(environment, context.chef_conn).synchronize do
+      ChefMutex.new("environment #{environment}", context.chef_conn).synchronize do
         CommandRunner.new(context, scope, execute)
       end
     end
