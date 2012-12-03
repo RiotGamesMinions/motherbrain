@@ -32,6 +32,10 @@ module MotherBrain
     # @param [#to_s] name
     # @param [Ridley::Connection] chef_connection
     def initialize(name, chef_connection)
+      name.downcase!
+      name.gsub! /[^\w]+/, "-" # dasherize
+      name.gsub! /^-+|-+$/, "" # remove dashes from beginning/end
+
       @chef_connection = chef_connection
       @client_name = chef_connection.client_name
       @name = name
