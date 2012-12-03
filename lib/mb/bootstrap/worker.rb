@@ -49,7 +49,13 @@ module MotherBrain
         @node_querier = NodeQuerier.supervise(chef_conn).actors.first
       end
 
-      # @return [Array]
+      # @example
+      #   worker.run => [
+      #     #<Ridley::SSH::ResponseSet @failures=[], @successes=[]>,
+      #     #<Ridley::SSH::ResponseSet @failures=[], @successes=[]>
+      #   ]
+      #
+      # @return [Array<Ridley::SSH::ResponseSet]
       def run
         MB.log.info "Bootstrapping group: '#{group_id}' [ #{nodes.join(', ')} ] with options: '#{options}'"
         unless nodes && nodes.any?
@@ -73,7 +79,7 @@ module MotherBrain
               partial_bootstrap(partial_nodes, options.slice(:attributes, :run_list))
             }
           end
-        end.map(&:value).flatten
+        end.map(&:value).flatten.inject(:merge)
       end
 
       # Split the nodes to bootstrap into two groups. One group of nodes who do not have a client

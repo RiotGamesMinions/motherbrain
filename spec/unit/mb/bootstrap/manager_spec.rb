@@ -74,8 +74,8 @@ describe MB::Bootstrap::Manager do
     {
       server_url: "https://api.opscode.com/organizations/vialstudios",
       client_name: "reset",
-      client_key: "",
-      validator_client: "",
+      client_key: fixtures_path.join("fake_key.pem").to_s,
+      validator_client: "fake-validator",
       validator_path: fixtures_path.join("fake_key.pem").to_s,
       ssh_user: "reset",
       ssh_keys: fixtures_path.join("fake_id_rsa").to_s
@@ -83,6 +83,11 @@ describe MB::Bootstrap::Manager do
   end
 
   subject { described_class.new }
+
+  before(:each) do
+    stub_request(:get, "https://api.opscode.com/organizations/vialstudios/nodes").
+      to_return(status: 200, body: {})
+  end
 
   describe "#bootstrap" do
     it "returns an array of hashes" do
@@ -92,11 +97,11 @@ describe MB::Bootstrap::Manager do
       result.should each be_a(Hash)
     end
 
-    it "contains an item for every item in the task_queue" do
+    it "returns an item for every item in the task_queue" do
       subject.bootstrap(manifest, routine, bootstrap_options).should have(2).items
     end
 
-    it "has a hash with a key for each node group of each task_queue item" do
+    it "returns items where each is a hash with a key for each node group of each task_queue item" do
       result = subject.bootstrap(manifest, routine, bootstrap_options)
 
       result[0].should have_key("activemq::master")
