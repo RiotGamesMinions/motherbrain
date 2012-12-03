@@ -25,15 +25,6 @@ module MotherBrain
       ruby_script('node_name', host, options)
     end
 
-    # Check if the given node_name has a client associated with it on the Chef Server
-    #
-    # @param [String] node_name
-    #
-    # @return [Boolean]
-    def registered?(node_name)
-      chef_conn.client.all.map(&:name).include?(node_name)
-    end
-
     # Run an arbitrary SSH command on the target host
     #
     # @param [String] host

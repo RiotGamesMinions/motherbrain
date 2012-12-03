@@ -107,18 +107,20 @@ module MotherBrain
       #   ]
       #
       def bootstrap(manifest, routine, options = {})
-        self.class.validate_options(options)
-        manifest.validate!(routine)
+        defer {
+          self.class.validate_options(options)
+          manifest.validate!(routine)
 
-        responses  = Array.new
-        task_queue = routine.task_queue.dup
-        chef_conn  = Ridley::Connection.new(options.slice(*RIDLEY_OPT_KEYS))
+          responses  = Array.new
+          task_queue = routine.task_queue.dup
+          chef_conn  = Ridley::Connection.new(options.slice(*RIDLEY_OPT_KEYS))
 
-        until task_queue.empty?
-          responses.push concurrent_bootstrap(chef_conn, manifest, task_queue.shift, options.except(*RIDLEY_OPT_KEYS))
-        end
+          until task_queue.empty?
+            responses.push concurrent_bootstrap(chef_conn, manifest, task_queue.shift, options.except(*RIDLEY_OPT_KEYS))
+          end
 
-        responses
+          responses
+        }
       end
 
       private
@@ -154,7 +156,7 @@ module MotherBrain
               attributes: boot_task.group.chef_attributes
             )
             
-            Worker.new(chef_conn, boot_task.id, nodes, worker_options)
+            Worker.new(boot_task.id, nodes, chef_conn, worker_options)
           end
 
           futures = workers.collect do |worker|
