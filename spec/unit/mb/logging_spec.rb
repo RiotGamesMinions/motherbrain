@@ -52,10 +52,11 @@ describe MB::Logging do
       end
 
       context "with a path" do
-        let(:options) { { logfile: "log.txt" } }
+        let(:logfile) { File.join tmp_path, "log.txt" }
+        let(:options) { { logfile: logfile } }
 
         it "logs to the path" do
-          logger.instance_variable_get(:@logdev).dev.path.should == "log.txt"
+          logger.instance_variable_get(:@logdev).dev.path.should == logfile
         end
       end
     end
