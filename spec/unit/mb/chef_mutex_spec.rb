@@ -22,6 +22,12 @@ describe MB::ChefMutex do
 
   its(:name) { should == name }
 
+  context "with special characters" do
+    let(:name) { "Environment Cloud!" }
+
+    its(:name) { should == "environment-cloud" }
+  end
+
   describe "#lock" do
     subject(:lock) { chef_mutex.lock options }
 
