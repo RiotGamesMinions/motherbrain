@@ -78,7 +78,13 @@ module MotherBrain
 
       # Split the nodes to bootstrap into two groups. One group of nodes who do not have a client
       # present on the Chef Server and require a full bootstrap and another group of nodes who
-      # have a client and require a partial bootstrap
+      # have a client and require a partial bootstrap.
+      #
+      # The first group of nodes will be returned as an array of hostnames to bootstrap.
+      #
+      # The second group of nodes will be returned as an array of Hashes containing a hostname and
+      # the node_name for the machine. The node_name may defer from the hostname depending on how
+      # the target node was initially bootstrapped.
       #
       # @example splitting nodes into two groups based on chef client presence
       #   self.nodes => [
@@ -89,7 +95,12 @@ module MotherBrain
       #
       #   self.bootstrap_type_filter => [
       #     [ "no-client1.riotgames.com", "no-client2.riotgames.com" ],
-      #     [ "has-client.riotgames.com" ]
+      #     [ 
+      #       {
+      #         hostname: "has-client.riotgames.com",
+      #         node_name: "has-client.internal"
+      #       }
+      #     ]
       #   ]
       #
       # @return [Array]
