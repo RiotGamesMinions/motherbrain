@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/reset/ridley.git
-  revision: e548b2e321dbe0a0610db8fc527201934bb5b448
+  revision: 532b4411f1dd8b360ed239203bc475584e944cf7
   specs:
     ridley (0.6.0.dev)
       activemodel (>= 3.2.0)
@@ -121,7 +121,7 @@ GEM
     mixlib-authentication (1.3.0)
       mixlib-log
     mixlib-log (1.4.1)
-    multi_json (1.3.7)
+    multi_json (1.4.0)
     multipart-post (1.1.5)
     mysql2 (0.3.11)
     net-scp (1.0.4)
