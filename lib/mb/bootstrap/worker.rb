@@ -130,6 +130,7 @@ module MotherBrain
         end
 
         full_nodes = (node_list - partial_nodes)
+        full_nodes.collect! { |node| node[:hostname] }
 
         [ full_nodes, partial_nodes ]
       end
