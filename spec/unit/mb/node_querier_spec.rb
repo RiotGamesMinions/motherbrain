@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe MB::Bootstrap::Worker do
+describe MB::NodeQuerier do
   pending
 end

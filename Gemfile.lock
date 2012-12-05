@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/reset/ridley.git
-  revision: 9c9f8fb437a0bcd52eccbd10fe4930df0077c54c
+  revision: 532b4411f1dd8b360ed239203bc475584e944cf7
   specs:
     ridley (0.6.0.dev)
       activemodel (>= 3.2.0)
@@ -77,7 +77,7 @@ GEM
     diff-lcs (1.1.3)
     drydock (0.6.9)
     erubis (2.7.0)
-    facter (1.6.15)
+    facter (1.6.16)
     faraday (0.8.4)
       multipart-post (~> 1.1)
     ffi (1.1.5)
@@ -121,7 +121,7 @@ GEM
     mixlib-authentication (1.3.0)
       mixlib-log
     mixlib-log (1.4.1)
-    multi_json (1.3.7)
+    multi_json (1.4.0)
     multipart-post (1.1.5)
     mysql2 (0.3.11)
     net-scp (1.0.4)
