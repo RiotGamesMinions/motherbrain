@@ -137,19 +137,31 @@ module MotherBrain
 
       protected
 
-        def full_bootstrap(l_nodes, options)
-          chef_conn.node.bootstrap(l_nodes, options)
+        # @param [Array<String>] target_nodes
+        # @param [Hash] options
+        #
+        # @return [Ridley::SSH::ResponseSet]
+        def full_bootstrap(target_nodes, options)
+          chef_conn.node.bootstrap(target_nodes, options)
         end
 
-        def partial_bootstrap(l_nodes, options)
-          l_nodes.collect do |node|
-            Celluloid::Future.new {
-              MB.log.info "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap"
-              updated_node = chef_conn.node.merge_data(node[:node_name], options)
-              updated_node.put_secret(ssh_options)
-              updated_node.chef_client(ssh_options)
-            }
-          end.map(&:value)
+        # @param [Array<Hash>] target_nodes
+        # @param [Hash] options
+        #
+        # @return [Ridley::SSH::ResponseSet]
+        def partial_bootstrap(target_nodes, options)
+          Ridley::SSH::ResponseSet.new.tap do |response_set|
+            target_nodes.collect do |node|
+              Celluloid::Future.new {
+                MB.log.info "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap"
+                updated_node = chef_conn.node.merge_data(node[:node_name], options)
+                updated_node.put_secret(ssh_options)
+                updated_node.chef_client(ssh_options)
+              }
+            end.map do |future|
+              response_set.add_response(future.value)
+            end
+          end
         end
 
       private
