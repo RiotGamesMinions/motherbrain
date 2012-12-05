@@ -28,6 +28,7 @@ module MotherBrain
       #
       # @return [Logger]
       def setup(options = {})
+        options = options.keep_if { |key, value| value }
         options = preserve(options).reverse_merge(DEFAULTS)
 
         level    = options[:level]
