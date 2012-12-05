@@ -76,24 +76,26 @@ module MotherBrain
       #
       # @return [SafeReturn]
       def provision(environment, manifest, plugin, options = {})
-        response = safe_return(InvalidProvisionManifest) do
-          Provisioner::Manifest.validate(manifest, plugin)
-        end
-
-        if response.error?
-          return response
-        end
-
-        response = self.class.new_provisioner(options).up(environment.to_s, manifest)
-
-        if response.ok?
-          safe_return do
-            self.class.validate_create(response.body, manifest)
-            response.body
+        defer {
+          response = safe_return(InvalidProvisionManifest) do
+            Provisioner::Manifest.validate(manifest, plugin)
           end
-        else
-          response
-        end
+
+          if response.error?
+            return response
+          end
+
+          response = self.class.new_provisioner(options).up(environment.to_s, manifest)
+
+          if response.ok?
+            safe_return do
+              self.class.validate_create(response.body, manifest)
+              response.body
+            end
+          else
+            response
+          end
+        }
       end
 
       # @param [#to_s] environment
@@ -103,7 +105,9 @@ module MotherBrain
       #
       # @return [Boolean]
       def destroy(environment, options = {})
-        self.class.new_provisioner(options).down(environment.to_s)
+        defer {
+          self.class.new_provisioner(options).down(environment.to_s)
+        }
       end
     end
   end

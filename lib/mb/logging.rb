@@ -41,6 +41,11 @@ module MotherBrain
           log.level = level
           log.formatter = BasicFormat.new
         end
+
+        Ridley.logger = @logger
+        Celluloid.logger = @logger
+
+        @logger
       end
 
       # @param [Logger, nil] obj
