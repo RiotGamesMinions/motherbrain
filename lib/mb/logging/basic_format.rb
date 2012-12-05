@@ -2,13 +2,29 @@ module MotherBrain
   module Logging
     class BasicFormat < Logger::Formatter
       def call(severity, datetime, progname, msg)
-        msg = msg.to_s
+        message = msg.to_s
 
-        if match = msg.match(/NODE\[.+?\]/)
-          "#{msg.lines.to_a.map { |line| line.start_with?(match.to_s) ? line : "#{match} #{line}" }.join}"
+        if match = message.match(/NODE\[.+?\]/)
+          format_matched_lines match, message
         else
-          "[#{datetime.utc.iso8601}] PID[#{Process.pid}] TID[#{Thread.current.object_id.to_s(36)}] #{severity}: #{msg}\n"
+          "[#{datetime.utc.iso8601}] PID[#{Process.pid}] TID[#{Thread.current.object_id.to_s(36)}] #{severity}: #{message}\n"
         end
+      end
+
+      private
+
+      def format_matched_lines(match, message)
+        lines = message.lines.to_a
+
+        lines.map! do |line|
+          if line.start_with? match.to_s
+            line
+          else
+            "#{match} #{line}"
+          end
+        end
+
+        lines.join("\n") << "\n"
       end
     end
   end
