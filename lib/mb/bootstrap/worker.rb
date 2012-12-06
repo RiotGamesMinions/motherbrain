@@ -116,7 +116,7 @@ module MotherBrain
         }
 
         partial_nodes = self.nodes.select do |node|
-          !node[:node_name].nil? && known_nodes.value.include?(node[:node_name])
+          known_nodes.value.include?(node[:node_name])
         end
 
         full_nodes = (self.nodes - partial_nodes)
