@@ -25,9 +25,14 @@ module MotherBrain
   #   end
   #
   class ChefMutex
-    DATA_BAG = "_motherbrain_locks_"
+    extend Forwardable
 
-    attr_reader :chef_connection, :client_name, :name
+    DATA_BAG = "_motherbrain_locks_".freeze
+
+    attr_reader :chef_connection
+    attr_reader :name
+
+    def_delegator :chef_connection, :client_name
 
     # @param [#to_s] name
     # @param [Ridley::Connection] chef_connection
@@ -37,7 +42,6 @@ module MotherBrain
       name.gsub! /^-+|-+$/, "" # remove dashes from beginning/end
 
       @chef_connection = chef_connection
-      @client_name = chef_connection.client_name
       @name = name
     end
 
@@ -52,7 +56,7 @@ module MotherBrain
 
       MB.log.info "Locking #{name}"
 
-      attempt_lock options
+      attempt_lock(options)
     end
 
     # Obtains a lock, runs the block, and releases the lock when the block
@@ -69,7 +73,7 @@ module MotherBrain
     # @param [block] block
     # @raise [MotherBrain::ResourceLocked] if the lock is unobtainable
     def synchronize(options = {}, &block)
-      options.reverse_merge! unlock_on_failure: true
+      options.reverse_merge!(unlock_on_failure: true)
 
       begin
         unless lock options.slice(:force)
@@ -149,12 +153,12 @@ module MotherBrain
       def delete
         return true unless locks
 
-        locks.delete name
+        locks.delete(name)
       end
 
       # Create our data bag if it doesn't already exist
       def ensure_data_bag_exists
-        data_bag.create name: DATA_BAG unless locks
+        data_bag.create(name: DATA_BAG) unless locks
       end
 
       # To prevent tests on code that use locks from actually locking anything,
@@ -170,7 +174,7 @@ module MotherBrain
       # @return [Ridley::DBIChainLink] if the data bag exists
       # @return [nil] if it does not
       def locks
-        result = data_bag.find DATA_BAG
+        result = data_bag.find(DATA_BAG)
 
         return unless result
 
@@ -184,7 +188,7 @@ module MotherBrain
       def read
         return unless locks
 
-        result = locks.find name
+        result = locks.find(name)
 
         result.to_hash if result
       end
@@ -195,7 +199,7 @@ module MotherBrain
       def write
         ensure_data_bag_exists
 
-        current_lock = locks.new id: name, client_name: client_name, time: Time.now
+        current_lock = locks.new(id: name, client_name: client_name, time: Time.now)
         current_lock.save
       end
   end
