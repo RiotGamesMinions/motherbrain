@@ -11,6 +11,7 @@ require 'fileutils'
 require 'pathname'
 require 'forwardable'
 require 'set'
+require 'ostruct'
 
 if jruby?
   require 'json'
