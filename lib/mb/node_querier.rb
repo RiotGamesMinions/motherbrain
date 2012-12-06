@@ -13,16 +13,19 @@ module MotherBrain
       @chef_conn = chef_conn
     end
 
-    # Return the Chef node_name of the target host
+    # Return the Chef node_name of the target host. A nil value is returned if a
+    # node_name cannot be determined
     #
     # @param [String] host
     #   hostname of the target node
     # @param [Hash] options
     #   a hash of options to pass to {#ssh_command}
     #
-    # @return [String]
+    # @return [String, nil]
     def node_name(host, options = {})
       ruby_script('node_name', host, options)
+    rescue RemoteScriptError
+      nil
     end
 
     # Run an arbitrary SSH command on the target host
@@ -56,13 +59,22 @@ module MotherBrain
     #   the MotherBrain scripts directory
     # @param [Hash] options
     #   a hash of options to pass to Ridley::SSH::Worker
+    #
+    # @raise [RemoteScriptError] if there was an error in execution
+    #
+    # @return [String]
     def ruby_script(name, host, options = {})
       name    = name.split('.rb')[0]
       script  = File.read(MB.scripts.join("#{name}.rb"))
       command = "#{EMBEDDED_RUBY_PATH} -e '#{script}'"
       status, response = ssh_command(host, command, options)
 
-      response.stdout.chomp
+      case status
+      when :ok
+        response.stdout.chomp
+      when :error
+        raise RemoteScriptError, response.stderr.chomp
+      end
     end
   end
 end
