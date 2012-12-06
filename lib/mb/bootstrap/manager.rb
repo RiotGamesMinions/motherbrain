@@ -187,7 +187,7 @@ module MotherBrain
             end
           end
         ensure
-          workers.map(&:terminate) if workers
+          workers.map { |worker| worker.terminate if worker.alive? }
         end
     end
   end
