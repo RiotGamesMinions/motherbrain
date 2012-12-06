@@ -19,7 +19,10 @@ def setup_rspec
     config.filter_run focus: true
     config.run_all_when_everything_filtered = true
 
-    config.before(:all) { MB.set_logger(nil) }
+    config.before(:all) do
+      MB.set_logger(nil)
+      Celluloid.logger = nil
+    end
 
     config.before(:each) do
       clean_tmp_path
