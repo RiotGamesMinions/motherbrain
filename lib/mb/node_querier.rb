@@ -13,21 +13,6 @@ module MotherBrain
       @chef_conn = chef_conn
     end
 
-    # Return the Chef node_name of the target host. A nil value is returned if a
-    # node_name cannot be determined
-    #
-    # @param [String] host
-    #   hostname of the target node
-    # @param [Hash] options
-    #   a hash of options to pass to {#ssh_command}
-    #
-    # @return [String, nil]
-    def node_name(host, options = {})
-      ruby_script('node_name', host, options)
-    rescue RemoteScriptError
-      nil
-    end
-
     # Run an arbitrary SSH command on the target host
     #
     # @param [String] host
@@ -38,7 +23,11 @@ module MotherBrain
     #
     # @return [Array]
     def ssh_command(host, command, options = {})
-      worker = Ridley::SSH::Worker.new_link(options)
+      if options[:sudo]
+        command = "sudo #{command}"
+      end
+
+      worker   = Ridley::SSH::Worker.new_link(options)
       response = worker.run(host, command)
       worker.terminate
 
@@ -75,6 +64,71 @@ module MotherBrain
       when :error
         raise RemoteScriptError, response.stderr.chomp
       end
+    end
+
+    # Return the Chef node_name of the target host. A nil value is returned if a
+    # node_name cannot be determined
+    #
+    # @param [String] host
+    #   hostname of the target node
+    # @param [Hash] options
+    #   a hash of options to pass to {#ssh_command}
+    #
+    # @return [String, nil]
+    def node_name(host, options = {})
+      ruby_script('node_name', host, options)
+    rescue RemoteScriptError
+      nil
+    end
+
+    # Run Chef-Client on the target host
+    #
+    # @param [String] host
+    # @option options [Hash] :ssh
+    #
+    # @raise [RemoteCommandError] if an execution error occurs in the remote command
+    #
+    # @return [Ridley::SSH::Response]
+    def run_chef(host, options = {})
+      options = options.dup
+      options[:ssh] ||= {
+        sudo: true
+      }
+      
+      status, response = ssh_command(host, "chef-client", options[:ssh])
+      case status
+      when :ok
+        response
+      when :error
+        raise RemoteCommandError, response.stderr.chomp
+      end
+    end
+
+    # Place an encrypted data bag secret on the target host
+    #
+    # @param [String] host
+    # @option options [Hash] :ssh
+    # @option options [String] :secret
+    #   the encrypted data bag secret of the node querier's chef conn will be used
+    #   as the default key
+    #
+    # @return [Ridley::SSH::Response]
+    def put_secret(host, options = {})
+      options = options.dup
+      options[:secret] ||= chef_conn.encrypted_data_bag_secret_path
+      options[:ssh]    ||= {
+        sudo: true
+      }
+
+      if options[:secret].nil? || !File.exists?(options[:secret])
+        return nil
+      end
+
+      secret  = File.read(options[:secret]).chomp
+      command = "echo '#{secret}' > /etc/chef/encrypted_data_bag_secret; chmod 0600 /etc/chef/encrypted_data_bag_secret"
+
+      status, response = ssh_command(host, command, options[:ssh])
+      response
     end
   end
 end
