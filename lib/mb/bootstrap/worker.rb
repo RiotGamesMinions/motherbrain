@@ -42,7 +42,7 @@ module MotherBrain
       #   URL to a proxy server to bootstrap through
       def initialize(group_id, hosts, chef_conn, options = {})
         @group_id     = group_id
-        @hosts        = hosts
+        @hosts        = Array(hosts)
         @chef_conn    = chef_conn
         @options      = options
 
@@ -180,9 +180,10 @@ module MotherBrain
             target_nodes.collect do |node|
               Celluloid::Future.new {
                 MB.log.info "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap"
-                updated_node = chef_conn.node.merge_data(node[:node_name], options)
-                updated_node.put_secret(ssh_options)
-                updated_node.chef_client(ssh_options)
+                
+                chef_conn.node.merge_data(node[:node_name], options)
+                node_querier.put_secret(node[:hostname], ssh: ssh_options)
+                node_querier.run_chef(node[:hostname], ssh: ssh_options)
               }
             end.map do |future|
               response_set.add_response(future.value)
