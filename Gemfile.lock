@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/reset/ridley.git
-  revision: 532b4411f1dd8b360ed239203bc475584e944cf7
+  revision: c856176ef301dcd782496b7bb65f774e98ca2913
   specs:
     ridley (0.6.0.dev)
       activemodel (>= 3.2.0)
