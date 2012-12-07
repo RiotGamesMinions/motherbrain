@@ -135,7 +135,7 @@ module MotherBrain
       end
 
       def license
-        File.read(MB.root.join('LICENSE'))
+        File.read(MB.app_root.join('LICENSE'))
       end
   end
 end

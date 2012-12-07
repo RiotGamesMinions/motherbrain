@@ -5,7 +5,7 @@ module MotherBrain
       class << self
         # @param [Hash] options (Hash.new)
         #
-        # @raise [ArgumentError]
+        # @raise [ArgumentError] if any required option or value is missing or invalid
         def validate_options(options = {})
           missing = (REQUIRED_OPTS - options.keys)
 
@@ -16,6 +16,21 @@ module MotherBrain
 
           unless options.keys.include?(:ssh_keys) || options.keys.include?(:ssh_password)
             raise ArgumentError, "Missing required option(s): ':ssh_keys' or ':ssh_password' must be specified"
+          end
+
+          missing_values = options.slice(*REQUIRED_OPTS).select { |key, value| !value.present? }
+
+          unless missing_values.empty?
+            values = missing_values.keys.collect { |opt| "'#{opt}'" }
+            raise ArgumentError, "Missing value for required option(s): '#{values.join(', ')}'"
+          end
+
+          unless File.exists?(options[:client_key])
+            raise ArgumentError, "Chef Client key required for bootstrap and not found at: '#{options[:client_key]}'"
+          end
+
+          unless File.exists?(options[:validator_path])
+            raise ArgumentError, "Chef Validator required for Bootstrap and not found at: '#{options[:validator_path]}'"
           end
         end
       end
@@ -172,7 +187,7 @@ module MotherBrain
             end
           end
         ensure
-          workers.map(&:terminate) if workers
+          workers.map { |worker| worker.terminate if worker.alive? }
         end
     end
   end

@@ -8,21 +8,21 @@ module MotherBrain
 
       # @return [Ridley::Connection]
       attr_reader :chef_conn
+
       # @return [String]
       attr_reader :group_id
-      # @return [Array<String>]
-      attr_reader :nodes
+
       # @return [Hash]
       attr_reader :options
-      attr_reader :ssh_options
 
+      attr_reader :ssh_options
       attr_reader :node_querier
 
       # @param [String] group_id
       #   a string containing a group_id for the nodes being bootstrapped
       #     'activemq::master'
       #     'mysql::slave'
-      # @param [Array<String>] nodes
+      # @param [Array<String>] hosts
       #   an array of hostnames or ipaddresses to bootstrap
       #     [ '33.33.33.10', 'reset.riotgames.com' ]
       # @param [Ridley::Connection] chef_conn
@@ -40,9 +40,9 @@ module MotherBrain
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      def initialize(group_id, nodes, chef_conn, options = {})
+      def initialize(group_id, hosts, chef_conn, options = {})
         @group_id     = group_id
-        @nodes        = nodes
+        @hosts        = Array(hosts)
         @chef_conn    = chef_conn
         @options      = options
 
@@ -57,9 +57,9 @@ module MotherBrain
       #
       # @return [Array<Ridley::SSH::ResponseSet]
       def run
-        MB.log.info "Bootstrapping group: '#{group_id}' [ #{nodes.join(', ')} ] with options: '#{options}'"
-        unless nodes && nodes.any?
-          MB.log.info "No nodes in group: '#{group_id}'. Skipping..."
+        MB.log.info "Bootstrapping group: '#{group_id}' [ #{hosts.join(', ')} ] with options: '#{options}'"
+        unless hosts && hosts.any?
+          MB.log.info "No hosts in group: '#{group_id}'. Skipping..."
           return [ :ok, [] ]
         end
 
@@ -92,8 +92,8 @@ module MotherBrain
       # the node_name for the machine. The node_name may defer from the hostname depending on how
       # the target node was initially bootstrapped.
       #
-      # @example splitting nodes into two groups based on chef client presence
-      #   self.nodes => [
+      # @example splitting hosts into two groups based on chef client presence
+      #   @hosts => [
       #     "no-client1.riotgames.com",
       #     "no-client2.riotgames.com",
       #     'has-client.riotgames.com"'
@@ -115,24 +115,50 @@ module MotherBrain
           chef_conn.node.all.map { |node| node.name.to_s }
         }
 
-        node_list = self.nodes.collect do |node|
+        partial_nodes = self.nodes.select do |node|
+          known_nodes.value.include?(node[:node_name])
+        end
+
+        full_nodes = (self.nodes - partial_nodes)
+        full_nodes.collect! { |node| node[:hostname] }
+
+        [ full_nodes, partial_nodes ]
+      end
+
+      # Query the given hostnames and return an expanded view containing an array of Hashes
+      # each representing a hostname. Each hash contains a hostname and node_name key. The
+      # hostname is the address to communicate to the node with and the node_name is the
+      # name the node is identified in Chef as.
+      #
+      # @option options [Boolean] :force
+      #
+      # @example
+      #   worker.nodes => [
+      #     {
+      #       hostname: "riot_one.riotgames.com",
+      #       node_name: "riot_one"
+      #     },
+      #     {
+      #       hostname: "riot_two.riotgames.com",
+      #       node_name: "riot_two"
+      #     }
+      #   ]
+      #
+      # @return [Hash]
+      def nodes(options = {})
+        if options[:force]
+          @nodes = nil
+        end
+
+        @nodes ||= hosts.collect do |host|
           {
-            hostname: node,
-            node_name: node_querier.future.node_name(node, ssh_options)
+            hostname: host,
+            node_name: node_querier.future.node_name(host, ssh_options)
           }
         end.collect! do |node|
           node[:node_name] = node[:node_name].value
           node
         end
-
-        partial_nodes = node_list.select do |node|
-          known_nodes.value.include?(node[:node_name])
-        end
-
-        full_nodes = (node_list - partial_nodes)
-        full_nodes.collect! { |node| node[:hostname] }
-
-        [ full_nodes, partial_nodes ]
       end
 
       protected
@@ -154,9 +180,10 @@ module MotherBrain
             target_nodes.collect do |node|
               Celluloid::Future.new {
                 MB.log.info "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap"
-                updated_node = chef_conn.node.merge_data(node[:node_name], options)
-                updated_node.put_secret(ssh_options)
-                updated_node.chef_client(ssh_options)
+                
+                chef_conn.node.merge_data(node[:node_name], options)
+                node_querier.put_secret(node[:hostname], ssh: ssh_options)
+                node_querier.run_chef(node[:hostname], ssh: ssh_options)
               }
             end.map do |future|
               response_set.add_response(future.value)
@@ -165,6 +192,8 @@ module MotherBrain
         end
 
       private
+
+        attr_reader :hosts
 
         def ssh_options
           {

@@ -7,19 +7,31 @@ describe MB::Bootstrap::Manager do
     describe "::validate_options" do
       let(:valid_options) do
         {
-          server_url: "",
-          client_name: "",
-          client_key: "",
-          validator_client: "",
-          validator_path: "",
-          ssh_user: ""
+          server_url: "test",
+          client_name: "test",
+          client_key: "test",
+          validator_client: "test",
+          validator_path: "test",
+          ssh_user: "test",
+          ssh_keys: "test",
+          ssh_password: "test"
         }
       end
 
-      it "raises an argument error if any of the required options is not provided" do
+      it "raises an ArgumentError if any of the required options is not provided" do
         valid_options.keys.each do |opt|
           options = valid_options.dup
           options.delete(opt)
+          
+          expect { subject.validate_options(options) }.to raise_error(MB::ArgumentError)
+        end
+      end
+
+      it "raises an ArgumentError if any of the required options have a nil value" do
+        valid_options.keys.each do |opt|
+          options = valid_options.dup
+          options[opt] = nil
+
           expect { subject.validate_options(options) }.to raise_error(MB::ArgumentError)
         end
       end
