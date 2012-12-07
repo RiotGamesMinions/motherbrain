@@ -34,7 +34,8 @@ def setup_rspec
         },
         ssh_user: 'reset',
         ssh_password: 'whatever',
-        ssh_keys: []
+        ssh_keys: [],
+        valid?: true
       )
       @context = MB::Context.new(@config)
     end
