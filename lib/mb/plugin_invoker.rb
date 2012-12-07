@@ -193,6 +193,44 @@ module MotherBrain
                 exit 1
               end
             end
+
+
+            method_option :versions,
+              type: :hash,
+              required: true
+            desc("upgrade ENVIRONMENT", "Upgrade an environment to the specified versions")
+            define_method(:upgrade) do |environment|
+              versions = @options[:versions]
+
+              assert_environment_exists environment
+
+              versions.each do |component_name, version|
+                component = plugin.components.find { |component| component.name == component_name }
+
+                unless component
+                  raise ComponentNotFound,
+                    "Component '#{component_name}' not found for plugin '#{plugin.name}'"
+                end
+
+                unless component.version_attribute
+                  raise ComponentNotVersioned.new component_name
+                end
+
+                component.send(:context).environment = environment
+
+                nodes = component.nodes.collect { |group, nodes| nodes }.flatten
+
+                if nodes.any?
+                  action = Gear::Service::Action.new context, "upgrade", component do
+                    node_attribute component.version_attribute, version
+                  end
+
+                  action.run nodes
+                else
+                  MB.ui.say "No nodes in environment '#{environment}' for component '#{component_name}' to upgrade"
+                end
+              end
+            end
           end
         end
 

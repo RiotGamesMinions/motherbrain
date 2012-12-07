@@ -9,6 +9,9 @@ module MotherBrain
       type: String,
       required: true
 
+    attribute :version_attribute,
+      type: String
+
     # @param [#to_s] name
     # @param [MB::Context] context
     def initialize(name, context, &block)
@@ -170,6 +173,11 @@ module MotherBrain
     # @api private
     class CleanRoom < CleanRoomBase
       dsl_attr_writer :description
+      dsl_attr_writer :version_attribute
+
+      def versioned(options = {})
+        version_attribute options[:with] || "#{@real_model.name}.version"
+      end
 
       def group(name, &block)
         real_model.add_group Group.new(name, context, &block)

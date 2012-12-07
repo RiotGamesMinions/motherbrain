@@ -108,4 +108,28 @@ describe MB::Component do
       end.should raise_error(MB::DuplicateGear)
     end
   end
+
+  describe "#versioned" do
+    let(:klass) { MB::Component }
+
+    context "when passed nothing" do
+      subject {
+        klass.new "component_name", @context do
+          versioned
+        end
+      }
+
+      its(:version_attribute) { should == "component_name.version" }
+    end
+
+    context "when passed an attribute name" do
+      subject {
+        klass.new "versioned_component", @context do
+          versioned with: "my.custom.attribute"
+        end
+      }
+
+      its(:version_attribute) { should == "my.custom.attribute" }
+    end
+  end
 end
