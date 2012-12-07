@@ -41,11 +41,12 @@ describe MotherBrain::PluginLoader do
         subject.default_paths.should be_a(Set)
       end
 
-      it "contains the elements of PluginLoader::DEFAULT_PLUGIN_PATHS" do
-        subject.default_paths.should have(MB::PluginLoader::DEFAULT_PLUGIN_PATHS.length).items
-        MB::PluginLoader::DEFAULT_PLUGIN_PATHS.each do |path|
-          subject.default_paths.should include(path)
-        end
+      it "contains a path to the MB::FileSystem.plugins path" do
+        subject.default_paths.should include(MB::FileSystem.plugins.to_s)
+      end
+
+      it "contains a path to '.mb/plugins' in the local directory" do
+        subject.default_paths.should include(File.expand_path('.mb/plugins'))
       end
 
       context "given ENV['MB_PLUGIN_PATH'] is set" do

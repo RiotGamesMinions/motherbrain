@@ -9,9 +9,15 @@ describe MotherBrain do
     end
   end
 
-  describe "::root" do
+  describe "::app_root" do
     it "returns a pathname" do
-      subject.root.should be_a(Pathname)
+      subject.app_root.should be_a(Pathname)
+    end
+  end
+
+  describe "::scripts" do
+    it "returns a pathname" do
+      subject.scripts.should be_a(Pathname)
     end
   end
 

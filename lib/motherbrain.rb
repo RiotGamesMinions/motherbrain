@@ -38,6 +38,7 @@ module MotherBrain
   autoload :ContextualModel, 'mb/contextual_model'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
   autoload :ErrorHandler, 'mb/error_handler'
+  autoload :FileSystem, 'mb/file_system'
   autoload :Gear, 'mb/gear'
   autoload :Group, 'mb/group'
   autoload :InvokerBase, 'mb/invoker_base'
@@ -61,18 +62,18 @@ module MotherBrain
       @ui ||= Thor::Shell::Color.new
     end
 
-    # Path to the root directory of MotherBrain
+    # Path to the root directory of the MotherBrain application
     #
     # @return [Pathname]
-    def root
-      @root ||= Pathname.new(File.expand_path('../', File.dirname(__FILE__)))
+    def app_root
+      @app_root ||= Pathname.new(File.expand_path('../', File.dirname(__FILE__)))
     end
 
     # Path to the scripts directory
     #
     # @return [Pathname]
     def scripts
-      root.join('scripts')
+      app_root.join('scripts')
     end
 
     # @return [Logger]
