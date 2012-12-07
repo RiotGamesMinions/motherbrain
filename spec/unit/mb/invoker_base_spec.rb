@@ -16,7 +16,7 @@ describe MB::InvokerBase do
         it "reads the configuration file as the Invoker's configuration" do
           invoker = subject.new([])
 
-          invoker.context.config.chef_api_url.should_not be_nil
+          invoker.context.config.chef.api_url.should_not be_nil
         end
       end
 
@@ -42,7 +42,7 @@ describe MB::InvokerBase do
       it "loads the specified config file when the specified file exists" do
         invoker = subject.new([], config: ENV['MB_CONFIG'])
 
-        invoker.context.config.chef_api_url.should_not be_nil
+        invoker.context.config.chef.api_url.should_not be_nil
       end
 
       it "raises a ConfigNotFound error when the specified path does not exist" do

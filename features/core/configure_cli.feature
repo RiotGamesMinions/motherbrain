@@ -17,11 +17,11 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
       """
     And the exit status should be 0
     And a MotherBrain config file should exist and contain:
-      | chef_api_url     | https://api.opscode.com/organizations/vialstudio |
-      | chef_api_client  | reset                                            |
-      | chef_api_key     | /Users/reset/.chef/reset.pem                     |
-      | ssh_user         | root                                             |
-      | ssh_password     | secretpass                                       |
+      | chef.api_url     | https://api.opscode.com/organizations/vialstudio |
+      | chef.api_client  | reset                                            |
+      | chef.api_key     | /Users/reset/.chef/reset.pem                     |
+      | ssh.user         | root                                             |
+      | ssh.password     | secretpass                                       |
 
   Scenario: attempting to generate a new config when one already exists
     Given a valid MotherBrain configuration
@@ -47,8 +47,8 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
       """
     And the exit status should be 0
     And a MotherBrain config file should exist and contain:
-      | chef_api_url     | https://api.opscode.com/organizations/vialstudio |
-      | chef_api_client  | reset                                            |
-      | chef_api_key     | /Users/reset/.chef/reset.pem                     |
-      | ssh_user         | root                                             |
-      | ssh_password     | secretpass                                       |
+      | chef.api_url     | https://api.opscode.com/organizations/vialstudio |
+      | chef.api_client  | reset                                            |
+      | chef.api_key     | /Users/reset/.chef/reset.pem                     |
+      | ssh.user         | root                                             |
+      | ssh.password     | secretpass                                       |
