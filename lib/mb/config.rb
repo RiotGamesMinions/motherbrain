@@ -57,6 +57,10 @@ module MotherBrain
       default: 10.0,
       type: [ Integer, Float ]
 
+    attribute 'ssl.verify',
+      default: true,
+      type: Boolean
+
     # Returns a connection hash for Ridley from the instance's attributes
     #
     # @example
@@ -82,6 +86,7 @@ module MotherBrain
         ridley_opts[:client_name] = self.chef_api_client
         ridley_opts[:client_key] = self.chef_api_key
         ridley_opts[:encrypted_data_bag_secret_path] = self.chef_encrypted_data_bag_secret_path
+        ridley_opts[:ssl] = self.ssl
 
         unless self.chef_organization.nil?
           ridley_opts[:organization] = self.chef_organization

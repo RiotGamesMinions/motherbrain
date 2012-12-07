@@ -22,20 +22,20 @@ def setup_rspec
     config.before(:all) do
       MB.set_logger(nil)
       Celluloid.logger = nil
-    end
 
-    config.before(:each) do
-      clean_tmp_path
-      @config = double('config',
-        to_ridley: {
-          server_url: "http://chef.riotgames.com",
-          client_name: "fake",
-          client_key: File.join(fixtures_path, "fake_key.pem")
-        },
+      @config = MB::Config.new(nil,
+        server_url: "http://chef.riotgames.com",
+        chef_api_client: "fake",
+        chef_api_key: File.join(fixtures_path, "fake_key.pem"),
         ssh_user: 'reset',
         ssh_password: 'whatever',
         ssh_keys: []
       )
+      MB::Application.run!(@config)
+    end
+
+    config.before(:each) do
+      clean_tmp_path
       @context = MB::Context.new(@config)
     end
   end

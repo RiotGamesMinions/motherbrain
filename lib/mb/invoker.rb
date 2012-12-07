@@ -9,10 +9,11 @@ module MotherBrain
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
         if args.any? and (args & InvokerBase::NOCONFIG_TASKS).empty?
-          setup(configure(opts))
+          context = configure(opts)
+          setup(context)
+          MB::Application.run!(context.config)
         end
-        
-        MB::Application.run!
+
         super
       end
 
