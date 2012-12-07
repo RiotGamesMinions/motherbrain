@@ -43,7 +43,9 @@ module MotherBrain
     #   a hash of options to pass to Net::SCP.upload!
     def copy_file(local_file, remote_file, host, options = {})
       MB.log.debug "Copying file '#{local_file}' to '#{host}:#{remote_file}'"
-      Net::SCP.upload!(host, options[:user], local_file, remote_file, options.slice(*Net::SSH::VALID_OPTIONS))
+
+      options[:ssh] = options[:ssh].slice(*Net::SSH::VALID_OPTIONS)
+      Net::SCP.upload!(host, nil, local_file, remote_file, options)
     end
 
     # @param [#to_s] data
@@ -54,10 +56,11 @@ module MotherBrain
     def write_file(data, remote_file, host, options = {})
       file = FileSystem::Tempfile.new
       file.write(data.to_s)
+      file.close
 
       copy_file(file.path, remote_file, host, options)
     ensure
-      file.close(true)
+      file.unlink
     end
 
     # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
@@ -147,7 +150,7 @@ module MotherBrain
         return nil
       end
 
-      write_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options[:ssh])
+      copy_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options)
     end
   end
 end
