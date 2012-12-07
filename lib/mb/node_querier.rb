@@ -36,6 +36,8 @@ module MotherBrain
       response
     end
 
+    # Copy a file from the local filesystem to the filepath on the target host
+    #
     # @param [String] local_file
     # @param [String] remote_file
     # @param [String] host
@@ -50,6 +52,8 @@ module MotherBrain
       Net::SCP.upload!(host, nil, local_file, remote_file, options)
     end
 
+    # Write the given data to the filepath on the target host
+    #
     # @param [#to_s] data
     # @param [String] remote_file
     # @param [String] host
@@ -120,7 +124,7 @@ module MotherBrain
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
     #
     # @return [Ridley::SSH::Response]
-    def run_chef(host, options = {})
+    def chef_run(host, options = {})
       options = options.dup
       options[:ssh] ||= {
         sudo: true

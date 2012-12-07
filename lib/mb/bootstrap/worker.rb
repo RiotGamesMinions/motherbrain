@@ -180,7 +180,7 @@ module MotherBrain
                 
                 chef_conn.node.merge_data(node[:node_name], options)
                 Application.node_querier.put_secret(node[:hostname], ssh: ssh_options)
-                Application.node_querier.run_chef(node[:hostname], ssh: ssh_options)
+                Application.node_querier.chef_run(node[:hostname], ssh: ssh_options)
               }
             end.map do |future|
               response_set.add_response(future.value)
