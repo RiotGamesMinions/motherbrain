@@ -29,7 +29,7 @@ module MotherBrain
         command = "sudo #{command}"
       end
 
-      worker   = Ridley::SSH::Worker.new_link(options)
+      worker   = Ridley::SSH::Worker.new(options)
       response = worker.run(host, command)
       worker.terminate
 
@@ -42,9 +42,11 @@ module MotherBrain
     # @param [Hash] options
     #   a hash of options to pass to Net::SCP.upload!
     def copy_file(local_file, remote_file, host, options = {})
-      MB.log.debug "Copying file '#{local_file}' to '#{host}:#{remote_file}'"
+      options                  = options.dup
+      options[:ssh]            = options[:ssh].slice(*Net::SSH::VALID_OPTIONS)
+      options[:ssh][:paranoid] = false
 
-      options[:ssh] = options[:ssh].slice(*Net::SSH::VALID_OPTIONS)
+      MB.log.debug "Copying file '#{local_file}' to '#{host}:#{remote_file}'"
       Net::SCP.upload!(host, nil, local_file, remote_file, options)
     end
 

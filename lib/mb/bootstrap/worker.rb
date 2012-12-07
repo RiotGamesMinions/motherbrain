@@ -16,7 +16,6 @@ module MotherBrain
       attr_reader :options
 
       attr_reader :ssh_options
-      attr_reader :node_querier
 
       # @param [String] group_id
       #   a string containing a group_id for the nodes being bootstrapped
@@ -45,8 +44,6 @@ module MotherBrain
         @hosts        = Array(hosts)
         @chef_conn    = chef_conn
         @options      = options
-
-        @node_querier = NodeQuerier.supervise(chef_conn).actors.first
       end
 
       # @example
@@ -153,7 +150,7 @@ module MotherBrain
         @nodes ||= hosts.collect do |host|
           {
             hostname: host,
-            node_name: node_querier.future.node_name(host, ssh_options)
+            node_name: Application.node_querier.future.node_name(host, ssh_options)
           }
         end.collect! do |node|
           node[:node_name] = node[:node_name].value
@@ -182,8 +179,8 @@ module MotherBrain
                 MB.log.info "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap"
                 
                 chef_conn.node.merge_data(node[:node_name], options)
-                node_querier.put_secret(node[:hostname], ssh: ssh_options)
-                node_querier.run_chef(node[:hostname], ssh: ssh_options)
+                Application.node_querier.put_secret(node[:hostname], ssh: ssh_options)
+                Application.node_querier.run_chef(node[:hostname], ssh: ssh_options)
               }
             end.map do |future|
               response_set.add_response(future.value)
