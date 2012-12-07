@@ -22,7 +22,10 @@ module MotherBrain
       def run!(config)
         group = super()
         group.configure(config)
-        group.supervise_as(:node_querier, NodeQuerier, group.chef_conn)
+
+        group.supervise_as :provisioner_manager, Provisioner::Manager
+        group.supervise_as :bootstrap_manager, Bootstrap::Manager
+        group.supervise_as :node_querier, NodeQuerier, group.chef_conn
 
         group
       end
@@ -66,9 +69,6 @@ module MotherBrain
         Celluloid::Actor[:node_querier]
       end
     end
-
-    supervise Provisioner::Manager, as: :provisioner_manager
-    supervise Bootstrap::Manager, as: :bootstrap_manager
 
     # @return [MB::Config]
     attr_reader :config
