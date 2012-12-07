@@ -107,7 +107,7 @@ module MotherBrain
       end
 
       def solr_escape(value)
-        value.gsub(/[\:\[\]\+\-\!\^\(\)\{\}]/) { |x| "\\#{x}" }
+        value.gsub(/[\:\[\]\+\!\^\(\)\{\}]/) { |x| "\\#{x}" }
       end
 
     # @author Jamie Winsor <jamie@vialstudios.com>

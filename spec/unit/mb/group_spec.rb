@@ -195,6 +195,18 @@ describe MB::Group do
       end
     end
 
+    context "with dash-separated recipes" do
+      subject do
+        MB::Group.new("pvpnet", @context) do
+          recipe "build-essential"
+        end
+      end
+
+      it "does not escape the dash" do
+        subject.search_query.should eql("chef_environment:#{environment} AND run_list:recipe\\[build-essential\\]")
+      end
+    end
+
     context "with multiple roles" do
       subject do
         MB::Group.new("roles", @context) do
