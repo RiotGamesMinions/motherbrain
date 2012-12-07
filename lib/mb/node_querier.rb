@@ -1,3 +1,5 @@
+require 'net/scp'
+
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class NodeQuerier
@@ -32,6 +34,30 @@ module MotherBrain
       worker.terminate
 
       response
+    end
+
+    # @param [String] local_file
+    # @param [String] remote_file
+    # @param [String] host
+    # @param [Hash] options
+    #   a hash of options to pass to Net::SCP.upload!
+    def copy_file(local_file, remote_file, host, options = {})
+      MB.log.debug "Copying file '#{local_file}' to '#{host}:#{remote_file}'"
+      Net::SCP.upload!(host, options[:user], local_file, remote_file, options.slice(*Net::SSH::VALID_OPTIONS))
+    end
+
+    # @param [#to_s] data
+    # @param [String] remote_file
+    # @param [String] host
+    # @param [Hash] options
+    #   a hash of options to pass to #copy_file
+    def write_file(data, remote_file, host, options = {})
+      file = FileSystem::Tempfile.new
+      file.write(data.to_s)
+
+      copy_file(file.path, remote_file, host, options)
+    ensure
+      file.close(true)
     end
 
     # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
@@ -116,19 +142,12 @@ module MotherBrain
     def put_secret(host, options = {})
       options = options.dup
       options[:secret] ||= chef_conn.encrypted_data_bag_secret_path
-      options[:ssh]    ||= {
-        sudo: true
-      }
 
       if options[:secret].nil? || !File.exists?(options[:secret])
         return nil
       end
 
-      secret  = File.read(options[:secret]).chomp
-      command = "echo '#{secret}' > /etc/chef/encrypted_data_bag_secret; chmod 0600 /etc/chef/encrypted_data_bag_secret"
-
-      status, response = ssh_command(host, command, options[:ssh])
-      response
+      write_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options[:ssh])
     end
   end
 end

@@ -28,4 +28,14 @@ describe MB::NodeQuerier do
       subject.node_name(double('host')).should be_nil
     end
   end
+
+  describe "#write_file" do
+    it "writes a temporary file and sends it to copy_file" do
+      host    = double('host')
+      options = double('opts')
+      subject.should_receive(:copy_file).with(kind_of(String), '/tmp/file', host, options)
+
+      subject.write_file('asdf', '/tmp/file', host, options)
+    end
+  end
 end
