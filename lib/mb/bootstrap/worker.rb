@@ -15,8 +15,6 @@ module MotherBrain
       # @return [Hash]
       attr_reader :options
 
-      attr_reader :ssh_options
-
       # @param [String] group_id
       #   a string containing a group_id for the nodes being bootstrapped
       #     'activemq::master'
@@ -33,8 +31,6 @@ module MotherBrain
       #   an initial run list to bootstrap with
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
-      # @option options [Boolean] :sudo (true)
-      #   bootstrap with sudo
       # @option options [String] :template ("omnibus")
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
@@ -73,7 +69,7 @@ module MotherBrain
 
           unless partial_nodes.empty?
             futures << Celluloid::Future.new {
-              partial_bootstrap(partial_nodes, options.slice(:attributes, :run_list))
+              partial_bootstrap(partial_nodes, options.slice(:ssh, :attributes, :run_list))
             }
           end
         end.map(&:value).flatten.inject(:merge)
@@ -142,7 +138,7 @@ module MotherBrain
       #   ]
       #
       # @return [Hash]
-      def nodes(options = {})
+      def nodes
         if options[:force]
           @nodes = nil
         end
@@ -150,7 +146,7 @@ module MotherBrain
         @nodes ||= hosts.collect do |host|
           {
             hostname: host,
-            node_name: Application.node_querier.future.node_name(host, ssh_options)
+            node_name: Application.node_querier.future.node_name(host, options[:ssh])
           }
         end.collect! do |node|
           node[:node_name] = node[:node_name].value
@@ -179,8 +175,8 @@ module MotherBrain
                 MB.log.info "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap"
                 
                 chef_conn.node.merge_data(node[:node_name], options)
-                Application.node_querier.put_secret(node[:hostname], ssh: ssh_options)
-                Application.node_querier.chef_run(node[:hostname], ssh: ssh_options)
+                Application.node_querier.put_secret(node[:hostname], options.slice(:ssh))
+                Application.node_querier.chef_run(node[:hostname], options[:ssh])
               }
             end.map do |future|
               response_set.add_response(future.value)
@@ -191,15 +187,6 @@ module MotherBrain
       private
 
         attr_reader :hosts
-
-        def ssh_options
-          {
-            user: options[:ssh_user],
-            password: options[:ssh_password],
-            keys: options[:ssh_keys],
-            sudo: options[:sudo]
-          }
-        end
     end
   end
 end
