@@ -14,10 +14,6 @@ module MotherBrain
             raise ArgumentError, "Missing required option(s): #{missing.join(', ')}"
           end
 
-          unless options.keys.include?(:ssh_keys) || options.keys.include?(:ssh_password)
-            raise ArgumentError, "Missing required option(s): ':ssh_keys' or ':ssh_password' must be specified"
-          end
-
           missing_values = options.slice(*REQUIRED_OPTS).select { |key, value| !value.present? }
 
           unless missing_values.empty?
@@ -45,7 +41,7 @@ module MotherBrain
         :client_key,
         :validator_client,
         :validator_path,
-        :ssh_user
+        :ssh
       ].freeze
 
       # Options given to {#bootstrap} to be passed to Ridley
@@ -68,6 +64,12 @@ module MotherBrain
       #   manifest of nodes and what they should become
       # @param [Bootstrap::Routine] routine
       #   routine to follow for the bootstrap process
+      # @option options [Hash] :ssh
+      #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
+      #   * :password (String) the password for the shell user that will perform the bootstrap
+      #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
+      #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
+      #   * :sudo (Boolean) [True] bootstrap with sudo
       # @option options [String] :server_url
       #   URL to the Chef API to bootstrap the target node(s) to (required)
       # @option options [String] :client_name
@@ -83,19 +85,9 @@ module MotherBrain
       #   filepath to the validator used to bootstrap the node (required)
       # @option options [String] :encrypted_data_bag_secret_path (nil)
       #   filepath on your host machine to your organizations encrypted data bag secret
-      # @option options [String] :ssh_user
-      #   a shell user that will login to each node and perform the bootstrap command on (requirec)
-      # @option options [String] :ssh_password
-      #   the password for the shell user that will perform the bootstrap"
-      # @option options [Array<String>, String] :ssh_keys
-      #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
       # @option options [String] :environment ('_default')
-      # @option options [Float] :ssh_timeout (1.5)
-      #   timeout value for SSH bootstrap
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
-      # @option options [Boolean] :sudo (true)
-      #   bootstrap with sudo
       # @option options [String] :template ("omnibus")
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
@@ -153,8 +145,6 @@ module MotherBrain
         # @option options [String] :environment ('_default')
         # @option options [Hash] :hints (Hash.new)
         #   a hash of Ohai hints to place on the bootstrapped node
-        # @option options [Boolean] :sudo (true)
-        #   bootstrap with sudo
         # @option options [String] :template ("omnibus")
         #   bootstrap template to use
         # @option options [String] :bootstrap_proxy (nil)
