@@ -143,9 +143,9 @@ module MotherBrain
         def chef_run(nodes)
           runner_options = {}.tap do |opts|
             opts[:nodes]    = nodes
-            opts[:user]     = config.ssh_user
-            opts[:keys]     = config.ssh_keys if config.ssh_keys
-            opts[:password] = config.ssh_password if config.ssh_password
+            opts[:user]     = config.ssh.user
+            opts[:keys]     = config.ssh.keys if config.ssh.keys
+            opts[:password] = config.ssh.password if config.ssh.password
           end
 
           chef = ChefRunner.new(runner_options)

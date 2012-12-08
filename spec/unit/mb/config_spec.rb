@@ -9,8 +9,8 @@ describe MB::Config do
         @config = subject.new
       end
 
-      it "has a default value for chef_api_url" do
-        @config.chef_api_url.should eql("http://localhost:8080")
+      it "has a default value for chef.api_url" do
+        @config.chef.api_url.should eql("http://localhost:8080")
       end
 
       it "has a default value for plugin_paths equal to PluginLoader.default_paths" do
@@ -21,11 +21,11 @@ describe MB::Config do
 
   subject do
     MB::Config.new.tap do |o|
-      o.chef_api_url = "https://api.opscode.com/organizations/vialstudio"
-      o.chef_api_client = "reset"
-      o.chef_api_key = "/Users/reset/.chef/reset.pem"
-      o.ssh_user = "root"
-      o.ssh_password = "something"
+      o.chef.api_url = "https://api.opscode.com/organizations/vialstudio"
+      o.chef.api_client = "reset"
+      o.chef.api_key = "/Users/reset/.chef/reset.pem"
+      o.ssh.user = "root"
+      o.ssh.password = "something"
     end
   end
 
@@ -36,28 +36,28 @@ describe MB::Config do
       end
     end
 
-    it "is invalid if chef_api_url is blank" do
-      subject.chef_api_url = nil
+    it "is invalid if chef.api_url is blank" do
+      subject.chef.api_url = nil
 
       subject.should_not be_valid
     end
 
-    it "is invalid if chef_api_url is not a valid HTTP or HTTPS url" do
+    it "is invalid if chef.api_url is not a valid HTTP or HTTPS url" do
       pending
       
-      subject.chef_api_url = 'not_a_uri'
+      subject.chef.api_url = 'not_a_uri'
 
       subject.should_not be_valid
     end
 
-    it "is invalid if chef_api_client is blank" do
-      subject.chef_api_client = nil
+    it "is invalid if chef.api_client is blank" do
+      subject.chef.api_client = nil
 
       subject.should_not be_valid
     end
 
-    it "is invalid if chef_api_key is blank" do
-      subject.chef_api_key = nil
+    it "is invalid if chef.api_key is blank" do
+      subject.chef.api_key = nil
 
       subject.should_not be_valid
     end
@@ -65,8 +65,8 @@ describe MB::Config do
     it "is invalid if ssh_keys is blank or empty and ssh_password is blank" do
       pending
 
-      subject.ssh_keys = []
-      subject.ssh_password = ''
+      subject.ssh.keys = []
+      subject.ssh.password = ''
 
       subject.should_not be_valid
       subject.errors[:ssh_password].should =~ ["You must specify an SSH password or an SSH key"]
@@ -74,19 +74,19 @@ describe MB::Config do
     end
 
     it "is invalid if ssh_timeout is a non-integer non-float" do
-      subject.ssh_timeout = "string"
+      subject.ssh.timeout = "string"
 
       subject.should_not be_valid
     end
 
     it "is valid if ssh_timeout is an integer" do
-      subject.ssh_timeout = 1
+      subject.ssh.timeout = 1
 
       subject.should be_valid
     end
 
     it "is valid if ssh_timeout is a float" do
-      subject.ssh_timeout = 1.0
+      subject.ssh.timeout = 1.0
 
       subject.should be_valid
     end
@@ -95,7 +95,9 @@ describe MB::Config do
   let(:json) do
     %(
       {
-        "chef_api_client": "reset"
+        "chef": {
+          "api_client": "reset"
+        }
       }
     )
   end
@@ -152,7 +154,7 @@ describe MB::Config do
 
   describe "#from_json" do
     it "sets the attributes found in the json" do
-      subject.from_json(json).chef_api_client.should eql("reset")
+      subject.from_json(json).chef.api_client.should eql("reset")
     end
 
     context "given JSON containing undefined attributes" do
@@ -214,55 +216,55 @@ describe MB::Config do
   describe "#to_ridley" do
     subject do
       MB::Config.new.tap do |o|
-        o.chef_api_url = "https://api.opscode.com"
-        o.chef_api_client = "reset"
-        o.chef_api_key = "/Users/reset/.chef/reset.pem"
-        o.chef_organization = "vialstudios"
-        o.chef_encrypted_data_bag_secret_path = File.join(fixtures_path, "fake_key.pem")
+        o.chef.api_url = "https://api.opscode.com"
+        o.chef.api_client = "reset"
+        o.chef.api_key = "/Users/reset/.chef/reset.pem"
+        o.chef.organization = "vialstudios"
+        o.chef.encrypted_data_bag_secret_path = File.join(fixtures_path, "fake_key.pem")
       end
     end
 
-    it "returns a hash with a 'server_url' key mapping to chef_api_url" do
+    it "returns a hash with a 'server_url' key mapping to chef.api_url" do
       obj = subject.to_ridley
 
       obj.should have_key(:server_url)
-      obj[:server_url].should eql(subject.chef_api_url)
+      obj[:server_url].should eql(subject.chef.api_url)
     end
 
-    it "returns a hash with a 'client_name' key mapping to chef_api_client" do
+    it "returns a hash with a 'client_name' key mapping to chef.api_client" do
       obj = subject.to_ridley
 
       obj.should have_key(:client_name)
-      obj[:client_name].should eql(subject.chef_api_client)
+      obj[:client_name].should eql(subject.chef.api_client)
     end
 
-    it "returns a hash with a 'client_key' key mapping to chef_api_key" do
+    it "returns a hash with a 'client_key' key mapping to chef.api_key" do
       obj = subject.to_ridley
 
       obj.should have_key(:client_key)
-      obj[:client_key].should eql(subject.chef_api_key)
+      obj[:client_key].should eql(subject.chef.api_key)
     end
 
-    it "returns a hash with a 'encrypted_data_bag_secret_path' key mapping to chef_encrypted_data_bag_secret_path" do
+    it "returns a hash with a 'encrypted_data_bag_secret_path' key mapping to chef.encrypted_data_bag_secret_path" do
       obj = subject.to_ridley
 
       obj.should have_key(:encrypted_data_bag_secret_path)
-      obj[:encrypted_data_bag_secret_path].should eql(subject.chef_encrypted_data_bag_secret_path)
+      obj[:encrypted_data_bag_secret_path].should eql(subject.chef.encrypted_data_bag_secret_path)
     end
 
-    it "returns a hash with an 'organization' key mapping to chef_organization" do
+    it "returns a hash with an 'organization' key mapping to chef.organization" do
       obj = subject.to_ridley
 
       obj.should have_key(:organization)
-      obj[:organization].should eql(subject.chef_organization)
+      obj[:organization].should eql(subject.chef.organization)
     end
 
     context "given the config has no value for organization" do
       subject do
         MB::Config.new.tap do |o|
-          o.chef_api_url = "https://api.opscode.com"
-          o.chef_api_client = "reset"
-          o.chef_api_key = "/Users/reset/.chef/reset.pem"
+          o.chef.api_url = "https://api.opscode.com"
+          o.chef.api_client = "reset"
+          o.chef.api_key = "/Users/reset/.chef/reset.pem"
         end
       end
 
