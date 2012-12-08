@@ -87,15 +87,17 @@ module MotherBrain
                 server_url: context.chef_conn.server_url,
                 client_name: context.chef_conn.client_name,
                 client_key: context.chef_conn.client_key,
-                ssh_user: options[:ssh_user] || context.config[:ssh][:user],
-                ssh_password: options[:ssh_password] || context.config[:ssh][:password],
-                ssh_keys: options[:ssh_keys] || context.config[:ssh][:keys],
-                ssh_timeout: options[:ssh_timeout] || context.config[:ssh][:timeout],
                 validator_client: options[:validator_client] || context.config[:chef][:validator_client],
                 validator_path: options[:validator_path] || context.config[:chef][:validator_path],
                 bootstrap_proxy: options[:bootstrap_proxy] || context.config[:chef][:bootstrap_proxy],
                 encrypted_data_bag_secret_path: options[:encrypted_data_bag_secret_path] || context.config[:chef][:encrypted_data_bag_secret_path],
-                sudo: options[:sudo] || context.config[:ssh][:sudo],
+                ssh: {
+                  user: options[:ssh_user] || context.config[:ssh][:user],
+                  password: options[:ssh_password] || context.config[:ssh][:password],
+                  keys: options[:ssh_keys] || context.config[:ssh][:keys],
+                  timeout: options[:ssh_timeout] || context.config[:ssh][:timeout],
+                  sudo: options[:sudo] || context.config[:ssh][:sudo]
+                },
                 ssl: {
                   verify: options[:ssl_verify] || context.config[:ssl][:verify]
                 }
