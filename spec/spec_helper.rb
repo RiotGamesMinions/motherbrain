@@ -37,7 +37,7 @@ def setup_rspec
           }
         }
       )
-      MB::Application.run!(@config)
+      @app = MB::Application.run!(@config)
     end
 
     config.before(:each) do

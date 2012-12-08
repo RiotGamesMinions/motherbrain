@@ -11,8 +11,8 @@ module MotherBrain
     attr_reader :chef_conn
 
     # @param [Ridley::Connection] chef_conn
-    def initialize(chef_conn)
-      @chef_conn = chef_conn
+    def initialize
+      @chef_conn = Ridley.connection(Application.config.to_ridley)
     end
 
     # Run an arbitrary SSH command on the target host

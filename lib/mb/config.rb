@@ -5,6 +5,15 @@ module MotherBrain
       def default_path
         ENV["MB_CONFIG"] || "~/.mb/config.json"
       end
+
+      # @param [MB::Config] config
+      #
+      # @raise [MB::InvalidConfig] if the given configuration is invalid
+      def validate!(config)
+        unless config.valid?
+          raise InvalidConfig.new(config.errors)
+        end
+      end
     end
 
     attribute :plugin_paths,
