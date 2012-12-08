@@ -12,9 +12,11 @@ describe MB::Bootstrap::Manager do
           client_key: "test",
           validator_client: "test",
           validator_path: "test",
-          ssh_user: "test",
-          ssh_keys: "test",
-          ssh_password: "test"
+          ssh: {
+            user: "test",
+            keys: "test",
+            password: "test"
+          }
         }
       end
 
@@ -89,8 +91,10 @@ describe MB::Bootstrap::Manager do
       client_key: fixtures_path.join("fake_key.pem").to_s,
       validator_client: "fake-validator",
       validator_path: fixtures_path.join("fake_key.pem").to_s,
-      ssh_user: "reset",
-      ssh_keys: fixtures_path.join("fake_id_rsa").to_s
+      ssh: {
+        user: "reset",
+        keys: fixtures_path.join("fake_id_rsa").to_s
+      }
     }
   end
 
