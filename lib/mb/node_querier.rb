@@ -20,11 +20,22 @@ module MotherBrain
     # @param [String] host
     #   hostname of the target node
     # @param [String] command
-    # @param [Hash] options
-    #   a hash of options to pass to Ridley::SSH::Worker
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (5.0)
+    #   timeout value for SSH bootstrap
+    # @option options [Boolean] :sudo (true)
+    #   bootstrap with sudo
     #
     # @return [Array]
     def ssh_command(host, command, options = {})
+      options            = options.dup
+      options[:paranoid] = false
+
       if options[:sudo]
         command = "sudo #{command}"
       end
@@ -41,8 +52,12 @@ module MotherBrain
     # @param [String] local_file
     # @param [String] remote_file
     # @param [String] host
-    # @param [Hash] options
-    #   a hash of options to pass to Net::SCP.upload!
+    # @option options [Hash] :ssh
+    #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
+    #   * :password (String) the password for the shell user that will perform the bootstrap
+    #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
+    #   * :sudo (Boolean) [True] bootstrap with sudo
     def copy_file(local_file, remote_file, host, options = {})
       options                  = options.dup
       options[:ssh]            = options[:ssh].slice(*Net::SSH::VALID_OPTIONS)
@@ -57,8 +72,12 @@ module MotherBrain
     # @param [#to_s] data
     # @param [String] remote_file
     # @param [String] host
-    # @param [Hash] options
-    #   a hash of options to pass to #copy_file
+    # @option options [Hash] :ssh
+    #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
+    #   * :password (String) the password for the shell user that will perform the bootstrap
+    #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
+    #   * :sudo (Boolean) [True] bootstrap with sudo
     def write_file(data, remote_file, host, options = {})
       file = FileSystem::Tempfile.new
       file.write(data.to_s)
@@ -81,8 +100,16 @@ module MotherBrain
     # @param [String] host
     #   hostname of the target node
     #   the MotherBrain scripts directory
-    # @param [Hash] options
-    #   a hash of options to pass to Ridley::SSH::Worker
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (5.0)
+    #   timeout value for SSH bootstrap
+    # @option options [Boolean] :sudo (true)
+    #   bootstrap with sudo
     #
     # @raise [RemoteScriptError] if there was an error in execution
     #
@@ -106,8 +133,16 @@ module MotherBrain
     #
     # @param [String] host
     #   hostname of the target node
-    # @param [Hash] options
-    #   a hash of options to pass to {#ssh_command}
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (5.0)
+    #   timeout value for SSH bootstrap
+    # @option options [Boolean] :sudo (true)
+    #   bootstrap with sudo
     #
     # @return [String, nil]
     def node_name(host, options = {})
@@ -119,18 +154,25 @@ module MotherBrain
     # Run Chef-Client on the target host
     #
     # @param [String] host
-    # @option options [Hash] :ssh
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (5.0)
+    #   timeout value for SSH bootstrap
+    # @option options [Boolean] :sudo (true)
+    #   bootstrap with sudo
     #
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
     #
     # @return [Ridley::SSH::Response]
     def chef_run(host, options = {})
-      options = options.dup
-      options[:ssh] ||= {
-        sudo: true
-      }
-      
-      status, response = ssh_command(host, "chef-client", options[:ssh])
+      options          = options.dup
+      options[:sudo]   = true
+      status, response = ssh_command(host, "chef-client", options)
+
       case status
       when :ok
         response
@@ -142,10 +184,15 @@ module MotherBrain
     # Place an encrypted data bag secret on the target host
     #
     # @param [String] host
-    # @option options [Hash] :ssh
     # @option options [String] :secret
     #   the encrypted data bag secret of the node querier's chef conn will be used
     #   as the default key
+    # @option options [Hash] :ssh
+    #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
+    #   * :password (String) the password for the shell user that will perform the bootstrap
+    #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
+    #   * :sudo (Boolean) [True] bootstrap with sudo
     #
     # @return [Ridley::SSH::Response]
     def put_secret(host, options = {})
