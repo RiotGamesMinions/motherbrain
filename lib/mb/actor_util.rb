@@ -24,7 +24,7 @@ module MotherBrain
       end
 
       if exceptions.nil? || exceptions.empty?
-        exceptions = [ ::Exception ]
+        exceptions = ::Exception
       end
 
       SafeReturn.new(:ok, yield)
