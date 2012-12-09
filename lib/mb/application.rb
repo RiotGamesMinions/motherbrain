@@ -87,7 +87,7 @@ module MotherBrain
 
     def reconfigure(_msg, new_config)
       MB.log.debug "[Application] ConfigSrv has changed: re-configuring components..."
-      self.class.ridley.configure(new_config.to_ridley)
+      self.class.ridley.async.configure(new_config.to_ridley)
     end
   end
 end
