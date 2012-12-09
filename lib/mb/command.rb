@@ -1,6 +1,8 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Command < RealModelBase
+    include MB::Locks
+
     attr_reader :name
 
     attribute :description,
@@ -31,7 +33,7 @@ module MotherBrain
 
     # Run the proc stored in execute with the given arguments
     def invoke(*args)
-      ChefMutex.new("environment #{environment}").synchronize do
+      chef_synchronize("environment #{environment}") do
         CommandRunner.new(context, scope, execute)
       end
     end

@@ -1,16 +1,17 @@
 module MotherBrain
   # @author Justin Campbell <justin@justincampbell.me>
+  # @author Jamie Winsor <jamie@vialstudios.com>
   #
   # Allows for MotherBrain clients to lock a chef resource. A mutex is created
   # with a name. Sending #lock to the mutex will then store a data bag item
-  # with mutex name, chef_connection.client_name, and the current time.
+  # with mutex name, the requestor's client_name, and the current time.
   # An attempt to lock an already-locked name will fail if the lock
   # is owner by someone else, or succeed if the lock is owned by the current
   # user.
   #
   # @example Creating a mutex and obtaining a lock
   #
-  #   mutex = ChefMutex.new "my_resource", chef_connection
+  #   mutex = ChefMutex.new("my_resource")
   #
   #   mutex.lock # => true
   #   # do stuff
@@ -18,7 +19,7 @@ module MotherBrain
   #
   # @example Running a block within an obtained lock
   #
-  #   mutex = ChefMutex.new "my_resource", chef_connection
+  #   mutex = ChefMutex.new("my_resource")
   #
   #   mutex.synchronize do
   #     # do stuff
@@ -34,33 +35,43 @@ module MotherBrain
 
     attr_reader :chef_connection
     attr_reader :name
+    attr_accessor :force
+    attr_accessor :unlock_on_failure
 
     def_delegator :chef_connection, :client_name
 
     # @param [#to_s] name
-    # @param [Ridley::Connection] chef_connection
-    def initialize(name)
+    # @option options [Boolean] :force (false)
+    #   Force the lock to be written, even if it already exists.
+    # @option options [Boolean] :unlock_on_failure (true)
+    #   If false and the block raises an error, the lock will persist.
+    def initialize(name, options = {})
+      options = options.reverse_merge(
+        force: false,
+        unlock_on_failure: true
+      )
+
       name.downcase!
       name.gsub! /[^\w]+/, "-" # dasherize
       name.gsub! /^-+|-+$/, "" # remove dashes from beginning/end
 
-      @name = name
-      reset!
-      subscribe(ConfigSrv::UPDATE_MSG, :reset!)
+      @name              = name
+      @force             = options[:force]
+      @unlock_on_failure = options[:unlock_on_failure]
+      setup
+
+      subscribe(ConfigSrv::UPDATE_MSG, :reset)
     end
 
     # Attempts to create a lock. Fails if the lock already exists.
     #
-    # @param [Hash] options
-    # @option options [Boolean] :force
-    #   Force the lock to be written, even if it already exists.
     # @return [Boolean]
-    def lock(options = {})
+    def lock
       return true if externally_testing?
 
       MB.log.info "Locking #{name}"
 
-      attempt_lock(options)
+      attempt_lock
     end
 
     # Obtains a lock, runs the block, and releases the lock when the block
@@ -68,65 +79,48 @@ module MotherBrain
     # If the block raises an error, the resource is unlocked, unless
     # unlock_on_failure: true is passed in to the option hash.
     #
-    # @param [Hash] options
-    # @option options [Boolean] :force
-    #   Force the lock to be written, even if it already exists.
-    # @option options [Boolean] :unlock_on_failure
-    #   Defaults to true. If false and the block raises an error, the lock will
-    #   persist.
-    # @param [block] block
     # @raise [MotherBrain::ResourceLocked] if the lock is unobtainable
-    def synchronize(options = {}, &block)
-      options.reverse_merge!(unlock_on_failure: true)
+    #
+    # @return [Boolean]
+    def synchronize
+      unless lock
+        current_lock = read
 
-      begin
-        unless lock options.slice(:force)
-          current_lock = read
-
-          raise ResourceLocked,
-            "Resource #{current_lock['id']} locked by #{current_lock['client_name']} since #{current_lock['time']}\n" # +
-            # "(Try again in a few moments, or use --force/-f to override)"
-        end
-
-        yield
-
-        unlock
-      rescue ResourceLocked
-        raise
-      rescue
-        unlock if options[:unlock_on_failure]
-
-        raise
+        raise ResourceLocked,
+          "Resource #{current_lock['id']} locked by #{current_lock['client_name']} since #{current_lock['time']}\n"
       end
+
+      yield
+
+      unlock
     end
 
     # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
     # held by someone else
     #
-    # @param [Hash] options
-    # @option options [Boolean] :force
-    #   Force the lock to be deleted, even if it's owned by someone else.
     # @return [Boolean]
-    def unlock(options = {})
+    def unlock
       return true if externally_testing?
 
       MB.log.info "Unlocking #{name}"
 
-      attempt_unlock options
+      attempt_unlock
+    end
+
+    def reset
+      @chef_connection = Ridley.connection(Application.config.to_ridley)
+    end
+    alias_method :setup, :reset
+
+    def finalize
+      unlock if self.unlock_on_failure
     end
 
     private
 
-      def reset!
-        @chef_connection = Ridley.connection(Application.config.to_ridley)
-      end
-
-      # @param [Hash] options
-      # @option options [Boolean] :force
-      #   Force the lock to be written, even if it already exists.
       # @return [Boolean]
-      def attempt_lock(options = {})
-        unless options[:force]
+      def attempt_lock
+        unless self.force
           current_lock = read
 
           return current_lock["client_name"] == client_name if current_lock
@@ -135,12 +129,9 @@ module MotherBrain
         write
       end
 
-      # @param [Hash] options
-      # @option options [Boolean] :force
-      #   Force the lock to be deleted, even if it's owned by someone else.
       # @return [Boolean]
-      def attempt_unlock(options = {})
-        unless options[:force]
+      def attempt_unlock
+        unless self.force
           current_lock = read
 
           return unless current_lock
@@ -161,7 +152,11 @@ module MotherBrain
       def delete
         return true unless locks
 
-        locks.delete(name)
+        result = locks.delete(name)
+        Locks.manager.unregister(Actor.current)
+        result
+      rescue
+        Locks.manager.register(Actor.current)
       end
 
       # Create our data bag if it doesn't already exist
@@ -207,8 +202,11 @@ module MotherBrain
       def write
         ensure_data_bag_exists
 
-        current_lock = locks.new(id: name, client_name: client_name, time: Time.now)
-        current_lock.save
+        result = locks.new(id: name, client_name: client_name, time: Time.now).save
+        Locks.manager.register(Actor.current)
+        result
+      rescue
+        Locks.manager.unregister(Actor.current)
       end
   end
 end

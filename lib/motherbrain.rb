@@ -46,6 +46,7 @@ module MotherBrain
   autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
   autoload :JSONManifest, 'mb/json_manifest'
+  autoload :Locks, 'mb/locks'
   autoload :Logging, 'mb/logging'
   autoload :NodeQuerier, 'mb/node_querier'
   autoload :Plugin, 'mb/plugin'
