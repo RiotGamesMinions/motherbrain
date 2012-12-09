@@ -164,7 +164,10 @@ module MotherBrain
     def chef_run(host, options = {})
       options          = options.dup
       options[:sudo]   = true
+
+      MB.log.info "Running Chef client on: #{host}"
       status, response = ssh_command(host, "chef-client", options)
+      MB.log.info "Completed Chef client run on: #{host}"
 
       case status
       when :ok
