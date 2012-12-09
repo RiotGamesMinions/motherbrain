@@ -17,6 +17,16 @@ describe MB::Config do
         @config.plugin_paths.should eql(MB::PluginLoader.default_paths)
       end
     end
+
+    describe "::validate!" do
+      it "raises an InvalidConfig error if the given config is invalid" do
+        invalid_config = double('config', valid?: false, errors: [])
+
+        expect {
+          subject.validate!(invalid_config)
+        }.to raise_error(MB::InvalidConfig)
+      end
+    end
   end
 
   subject do

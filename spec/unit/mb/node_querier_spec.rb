@@ -1,9 +1,7 @@
 require 'spec_helper'
 
-describe MB::NodeQuerier do
-  let(:connection) { Ridley::Connection.new(@config.to_ridley) }
-  
-  subject { described_class.new(connection) }
+describe MB::NodeQuerier do 
+  subject { described_class.new }
 
   describe "#ruby_script" do
     it "raises a RemoteScriptError if there was an error executing the script" do

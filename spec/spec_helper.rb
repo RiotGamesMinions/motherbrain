@@ -37,7 +37,7 @@ def setup_rspec
           }
         }
       )
-      MB::Application.run!(@config)
+      @app = MB::Application.run!(@config)
     end
 
     config.before(:each) do
@@ -58,5 +58,9 @@ else
 
   Spork.each_run do
     require 'motherbrain'
+
+    # Required to ensure Celluloid boots properly on each run
+    Celluloid::Notifications::Fanout.supervise_as :notifications_fanout
+    Celluloid::IncidentReporter.supervise_as :default_incident_reporter, STDERR
   end
 end
