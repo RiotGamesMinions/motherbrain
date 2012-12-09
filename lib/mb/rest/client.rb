@@ -6,6 +6,14 @@ module MotherBrain
     class Client
       DEFAULT_URL = "http://#{REST::Gateway::DEFAULT_BIND_ADDRESS}:#{REST::Gateway::DEFAULT_PORT}".freeze
 
+      extend Forwardable
+
+      def_delegator :connection, :get
+      def_delegator :connection, :put
+      def_delegator :connection, :post
+      def_delegator :connection, :delete
+      def_delegator :connection, :head
+
       # @option options [String] :url
       #   url to REST Gateway
       # @option options [Hash] :params
