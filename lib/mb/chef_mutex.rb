@@ -33,7 +33,6 @@ module MotherBrain
 
     DATA_BAG = "_motherbrain_locks_".freeze
 
-    attr_reader :chef_connection
     attr_reader :name
     attr_accessor :force
     attr_accessor :unlock_on_failure
@@ -137,7 +136,7 @@ module MotherBrain
 
       # @return [Ridley::ChainLink]
       def data_bag
-        chef_connection.data_bag
+        Application.ridley.data_bag
       end
 
       # Delete the lock from the data bag.

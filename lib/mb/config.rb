@@ -104,7 +104,9 @@ module MotherBrain
         ridley_opts[:client_name] = self.chef.api_client
         ridley_opts[:client_key] = self.chef.api_key
         ridley_opts[:encrypted_data_bag_secret_path] = self.chef.encrypted_data_bag_secret_path
-        ridley_opts[:ssl] = self.ssl
+        ridley_opts[:ssl] = {
+          verify: self.ssl.verify
+        }
 
         unless self.chef.organization.nil?
           ridley_opts[:organization] = self.chef.organization

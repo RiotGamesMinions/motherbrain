@@ -269,6 +269,13 @@ describe MB::Config do
       obj[:organization].should eql(subject.chef.organization)
     end
 
+    it "returns a hash with a 'ssl.verify' key" do
+      obj = subject.to_ridley
+
+      obj.should have_key(:ssl)
+      obj[:ssl][:verify].should_not be_nil
+    end
+
     context "given the config has no value for organization" do
       subject do
         MB::Config.new.tap do |o|
