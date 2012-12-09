@@ -23,7 +23,7 @@ module MotherBrain
       def handler(connection)
         case connection.request.url
         when '/config.json'
-          connection.respond Reel::Response.new(:ok, DEFAULT_HEADERS, Application.config.to_json(pretty: true))
+          connection.respond Reel::Response.new(:ok, DEFAULT_HEADERS.dup, Application.config.to_json(pretty: true))
         else
           connection.respond :ok, "hello, world!"
         end

@@ -6,7 +6,9 @@ describe MB::REST::Client do
     @gateway = MB::REST::Gateway.new
   end
 
-  after(:all) { @gateway.terminate }
+  after(:all) do
+    @gateway.terminate if @gateway.alive?
+  end
 
   subject { described_class.new }
 
