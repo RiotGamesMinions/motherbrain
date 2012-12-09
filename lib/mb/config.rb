@@ -72,6 +72,10 @@ module MotherBrain
       default: true,
       type: Boolean
 
+    attribute 'rest_gateway.enable',
+      default: false,
+      type: Boolean
+
     attribute 'rest_gateway.bind_address',
       default: REST::Gateway::DEFAULT_BIND_ADDRESS,
       type: String

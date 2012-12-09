@@ -34,7 +34,10 @@ module MotherBrain
         group.supervise_as :node_querier, NodeQuerier
         group.supervise_as :lock_manager, Locks::Manager
         group.supervise_as :ridley, Ridley::Connection, config.to_ridley
-        group.supervise_as :rest_gateway, REST::Gateway, config.to_rest_gateway
+
+        if config.rest_gateway.enable
+          group.supervise_as :rest_gateway, REST::Gateway, config.to_rest_gateway
+        end
 
         group
       end
