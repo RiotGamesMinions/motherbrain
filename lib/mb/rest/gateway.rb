@@ -6,10 +6,6 @@ module MotherBrain
     class Gateway < Reel::Server
       DEFAULT_BIND_ADDRESS = '127.0.0.1'.freeze
       DEFAULT_PORT = 1984.freeze
-      DEFAULT_HEADERS = {
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json'
-      }.freeze
 
       # @option options [String] :bind_address (DEFAULT_BIND_ADDRESS)
       # @option options [Integer] :port (DEFAULT_PORT)
@@ -23,9 +19,25 @@ module MotherBrain
       def handler(connection)
         case connection.request.try(:url)
         when '/config.json'
-          connection.respond Reel::Response.new(:ok, DEFAULT_HEADERS.dup, Application.config.to_json(pretty: true))
+          connection.respond Response.new(:ok, Application.config)
         else
-          connection.respond :ok, "hello, world!"
+          connection.respond :not_found
+        end
+      end
+
+      class Response < Reel::Response
+        DEFAULT_HEADERS = {
+          'Accept' => 'application/json',
+          'Content-Type' => 'application/json'
+        }.freeze
+
+        # @param [#to_sym] status
+        # @param [Object] body
+        # @param [Hash] headers
+        def initialize(status, body = {}, headers = {})
+          headers.reverse_merge!(DEFAULT_HEADERS)
+
+          super(status, headers, MultiJson.encode(body))
         end
       end
     end
