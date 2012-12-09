@@ -77,6 +77,10 @@ module MotherBrain
               type: :boolean,
               default: true,
               desc: "Should we execute the bootstrap with sudo?"
+            method_option :force,
+              type: :boolean,
+              default: false,
+              desc: "Perform bootstrap even if the environment is locked"
             desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
             define_method(:bootstrap) do |environment, manifest_file|
               assert_environment_exists(environment)
@@ -105,7 +109,7 @@ module MotherBrain
 
               MB.ui.say "Starting bootstrap of nodes on: #{environment}"
 
-              ChefMutex.new("environment #{environment}", context.chef_conn).synchronize do
+              ChefMutex.new("environment #{environment}").synchronize(force: options[:force]) do
                 MB::Application.bootstrap(manifest, plugin.bootstrap_routine, bootstrap_options)
               end
 
