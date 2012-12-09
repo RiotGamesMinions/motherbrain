@@ -6,6 +6,8 @@ module MotherBrain
         ENV["MB_CONFIG"] || "~/.mb/config.json"
       end
 
+      # Validate the given config
+      #
       # @param [MB::Config] config
       #
       # @raise [MB::InvalidConfig] if the given configuration is invalid
@@ -69,6 +71,13 @@ module MotherBrain
     attribute 'ssl.verify',
       default: true,
       type: Boolean
+
+    # Validate the instantiated config
+    #
+    # @raise [MB::InvalidConfig] if the given configuration is invalid
+    def validate!
+      self.class.validate!(self)
+    end
 
     # Returns a connection hash for Ridley from the instance's attributes
     #

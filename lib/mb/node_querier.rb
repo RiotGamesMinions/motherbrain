@@ -4,6 +4,7 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class NodeQuerier
     include Celluloid
+    include Celluloid::Notifications
 
     EMBEDDED_RUBY_PATH = "/opt/chef/embedded/bin/ruby".freeze
 
@@ -12,7 +13,8 @@ module MotherBrain
 
     # @param [Ridley::Connection] chef_conn
     def initialize
-      @chef_conn = Ridley.connection(Application.config.to_ridley)
+      reset!
+      subscribe(ConfigSrv::UPDATE_MSG, :reset!)
     end
 
     # Run an arbitrary SSH command on the target host
@@ -205,5 +207,11 @@ module MotherBrain
 
       copy_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options)
     end
+
+    private
+
+      def reset!
+        @chef_conn = Ridley.connection(Application.config.to_ridley)
+      end
   end
 end

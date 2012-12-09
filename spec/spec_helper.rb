@@ -58,5 +58,9 @@ else
 
   Spork.each_run do
     require 'motherbrain'
+
+    # Required to ensure Celluloid boots properly on each run
+    Celluloid::Notifications::Fanout.supervise_as :notifications_fanout
+    Celluloid::IncidentReporter.supervise_as :default_incident_reporter, STDERR
   end
 end
