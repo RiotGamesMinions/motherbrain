@@ -29,9 +29,7 @@ describe MB::ChefMutex do
   end
 
   describe "#lock" do
-    subject(:lock) { chef_mutex.lock options }
-
-    let(:options) { Hash.new }
+    subject(:lock) { chef_mutex.lock }
 
     it "attempts a lock" do
       chef_mutex.should_receive :attempt_lock
@@ -56,9 +54,9 @@ describe MB::ChefMutex do
 
       it { should be_false }
 
-      context "and passed force: true" do
+      context "and force enabled" do
         before do
-          options[:force] = true
+          chef_mutex.force = true
         end
 
         it { should be_true }
@@ -67,7 +65,7 @@ describe MB::ChefMutex do
   end
 
   describe "#synchronize" do
-    subject(:synchronize) { chef_mutex.synchronize options, &test_block }
+    subject(:synchronize) { chef_mutex.synchronize(&test_block) }
 
     TestProbe = Object.new
 
@@ -113,13 +111,13 @@ describe MB::ChefMutex do
         -> { synchronize }.should raise_error MB::ResourceLocked
       end
 
-      context "and passed force: true" do
+      context "and force enabled" do
         before do
-          options[:force] = true
+          chef_mutex.force = true
         end
 
-        it "locks with force: true" do
-          chef_mutex.should_receive(:lock).with(force: true).and_return(true)
+        it "locks with force" do
+          chef_mutex.should_receive(:lock).and_return(true)
 
           synchronize
         end
