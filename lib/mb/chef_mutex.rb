@@ -25,6 +25,9 @@ module MotherBrain
   #   end
   #
   class ChefMutex
+    include Celluloid
+    include Celluloid::Notifications
+
     extend Forwardable
 
     DATA_BAG = "_motherbrain_locks_".freeze
@@ -36,13 +39,14 @@ module MotherBrain
 
     # @param [#to_s] name
     # @param [Ridley::Connection] chef_connection
-    def initialize(name, chef_connection)
+    def initialize(name)
       name.downcase!
       name.gsub! /[^\w]+/, "-" # dasherize
       name.gsub! /^-+|-+$/, "" # remove dashes from beginning/end
 
-      @chef_connection = chef_connection
       @name = name
+      reset!
+      subscribe(ConfigSrv::UPDATE_MSG, :reset!)
     end
 
     # Attempts to create a lock. Fails if the lock already exists.
@@ -112,6 +116,10 @@ module MotherBrain
     end
 
     private
+
+      def reset!
+        @chef_connection = Ridley.connection(Application.config.to_ridley)
+      end
 
       # @param [Hash] options
       # @option options [Boolean] :force
