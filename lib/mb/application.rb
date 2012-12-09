@@ -32,6 +32,7 @@ module MotherBrain
         group.supervise_as :bootstrap_manager, Bootstrap::Manager
         group.supervise_as :node_querier, NodeQuerier
         group.supervise_as :lock_manager, Locks::Manager
+        group.supervise_as :ridley, Ridley::Connection, config.to_ridley
 
         group
       end
@@ -71,9 +72,22 @@ module MotherBrain
         Celluloid::Actor[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
       end
 
-      def chef_connection
-        config.to_ridley
+      def ridley
+        Celluloid::Actor[:ridley] or raise Celluloid::DeadActorError, "Ridley not running"
       end
+      alias_method :chef_connection, :ridley
+    end
+
+    include Celluloid::Notifications
+
+    def initialize(*args)
+      super
+      subscribe(ConfigSrv::UPDATE_MSG, :reconfigure)
+    end
+
+    def reconfigure(_msg, new_config)
+      MB.log.debug "[Application] ConfigSrv has changed: re-configuring components..."
+      self.class.ridley.configure(new_config.to_ridley)
     end
   end
 end
