@@ -10,17 +10,10 @@ module MotherBrain
       end
     end
 
-    # @return [Set<ChefMutex>]
-    def chef_locks
-      MB::Locks.manager.locks
-    end
+    extend Forwardable
 
-    # @param [#to_s] name
-    #
-    # @return [ChefMutex, nil]
-    def find_lock(name)
-      MB::Locks.manager.find(name)
-    end
+    def_delegator "MB::Locks.manager", :locks, :chef_locks
+    def_delegator "MB::Locks.manager", :find, :find_lock
 
     # Attempts to create a lock. Fails if the lock already exists.
     #
