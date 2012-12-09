@@ -72,6 +72,18 @@ module MotherBrain
       default: true,
       type: Boolean
 
+    attribute 'rest_gateway.bind_address',
+      default: REST::Gateway::DEFAULT_BIND_ADDRESS,
+      type: String
+
+    attribute 'rest_gateway.port',
+      default: REST::Gateway::DEFAULT_PORT,
+      type: Integer
+
+    attribute 'rest_client.url',
+      default: REST::Client::DEFAULT_URL,
+      type: String
+
     # Validate the instantiated config
     #
     # @raise [MB::InvalidConfig] if the given configuration is invalid
@@ -111,6 +123,19 @@ module MotherBrain
         unless self.chef.organization.nil?
           ridley_opts[:organization] = self.chef.organization
         end
+      end
+    end
+
+    def to_rest_gateway
+      {}.tap do |rest_opts|
+        rest_opts[:bind_address] = self.rest_gateway.bind_address
+        rest_opts[:port]         = self.rest_gateway.port
+      end
+    end
+
+    def to_rest_client
+      {}.tap do |opts|
+        opts[:url] = self.rest_client.url
       end
     end
   end
