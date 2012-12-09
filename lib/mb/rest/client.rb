@@ -25,8 +25,8 @@ module MotherBrain
         @connection = Faraday::Connection.new(url, options)
       end
 
-      def test
-        connection.get('/').body
+      def config
+        MB::Config.from_json(connection.get('/config.json').body)
       end
 
       private
