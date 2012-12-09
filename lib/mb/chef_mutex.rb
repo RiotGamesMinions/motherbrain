@@ -38,8 +38,6 @@ module MotherBrain
     attr_accessor :force
     attr_accessor :unlock_on_failure
 
-    def_delegator :chef_connection, :client_name
-
     # @param [#to_s] name
     # @option options [Boolean] :force (false)
     #   Force the lock to be written, even if it already exists.
@@ -58,9 +56,10 @@ module MotherBrain
       @name              = name
       @force             = options[:force]
       @unlock_on_failure = options[:unlock_on_failure]
-      setup
+    end
 
-      subscribe(ConfigSrv::UPDATE_MSG, :reset)
+    def client_name
+      Application.ridley.client_name
     end
 
     # Attempts to create a lock. Fails if the lock already exists.
@@ -106,11 +105,6 @@ module MotherBrain
 
       attempt_unlock
     end
-
-    def reset
-      @chef_connection = Ridley.connection(Application.config.to_ridley)
-    end
-    alias_method :setup, :reset
 
     def finalize
       unlock if self.unlock_on_failure

@@ -6,16 +6,30 @@ module MotherBrain
 
     UPDATE_MSG = 'config_srv.configure'.freeze
 
+    # @return [MB::Config]
     attr_reader :config
 
+    # @param [MB::Config] new_config
     def initialize(new_config)
-      update(new_config)
+      set_config(new_config)
     end
 
+    # Update the current configuration
+    #
+    # @param [MB::Config] new_config
     def update(new_config)
-      new_config.validate!
-      @config = new_config
-      publish(UPDATE_MSG)
+      set_config(new_config)
+
+      MB.log.debug "[ConfigSrv] Configuration has changed: notifying subscribers..."
+      publish(UPDATE_MSG, self.config)
     end
+
+    private
+
+      # @param [MB::Config] new_config
+      def set_config(new_config)
+        new_config.validate!
+        @config = new_config
+      end
   end
 end
