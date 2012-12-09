@@ -50,28 +50,39 @@ module MotherBrain
         end
       end
 
+      # @raise [Celluloid::DeadActorError] if Bootstrap Manager has not been started
+      #
+      # @return [Celluloid::Actor(Bootstrap::Manager)]
+      def bootstrap_manager
+        Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
+      end
+      alias_method :bootstrapper, :bootstrap_manager
+      
+      # @raise [Celluloid::DeadActorError] if ConfigSrv has not been started
+      #
       # @return [Celluloid::Actor(ConfigSrv)]
       def config_srv
         Celluloid::Actor[:config_srv] or raise Celluloid::DeadActorError, "config srv not running"
       end
 
+      # @raise [Celluloid::DeadActorError] if Node Querier has not been started
+      #
+      # @return [Celluloid::Actor(NodeQuerier)]
+      def node_querier
+        Celluloid::Actor[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
+      end
+
+      # @raise [Celluloid::DeadActorError] if Provisioner Manager has not been started
+      #
       # @return [Celluloid::Actor(Provisioner::Manager)]
       def provisioner_manager
         Celluloid::Actor[:provisioner_manager] or raise Celluloid::DeadActorError, "provisioner manager not running"
       end
       alias_method :provisioner, :provisioner_manager
 
-      # @return [Celluloid::Actor(Bootstrap::Manager)]
-      def bootstrap_manager
-        Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
-      end
-      alias_method :bootstrapper, :bootstrap_manager
-
-      # @return [Celluloid::Actor(NodeQuerier)]
-      def node_querier
-        Celluloid::Actor[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
-      end
-
+      # @raise [Celluloid::DeadActorError] if Ridley has not been started
+      #
+      # @return [Celluloid::Actor(Ridley::Connection)]
       def ridley
         Celluloid::Actor[:ridley] or raise Celluloid::DeadActorError, "Ridley not running"
       end
