@@ -28,6 +28,12 @@ describe MB::Application do
       end
     end
 
+    describe "::ridley" do
+      it "returns an instance of Ridley::Connection" do
+        subject.ridley.should be_a(Ridley::Connection)
+      end
+    end
+
     describe "::config" do
       it "returns an instance of MB::Config" do
         subject.config.should be_a(MB::Config)

@@ -8,15 +8,6 @@ module MotherBrain
 
     EMBEDDED_RUBY_PATH = "/opt/chef/embedded/bin/ruby".freeze
 
-    # @return [Ridley::Connection]
-    attr_reader :chef_conn
-
-    # @param [Ridley::Connection] chef_conn
-    def initialize
-      reset!
-      subscribe(ConfigSrv::UPDATE_MSG, :reset!)
-    end
-
     # Run an arbitrary SSH command on the target host
     #
     # @param [String] host
@@ -199,7 +190,7 @@ module MotherBrain
     # @return [Ridley::SSH::Response]
     def put_secret(host, options = {})
       options = options.dup
-      options[:secret] ||= chef_conn.encrypted_data_bag_secret_path
+      options[:secret] ||= Application.ridley.encrypted_data_bag_secret_path
 
       if options[:secret].nil? || !File.exists?(options[:secret])
         return nil
@@ -207,11 +198,5 @@ module MotherBrain
 
       copy_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options)
     end
-
-    private
-
-      def reset!
-        @chef_conn = Ridley.connection(Application.config.to_ridley)
-      end
   end
 end

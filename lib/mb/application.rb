@@ -32,6 +32,7 @@ module MotherBrain
         group.supervise_as :bootstrap_manager, Bootstrap::Manager
         group.supervise_as :node_querier, NodeQuerier
         group.supervise_as :lock_manager, Locks::Manager
+        group.supervise_as :ridley, Ridley::Connection, config.to_ridley
 
         group
       end
@@ -49,31 +50,55 @@ module MotherBrain
         end
       end
 
+      # @raise [Celluloid::DeadActorError] if Bootstrap Manager has not been started
+      #
+      # @return [Celluloid::Actor(Bootstrap::Manager)]
+      def bootstrap_manager
+        Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
+      end
+      alias_method :bootstrapper, :bootstrap_manager
+      
+      # @raise [Celluloid::DeadActorError] if ConfigSrv has not been started
+      #
       # @return [Celluloid::Actor(ConfigSrv)]
       def config_srv
         Celluloid::Actor[:config_srv] or raise Celluloid::DeadActorError, "config srv not running"
       end
 
+      # @raise [Celluloid::DeadActorError] if Node Querier has not been started
+      #
+      # @return [Celluloid::Actor(NodeQuerier)]
+      def node_querier
+        Celluloid::Actor[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
+      end
+
+      # @raise [Celluloid::DeadActorError] if Provisioner Manager has not been started
+      #
       # @return [Celluloid::Actor(Provisioner::Manager)]
       def provisioner_manager
         Celluloid::Actor[:provisioner_manager] or raise Celluloid::DeadActorError, "provisioner manager not running"
       end
       alias_method :provisioner, :provisioner_manager
 
-      # @return [Celluloid::Actor(Bootstrap::Manager)]
-      def bootstrap_manager
-        Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
+      # @raise [Celluloid::DeadActorError] if Ridley has not been started
+      #
+      # @return [Celluloid::Actor(Ridley::Connection)]
+      def ridley
+        Celluloid::Actor[:ridley] or raise Celluloid::DeadActorError, "Ridley not running"
       end
-      alias_method :bootstrapper, :bootstrap_manager
+      alias_method :chef_connection, :ridley
+    end
 
-      # @return [Celluloid::Actor(NodeQuerier)]
-      def node_querier
-        Celluloid::Actor[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
-      end
+    include Celluloid::Notifications
 
-      def chef_connection
-        config.to_ridley
-      end
+    def initialize(*args)
+      super
+      subscribe(ConfigSrv::UPDATE_MSG, :reconfigure)
+    end
+
+    def reconfigure(_msg, new_config)
+      MB.log.debug "[Application] ConfigSrv has changed: re-configuring components..."
+      self.class.ridley.async.configure(new_config.to_ridley)
     end
   end
 end
