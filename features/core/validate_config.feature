@@ -38,7 +38,6 @@ Feature: listing the plugins available to MotherBrain
     And I type "https://api.opscode.com/organizations/vialstudio"
     And I type "reset"
     And I type "/Users/reset/.chef/reset.pem"
-    And I type "http://nexus.riotgames.com/nexus/"
     And I type "riot"
     And I type "deployer"
     And I type "secr3tPassw0rd"
