@@ -21,7 +21,7 @@ module MotherBrain
       end
 
       def handler(connection)
-        case connection.request.url
+        case connection.request.try(:url)
         when '/config.json'
           connection.respond Reel::Response.new(:ok, DEFAULT_HEADERS.dup, Application.config.to_json(pretty: true))
         else
