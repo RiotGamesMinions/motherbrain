@@ -32,7 +32,7 @@ module MotherBrain
   autoload :Component, 'mb/component'
   autoload :ComponentInvoker, 'mb/component_invoker'
   autoload :Config, 'mb/config'
-  autoload :ConfigSrv, 'mb/config_srv'
+  autoload :ConfigManager, 'mb/config_manager'
   autoload :Context, 'mb/context'
   autoload :ContextualModel, 'mb/contextual_model'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
