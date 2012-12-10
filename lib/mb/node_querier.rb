@@ -3,6 +3,8 @@ require 'net/scp'
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class NodeQuerier
+    extend Forwardable
+
     include Celluloid
     include Celluloid::Notifications
 
@@ -26,12 +28,14 @@ module MotherBrain
     #
     # @return [Array]
     def ssh_command(host, command, options = {})
-      options            = options.dup
+      options            = options.dup.reverse_merge(Application.config.ssh.to_hash).symbolize_keys
       options[:paranoid] = false
 
       if options[:sudo]
         command = "sudo #{command}"
       end
+
+      MB.log.debug options
 
       worker   = Ridley::SSH::Worker.new(options)
       response = worker.run(host, command)

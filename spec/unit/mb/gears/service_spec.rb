@@ -113,13 +113,12 @@ describe MB::Gear::Service do
       let(:value) { "val" }
       let(:chef_success) { double('success-response', error?: false) }
 
-      it "runs Chef on every node" do
-        
-        MB::Application.node_querier.should_receive(:chef_run).with(node_1.public_hostname, @config.ssh).
+      it "runs Chef on every node" do        
+        MB::Application.node_querier.should_receive(:chef_run).with(node_1.public_hostname).
           and_return(chef_success)
-        MB::Application.node_querier.should_receive(:chef_run).with(node_2.public_hostname, @config.ssh).
+        MB::Application.node_querier.should_receive(:chef_run).with(node_2.public_hostname).
           and_return(chef_success)
-        MB::Application.node_querier.should_receive(:chef_run).with(node_3.public_hostname, @config.ssh).
+        MB::Application.node_querier.should_receive(:chef_run).with(node_3.public_hostname).
           and_return(chef_success)
 
         subject.run(nodes)

@@ -131,10 +131,8 @@ module MotherBrain
           @nodes = nodes
           runner.instance_eval(&block)
 
-          runner_options = Application.config.to_hash[:ssh]
-
           responses = nodes.collect do |node|
-            Application.node_querier.future.chef_run(node.public_hostname, runner_options)
+            Application.node_querier.future.chef_run(node.public_hostname)
           end.map(&:value)
 
           response_set = Ridley::SSH::ResponseSet.new(responses)
