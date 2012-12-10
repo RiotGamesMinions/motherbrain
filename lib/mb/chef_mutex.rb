@@ -91,6 +91,11 @@ module MotherBrain
       yield
 
       unlock
+    rescue ResourceLocked
+      raise
+    rescue
+      unlock if self.unlock_on_failure
+      raise
     end
 
     # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
@@ -103,10 +108,6 @@ module MotherBrain
       MB.log.info "Unlocking #{name}"
 
       attempt_unlock
-    end
-
-    def finalize
-      unlock if self.unlock_on_failure
     end
 
     private
