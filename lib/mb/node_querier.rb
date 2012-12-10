@@ -35,8 +35,6 @@ module MotherBrain
         command = "sudo #{command}"
       end
 
-      MB.log.debug options
-
       worker   = Ridley::SSH::Worker.new(options)
       response = worker.run(host, command)
       worker.terminate
