@@ -79,7 +79,6 @@ module MotherBrain
               desc: "Perform bootstrap even if the environment is locked"
             desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
             define_method(:bootstrap) do |environment, manifest_file|
-              assert_environment_exists(environment)
               manifest = MB::Bootstrap::Manifest.from_file(manifest_file)
 
               bootstrap_options = {
@@ -100,16 +99,11 @@ module MotherBrain
                 },
                 ssl: {
                   verify: options[:ssl_verify] || context.config[:ssl][:verify]
-                }
+                },
+                force: options[:force]
               }
 
-              MB.ui.say "Starting bootstrap of nodes on: #{environment}"
-
-              chef_synchronize("environment #{environment}", force: options[:force]) do
-                MB::Application.bootstrap(manifest, plugin.bootstrap_routine, bootstrap_options)
-              end
-
-              MB.ui.say "Bootstrap finished"
+              MB::Application.bootstrap(environment, manifest, plugin.bootstrap_routine, bootstrap_options)
             end
 
             method_option :api_url,

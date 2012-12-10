@@ -32,7 +32,8 @@ module MotherBrain
       end
 
       include Celluloid
-      include ActorUtil
+      include MB::ActorUtil
+      include MB::Locks
 
       # Required options for {#bootstrap}
       REQUIRED_OPTS = [
@@ -95,6 +96,8 @@ module MotherBrain
       #
       # @raise [InvalidBootstrapManifest] if the given manifest does not pass validation
       # @raise [ArgumentError] if a required option is not given
+      # @raise [MB::EnvironmentNotFound] if the target environment does not exist
+      # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
       #
       # @return [Array<Hash>]
       #   an array containing hashes from each item in the task_queue. The hashes contain
@@ -113,21 +116,30 @@ module MotherBrain
       #     }
       #   ]
       #
-      def bootstrap(manifest, routine, options = {})
-        defer {
-          self.class.validate_options(options)
-          manifest.validate!(routine)
+      def bootstrap(environment, manifest, routine, options = {})
+        self.class.validate_options(options)
+        manifest.validate!(routine)
 
-          responses  = Array.new
-          task_queue = routine.task_queue.dup
-          chef_conn  = Ridley::Connection.new(options.slice(*RIDLEY_OPT_KEYS))
+        responses  = Array.new
+        task_queue = routine.task_queue.dup
+        chef_conn  = Ridley::Connection.new(options.slice(*RIDLEY_OPT_KEYS))
+        
+        unless chef_conn.environment.find(environment)
+          raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
+        end
 
+        MB.log.info "Starting bootstrap of nodes on: #{environment}"
+
+        chef_synchronize("environment.#{environment}", options.slice(:force)) do
           until task_queue.empty?
             responses.push concurrent_bootstrap(chef_conn, manifest, task_queue.shift, options.except(*RIDLEY_OPT_KEYS))
           end
+        end
 
-          responses
-        }
+        MB.log.info "Bootstrap finished for nodes on: #{environment}"
+        responses
+      rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
+        raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
       end
 
       private
