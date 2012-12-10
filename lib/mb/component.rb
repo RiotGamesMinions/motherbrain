@@ -74,6 +74,9 @@ module MotherBrain
     # by Group#name into a Hash where the keys are Group#name and values are a Hash
     # representation of a node from Chef.
     #
+    # @raise [MB::EnvironmentNotFound] if the target environment does not exist
+    # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
+    #
     # @example
     #
     #   {
@@ -96,12 +99,20 @@ module MotherBrain
     #   }
     #
     # @return [Hash]
-    def nodes
+    def nodes(environment)
+      unless Application.ridley.environment.find(environment)
+        raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
+      end
+
+      context.environment = environment
+
       {}.tap do |nodes|
         self.groups.each do |group|
           nodes[group.name] = group.nodes
         end
       end
+    rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
+      raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
     end
 
     def add_group(group)

@@ -36,11 +36,11 @@ module MotherBrain
     def generate_valid_config(path)
       FileUtils.rm_rf(path)
       MB::Config.new.tap do |mb|
-        mb.chef_api_url = "https://api.opscode.com/organizations/vialstudio"
-        mb.chef_api_client = "reset"
-        mb.chef_api_key = "/Users/reset/.chef/reset.pem"
-        mb.ssh_user = "root"
-        mb.ssh_password = "secretpass"
+        mb.chef.api_url = "https://api.opscode.com/organizations/vialstudio"
+        mb.chef.api_client = "reset"
+        mb.chef.api_key = "/Users/reset/.chef/reset.pem"
+        mb.ssh.user = "root"
+        mb.ssh.password = "secretpass"
       end.save(path)
     end
 

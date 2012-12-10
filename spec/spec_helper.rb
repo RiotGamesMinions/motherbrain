@@ -24,14 +24,20 @@ def setup_rspec
       Celluloid.logger = nil
 
       @config = MB::Config.new(nil,
-        server_url: "http://chef.riotgames.com",
-        chef_api_client: "fake",
-        chef_api_key: File.join(fixtures_path, "fake_key.pem"),
-        ssh_user: 'reset',
-        ssh_password: 'whatever',
-        ssh_keys: []
+        {
+          chef: {
+            server_url: "http://chef.riotgames.com",
+            api_client: "fake",
+            api_key: File.join(fixtures_path, "fake_key.pem")
+          },
+          ssh: {
+            user: 'reset',
+            password: 'whatever',
+            keys: []
+          }
+        }
       )
-      MB::Application.run!(@config)
+      @app = MB::Application.run!(@config)
     end
 
     config.before(:each) do
@@ -52,5 +58,9 @@ else
 
   Spork.each_run do
     require 'motherbrain'
+
+    # Required to ensure Celluloid boots properly on each run
+    Celluloid::Notifications::Fanout.supervise_as :notifications_fanout
+    Celluloid::IncidentReporter.supervise_as :default_incident_reporter, STDERR
   end
 end

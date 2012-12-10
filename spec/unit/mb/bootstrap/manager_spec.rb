@@ -12,9 +12,11 @@ describe MB::Bootstrap::Manager do
           client_key: "test",
           validator_client: "test",
           validator_path: "test",
-          ssh_user: "test",
-          ssh_keys: "test",
-          ssh_password: "test"
+          ssh: {
+            user: "test",
+            keys: "test",
+            password: "test"
+          }
         }
       end
 
@@ -89,32 +91,38 @@ describe MB::Bootstrap::Manager do
       client_key: fixtures_path.join("fake_key.pem").to_s,
       validator_client: "fake-validator",
       validator_path: fixtures_path.join("fake_key.pem").to_s,
-      ssh_user: "reset",
-      ssh_keys: fixtures_path.join("fake_id_rsa").to_s
+      ssh: {
+        user: "reset",
+        keys: fixtures_path.join("fake_id_rsa").to_s
+      }
     }
   end
+
+  let(:environment) { "test" }
 
   subject { described_class.new }
 
   before(:each) do
     stub_request(:get, "https://api.opscode.com/organizations/vialstudios/nodes").
       to_return(status: 200, body: {})
+    stub_request(:get, "https://api.opscode.com/organizations/vialstudios/environments/test").
+      to_return(status: 200, body: {})
   end
 
   describe "#bootstrap" do
     it "returns an array of hashes" do
-      result = subject.bootstrap(manifest, routine, bootstrap_options)
+      result = subject.bootstrap(environment, manifest, routine, bootstrap_options)
 
       result.should be_a(Array)
       result.should each be_a(Hash)
     end
 
     it "returns an item for every item in the task_queue" do
-      subject.bootstrap(manifest, routine, bootstrap_options).should have(2).items
+      subject.bootstrap(environment, manifest, routine, bootstrap_options).should have(2).items
     end
 
     it "returns items where each is a hash with a key for each node group of each task_queue item" do
-      result = subject.bootstrap(manifest, routine, bootstrap_options)
+      result = subject.bootstrap(environment, manifest, routine, bootstrap_options)
 
       result[0].should have_key("activemq::master")
       result[0].should have_key("activemq::slave")
@@ -122,7 +130,7 @@ describe MB::Bootstrap::Manager do
     end
 
     it "has a Ridley::SSH::ResponseSet for each value" do
-      result = subject.bootstrap(manifest, routine, bootstrap_options)
+      result = subject.bootstrap(environment, manifest, routine, bootstrap_options)
 
       result[0]["activemq::master"].should be_a(Ridley::SSH::ResponseSet)
       result[0]["activemq::slave"].should be_a(Ridley::SSH::ResponseSet)

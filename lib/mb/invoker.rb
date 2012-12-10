@@ -2,27 +2,21 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Invoker < InvokerBase
     class << self
-      # @return [MotherBrain::PluginLoader]
-      attr_reader :plugin_loader
-
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
         if args.any? and (args & InvokerBase::NOCONFIG_TASKS).empty?
           context = configure(opts)
-          setup(context)
-          MB::Application.run!(context.config)
+          setup(context.config)
         end
 
         super
       end
 
-      # @param [MotherBrain:Context] context
-      def setup(context)
-        @plugin_loader = PluginLoader.new(context)
-        self.plugin_loader.load_all
+      def setup(config)
+        MB::Application.run!(config)
 
-        self.plugin_loader.plugins.each do |plugin|
+        Application.plugin_srv.plugins.each do |plugin|
           self.register_plugin MB::PluginInvoker.fabricate(plugin)
         end
       end
@@ -52,7 +46,7 @@ module MotherBrain
     def initialize(args = [], options = {}, config = {})
       super
       unless InvokerBase::NOCONFIG_TASKS.include?(config[:current_task].try(:name))
-        self.class.setup(self.context)
+        self.class.setup(context.config)
       end
     end
 
@@ -70,11 +64,11 @@ module MotherBrain
 
       @config = MB::Config.new(path)
 
-      @config.chef_api_url     = MB.ui.ask "Enter a Chef API URL: "
-      @config.chef_api_client  = MB.ui.ask "Enter a Chef API Client: "
-      @config.chef_api_key     = MB.ui.ask "Enter the path to the client's Chef API Key: "
-      @config.ssh_user         = MB.ui.ask "Enter a SSH user: "
-      @config.ssh_password     = MB.ui.ask "Enter a SSH password: "
+      @config.chef.api_url     = MB.ui.ask "Enter a Chef API URL: "
+      @config.chef.api_client  = MB.ui.ask "Enter a Chef API Client: "
+      @config.chef.api_key     = MB.ui.ask "Enter the path to the client's Chef API Key: "
+      @config.ssh.user         = MB.ui.ask "Enter a SSH user: "
+      @config.ssh.password     = MB.ui.ask "Enter a SSH password: "
       @config.save
 
       MB.ui.say "Config written to: '#{path}'"
@@ -82,8 +76,8 @@ module MotherBrain
 
     desc "plugins", "Display all installed plugins and versions"
     def plugins
-      if self.class.plugin_loader.plugins.empty?
-        paths = self.class.plugin_loader.paths.to_a.collect { |path| "'#{path}'" }
+      if Application.plugin_srv.plugins.empty?
+        paths = Application.plugin_srv.paths.to_a.collect { |path| "'#{path}'" }
 
         MB.ui.say "No MotherBrain plugins found in any of your configured plugin paths!"
         MB.ui.say "\n"
@@ -91,7 +85,7 @@ module MotherBrain
         exit(0)
       end
 
-      self.class.plugin_loader.plugins.group_by(&:name).each do |name, plugins|
+      Application.plugin_srv.plugins.group_by(&:name).each do |name, plugins|
         versions = plugins.collect(&:version).reverse!
         MB.ui.say "#{name}: #{versions.join(', ')}"
       end

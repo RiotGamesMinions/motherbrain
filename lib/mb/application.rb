@@ -16,26 +16,34 @@ module MotherBrain
       def_delegator :provisioner_manager, :provision
       def_delegator :bootstrap_manager, :bootstrap
 
+      # Return the configuration for the running application
+      #
+      # @return [MB::Config]
+      def_delegator :config_manager, :config
+
       # Run the application asynchronously (terminate after execution)
       #
-      # @param [MB::Config] config
-      def run!(config)
+      # @param [MB::Config] app_config
+      def run!(app_config)
         group = super()
-        group.configure(config)
 
+        group.supervise_as :config_manager, ConfigManager, app_config
+        group.supervise_as :plugin_srv, PluginLoader
         group.supervise_as :provisioner_manager, Provisioner::Manager
         group.supervise_as :bootstrap_manager, Bootstrap::Manager
-        group.supervise_as :node_querier, NodeQuerier, group.chef_conn
+        group.supervise_as :node_querier, NodeQuerier
+        group.supervise_as :lock_manager, Locks::Manager
+        group.supervise_as :ridley, Ridley::Connection, config.to_ridley
 
         group
       end
 
       # Run the application in the foreground (sleep on main thread)
       #
-      # @param [MB::Config] config
-      def run(config)
+      # @param [MB::Config] app_config
+      def run(app_config)
         loop do
-          supervisor = run!(config)
+          supervisor = run!(app_config)
 
           sleep 5 while supervisor.alive?
 
@@ -43,50 +51,59 @@ module MotherBrain
         end
       end
 
-      # @param [MB::Config] config
+      # @raise [Celluloid::DeadActorError] if Bootstrap Manager has not been started
       #
-      # @raise [MB::InvalidConfig] if the given configuration is invalid
-      def validate_config!(config)
-        unless config.valid?
-          raise InvalidConfig.new(config.errors)
-        end
+      # @return [Celluloid::Actor(Bootstrap::Manager)]
+      def bootstrap_manager
+        Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
+      end
+      alias_method :bootstrapper, :bootstrap_manager
+      
+      # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
+      #
+      # @return [Celluloid::Actor(ConfigManager)]
+      def config_manager
+        Celluloid::Actor[:config_manager] or raise Celluloid::DeadActorError, "config srv not running"
       end
 
+      # @raise [Celluloid::DeadActorError] if Node Querier has not been started
+      #
+      # @return [Celluloid::Actor(NodeQuerier)]
+      def node_querier
+        Celluloid::Actor[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
+      end
+
+      def plugin_srv
+        Celluloid::Actor[:plugin_srv] or raise Celluloid::DeadActorError, "plugin srv not running"
+      end
+
+      # @raise [Celluloid::DeadActorError] if Provisioner Manager has not been started
+      #
       # @return [Celluloid::Actor(Provisioner::Manager)]
       def provisioner_manager
-        Celluloid::Actor[:provisioner_manager]
+        Celluloid::Actor[:provisioner_manager] or raise Celluloid::DeadActorError, "provisioner manager not running"
       end
       alias_method :provisioner, :provisioner_manager
 
-      # @return [Celluloid::Actor(Bootstrap::Manager)]
-      def bootstrap_manager
-        Celluloid::Actor[:bootstrap_manager]
+      # @raise [Celluloid::DeadActorError] if Ridley has not been started
+      #
+      # @return [Celluloid::Actor(Ridley::Connection)]
+      def ridley
+        Celluloid::Actor[:ridley] or raise Celluloid::DeadActorError, "Ridley not running"
       end
-      alias_method :bootstrapper, :bootstrap_manager
-
-      # @return [Celluloid::Actor(NodeQuerier)]
-      def node_querier
-        Celluloid::Actor[:node_querier]
-      end
+      alias_method :chef_connection, :ridley
     end
 
-    # @return [MB::Config]
-    attr_reader :config
+    include Celluloid::Notifications
 
-    # @return [Ridley::Connection]
-    attr_reader :chef_conn
+    def initialize(*args)
+      super
+      subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
+    end
 
-    # Configure the Application with the given MB::Config or leave nil and a default
-    # configuration will be used
-    #
-    # @param [MB::Config] config
-    #
-    # @raise [MB::InvalidConfig] if the given configuration is invalid
-    def configure(config)
-      self.class.validate_config!(config)
-
-      @config    = config
-      @chef_conn = Ridley.connection(@config.to_ridley)
+    def reconfigure(_msg, new_config)
+      MB.log.debug "[Application] ConfigManager has changed: re-configuring components..."
+      self.class.ridley.async.configure(new_config.to_ridley)
     end
   end
 end

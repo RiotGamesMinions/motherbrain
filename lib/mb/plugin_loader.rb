@@ -23,15 +23,17 @@ module MotherBrain
       end
     end
 
+    include Celluloid
+
     # @return [MB::Context]
     attr_reader :context
 
-    # @param [MotherBrain::Context] context
-    def initialize(context)
-      @context = context
+    def initialize
+      @context = MB::Context.new(Application.config)
       @plugins = Hash.new
 
-      context.config.plugin_paths.each { |path| self.add_path(path) }
+      Application.config.plugin_paths.each { |path| self.add_path(path) }
+      load_all
     end
 
     # @return [Array<MotherBrain::Plugin>]
@@ -85,7 +87,7 @@ module MotherBrain
     # Clear all previously set paths
     #
     # @return [Set]
-    def clear_paths!
+    def clear_paths
       @paths = Set.new
     end
 

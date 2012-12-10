@@ -28,12 +28,8 @@ module MotherBrain
         klass.class_eval do
           desc("nodes ENVIRONMENT", "List all nodes grouped by Component and Group")
           define_method(:nodes) do |environment|
-            assert_environment_exists(environment)
-            
-            plugin.send(:context).environment = environment
-
             MB.ui.say "Listing nodes in '#{environment}':"
-            nodes = plugin.nodes.each do |component, groups|
+            nodes = plugin.nodes(environment).each do |component, groups|
               groups.each do |group, nodes|
                 nodes.collect! { |node| "#{node.public_hostname} (#{node.public_ipv4})" }
               end
@@ -77,9 +73,12 @@ module MotherBrain
               type: :boolean,
               default: true,
               desc: "Should we execute the bootstrap with sudo?"
+            method_option :force,
+              type: :boolean,
+              default: false,
+              desc: "Perform bootstrap even if the environment is locked"
             desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
             define_method(:bootstrap) do |environment, manifest_file|
-              assert_environment_exists(environment)
               manifest = MB::Bootstrap::Manifest.from_file(manifest_file)
 
               bootstrap_options = {
@@ -87,27 +86,24 @@ module MotherBrain
                 server_url: context.chef_conn.server_url,
                 client_name: context.chef_conn.client_name,
                 client_key: context.chef_conn.client_key,
-                ssh_user: options[:ssh_user] || context.config[:ssh_user],
-                ssh_password: options[:ssh_password] || context.config[:ssh_password],
-                ssh_keys: options[:ssh_keys] || context.config[:ssh_keys],
-                ssh_timeout: options[:ssh_timeout] || context.config[:ssh_timeout],
-                validator_client: options[:validator_client] || context.config[:chef_validator_client],
-                validator_path: options[:validator_path] || context.config[:chef_validator_path],
-                bootstrap_proxy: options[:bootstrap_proxy] || context.config[:chef_bootstrap_proxy],
-                encrypted_data_bag_secret_path: options[:encrypted_data_bag_secret_path] || context.config[:chef_encrypted_data_bag_secret_path],
-                sudo: options[:sudo] || context.config[:ssh_sudo],
+                validator_client: options[:validator_client] || context.config[:chef][:validator_client],
+                validator_path: options[:validator_path] || context.config[:chef][:validator_path],
+                bootstrap_proxy: options[:bootstrap_proxy] || context.config[:chef][:bootstrap_proxy],
+                encrypted_data_bag_secret_path: options[:encrypted_data_bag_secret_path] || context.config[:chef][:encrypted_data_bag_secret_path],
+                ssh: {
+                  user: options[:ssh_user] || context.config[:ssh][:user],
+                  password: options[:ssh_password] || context.config[:ssh][:password],
+                  keys: options[:ssh_keys] || context.config[:ssh][:keys],
+                  timeout: options[:ssh_timeout] || context.config[:ssh][:timeout],
+                  sudo: options[:sudo] || context.config[:ssh][:sudo]
+                },
                 ssl: {
-                  verify: options[:ssl_verify]
-                }
+                  verify: options[:ssl_verify] || context.config[:ssl][:verify]
+                },
+                force: options[:force]
               }
 
-              MB.ui.say "Starting bootstrap of nodes on: #{environment}"
-
-              ChefMutex.new("environment #{environment}", context.chef_conn).synchronize do
-                MB::Application.bootstrap(manifest, plugin.bootstrap_routine, bootstrap_options)
-              end
-
-              MB.ui.say "Bootstrap finished"
+              MB::Application.bootstrap(environment, manifest, plugin.bootstrap_routine, bootstrap_options)
             end
 
             method_option :api_url,

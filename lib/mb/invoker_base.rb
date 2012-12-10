@@ -32,6 +32,8 @@ module MotherBrain
         end
     end
 
+    include MB::Locks
+
     NOCONFIG_TASKS = [
       "configure",
       "help",

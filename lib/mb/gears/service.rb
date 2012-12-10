@@ -130,31 +130,20 @@ module MotherBrain
         def run(nodes)
           @nodes = nodes
           runner.instance_eval(&block)
-          chef_run(nodes)
+
+          responses = nodes.collect do |node|
+            Application.node_querier.future.chef_run(node.public_hostname)
+          end.map(&:value)
+
+          response_set = Ridley::SSH::ResponseSet.new(responses)
+
+          if response_set.has_errors?
+            raise ChefRunFailure.new(response_set.failures)
+          end
 
           self
         ensure
           runner.reset!
-        end
-
-        # Run chef on the specified nodes.
-        #
-        # @param [Array<Ridley::Node>] nodes the nodes to run chef on
-        def chef_run(nodes)
-          runner_options = {}.tap do |opts|
-            opts[:nodes]    = nodes
-            opts[:user]     = config.ssh_user
-            opts[:keys]     = config.ssh_keys if config.ssh_keys
-            opts[:password] = config.ssh_password if config.ssh_password
-          end
-
-          chef = ChefRunner.new(runner_options)
-          chef.test!
-          status, errors = chef.run
-
-          if status == :error
-            raise ChefRunFailure.new(errors)
-          end
         end
 
         private
@@ -178,7 +167,7 @@ module MotherBrain
             super(context)
             @action    = action
             @component = component
-            @resets = []
+            @resets    = []
           end
 
           # Set an environment level attribute to the given value. The key is represented
@@ -187,24 +176,13 @@ module MotherBrain
           # @param [String] key
           # @param [Object] value
           #
-          # @option options [Boolean] :toggle
-          #   set this environment attribute only for a single chef run (default: false)
+          # @option options [Boolean] :toggle (false)
+          #   set this environment attribute only for a single chef run
           def environment_attribute(key, value, options = {})
             options[:toggle] ||= false
 
             log.info "Setting attribute '#{key}' to '#{value}' on #{self.environment}"
-
-            self.chef_conn.sync do
-              obj = environment.find!(self.environment)
-
-              if options[:toggle]
-                original_value = obj.override_attributes.dig(key)
-                resets.unshift(lambda { environment_attribute(key, original_value) })
-              end
-
-              obj.set_override_attribute(key, value)
-              obj.save
-            end
+            set_environment_attribute(key, value, options)
           end
 
           # Set a node level attribute on all nodes for this action to the given value. 
@@ -213,14 +191,17 @@ module MotherBrain
           # @param [String] key
           # @param [Object] value
           #
-          # @option options [Boolean] :toggle
-          #   set this node attribute only for a single chef run (default: false)
+          # @option options [Boolean] :toggle (false)
+          #   set this node attribute only for a single chef run
           def node_attribute(key, value, options = {})
             options[:toggle] ||= false
 
-            action.nodes.each do |l_node|
-              set_node_attribute(l_node, key, value, options)
-            end
+            futures = action.nodes.collect do |l_node|
+              log.info "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
+              Celluloid::Future.new {
+                set_node_attribute(l_node, key, value, options)
+              }
+            end.map(&:value)
           end
 
           def reset!
@@ -228,6 +209,20 @@ module MotherBrain
           end
 
           private
+
+            def set_environment_attribute(key, value, options)
+              Application.ridley.sync do
+                obj = environment.find!(self.environment)
+
+                if options[:toggle]
+                  original_value = obj.override_attributes.dig(key)
+                  resets.unshift(lambda { environment_attribute(key, original_value) })
+                end
+
+                obj.set_override_attribute(key, value)
+                obj.save
+              end
+            end
 
             # Set a node level attribute on a single node to the given value. 
             # The key is represented by a dotted path.
@@ -239,9 +234,7 @@ module MotherBrain
             # @option options [Boolean] :toggle
             #   set this node attribute only for a single chef run (default: false)
             def set_node_attribute(l_node, key, value, options = {})
-              log.info "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
-
-              self.chef_conn.sync do
+              Application.ridley.sync do
                 obj = node.find!(l_node.name)
 
                 if options[:toggle]

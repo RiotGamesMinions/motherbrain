@@ -25,12 +25,8 @@ module MotherBrain
         klass.class_eval do
           desc("nodes ENVIRONMENT", "List all nodes grouped by Group")
           define_method(:nodes) do |environment|
-            assert_environment_exists(environment)
-
-            component.send(:context).environment = environment
-
             MB.ui.say "Listing nodes for '#{component.name}' in '#{environment}':"
-            nodes = component.nodes.each do |group, nodes|
+            nodes = component.nodes(environment).each do |group, nodes|
               nodes.collect! { |node| "#{node.public_hostname} (#{node.public_ipv4})" }
             end
             MB.ui.say nodes.to_yaml

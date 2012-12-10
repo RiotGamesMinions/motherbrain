@@ -14,10 +14,6 @@ module MotherBrain
             raise ArgumentError, "Missing required option(s): #{missing.join(', ')}"
           end
 
-          unless options.keys.include?(:ssh_keys) || options.keys.include?(:ssh_password)
-            raise ArgumentError, "Missing required option(s): ':ssh_keys' or ':ssh_password' must be specified"
-          end
-
           missing_values = options.slice(*REQUIRED_OPTS).select { |key, value| !value.present? }
 
           unless missing_values.empty?
@@ -36,7 +32,8 @@ module MotherBrain
       end
 
       include Celluloid
-      include ActorUtil
+      include MB::ActorUtil
+      include MB::Locks
 
       # Required options for {#bootstrap}
       REQUIRED_OPTS = [
@@ -45,7 +42,7 @@ module MotherBrain
         :client_key,
         :validator_client,
         :validator_path,
-        :ssh_user
+        :ssh
       ].freeze
 
       # Options given to {#bootstrap} to be passed to Ridley
@@ -68,6 +65,12 @@ module MotherBrain
       #   manifest of nodes and what they should become
       # @param [Bootstrap::Routine] routine
       #   routine to follow for the bootstrap process
+      # @option options [Hash] :ssh
+      #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
+      #   * :password (String) the password for the shell user that will perform the bootstrap
+      #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
+      #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
+      #   * :sudo (Boolean) [True] bootstrap with sudo
       # @option options [String] :server_url
       #   URL to the Chef API to bootstrap the target node(s) to (required)
       # @option options [String] :client_name
@@ -83,19 +86,9 @@ module MotherBrain
       #   filepath to the validator used to bootstrap the node (required)
       # @option options [String] :encrypted_data_bag_secret_path (nil)
       #   filepath on your host machine to your organizations encrypted data bag secret
-      # @option options [String] :ssh_user
-      #   a shell user that will login to each node and perform the bootstrap command on (requirec)
-      # @option options [String] :ssh_password
-      #   the password for the shell user that will perform the bootstrap"
-      # @option options [Array<String>, String] :ssh_keys
-      #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
       # @option options [String] :environment ('_default')
-      # @option options [Float] :ssh_timeout (1.5)
-      #   timeout value for SSH bootstrap
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
-      # @option options [Boolean] :sudo (true)
-      #   bootstrap with sudo
       # @option options [String] :template ("omnibus")
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
@@ -103,6 +96,8 @@ module MotherBrain
       #
       # @raise [InvalidBootstrapManifest] if the given manifest does not pass validation
       # @raise [ArgumentError] if a required option is not given
+      # @raise [MB::EnvironmentNotFound] if the target environment does not exist
+      # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
       #
       # @return [Array<Hash>]
       #   an array containing hashes from each item in the task_queue. The hashes contain
@@ -121,21 +116,30 @@ module MotherBrain
       #     }
       #   ]
       #
-      def bootstrap(manifest, routine, options = {})
-        defer {
-          self.class.validate_options(options)
-          manifest.validate!(routine)
+      def bootstrap(environment, manifest, routine, options = {})
+        self.class.validate_options(options)
+        manifest.validate!(routine)
 
-          responses  = Array.new
-          task_queue = routine.task_queue.dup
-          chef_conn  = Ridley::Connection.new(options.slice(*RIDLEY_OPT_KEYS))
+        responses  = Array.new
+        task_queue = routine.task_queue.dup
+        chef_conn  = Ridley::Connection.new(options.slice(*RIDLEY_OPT_KEYS))
+        
+        unless chef_conn.environment.find(environment)
+          raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
+        end
 
+        MB.log.info "Starting bootstrap of nodes on: #{environment}"
+
+        chef_synchronize("environment.#{environment}", options.slice(:force)) do
           until task_queue.empty?
             responses.push concurrent_bootstrap(chef_conn, manifest, task_queue.shift, options.except(*RIDLEY_OPT_KEYS))
           end
+        end
 
-          responses
-        }
+        MB.log.info "Bootstrap finished for nodes on: #{environment}"
+        responses
+      rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
+        raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
       end
 
       private
@@ -153,8 +157,6 @@ module MotherBrain
         # @option options [String] :environment ('_default')
         # @option options [Hash] :hints (Hash.new)
         #   a hash of Ohai hints to place on the bootstrapped node
-        # @option options [Boolean] :sudo (true)
-        #   bootstrap with sudo
         # @option options [String] :template ("omnibus")
         #   bootstrap template to use
         # @option options [String] :bootstrap_proxy (nil)

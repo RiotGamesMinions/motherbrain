@@ -10,7 +10,7 @@ describe MotherBrain::PluginLoader do
 
     describe '::new' do
       it 'sets the paths attribute to a set of pathnames pointing to the default paths' do
-        obj = subject.new(@context)
+        obj = subject.new
 
         obj.paths.should be_a(Set)
         obj.paths.should each be_a(Pathname)
@@ -28,7 +28,7 @@ describe MotherBrain::PluginLoader do
         end
 
         it 'adds two Pathnames to the paths set' do
-          obj = subject.new(@context)
+          obj = subject.new
 
           obj.paths.should have(2).items
           obj.paths.should each be_a(Pathname)
@@ -60,7 +60,7 @@ describe MotherBrain::PluginLoader do
     end
   end
 
-  subject { MB::PluginLoader.new(@context) }
+  subject { MB::PluginLoader.new }
 
   describe '#load_all' do
     let(:paths) do
@@ -72,7 +72,7 @@ describe MotherBrain::PluginLoader do
     end
 
     before(:each) do
-      subject.clear_paths!
+      subject.clear_paths
 
       paths.each do |path|
         generate_plugin(SecureRandom.hex(16), '1.0.0', path)
@@ -122,7 +122,7 @@ describe MotherBrain::PluginLoader do
 
   describe '#add_path' do
     let(:path) { '/tmp/one' }
-    before(:each) { subject.clear_paths! }
+    before(:each) { subject.clear_paths }
 
     it 'adds the given string as a pathname to the set' do
       subject.add_path(path)
@@ -155,7 +155,7 @@ describe MotherBrain::PluginLoader do
   describe '#remove_path' do
     let(:path) { Pathname.new('/tmp/one') }
     before(:each) do
-      subject.clear_paths!
+      subject.clear_paths
       subject.add_path(path)
     end
 
