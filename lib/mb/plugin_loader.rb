@@ -26,12 +26,11 @@ module MotherBrain
     # @return [MB::Context]
     attr_reader :context
 
-    # @param [MotherBrain::Context] context
-    def initialize(context)
-      @context = context
+    def initialize
+      @context = MB::Context.new(Application.config)
       @plugins = Hash.new
 
-      context.config.plugin_paths.each { |path| self.add_path(path) }
+      Application.config.plugin_paths.each { |path| self.add_path(path) }
     end
 
     # @return [Array<MotherBrain::Plugin>]

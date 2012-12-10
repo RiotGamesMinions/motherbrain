@@ -135,7 +135,7 @@ module MotherBrain
           def credentials
             return @credentials if @credentials
 
-            data_bag = context.chef_conn.data_bag.find!(data_bag_spec[:name])
+            data_bag = Application.ridley.data_bag.find!(data_bag_spec[:name])
             dbi = data_bag.encrypted_item.find!(data_bag_spec[:item]).attributes
 
             @credentials = Hash[data_bag_keys.map { |key, dbi_key| [key, dbi.dig(dbi_key)] }]

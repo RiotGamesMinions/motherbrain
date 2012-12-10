@@ -10,7 +10,7 @@ describe MotherBrain::PluginLoader do
 
     describe '::new' do
       it 'sets the paths attribute to a set of pathnames pointing to the default paths' do
-        obj = subject.new(@context)
+        obj = subject.new
 
         obj.paths.should be_a(Set)
         obj.paths.should each be_a(Pathname)
@@ -28,7 +28,7 @@ describe MotherBrain::PluginLoader do
         end
 
         it 'adds two Pathnames to the paths set' do
-          obj = subject.new(@context)
+          obj = subject.new
 
           obj.paths.should have(2).items
           obj.paths.should each be_a(Pathname)
@@ -60,7 +60,7 @@ describe MotherBrain::PluginLoader do
     end
   end
 
-  subject { MB::PluginLoader.new(@context) }
+  subject { MB::PluginLoader.new }
 
   describe '#load_all' do
     let(:paths) do
