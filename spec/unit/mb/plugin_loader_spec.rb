@@ -72,7 +72,7 @@ describe MotherBrain::PluginLoader do
     end
 
     before(:each) do
-      subject.clear_paths!
+      subject.clear_paths
 
       paths.each do |path|
         generate_plugin(SecureRandom.hex(16), '1.0.0', path)
@@ -122,7 +122,7 @@ describe MotherBrain::PluginLoader do
 
   describe '#add_path' do
     let(:path) { '/tmp/one' }
-    before(:each) { subject.clear_paths! }
+    before(:each) { subject.clear_paths }
 
     it 'adds the given string as a pathname to the set' do
       subject.add_path(path)
@@ -155,7 +155,7 @@ describe MotherBrain::PluginLoader do
   describe '#remove_path' do
     let(:path) { Pathname.new('/tmp/one') }
     before(:each) do
-      subject.clear_paths!
+      subject.clear_paths
       subject.add_path(path)
     end
 

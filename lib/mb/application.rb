@@ -28,6 +28,7 @@ module MotherBrain
         group = super()
 
         group.supervise_as :config_srv, ConfigSrv, app_config
+        group.supervise_as :plugin_srv, PluginLoader
         group.supervise_as :provisioner_manager, Provisioner::Manager
         group.supervise_as :bootstrap_manager, Bootstrap::Manager
         group.supervise_as :node_querier, NodeQuerier
@@ -70,6 +71,10 @@ module MotherBrain
       # @return [Celluloid::Actor(NodeQuerier)]
       def node_querier
         Celluloid::Actor[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
+      end
+
+      def plugin_srv
+        Celluloid::Actor[:plugin_srv] or raise Celluloid::DeadActorError, "plugin srv not running"
       end
 
       # @raise [Celluloid::DeadActorError] if Provisioner Manager has not been started
