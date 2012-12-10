@@ -76,7 +76,7 @@ module MotherBrain
 
     # @param [String, Pathname] path
     def add_path(path)
-      self.paths.add(Pathname.new(path))
+      self.paths.add(Pathname.new(File.expand_path(path)))
     end
 
     # @param [Pathname] path
