@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::ConfigSrv do
+describe MB::ConfigManager do
   subject { described_class.new(@config) }
 
   describe "update" do
@@ -15,8 +15,8 @@ describe MB::ConfigSrv do
       double('config', validate!: true)
     end
 
-    it "sends the 'config_srv.configure' notification" do
-      listener.subscribe('config_srv.configure', :trigger)
+    it "sends the 'config_manager.configure' notification" do
+      listener.subscribe('config_manager.configure', :trigger)
       listener.should_receive(:trigger).once
 
       subject.update(new_config)

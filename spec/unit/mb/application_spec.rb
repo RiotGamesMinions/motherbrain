@@ -4,9 +4,9 @@ describe MB::Application do
   describe "ClassMethods" do
     subject { described_class }
 
-    describe "::config_srv" do
-      it "returns an instance of MB::ConfigSrv" do
-        subject.config_srv.should be_a(MB::ConfigSrv)
+    describe "::config_manager" do
+      it "returns an instance of MB::ConfigManager" do
+        subject.config_manager.should be_a(MB::ConfigManager)
       end
     end
 

@@ -19,7 +19,7 @@ module MotherBrain
       # Return the configuration for the running application
       #
       # @return [MB::Config]
-      def_delegator :config_srv, :config
+      def_delegator :config_manager, :config
 
       # Run the application asynchronously (terminate after execution)
       #
@@ -27,7 +27,7 @@ module MotherBrain
       def run!(app_config)
         group = super()
 
-        group.supervise_as :config_srv, ConfigSrv, app_config
+        group.supervise_as :config_manager, ConfigManager, app_config
         group.supervise_as :plugin_srv, PluginLoader
         group.supervise_as :provisioner_manager, Provisioner::Manager
         group.supervise_as :bootstrap_manager, Bootstrap::Manager
@@ -59,11 +59,11 @@ module MotherBrain
       end
       alias_method :bootstrapper, :bootstrap_manager
       
-      # @raise [Celluloid::DeadActorError] if ConfigSrv has not been started
+      # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
       #
-      # @return [Celluloid::Actor(ConfigSrv)]
-      def config_srv
-        Celluloid::Actor[:config_srv] or raise Celluloid::DeadActorError, "config srv not running"
+      # @return [Celluloid::Actor(ConfigManager)]
+      def config_manager
+        Celluloid::Actor[:config_manager] or raise Celluloid::DeadActorError, "config srv not running"
       end
 
       # @raise [Celluloid::DeadActorError] if Node Querier has not been started
@@ -98,11 +98,11 @@ module MotherBrain
 
     def initialize(*args)
       super
-      subscribe(ConfigSrv::UPDATE_MSG, :reconfigure)
+      subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
     end
 
     def reconfigure(_msg, new_config)
-      MB.log.debug "[Application] ConfigSrv has changed: re-configuring components..."
+      MB.log.debug "[Application] ConfigManager has changed: re-configuring components..."
       self.class.ridley.async.configure(new_config.to_ridley)
     end
   end

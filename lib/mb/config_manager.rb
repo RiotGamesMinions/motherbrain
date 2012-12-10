@@ -1,10 +1,10 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class ConfigSrv
+  class ConfigManager
     include Celluloid
     include Celluloid::Notifications
 
-    UPDATE_MSG = 'config_srv.configure'.freeze
+    UPDATE_MSG = 'config_manager.configure'.freeze
 
     # @return [MB::Config]
     attr_reader :config
@@ -20,7 +20,7 @@ module MotherBrain
     def update(new_config)
       set_config(new_config)
 
-      MB.log.debug "[ConfigSrv] Configuration has changed: notifying subscribers..."
+      MB.log.debug "[ConfigManager] Configuration has changed: notifying subscribers..."
       publish(UPDATE_MSG, self.config)
     end
 
