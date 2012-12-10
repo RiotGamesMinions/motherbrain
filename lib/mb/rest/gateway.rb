@@ -13,19 +13,37 @@ module MotherBrain
         bind_address = options[:bind_address] || DEFAULT_BIND_ADDRESS
         port         = options[:port] || DEFAULT_PORT
 
-        super(bind_address, port, &method(:handler))
+        super(bind_address, port, &method(:on_connect))
       end
 
-      def handler(connection)
-        case connection.request.try(:url)
-        when '/config.json'
-          connection.respond Response.new(:ok, Application.config)
-        else
-          connection.respond :not_found
+      def on_connect(connection)
+        while request = connection.request
+          case request
+          when Reel::Request
+            route_request connection, request
+          when Reel::WebSocket
+            MB.log.warn "Recieved an unhandled websocket request: #{request}"
+            connection.close
+          end
         end
       end
 
-      class Response < Reel::Response
+      def route_request(connection, request)
+        case request.url
+        when '/config.json'
+          connection.respond json(:ok, Application.config)
+        else
+          connection.respond :not_found, "not found"
+        end
+      end
+
+      private
+
+        def json(*args)
+          JSONResponse.new(*args)
+        end
+
+      class JSONResponse < Reel::Response
         DEFAULT_HEADERS = {
           'Accept' => 'application/json',
           'Content-Type' => 'application/json'
