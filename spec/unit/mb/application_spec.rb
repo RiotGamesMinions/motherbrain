@@ -34,9 +34,9 @@ describe MB::Application do
       end
     end
 
-    describe "::plugin_srv" do
-      it "returns an instance of MB::PluginLoader" do
-        subject.plugin_srv.should be_a(MB::PluginLoader)
+    describe "::plugin_manager" do
+      it "returns an instance of MB::PluginManager" do
+        subject.plugin_manager.should be_a(MB::PluginManager)
       end
     end
 

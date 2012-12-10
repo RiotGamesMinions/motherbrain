@@ -48,7 +48,7 @@ module MotherBrain
   autoload :NodeQuerier, 'mb/node_querier'
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'
-  autoload :PluginLoader, 'mb/plugin_loader'
+  autoload :PluginManager, 'mb/plugin_manager'
   autoload :Provisioner, 'mb/provisioner'
   autoload :Provisioners, 'mb/provisioners'
   autoload :RealModelBase, 'mb/real_model_base'
