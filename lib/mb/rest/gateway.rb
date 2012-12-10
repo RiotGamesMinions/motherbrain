@@ -32,6 +32,8 @@ module MotherBrain
         case request.url
         when '/config.json'
           connection.respond json(:ok, Application.config)
+        when '/plugins.json'
+          connection.respond json(:ok, Application.plugin_srv.plugins)
         else
           connection.respond :not_found, "not found"
         end
