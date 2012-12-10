@@ -28,12 +28,8 @@ module MotherBrain
         klass.class_eval do
           desc("nodes ENVIRONMENT", "List all nodes grouped by Component and Group")
           define_method(:nodes) do |environment|
-            assert_environment_exists(environment)
-            
-            plugin.send(:context).environment = environment
-
             MB.ui.say "Listing nodes in '#{environment}':"
-            nodes = plugin.nodes.each do |component, groups|
+            nodes = plugin.nodes(environment).each do |component, groups|
               groups.each do |group, nodes|
                 nodes.collect! { |node| "#{node.public_hostname} (#{node.public_ipv4})" }
               end
