@@ -30,6 +30,24 @@ describe MB::Command do
       end
     end
   end
+
+  subject do
+    described_class.new("start", @context, scope) do
+      description "start all services"
+      execute do; true; end
+    end
+  end
+
+  describe "#invoke" do
+    it "raises an EnvironmentNotFound error if the environment does not exist" do
+      MB::Application.stub_chain(:ridley, :server_url)
+      MB::Application.stub_chain(:ridley, :environment, :find).with("production").and_return(nil)
+
+      expect {
+        subject.invoke("production")
+      }.to raise_error(MB::EnvironmentNotFound)
+    end
+  end
 end
 
 describe MB::Command::CommandRunner do

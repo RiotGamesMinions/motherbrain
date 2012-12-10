@@ -18,10 +18,7 @@ module MotherBrain
         def define_command(command)
           desc("#{command.name} ENVIRONMENT", command.description.to_s)
           define_method(command.name.to_sym) do |environment|
-            assert_environment_exists(environment)
-
-            command.send(:context).environment = environment
-            command.invoke
+            command.invoke(environment)
           end
         end
     end

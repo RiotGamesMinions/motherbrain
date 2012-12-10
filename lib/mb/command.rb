@@ -31,11 +31,24 @@ module MotherBrain
       self.name.to_sym
     end
 
-    # Run the proc stored in execute with the given arguments
-    def invoke(*args)
-      chef_synchronize("environment #{environment}") do
+    # Run the command on the given environment
+    #
+    # @raise [MB::EnvironmentNotFound] if the target environment does not exist
+    # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
+    #
+    # @param [String] environment
+    def invoke(environment, *args)
+      unless Application.ridley.environment.find(environment)
+        raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
+      end
+
+      context.environment = environment
+      
+      chef_synchronize("environment.#{environment}") do
         CommandRunner.new(context, scope, execute)
       end
+    rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
+      raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
     end
 
     private
