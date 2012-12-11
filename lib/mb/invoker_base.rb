@@ -4,7 +4,7 @@ module MotherBrain
     class << self
       # @param [Hash] options
       #
-      # @return [MotherBrain::Context]
+      # @return [MB::Config]
       def configure(options)
         file = options[:config] || File.expand_path(MB::Config.default_path)
 
@@ -14,22 +14,8 @@ module MotherBrain
           raise e.class.new "#{e.message}\nCreate one with `mb configure`"
         end
 
-        validate_config(config)
-        MB::Context.new(config)
+        config
       end
-
-      private
-
-        # @raise [InvalidConfig] if configuration is invalid
-        #
-        # @return [Boolean]
-        def validate_config(config)
-          unless config.valid?
-            raise InvalidConfig.new(config.errors)
-          end
-
-          true
-        end
     end
 
     include MB::Locks
@@ -40,12 +26,12 @@ module MotherBrain
       "version"
     ].freeze
 
-    attr_reader :context
+    attr_reader :config
 
     def initialize(args = [], options = {}, config = {})
       super
       unless NOCONFIG_TASKS.include? config[:current_task].try(:name)
-        @context = self.class.configure(self.options)
+        @config = self.class.configure(self.options)
       end
 
       level = nil

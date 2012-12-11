@@ -5,10 +5,8 @@ module MotherBrain
       # @return [MB::Plugin]
       attr_reader :plugin
 
-      # @param [MB::Context] context
       # @param [MB::Plugin] plugin
-      def initialize(context, plugin, &block)
-        super(context)
+      def initialize(plugin, &block)
         @plugin = plugin
         @task_procs = Array.new
 
@@ -49,7 +47,7 @@ module MotherBrain
         attr_reader :task_procs
 
         def dsl_eval(&block)
-          room = CleanRoom.new(context, self)
+          room = CleanRoom.new(self)
           room.instance_eval(&block)
           @task_procs = room.send(:task_procs)
         end
@@ -57,10 +55,8 @@ module MotherBrain
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
       class CleanRoom < CleanRoomBase
-        # @param [MB::Context] context
-        # @param [MB::Plugin, MB::Component] real_model
-        def initialize(context, real_model)
-          super(context, real_model)
+        def initialize(*args)
+          super
           @task_procs = Array.new
         end
 
@@ -90,7 +86,7 @@ module MotherBrain
         #     end
         #   end
         def async(&block)
-          room = self.class.new(context, real_model)
+          room = self.class.new(real_model)
           room.instance_eval(&block)
 
           self.task_procs.push room.task_procs

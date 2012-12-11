@@ -10,9 +10,7 @@ module MotherBrain
       required: true
 
     # @param [#to_s] name
-    # @param [MB::Context] context
-    def initialize(name, context, &block)
-      super(context)
+    def initialize(name, &block)
       @name     = name.to_s
       @groups   = Set.new
       @commands = Set.new
@@ -71,6 +69,8 @@ module MotherBrain
     # by Group#name into a Hash where the keys are Group#name and values are a Hash
     # representation of a node from Chef.
     #
+    # @param [#to_s] environment
+    #
     # @raise [MB::EnvironmentNotFound] if the target environment does not exist
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
     #
@@ -101,11 +101,9 @@ module MotherBrain
         raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
       end
 
-      context.environment = environment
-
       {}.tap do |nodes|
         self.groups.each do |group|
-          nodes[group.name] = group.nodes
+          nodes[group.name] = group.nodes(environment)
         end
       end
     rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
@@ -161,7 +159,7 @@ module MotherBrain
       if klass.respond_to? :find
         klass.find(gears(klass), *args)
       else
-        klass.new(context, *args)
+        klass.new(*args)
       end
     end
 
@@ -174,7 +172,7 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        CleanRoom.new(context, self).instance_eval(&block)
+        CleanRoom.new(self).instance_eval(&block)
       end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
@@ -183,16 +181,16 @@ module MotherBrain
       dsl_attr_writer :description
 
       def group(name, &block)
-        real_model.add_group Group.new(name, context, &block)
+        real_model.add_group Group.new(name, &block)
       end
 
       def command(name, &block)
-        real_model.add_command Command.new(name, context, real_model, &block)
+        real_model.add_command Command.new(name, real_model, &block)
       end
 
       Gear.all.each do |klass|
         define_method Gear.element_name(klass) do |*args, &block|
-          real_model.add_gear(klass.new(context, real_model, *args, &block))
+          real_model.add_gear(klass.new(real_model, *args, &block))
         end
       end
     end

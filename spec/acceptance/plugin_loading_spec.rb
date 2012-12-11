@@ -1,8 +1,6 @@
 require 'spec_helper'
 
 describe "loading a plugin", type: "acceptance" do
-  let(:context) { MB::Context.new(@config) }
-
   let(:dsl_body) do
     proc {
       name "pvpnet"
@@ -70,7 +68,7 @@ describe "loading a plugin", type: "acceptance" do
   end
 
   before(:each) do
-    @plugin = MB::Plugin.load(context, &dsl_body)
+    @plugin = MB::Plugin.load(&dsl_body)
   end
 
   subject { @plugin }
