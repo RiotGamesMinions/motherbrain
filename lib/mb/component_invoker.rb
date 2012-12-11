@@ -1,8 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class ComponentInvoker < InvokerBase
-    include DynamicInvoker
-    
+  class ComponentInvoker < DynamicInvoker
     class << self
       # Return the component used to generate the anonymous Invoker class
       #

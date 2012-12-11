@@ -3,9 +3,7 @@ require 'spec_helper'
 describe MB::DynamicInvoker do
   describe "ClassMethods" do
     subject do
-      Class.new do
-        include MB::DynamicInvoker
-      end
+      Class.new(MB::DynamicInvoker)
     end
 
     describe "::fabricate" do

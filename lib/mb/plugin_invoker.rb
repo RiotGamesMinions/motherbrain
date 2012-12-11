@@ -1,8 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class PluginInvoker < InvokerBase
-    include DynamicInvoker
-
+  class PluginInvoker < DynamicInvoker
     class << self
       # Return the plugin used to generate the anonymous CLI class
       #
