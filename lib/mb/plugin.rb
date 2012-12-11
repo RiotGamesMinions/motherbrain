@@ -254,7 +254,7 @@ module MotherBrain
 
       # @param [#to_s] name
       def command(name, &block)
-        real_model.add_command Command.new(name, context, real_model, &block)
+        real_model.add_command Command.new(name, real_model, &block)
       end
 
       # @param [#to_s] name

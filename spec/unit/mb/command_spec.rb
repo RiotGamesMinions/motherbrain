@@ -8,7 +8,7 @@ describe MB::Command do
 
     describe "::new" do
       before(:each) do
-        @command = subject.new("start", @context, scope) do
+        @command = subject.new("start", scope) do
           description "start all services"
 
           execute do
@@ -32,7 +32,7 @@ describe MB::Command do
   end
 
   subject do
-    described_class.new("start", @context, scope) do
+    described_class.new("start", scope) do
       description "start all services"
       execute do; true; end
     end
@@ -66,6 +66,8 @@ describe MB::Command::CommandRunner do
   let(:master_group) { double('master_group', nodes: [ node_1, node_2 ]) }
   let(:slave_group) { double('slave_group', nodes: [ node_3 ]) }
 
+  let(:environment) { "rspec-test" }
+
   subject { MB::Command::CommandRunner }
 
   before(:each) do
@@ -78,7 +80,7 @@ describe MB::Command::CommandRunner do
         on("master_group")
       end
       
-      lambda { subject.new(@context, scope, command_block)}.should raise_error(MB::PluginSyntaxError)
+      lambda { subject.new(environment, scope, command_block)}.should raise_error(MB::PluginSyntaxError)
     end
 
     it "has a single group" do
@@ -94,7 +96,7 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      subject.new(environment, scope, command_block)
     end
 
     it "has multiple groups" do
@@ -111,7 +113,7 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      subject.new(environment, scope, command_block)
     end
 
     it "has multiple groups and an option" do
@@ -128,7 +130,7 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      subject.new(environment, scope, command_block)
     end
 
     it "can run on any 1 node" do
@@ -144,7 +146,7 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      subject.new(environment, scope, command_block)
     end
 
     it "can only run on one node at a time" do
@@ -161,7 +163,7 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      subject.new(environment, scope, command_block)
     end
 
     it "has multiple on blocks" do
@@ -184,7 +186,7 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      subject.new(environment, scope, command_block)
     end
   end
 
@@ -207,7 +209,7 @@ describe MB::Command::CommandRunner do
         end
       end
       
-      subject.new(@context, scope, command_block)
+      subject.new(environment, scope, command_block)
     end
 
     context "when there are no nodes in the target groups" do
@@ -224,7 +226,7 @@ describe MB::Command::CommandRunner do
 
         actions.each { |action| action.should_not_receive(:run) }
 
-        subject.new(@context, scope, command_block)
+        subject.new(environment, scope, command_block)
       end
     end
   end

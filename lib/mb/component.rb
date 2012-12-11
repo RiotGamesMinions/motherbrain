@@ -187,7 +187,7 @@ module MotherBrain
       end
 
       def command(name, &block)
-        real_model.add_command Command.new(name, context, real_model, &block)
+        real_model.add_command Command.new(name, real_model, &block)
       end
 
       Gear.all.each do |klass|
