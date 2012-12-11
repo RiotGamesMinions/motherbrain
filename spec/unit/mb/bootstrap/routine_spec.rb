@@ -3,9 +3,9 @@ require 'spec_helper'
 describe MB::Bootstrap::Routine do
   let(:plugin) { MB::Plugin.new(@context) }
 
-  let(:activemq) { MB::Component.new('activemq', @context) }
-  let(:mysql) { MB::Component.new('mysql', @context) }
-  let(:nginx) { MB::Component.new('nginx', @context) }
+  let(:activemq) { MB::Component.new('activemq') }
+  let(:mysql) { MB::Component.new('mysql') }
+  let(:nginx) { MB::Component.new('nginx') }
 
   let(:amq_master) { MB::Group.new('master') }
   let(:amq_slave) { MB::Group.new('slave') }

@@ -3,8 +3,8 @@ require 'spec_helper'
 describe MB::Provisioner::Manifest do
   let(:plugin) { MB::Plugin.new(@context) }
 
-  let(:activemq) { MB::Component.new('activemq', @context) }
-  let(:nginx) { MB::Component.new('nginx', @context) }
+  let(:activemq) { MB::Component.new('activemq') }
+  let(:nginx) { MB::Component.new('nginx') }
 
   let(:amq_master) { MB::Group.new('master') }
   let(:amq_slave) { MB::Group.new('slave') }

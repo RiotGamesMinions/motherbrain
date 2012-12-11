@@ -10,9 +10,7 @@ module MotherBrain
       required: true
 
     # @param [#to_s] name
-    # @param [MB::Context] context
-    def initialize(name, context, &block)
-      super(context)
+    def initialize(name, &block)
       @name     = name.to_s
       @groups   = Set.new
       @commands = Set.new

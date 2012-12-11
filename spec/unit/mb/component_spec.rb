@@ -5,7 +5,7 @@ describe MB::Component do
   let(:chef_conn) { double('chef_conn') }
 
   subject do
-    MB::Component.new("activemq", @context) do
+    MB::Component.new("activemq") do
       group "masters" do
         # block
       end
@@ -14,7 +14,7 @@ describe MB::Component do
 
   describe "#groups" do
     subject do
-      MB::Component.new("activemq", @context) do
+      MB::Component.new("activemq") do
         group "masters" do
           # block
         end
@@ -29,7 +29,7 @@ describe MB::Component do
 
   describe "#group" do
     subject do
-      MB::Component.new("activemq", @context) do
+      MB::Component.new("activemq") do
         group "masters" do
           # block
         end
@@ -43,7 +43,7 @@ describe MB::Component do
 
   describe "#group!" do
     subject do
-      MB::Component.new("activemq", @context) do
+      MB::Component.new("activemq") do
         group "masters" do
           # block
         end
@@ -75,7 +75,7 @@ describe MB::Component do
     subject { MB::Component }
 
     it "returns a Set of services" do
-      component = subject.new("activemq", @context) do
+      component = subject.new("activemq") do
         service "masters" do
           # block
         end
@@ -85,7 +85,7 @@ describe MB::Component do
     end
 
     it "contains each service defined" do
-      component = subject.new("activemq", @context) do
+      component = subject.new("activemq") do
         service "masters" do
           # block
         end
@@ -96,7 +96,7 @@ describe MB::Component do
 
     it "does not allow duplicate services" do
       lambda do
-        subject.new("activemq", @context) do
+        subject.new("activemq") do
           service "masters" do
             # block
           end
