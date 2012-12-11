@@ -45,7 +45,7 @@ module MotherBrain
         loop do
           supervisor = run!(app_config)
 
-          sleep 5 while supervisor.alive?
+          sleep 0.1 while supervisor.alive?
 
           Logger.error "!!! Celluloid::SupervisionGroup #{self} crashed. Restarting..."
         end
