@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe MB::CleanRoomBase do
-  let(:context) { double('context') }
   let(:real_model) { double('real_model') }
   let(:block) { double('block') }
 
@@ -12,7 +11,7 @@ describe MB::CleanRoomBase do
       it "creates a function of the given name on the instance of clean room" do
         subject.dsl_attr_writer :name
 
-        subject.new(context, real_model) do
+        subject.new(real_model) do
           # block
         end.should respond_to(:name)
       end
@@ -23,7 +22,7 @@ describe MB::CleanRoomBase do
 
         real_model.should_receive(:name=).with(value)
 
-        subject.new(context, real_model) do
+        subject.new(real_model) do
           # block
         end.name(value)
       end

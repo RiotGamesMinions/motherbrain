@@ -34,8 +34,6 @@ module MotherBrain
   autoload :ComponentInvoker, 'mb/component_invoker'
   autoload :Config, 'mb/config'
   autoload :ConfigManager, 'mb/config_manager'
-  autoload :Context, 'mb/context'
-  autoload :ContextualModel, 'mb/contextual_model'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
   autoload :ErrorHandler, 'mb/error_handler'
   autoload :FileSystem, 'mb/file_system'

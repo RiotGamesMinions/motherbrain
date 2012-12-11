@@ -241,10 +241,6 @@ module MotherBrain
       dsl_attr_writer :author
       dsl_attr_writer :email
 
-      def initialize(real_model)
-        @real_model = real_model
-      end
-
       # @param [#to_s] name
       # @param [#to_s] constraint
       def depends(name, constraint)
