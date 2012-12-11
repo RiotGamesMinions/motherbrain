@@ -85,10 +85,6 @@ module MotherBrain
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
       class CleanRoom < CleanRoomBase
-        def initialize(real_model)
-          @real_model = real_model
-        end
-
         # @param [String] name
         def action(name, &block)
           real_model.add_action Action.new(name, component, &block)

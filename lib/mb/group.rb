@@ -112,10 +112,6 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
-      def initialize(real_model)
-        @real_model = real_model
-      end
-
       # @param [#to_s] value
       #
       # @return [Set<String>]

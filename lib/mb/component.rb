@@ -180,10 +180,6 @@ module MotherBrain
     class CleanRoom < CleanRoomBase
       dsl_attr_writer :description
 
-      def initialize(real_model)
-        @real_model = real_model
-      end
-
       def group(name, &block)
         real_model.add_group Group.new(name, &block)
       end

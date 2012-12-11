@@ -104,10 +104,9 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
-      # @param [MB::Plugin, MB::Component] real_model
-      def initialize(real_model)
-        @real_model = real_model
-        @actions    = Array.new
+      def initialize(*args)
+        super
+        @actions = Array.new
 
         Gear.all.each do |klass|
           clean_room = self

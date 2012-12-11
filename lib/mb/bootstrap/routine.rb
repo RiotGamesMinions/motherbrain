@@ -55,9 +55,8 @@ module MotherBrain
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
       class CleanRoom < CleanRoomBase
-        # @param [MB::Plugin, MB::Component] real_model
-        def initialize(real_model)
-          @real_model = real_model
+        def initialize(*args)
+          super
           @task_procs = Array.new
         end
 
