@@ -183,7 +183,7 @@ module MotherBrain
       dsl_attr_writer :description
 
       def group(name, &block)
-        real_model.add_group Group.new(name, context, &block)
+        real_model.add_group Group.new(name, &block)
       end
 
       def command(name, &block)

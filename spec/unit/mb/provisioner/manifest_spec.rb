@@ -6,9 +6,9 @@ describe MB::Provisioner::Manifest do
   let(:activemq) { MB::Component.new('activemq', @context) }
   let(:nginx) { MB::Component.new('nginx', @context) }
 
-  let(:amq_master) { MB::Group.new('master', @context) }
-  let(:amq_slave) { MB::Group.new('slave', @context) }
-  let(:nginx_master) { MB::Group.new('master', @context) }
+  let(:amq_master) { MB::Group.new('master') }
+  let(:amq_slave) { MB::Group.new('slave') }
+  let(:nginx_master) { MB::Group.new('master') }
 
   before(:each) do
     plugin.stub(:components).and_return([activemq, nginx])

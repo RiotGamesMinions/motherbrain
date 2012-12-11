@@ -3,17 +3,13 @@ require 'spec_helper'
 describe MB::Group do
   let(:environment) { "mb-test" }
 
-  before(:each) do
-    @context = @context.dup
-  end
-
   describe "ClassMethods" do
     subject { MB::Group }
 
     describe "::new" do
       context "given a block with multiple recipe calls" do
         it "adds each recipe to the array of recipes on the instantiated Group" do
-          obj = subject.new("bacon", @context) do
+          obj = subject.new("bacon") do
             recipe "bacon::default"
             recipe "bacon::database"
           end
@@ -26,7 +22,7 @@ describe MB::Group do
 
       context "given a block with multiple role calls" do
         it "adds each role to the array of roles on the instantiated Group" do
-          obj = subject.new("roles_are_poopy", @context) do
+          obj = subject.new("roles_are_poopy") do
             role "roles_are_evil"
             role "stop_using_roles"
           end
@@ -40,7 +36,7 @@ describe MB::Group do
       context "when an attribute of the same name is defined" do
         it "raises a DuplicateGroup error" do
           lambda {
-            subject.new("db_master", @context) do
+            subject.new("db_master") do
               chef_attribute "pvpnet.database.master", true
               chef_attribute "pvpnet.database.master", false
             end
@@ -52,7 +48,7 @@ describe MB::Group do
 
   describe "#name" do
     subject do
-      MB::Group.new("master_database", @context) do
+      MB::Group.new("master_database") do
         # block
       end
     end
@@ -64,7 +60,7 @@ describe MB::Group do
 
   describe "#recipes" do
     subject do
-      MB::Group.new("pvpnet", @context) do
+      MB::Group.new("pvpnet") do
         recipe "pvpnet::default"
         recipe "pvpnet::database"
         recipe "pvpnet::app"
@@ -84,7 +80,7 @@ describe MB::Group do
 
     context "when a recipe of the same name is defined" do
       subject do
-        MB::Group.new("pvpnet", @context) do
+        MB::Group.new("pvpnet") do
           recipe "pvpnet::default"
           recipe "pvpnet::default"
         end
@@ -98,7 +94,7 @@ describe MB::Group do
 
   describe "#roles" do
     subject do
-      MB::Group.new("roles_are_poopy", @context) do
+      MB::Group.new("roles_are_poopy") do
         role "stop"
         role "fucking"
         role "using"
@@ -120,7 +116,7 @@ describe MB::Group do
 
     context "when a role of the same name is defined" do
       subject do
-        MB::Group.new("roles_are_poopy", @context) do
+        MB::Group.new("roles_are_poopy") do
           role "asshole_role"
           role "asshole_role"
         end
@@ -134,7 +130,7 @@ describe MB::Group do
 
   describe "#chef_attributes" do
     subject do
-      MB::Group.new("db_master", @context) do
+      MB::Group.new("db_master") do
         chef_attribute "pvpnet.database.master", true
         chef_attribute "pvpnet.database.slave", false
       end
@@ -158,7 +154,7 @@ describe MB::Group do
   describe "#search_query" do
     context "with one chef attribute" do
       subject do
-        MB::Group.new("db_master", @context) do
+        MB::Group.new("db_master") do
           chef_attribute "pvpnet.database.master", true
         end
       end
@@ -170,7 +166,7 @@ describe MB::Group do
 
     context "with multiple chef attributes" do
       subject do
-        MB::Group.new("db_master", @context) do
+        MB::Group.new("db_master") do
           chef_attribute "pvpnet.database.master", true
           chef_attribute "pvpnet.database.slave", false
         end
@@ -183,7 +179,7 @@ describe MB::Group do
 
     context "with multiple recipes" do
       subject do
-        MB::Group.new("pvpnet", @context) do
+        MB::Group.new("pvpnet") do
           recipe "pvpnet::default"
           recipe "pvpnet::database"
         end
@@ -196,7 +192,7 @@ describe MB::Group do
 
     context "with multiple roles" do
       subject do
-        MB::Group.new("roles", @context) do
+        MB::Group.new("roles") do
           role "app_server"
           role "database_server"
         end
@@ -208,11 +204,11 @@ describe MB::Group do
     end
   end
 
-  subject { MB::Group.new("test-group", @context) }
+  subject { MB::Group.new("test-group") }
 
   describe "#run_list" do
     subject do
-      MB::Group.new("test-group", @context) do
+      MB::Group.new("test-group") do
         role "role_one"
         role "role_two"
         recipe "test::default"

@@ -7,9 +7,7 @@ module MotherBrain
     attr_reader :chef_attributes
 
     # @param [#to_s] name
-    # @param [MB::Context] context
-    def initialize(name, context, &block)
-      super(context)
+    def initialize(name, &block)
       @name            = name.to_s
       @recipes         = Set.new
       @roles           = Set.new
@@ -100,7 +98,7 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        CleanRoom.new(context, self).instance_eval(&block)
+        CleanRoom.new(self).instance_eval(&block)
       end
 
       def attribute_escape(value)
@@ -114,6 +112,10 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
+      def initialize(real_model)
+        @real_model = real_model
+      end
+
       # @param [#to_s] value
       #
       # @return [Set<String>]

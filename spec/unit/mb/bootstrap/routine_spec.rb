@@ -7,11 +7,11 @@ describe MB::Bootstrap::Routine do
   let(:mysql) { MB::Component.new('mysql', @context) }
   let(:nginx) { MB::Component.new('nginx', @context) }
 
-  let(:amq_master) { MB::Group.new('master', @context) }
-  let(:amq_slave) { MB::Group.new('slave', @context) }
-  let(:mysql_master) { MB::Group.new('master', @context) }
-  let(:mysql_slave) { MB::Group.new('slave', @context) }
-  let(:nginx_master) { MB::Group.new('master', @context) }
+  let(:amq_master) { MB::Group.new('master') }
+  let(:amq_slave) { MB::Group.new('slave') }
+  let(:mysql_master) { MB::Group.new('master') }
+  let(:mysql_slave) { MB::Group.new('slave') }
+  let(:nginx_master) { MB::Group.new('master') }
 
   before(:each) do
     plugin.stub(:components).and_return([activemq, mysql, nginx])
