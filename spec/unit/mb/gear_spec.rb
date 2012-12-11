@@ -21,7 +21,7 @@ describe MB::Gear do
         subject.all.should be_a(Set)
       end
 
-      context "when no Classes include MB::Gear" do
+      context "when no gears are registered" do
         before(:each) { subject.clear! }
 
         it "returns an empty Set" do
@@ -29,37 +29,21 @@ describe MB::Gear do
         end
       end
 
-      context "when a Class includes MB::Gear" do
+      context "when a gear is registered" do
         before(:each) do
-          @descendant = Class.new do
-            include MB::Gear
+          @gear_1 = Class.new(MB::AbstractGear) do
             register_gear :fake_one
           end
 
-          @descendant_2 = Class.new do
-            include MB::Gear
+          @gear_2 = Class.new(MB::AbstractGear) do
             register_gear :fake_two
           end
         end
 
-        it "returns an array with the descendant Class" do
+        it "returns an array with the registered gears" do
           subject.all.should have(2).item
-          subject.all.should include(@descendant)
-          subject.all.should include(@descendant_2)
-        end
-      end
-
-      context "when a Class includes MB::Gear multiple times" do
-        before(:each) do
-          @descendant = Class.new do
-            include MB::Gear
-            include MB::Gear
-            register_gear :fake_gear
-          end
-        end
-
-        it "does not register multiple times" do
-          subject.all.should have(1).item
+          subject.all.should include(@gear_1)
+          subject.all.should include(@gear_2)
         end
       end
     end
@@ -74,9 +58,7 @@ describe MB::Gear do
 
     describe "::find_by_keyword" do
       before(:each) do
-        @klass = Class.new do
-          include MB::Gear
-
+        @klass = Class.new(MB::AbstractGear) do
           register_gear :fake_gear
         end
       end
@@ -93,8 +75,7 @@ describe MB::Gear do
 
   describe "::register_gear" do
     it "sets the keyword class attribute" do
-      @klass = Class.new do
-        include MB::Gear
+      @klass = Class.new(MB::AbstractGear) do  
         register_gear :racer
       end
 
@@ -103,14 +84,12 @@ describe MB::Gear do
 
     context "when registering a keyword that has already been used" do
       it "raises a DuplicateGearKeyword error" do
-        Class.new do
-          include MB::Gear
+        Class.new(MB::AbstractGear) do
           register_gear :racer
         end
 
         lambda {
-          Class.new do
-            include MB::Gear
+          Class.new(MB::AbstractGear) do
             register_gear :racer
           end
         }.should raise_error(MB::DuplicateGearKeyword)
@@ -121,8 +100,7 @@ describe MB::Gear do
       it "raises a ReservedGearKeyword error" do
         MB::Gear::RESERVED_KEYWORDS.each do |key|
           lambda {
-            Class.new do
-              include MB::Gear
+            Class.new(MB::AbstractGear) do
               register_gear key
             end
           }.should raise_error(MB::ReservedGearKeyword)

@@ -23,6 +23,7 @@ require 'mb/errors'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
+  autoload :AbstractGear, 'mb/abstract_gear'
   autoload :ActorUtil, 'mb/actor_util'
   autoload :Application, 'mb/application'
   autoload :Bootstrap, 'mb/bootstrap'
