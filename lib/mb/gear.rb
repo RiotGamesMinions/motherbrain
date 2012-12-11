@@ -9,8 +9,7 @@ module MotherBrain
   #
   # @example Defining a new Gear
   #
-  #   class Twitter
-  #     include MotherBrain::Gear
+  #   class Twitter < MotherBrain::AbstractGear
   #     register_gear :twitter
   #   end
   #
