@@ -1,14 +1,14 @@
 require 'spec_helper'
 
 describe MB::Provisioner::Manifest do
-  let(:plugin) { MB::Plugin.new(@context) }
+  let(:plugin) { MB::Plugin.new }
 
-  let(:activemq) { MB::Component.new('activemq', @context) }
-  let(:nginx) { MB::Component.new('nginx', @context) }
+  let(:activemq) { MB::Component.new('activemq') }
+  let(:nginx) { MB::Component.new('nginx') }
 
-  let(:amq_master) { MB::Group.new('master', @context) }
-  let(:amq_slave) { MB::Group.new('slave', @context) }
-  let(:nginx_master) { MB::Group.new('master', @context) }
+  let(:amq_master) { MB::Group.new('master') }
+  let(:amq_slave) { MB::Group.new('slave') }
+  let(:nginx_master) { MB::Group.new('master') }
 
   before(:each) do
     plugin.stub(:components).and_return([activemq, nginx])

@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class CleanRoomBase < ContextualModel
+  class CleanRoomBase
     class << self
       # Create a DSL writer function that will assign the a given value
       # to the real object of this clean room.
@@ -15,12 +15,8 @@ module MotherBrain
       end
     end
 
-    # @param [MB::Context] context
-    # @param [MB::ContextualModel] real_model
-    #
-    # @return [MB::ContextualModel]
-    def initialize(context, real_model, &block)
-      super(context)
+    # @param [Object] real_model
+    def initialize(real_model, &block)
       @real_model = real_model
     end
 

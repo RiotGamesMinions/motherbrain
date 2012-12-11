@@ -6,16 +6,17 @@ module MotherBrain
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
         if args.any? and (args & InvokerBase::NOCONFIG_TASKS).empty?
-          context = configure(opts)
-          setup(context.config)
+          config = configure(opts)
+          config.validate!
+          MB::Application.run!(config)
+
+          setup
         end
 
         super
       end
 
-      def setup(config)
-        MB::Application.run!(config)
-
+      def setup
         Application.plugin_manager.plugins.each do |plugin|
           self.register_plugin MB::PluginInvoker.fabricate(plugin)
         end
@@ -46,7 +47,7 @@ module MotherBrain
     def initialize(args = [], options = {}, config = {})
       super
       unless InvokerBase::NOCONFIG_TASKS.include?(config[:current_task].try(:name))
-        self.class.setup(context.config)
+        self.class.setup
       end
     end
 

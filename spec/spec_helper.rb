@@ -42,7 +42,6 @@ def setup_rspec
 
     config.before(:each) do
       clean_tmp_path
-      @context = MB::Context.new(@config)
     end
   end
 end
