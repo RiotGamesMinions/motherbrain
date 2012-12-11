@@ -1,7 +1,7 @@
 module MotherBrain
   module Gear
     # @author Jamie Winsor <jamie@vialstudios.com>
-    class Service < RealModelBase
+    class Service
       include MB::Gear
       register_gear :service
 
@@ -97,7 +97,7 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class Action < RealModelBase
+      class Action
         # @return [String]
         attr_reader :name
         # @return [Set<Ridley::Node>]
@@ -150,7 +150,7 @@ module MotherBrain
 
         # @author Jamie Winsor <jamie@vialstudios.com>
         # @api private
-        class ActionRunner < RealModelBase
+        class ActionRunner
           include Logging
 
           attr_reader :environment

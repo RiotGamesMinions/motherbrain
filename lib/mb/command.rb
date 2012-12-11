@@ -1,9 +1,12 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Command < RealModelBase
+  class Command
+    include Chozo::VariaModel
     include MB::Locks
 
-    attr_reader :name
+    attribute :name,
+      type: String,
+      required: true
 
     attribute :description,
       type: String,
@@ -16,7 +19,7 @@ module MotherBrain
     # @param [#to_s] name
     # @param [MB::Plugin, MB::Component] scope
     def initialize(name, scope, &block)
-      @name  = name.to_s
+      set_attribute(:name, name.to_s)
       @scope = scope
 
       if block_given?
