@@ -161,7 +161,7 @@ module MotherBrain
       if klass.respond_to? :find
         klass.find(gears(klass), *args)
       else
-        klass.new(context, *args)
+        klass.new(*args)
       end
     end
 
@@ -174,13 +174,17 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        CleanRoom.new(context, self).instance_eval(&block)
+        CleanRoom.new(self).instance_eval(&block)
       end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
       dsl_attr_writer :description
+
+      def initialize(real_model)
+        @real_model = real_model
+      end
 
       def group(name, &block)
         real_model.add_group Group.new(name, &block)
@@ -192,7 +196,7 @@ module MotherBrain
 
       Gear.all.each do |klass|
         define_method Gear.element_name(klass) do |*args, &block|
-          real_model.add_gear(klass.new(context, real_model, *args, &block))
+          real_model.add_gear(klass.new(real_model, *args, &block))
         end
       end
     end

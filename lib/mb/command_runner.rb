@@ -91,7 +91,7 @@ module MotherBrain
       @on_procs << lambda do
         node_groups.each do |nodes|
           actions.each do |action|
-            action.run(nodes)
+            action.run(environment, nodes)
           end
         end
       end

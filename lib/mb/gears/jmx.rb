@@ -16,7 +16,7 @@ module MotherBrain
       #
       # @return [MB::Gear::Jmx::Action]
       def action(port, object_name, &block)
-        Action.new(context, port, object_name, &block)
+        Action.new(port, object_name, &block)
       end
 
       class Action < RealModelBase
@@ -29,9 +29,7 @@ module MotherBrain
         #
         # @raise [ActionNotSupported] if not running JRuby
         # @raise [ArgumentError]
-        def initialize(context, port, object_name, &block)
-          super(context)
-
+        def initialize(port, object_name, &block)
           unless jruby?
             raise ActionNotSupported, "The jmx action is only supported on JRuby"
           end
@@ -48,7 +46,7 @@ module MotherBrain
         # Run this action on the specified nodes.
         #
         # @param [Array<Ridley::Node>] nodes the nodes to run this action on
-        def run(nodes)
+        def run(environment, nodes)
           nodes.each do |node|
             connection = JMX::MBean.connection(host: node.public_hostname, port: port)
             mbean = JMX::MBean.find_by_name(object_name, connection: connection)

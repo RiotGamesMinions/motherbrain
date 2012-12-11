@@ -25,11 +25,8 @@ module MotherBrain
       attr_reader :actions
 
       # @param [#to_s] name
-      # @param [MB::Context] context
       # @param [MB::Component] component
-      def initialize(context, component, name, &block)
-        super(context)
-
+      def initialize(component, name, &block)
         @name      = name.to_s
         @component = component
         @actions   = Set.new
@@ -74,7 +71,7 @@ module MotherBrain
         attr_reader :component
 
         def dsl_eval(&block)
-          CleanRoom.new(context, self).instance_eval do
+          CleanRoom.new(self).instance_eval do
             @component = component
             instance_eval(&block)
           end
@@ -88,9 +85,13 @@ module MotherBrain
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
       class CleanRoom < CleanRoomBase
+        def initialize(real_model)
+          @real_model = real_model
+        end
+
         # @param [String] name
         def action(name, &block)
-          real_model.add_action Action.new(context, name, component, &block)
+          real_model.add_action Action.new(name, component, &block)
         end
 
         private
@@ -110,16 +111,14 @@ module MotherBrain
         # @param [MB::Component] component
         #
         # @raise [ArgumentError] if no block is given
-        def initialize(context, name, component, &block)
+        def initialize(name, component, &block)
           unless block_given?
             raise ArgumentError, "block required for action '#{name}' on component '#{component.name}'"
           end
 
-          super(context)
           @name      = name
           @component = component
           @block     = block
-          @runner    = ActionRunner.new(context, self, component)
         end
 
         # Run this action on the specified nodes.
@@ -127,8 +126,9 @@ module MotherBrain
         # @param [Array<Ridley::Node>] nodes the nodes to run this action on
         #
         # @return [Service::Action]
-        def run(nodes)
+        def run(environment, nodes)
           @nodes = nodes
+          runner = ActionRunner.new(environment, self, component)
           runner.instance_eval(&block)
 
           responses = nodes.collect do |node|
@@ -143,7 +143,7 @@ module MotherBrain
 
           self
         ensure
-          runner.reset!
+          runner.reset
         end
 
         private
@@ -157,17 +157,18 @@ module MotherBrain
         class ActionRunner < RealModelBase
           include Logging
 
+          attr_reader :environment
+
           # @return [Array<Proc>]
           attr_reader :resets
 
-          # @param [MB::Context] context
           # @param [Gear::Action] action
           # @param [MB::Component] component
-          def initialize(context, action, component)
-            super(context)
-            @action    = action
-            @component = component
-            @resets    = []
+          def initialize(environment, action, component)
+            @environment = environment
+            @action      = action
+            @component   = component
+            @resets      = []
           end
 
           # Set an environment level attribute to the given value. The key is represented
@@ -204,7 +205,7 @@ module MotherBrain
             end.map(&:value)
           end
 
-          def reset!
+          def reset
             resets.each(&:call)
           end
 

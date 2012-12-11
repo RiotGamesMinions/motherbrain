@@ -11,11 +11,13 @@ module MotherBrain
       include MB::Gear
       register_gear :mysql
 
+      def initialize; end
+
       # @see [MB::Gear::Mysql::Action]
       #
       # @return [MB::Gear::Mysql::Action]
       def action(sql, options)
-        Action.new(context, sql, options)
+        Action.new(sql, options)
       end
 
       class Action < RealModelBase
@@ -40,15 +42,12 @@ module MotherBrain
           end
         end
 
-        # @param [MB::Context] context
         # @param [String] sql 
         #   the sql to run
         #
         # @option options [Hash] :data_bag
         #   specify the data bag, item, and location inside the item to find the MySQL credentials
-        def initialize(context, sql, options)
-          super(context)
-
+        def initialize(sql, options)
           self.class.validate_options(options)
 
           @sql = sql
@@ -58,12 +57,12 @@ module MotherBrain
         # Run this action on the specified nodes
         #
         # @param [Array<Ridley::Node>] nodes the nodes to run this action on
-        def run(nodes)
+        def run(environment, nodes)
           threads = []
 
           nodes.each do |node| 
             threads << Thread.new(node) do |node|
-              query(sql, node)
+              query(environment, sql, node)
             end
           end
 
@@ -76,8 +75,8 @@ module MotherBrain
         #   the node to to find connection information for
         #
         # @return [Hash] MySQL connection information for the node
-        def connection_info(node)
-          credentials.merge({host: node.public_hostname})
+        def connection_info(environment, node)
+          credentials(environment).merge(host: node.public_hostname)
         end
 
         # @return [Hash] The keys used to look up MySQL connection information in a data bag item.
@@ -92,14 +91,15 @@ module MotherBrain
         end
 
         private
+
           # Runs a sql query on a node.
           #
           # @param [String] sql
           #   the sql query
           # @param [Ridley::Node] node
           #   the node to run the query on
-          def query(sql, node)
-            jruby? ? jdbc_query(sql, node) : mysql2_query(sql, node)
+          def query(environment, sql, node)
+            jruby? ? jdbc_query(environment, sql, node) : mysql2_query(environment, sql, node)
           end
 
           # Runs a sql query on a node using jdbc.
@@ -108,8 +108,8 @@ module MotherBrain
           #   the sql query
           # @param [Ridley::Node] node
           #   the node to run the query on
-          def jdbc_query(sql, node)
-            info = connection_info(node)
+          def jdbc_query(environment, sql, node)
+            info = connection_info(environment, node)
             Java::com.mysql.jdbc.Driver
             connection_url = "jdbc:mysql://#{info[:host]}:#{info[:port]}/#{info[:database]}"
             connection = java.sql.DriverManager.get_connection(connection_url, info[:username], info[:password])
@@ -122,8 +122,8 @@ module MotherBrain
           #   the sql query
           # @param [Ridley::Node] node
           #   the node to run the query on
-          def mysql2_query(sql, node)
-            connection = Mysql2::Client.new(connection_info(node))
+          def mysql2_query(environment, sql, node)
+            connection = Mysql2::Client.new(connection_info(environment, node))
             connection.query(sql)
           end
 
@@ -132,11 +132,11 @@ module MotherBrain
           # @raise [MB::ArgumentError] if any MySQL credentials are missing
           #
           # @return [Hash] MySQL credentials
-          def credentials
+          def credentials(environment)
             return @credentials if @credentials
 
             data_bag = Application.ridley.data_bag.find!(data_bag_spec[:name])
-            dbi = data_bag.encrypted_item.find!(data_bag_spec[:item]).attributes
+            dbi = data_bag.encrypted_item.find!(environment).attributes
 
             @credentials = Hash[data_bag_keys.map { |key, dbi_key| [key, dbi.dig(dbi_key)] }]
 
@@ -144,7 +144,7 @@ module MotherBrain
               if value.nil?
                 err_msg = "Missing a MySQL credential.  Could not find a #{key} at the location you specified. "
                 err_msg << "You specified that the #{key} can be found at '#{data_bag_keys[key]}' "
-                err_msg << "in the '#{data_bag_spec[:item]}' data bag item inside the '#{data_bag_spec[:name]}' "
+                err_msg << "in the '#{environment}' data bag item inside the '#{data_bag_spec[:name]}' "
                 err_msg << "data bag."
                 raise GearError, err_msg
               end
@@ -161,7 +161,6 @@ module MotherBrain
           # @return [Hash] the default specification for where to find MySQL connection information
           def default_data_bag_spec
             {
-              item: self.environment,
               location: {
                 keys: {
                   username: "username",

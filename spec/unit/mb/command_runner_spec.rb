@@ -37,7 +37,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(master_group.nodes)
+        action.should_receive(:run).with(environment, master_group.nodes)
       end
 
       command_block = Proc.new do
@@ -54,7 +54,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(nodes)
+        action.should_receive(:run).with(environment, nodes)
       end
 
       command_block = Proc.new do
@@ -71,7 +71,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       actions.each do |action|
-        action.should_receive(:run).with([anything()]).exactly(3).times
+        action.should_receive(:run).with(environment, [anything()]).exactly(3).times
       end
 
       command_block = Proc.new do
@@ -87,7 +87,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
       actions.each do |action|
-        action.should_receive(:run).with([anything()])
+        action.should_receive(:run).with(environment, [anything()])
       end
 
       command_block = Proc.new do
@@ -103,8 +103,8 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
       actions.each do |action|
-        action.should_receive(:run).with([node_1])
-        action.should_receive(:run).with([node_2])
+        action.should_receive(:run).with(environment, [node_1])
+        action.should_receive(:run).with(environment, [node_2])
       end
 
       command_block = Proc.new do
@@ -121,9 +121,9 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       actions.each do |action|
-        action.should_receive(:run).with([node_1])
-        action.should_receive(:run).with([node_2])
-        action.should_receive(:run).with([node_3])
+        action.should_receive(:run).with(environment, [node_1])
+        action.should_receive(:run).with(environment, [node_2])
+        action.should_receive(:run).with(environment, [node_3])
       end
       
       command_block = Proc.new do
