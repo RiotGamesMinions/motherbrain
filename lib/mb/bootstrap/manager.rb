@@ -25,7 +25,7 @@ module MotherBrain
             raise ArgumentError, "Chef Client key required for bootstrap and not found at: '#{options[:client_key]}'"
           end
 
-          unless File.exists?(options[:validator_path])
+          unless File.exists?(File.expand_path(options[:validator_path]))
             raise ArgumentError, "Chef Validator required for Bootstrap and not found at: '#{options[:validator_path]}'"
           end
         end
