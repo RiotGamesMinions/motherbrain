@@ -41,11 +41,9 @@ module MotherBrain
       unless Application.ridley.environment.find(environment)
         raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
       end
-
-      context.environment = environment
       
       chef_synchronize("environment.#{environment}") do
-        CommandRunner.new(context, scope, execute)
+        CommandRunner.new(environment, scope, execute)
       end
     rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
       raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
@@ -72,15 +70,18 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CommandRunner < RealModelBase
+      attr_reader :environment
       attr_reader :scope
 
+      # @param [String] environment
+      #   the environment to run this command on
       # @param [Object] scope
       # @param [Proc] execute
-      def initialize(context, scope, execute)
-        super(context)
-        @scope = scope
-        @on_procs = []
-        @async = false
+      def initialize(environment, scope, execute)
+        @environment = environment
+        @scope       = scope
+        @on_procs    = []
+        @async       = false
 
         instance_eval(&execute)
       end
@@ -139,7 +140,11 @@ module MotherBrain
         clean_room.instance_eval(&block)
         actions = clean_room.send(:actions)
 
-        nodes = group_names.map { |group_name| scope.group!(group_name) }.flat_map(&:nodes).uniq
+        nodes = group_names.map do |name|
+          scope.group!(name)
+        end.flat_map do |group|
+          group.nodes(environment)
+        end.uniq
 
         if nodes.empty?
           return nil
