@@ -31,19 +31,20 @@ module MotherBrain
     # A signature is any combination of a recipe(s) or role(s) in a node's run_list or
     # an attribute(s) on a node.
     #
-    #
-    # @param [String] environment
+    # @param [#to_s] environment
     #
     # @return [Array<Ridley::Node>]
-    def nodes
-      chef_conn.search(:node, search_query)
+    def nodes(environment)
+      Application.ridley.search(:node, search_query(environment))
     end
 
     # Returns an escape search query for Solr from the roles, rescipes, and chef_attributes
     # assigned to this Group.
     #
+    # @param [#to_s] environment
+    #
     # @return [String]
-    def search_query
+    def search_query(environment)
       items = ["chef_environment:#{environment}"]
 
       items += chef_attributes.collect do |key, value|

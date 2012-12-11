@@ -133,6 +133,8 @@ module MotherBrain
     # values are a hash where the keys are Group#name and the values are a Hash representing
     # a node from Chef.
     #
+    # @param [#to_s] environment
+    #
     # @raise [MB::EnvironmentNotFound] if the target environment does not exist
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
     #
@@ -164,8 +166,6 @@ module MotherBrain
       unless Application.ridley.environment.find(environment)
         raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
       end
-
-      context.environment = environment
 
       {}.tap do |nodes|
         self.components.each do |component|
