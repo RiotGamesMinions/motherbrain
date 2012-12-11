@@ -13,8 +13,8 @@ describe MB::Config do
         @config.chef.api_url.should eql("http://localhost:8080")
       end
 
-      it "has a default value for plugin_paths equal to PluginLoader.default_paths" do
-        @config.plugin_paths.should eql(MB::PluginLoader.default_paths)
+      it "has a default value for plugin_paths equal to PluginManager.default_paths" do
+        @config.plugin_paths.should eql(MB::PluginManager.default_paths)
       end
     end
 

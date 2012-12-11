@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class PluginLoader
+  class PluginManager
     class << self
       # Returns a Set of expanded file paths that are directories that may contain
       # MotherBrain plugins.
