@@ -263,7 +263,7 @@ module MotherBrain
       end
 
       def cluster_bootstrap(&block)
-        real_model.bootstrap_routine = Bootstrap::Routine.new(context, real_model, &block)
+        real_model.bootstrap_routine = Bootstrap::Routine.new(real_model, &block)
       end
     end
   end

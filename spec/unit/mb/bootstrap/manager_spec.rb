@@ -74,7 +74,7 @@ describe MB::Bootstrap::Manager do
   end
 
   let(:routine) do
-    MB::Bootstrap::Routine.new(@context, plugin) do
+    MB::Bootstrap::Routine.new(plugin) do
       async do
         bootstrap("activemq::master")
         bootstrap("activemq::slave")

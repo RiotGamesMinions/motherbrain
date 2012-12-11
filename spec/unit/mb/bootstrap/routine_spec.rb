@@ -22,7 +22,7 @@ describe MB::Bootstrap::Routine do
 
   describe "DSL evaluation" do
     subject do
-      described_class.new(@context, plugin) do
+      described_class.new(plugin) do
         async do
           bootstrap("activemq::master")
           bootstrap("activemq::slave")
@@ -75,7 +75,7 @@ describe MB::Bootstrap::Routine do
     }
   end
 
-  subject { described_class.new(@context, plugin) }
+  subject { described_class.new(plugin) }
 
   describe "#task_queue" do
     it "returns an array" do
@@ -84,7 +84,7 @@ describe MB::Bootstrap::Routine do
 
     context "given a routine with async tasks" do
       subject do
-        described_class.new(@context, plugin) do
+        described_class.new(plugin) do
           async do
             bootstrap("activemq::master")
             bootstrap("activemq::slave")
@@ -101,7 +101,7 @@ describe MB::Bootstrap::Routine do
 
     context "given a routine with syncronous tasks" do
       subject do
-        described_class.new(@context, plugin) do
+        described_class.new(plugin) do
           bootstrap("activemq::master")
           bootstrap("activemq::slave")
         end
@@ -116,7 +116,7 @@ describe MB::Bootstrap::Routine do
 
   describe "#has_task?" do
     subject do
-      described_class.new(@context, plugin) do
+      described_class.new(plugin) do
         bootstrap("activemq::master")
       end
     end
@@ -131,7 +131,7 @@ describe MB::Bootstrap::Routine do
 
     context "given a routine with async tasks" do
       subject do
-        described_class.new(@context, plugin) do
+        described_class.new(plugin) do
           async do
             bootstrap("activemq::master")
             bootstrap("activemq::slave")

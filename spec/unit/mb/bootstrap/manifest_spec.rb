@@ -94,7 +94,7 @@ describe MB::Bootstrap::Manifest do
     end
 
     let(:routine) do
-      MB::Bootstrap::Routine.new(@context, plugin) do
+      MB::Bootstrap::Routine.new(plugin) do
         bootstrap("activemq::master")
         bootstrap("nginx::master")
       end
