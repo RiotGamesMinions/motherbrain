@@ -6,7 +6,7 @@ describe MB::Plugin do
 
     describe "::load" do
       subject(:plugin) {
-        described_class.load(@context, &data)
+        described_class.load(&data)
       }
 
       let(:data) {
@@ -51,7 +51,7 @@ describe MB::Plugin do
 
     describe "::from_file" do
       subject(:plugin) {
-        described_class.from_file(@context, file)
+        described_class.from_file(file)
       }
 
       let(:file) {
@@ -81,7 +81,7 @@ describe MB::Plugin do
 
         it "raises a PluginLoadError" do
           lambda {
-            described_class.from_file(@context, badfile)
+            described_class.from_file(badfile)
           }.should raise_error(MB::PluginLoadError)
         end
       end
@@ -90,7 +90,7 @@ describe MB::Plugin do
 
   describe "DSL evaluate: cluster_bootstrap" do
     subject do
-      MB::Plugin.new(@context) do
+      MB::Plugin.new do
         cluster_bootstrap do
           # block
         end
@@ -104,7 +104,7 @@ describe MB::Plugin do
 
   describe "#to_s" do
     subject do
-      described_class.new(@context) do
+      described_class.new do
         name "pvpnet"
         version "1.2.3"
       end

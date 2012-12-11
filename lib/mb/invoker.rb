@@ -6,17 +6,18 @@ module MotherBrain
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
         if args.any? and (args & InvokerBase::NOCONFIG_TASKS).empty?
-          context = configure(opts)
-          setup(context.config)
+          app_config = configure(opts)
+          app_config.validate!
+          MB::Application.run!(app_config)
+
+          setup
         end
 
         super
       end
 
-      def setup(config)
-        MB::Application.run!(config)
-
-        Application.plugin_srv.plugins.each do |plugin|
+      def setup
+        Application.plugin_manager.plugins.each do |plugin|
           self.register_plugin MB::PluginInvoker.fabricate(plugin)
         end
       end
@@ -46,7 +47,7 @@ module MotherBrain
     def initialize(args = [], options = {}, config = {})
       super
       unless InvokerBase::NOCONFIG_TASKS.include?(config[:current_task].try(:name))
-        self.class.setup(context.config)
+        self.class.setup
       end
     end
 
@@ -76,8 +77,8 @@ module MotherBrain
 
     desc "plugins", "Display all installed plugins and versions"
     def plugins
-      if Application.plugin_srv.plugins.empty?
-        paths = Application.plugin_srv.paths.to_a.collect { |path| "'#{path}'" }
+      if Application.plugin_manager.plugins.empty?
+        paths = Application.plugin_manager.paths.to_a.collect { |path| "'#{path}'" }
 
         MB.ui.say "No MotherBrain plugins found in any of your configured plugin paths!"
         MB.ui.say "\n"
@@ -85,7 +86,7 @@ module MotherBrain
         exit(0)
       end
 
-      Application.plugin_srv.plugins.group_by(&:name).each do |name, plugins|
+      Application.plugin_manager.plugins.group_by(&:name).each do |name, plugins|
         versions = plugins.collect(&:version).reverse!
         MB.ui.say "#{name}: #{versions.join(', ')}"
       end

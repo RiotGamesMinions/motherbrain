@@ -1,8 +1,7 @@
 module MotherBrain
   module Gear
     # @author Jamie Winsor <jamie@vialstudios.com>
-    class Service < RealModelBase
-      include MB::Gear
+    class Service < AbstractGear
       register_gear :service
 
       class << self
@@ -25,11 +24,8 @@ module MotherBrain
       attr_reader :actions
 
       # @param [#to_s] name
-      # @param [MB::Context] context
       # @param [MB::Component] component
-      def initialize(context, component, name, &block)
-        super(context)
-
+      def initialize(component, name, &block)
         @name      = name.to_s
         @component = component
         @actions   = Set.new
@@ -74,7 +70,7 @@ module MotherBrain
         attr_reader :component
 
         def dsl_eval(&block)
-          CleanRoom.new(context, self).instance_eval do
+          CleanRoom.new(self).instance_eval do
             @component = component
             instance_eval(&block)
           end
@@ -90,7 +86,7 @@ module MotherBrain
       class CleanRoom < CleanRoomBase
         # @param [String] name
         def action(name, &block)
-          real_model.add_action Action.new(context, name, component, &block)
+          real_model.add_action Action.new(name, component, &block)
         end
 
         private
@@ -100,7 +96,7 @@ module MotherBrain
 
       # @author Jamie Winsor <jamie@vialstudios.com>
       # @api private
-      class Action < RealModelBase
+      class Action
         # @return [String]
         attr_reader :name
         # @return [Set<Ridley::Node>]
@@ -110,16 +106,14 @@ module MotherBrain
         # @param [MB::Component] component
         #
         # @raise [ArgumentError] if no block is given
-        def initialize(context, name, component, &block)
+        def initialize(name, component, &block)
           unless block_given?
             raise ArgumentError, "block required for action '#{name}' on component '#{component.name}'"
           end
 
-          super(context)
           @name      = name
           @component = component
           @block     = block
-          @runner    = ActionRunner.new(context, self, component)
         end
 
         # Run this action on the specified nodes.
@@ -127,8 +121,8 @@ module MotherBrain
         # @param [Array<Ridley::Node>] nodes the nodes to run this action on
         #
         # @return [Service::Action]
-        def run(nodes)
-          @nodes = nodes
+        def run(environment, nodes)
+          runner = ActionRunner.new(environment, nodes)
           runner.instance_eval(&block)
 
           responses = nodes.collect do |node|
@@ -143,7 +137,7 @@ module MotherBrain
 
           self
         ensure
-          runner.reset!
+          runner.reset
         end
 
         private
@@ -154,20 +148,21 @@ module MotherBrain
 
         # @author Jamie Winsor <jamie@vialstudios.com>
         # @api private
-        class ActionRunner < RealModelBase
+        class ActionRunner
           include Logging
+
+          attr_reader :environment
+          attr_reader :nodes
 
           # @return [Array<Proc>]
           attr_reader :resets
 
-          # @param [MB::Context] context
-          # @param [Gear::Action] action
-          # @param [MB::Component] component
-          def initialize(context, action, component)
-            super(context)
-            @action    = action
-            @component = component
-            @resets    = []
+          # @param [String] environment
+          # @param [Array<Ridley::Node>] nodes
+          def initialize(environment, nodes)
+            @environment = environment
+            @nodes       = Array(nodes)
+            @resets      = []
           end
 
           # Set an environment level attribute to the given value. The key is represented
@@ -181,7 +176,7 @@ module MotherBrain
           def environment_attribute(key, value, options = {})
             options[:toggle] ||= false
 
-            log.info "Setting attribute '#{key}' to '#{value}' on #{self.environment}"
+            log.info "Setting environment attribute '#{key}' to '#{value}' on #{self.environment}"
             set_environment_attribute(key, value, options)
           end
 
@@ -196,15 +191,15 @@ module MotherBrain
           def node_attribute(key, value, options = {})
             options[:toggle] ||= false
 
-            futures = action.nodes.collect do |l_node|
-              log.info "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
+            futures = self.nodes.collect do |l_node|
+              log.info "Setting node attribute '#{key}' to '#{value}' on #{l_node.name}"
               Celluloid::Future.new {
                 set_node_attribute(l_node, key, value, options)
               }
             end.map(&:value)
           end
 
-          def reset!
+          def reset
             resets.each(&:call)
           end
 
@@ -247,7 +242,6 @@ module MotherBrain
               end
             end
 
-            attr_reader :action
             attr_reader :component
         end
       end

@@ -1,16 +1,14 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Plugin < RealModelBase
+  class Plugin
     class << self
-      # Create a new plugin instance from the given context and content
-      #
-      # @param [MotherBrain::Context] context
+      # Create a new plugin instance from the given content
       #
       # @raise [PluginLoadError]
       #
       # @yieldreturn [MotherBrain::Plugin]
-      def load(context, &block)
-        new(context, &block).validate!
+      def load(&block)
+        new(&block).validate!
       rescue Errno::ENOENT => error
         ErrorHandler.wrap PluginLoadError.new
       rescue => error
@@ -19,17 +17,16 @@ module MotherBrain
 
       # Load a plugin from the given file
       #
-      # @param [MotherBrain::Context] context
       # @param [String] path
       #
       # @raise [PluginLoadError]
       #
       # @return [MotherBrain::Plugin]
-      def from_file(context, path)
+      def from_file(path)
         block = proc {
           eval(File.read(path))
         }
-        load(context, &block)
+        load(&block)
       rescue => error
         ErrorHandler.wrap error, file_path: path
       end
@@ -41,9 +38,7 @@ module MotherBrain
 
     NODE_GROUP_ID_REGX = /^(.+)::(.+)$/.freeze
 
-    attr_reader :components
-    attr_reader :commands
-    attr_reader :dependencies
+    include Chozo::VariaModel
 
     attribute :name,
       type: String,
@@ -69,9 +64,11 @@ module MotherBrain
     attribute :bootstrap_routine,
       type: MB::Bootstrap::Routine
 
-    # @param [MB::Context] context
-    def initialize(context, &block)
-      super(context)
+    attr_reader :components
+    attr_reader :commands
+    attr_reader :dependencies
+
+    def initialize(&block)
       @components   = Set.new
       @commands     = Set.new
       @dependencies = HashWithIndifferentAccess.new
@@ -133,6 +130,8 @@ module MotherBrain
     # values are a hash where the keys are Group#name and the values are a Hash representing
     # a node from Chef.
     #
+    # @param [#to_s] environment
+    #
     # @raise [MB::EnvironmentNotFound] if the target environment does not exist
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
     #
@@ -164,8 +163,6 @@ module MotherBrain
       unless Application.ridley.environment.find(environment)
         raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
       end
-
-      context.environment = environment
 
       {}.tap do |nodes|
         self.components.each do |component|
@@ -213,6 +210,7 @@ module MotherBrain
     # and the values are an array of error messages.
     #
     # @param [Hash] errors
+    #
     # @return [String]
     def messages_from_errors(errors)
       buffer = []
@@ -231,12 +229,9 @@ module MotherBrain
     private
 
       def dsl_eval(&block)
-        CleanRoom.new(context, self).instance_eval(&block)
+        CleanRoom.new(self).instance_eval(&block)
       end
 
-    # A clean room bind the Plugin DSL syntax to. This clean room can later to
-    # populate an instance of Plugin.
-    #
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
@@ -254,16 +249,16 @@ module MotherBrain
 
       # @param [#to_s] name
       def command(name, &block)
-        real_model.add_command Command.new(name, context, real_model, &block)
+        real_model.add_command Command.new(name, real_model, &block)
       end
 
       # @param [#to_s] name
       def component(name, &block)
-        real_model.add_component Component.new(name, context, &block)
+        real_model.add_component Component.new(name, &block)
       end
 
       def cluster_bootstrap(&block)
-        real_model.bootstrap_routine = Bootstrap::Routine.new(context, real_model, &block)
+        real_model.bootstrap_routine = Bootstrap::Routine.new(real_model, &block)
       end
     end
   end

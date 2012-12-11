@@ -79,7 +79,7 @@ describe MB::Bootstrap::Manifest do
     end
 
     let(:plugin) do
-      MB::Plugin.new(@context) do
+      MB::Plugin.new do
         name "pvpnet"
         version "1.2.3"
 
@@ -94,7 +94,7 @@ describe MB::Bootstrap::Manifest do
     end
 
     let(:routine) do
-      MB::Bootstrap::Routine.new(@context, plugin) do
+      MB::Bootstrap::Routine.new(plugin) do
         bootstrap("activemq::master")
         bootstrap("nginx::master")
       end

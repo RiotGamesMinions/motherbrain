@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class PluginLoader
+  class PluginManager
     class << self
       # Returns a Set of expanded file paths that are directories that may contain
       # MotherBrain plugins.
@@ -25,11 +25,7 @@ module MotherBrain
 
     include Celluloid
 
-    # @return [MB::Context]
-    attr_reader :context
-
     def initialize
-      @context = MB::Context.new(Application.config)
       @plugins = Hash.new
 
       Application.config.plugin_paths.each { |path| self.add_path(path) }
@@ -66,7 +62,7 @@ module MotherBrain
     #
     # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
     def load(path)
-      add Plugin.from_file(self.context, path.to_s)
+      add Plugin.from_file(path.to_s)
     end
 
     # @return [Set<Pathname>]
