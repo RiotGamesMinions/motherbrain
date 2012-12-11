@@ -19,7 +19,7 @@ module MotherBrain
     end
 
     attribute :plugin_paths,
-      default: PluginLoader.default_paths,
+      default: PluginManager.default_paths,
       type: [ Array, Set ],
       required: true
 

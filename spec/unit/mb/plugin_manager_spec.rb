@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe MotherBrain::PluginLoader do
+describe MotherBrain::PluginManager do
   before(:each) do
-    @config.stub(:plugin_paths) { MB::PluginLoader.default_paths }
+    @config.stub(:plugin_paths) { MB::PluginManager.default_paths }
   end
 
   describe "ClassMethods" do
-    subject { MB::PluginLoader }
+    subject { MB::PluginManager }
 
     describe '::new' do
       it 'sets the paths attribute to a set of pathnames pointing to the default paths' do
@@ -16,22 +16,6 @@ describe MotherBrain::PluginLoader do
         obj.paths.should each be_a(Pathname)
         subject.default_paths.each do |path|
           obj.paths.collect(&:to_s).should include(path)
-        end
-      end
-
-      context 'given an array of paths' do
-        let(:paths) do
-          [
-            '/tmp/one',
-            '/tmp/two'
-          ]
-        end
-
-        it 'adds two Pathnames to the paths set' do
-          obj = subject.new
-
-          obj.paths.should have(2).items
-          obj.paths.should each be_a(Pathname)
         end
       end
     end
@@ -50,17 +34,24 @@ describe MotherBrain::PluginLoader do
       end
 
       context "given ENV['MB_PLUGIN_PATH'] is set" do
-        it "returns a Set only containing the path in the environment variable" do
-          ENV['MB_PLUGIN_PATH'] = "/tmp/motherbrain_spec"
+        let(:plugin_path) { "/tmp/motherbrain_spec" }
 
+        before(:each) do
+          @original = ENV['MB_PLUGIN_PATH']
+          set_plugin_path(plugin_path)
+        end
+
+        after(:each) { set_plugin_path(@original) }
+
+        it "returns a Set only containing the path in the environment variable" do
           subject.default_paths.should have(1).item
-          subject.default_paths.should include("/tmp/motherbrain_spec")
+          subject.default_paths.should include(plugin_path)
         end
       end
     end
   end
 
-  subject { MB::PluginLoader.new }
+  subject { MB::PluginManager.new }
 
   describe '#load_all' do
     let(:paths) do
