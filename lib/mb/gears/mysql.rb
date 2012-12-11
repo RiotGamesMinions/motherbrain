@@ -7,7 +7,7 @@ end
 
 module MotherBrain
   module Gear
-    class Mysql < RealModelBase
+    class Mysql
       include MB::Gear
       register_gear :mysql
 
@@ -20,7 +20,7 @@ module MotherBrain
         Action.new(sql, options)
       end
 
-      class Action < RealModelBase
+      class Action
         # @return [String]
         attr_reader :sql
         # @return [Hash]

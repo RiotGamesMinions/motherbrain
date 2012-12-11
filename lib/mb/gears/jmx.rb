@@ -8,7 +8,7 @@ end
 
 module MotherBrain
   module Gear
-    class Jmx < RealModelBase
+    class Jmx
       include MB::Gear
       register_gear :jmx
 
@@ -19,7 +19,7 @@ module MotherBrain
         Action.new(port, object_name, &block)
       end
 
-      class Action < RealModelBase
+      class Action
         attr_reader :port
         attr_reader :object_name
         attr_reader :block

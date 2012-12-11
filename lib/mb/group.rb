@@ -1,14 +1,19 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Group < RealModelBase
-    attr_reader :name
+  class Group
+    include Chozo::VariaModel
+
+    attribute :name,
+      type: String,
+      required: true
+
     attr_reader :roles
     attr_reader :recipes
     attr_reader :chef_attributes
 
     # @param [#to_s] name
     def initialize(name, &block)
-      @name            = name.to_s
+      set_attribute(:name, name.to_s)
       @recipes         = Set.new
       @roles           = Set.new
       @chef_attributes = HashWithIndifferentAccess.new

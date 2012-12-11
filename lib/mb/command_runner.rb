@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class CommandRunner < RealModelBase
+  class CommandRunner
     attr_reader :environment
     attr_reader :scope
 

@@ -1,13 +1,13 @@
 module MotherBrain
   module Bootstrap
     # @author Jamie Winsor <jamie@vialstudios.com>
-    class Routine < RealModelBase
+    class Routine
       # @return [MB::Plugin]
       attr_reader :plugin
 
       # @param [MB::Plugin] plugin
       def initialize(plugin, &block)
-        @plugin = plugin
+        @plugin     = plugin
         @task_procs = Array.new
 
         if block_given?
