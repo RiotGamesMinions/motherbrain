@@ -79,7 +79,7 @@ describe MB::Bootstrap::Manifest do
     end
 
     let(:plugin) do
-      MB::Plugin.new(@context) do
+      MB::Plugin.new do
         name "pvpnet"
         version "1.2.3"
 

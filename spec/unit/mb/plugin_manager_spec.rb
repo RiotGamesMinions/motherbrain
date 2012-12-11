@@ -91,7 +91,7 @@ describe MotherBrain::PluginManager do
     let(:plugin) { double('plugin', name: 'reset', version: '1.2.3', id: 'reset-1.2.3') }
 
     before(:each) do
-      MB::Plugin.stub(:from_file).with(@context, path).and_return(plugin)
+      MB::Plugin.stub(:from_file).with(path).and_return(plugin)
     end
 
     it 'adds an instantiated plugin to the hash of plugins' do
@@ -162,7 +162,7 @@ describe MotherBrain::PluginManager do
     let(:plugin) { double('plugin', name: 'reset', version: '1.2.3', id: :'reset-1.2.3') }
 
     before(:each) do
-      MB::Plugin.stub(:from_file).with(@context, path).and_return(plugin)
+      MB::Plugin.stub(:from_file).with(path).and_return(plugin)
       subject.load(path)
     end
 

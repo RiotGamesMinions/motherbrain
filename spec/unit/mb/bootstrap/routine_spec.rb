@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe MB::Bootstrap::Routine do
-  let(:plugin) { MB::Plugin.new(@context) }
+  let(:plugin) { MB::Plugin.new }
 
   let(:activemq) { MB::Component.new('activemq') }
   let(:mysql) { MB::Component.new('mysql') }

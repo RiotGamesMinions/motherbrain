@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe MB::Provisioner::Manifest do
-  let(:plugin) { MB::Plugin.new(@context) }
+  let(:plugin) { MB::Plugin.new }
 
   let(:activemq) { MB::Component.new('activemq') }
   let(:nginx) { MB::Component.new('nginx') }
