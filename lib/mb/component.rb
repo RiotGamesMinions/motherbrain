@@ -1,17 +1,22 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Component < RealModelBase
-    attr_reader :name
-    attr_reader :groups
-    attr_reader :commands
+  class Component
+    include Chozo::VariaModel
+
+    attribute :name,
+      type: String,
+      required: true
 
     attribute :description,
       type: String,
       required: true
 
+    attr_reader :groups
+    attr_reader :commands
+
     # @param [#to_s] name
     def initialize(name, &block)
-      @name     = name.to_s
+      set_attribute(:name, name.to_s)
       @groups   = Set.new
       @commands = Set.new
       @gears    = Hash.new

@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class Plugin < RealModelBase
+  class Plugin
     class << self
       # Create a new plugin instance from the given content
       #
@@ -38,9 +38,7 @@ module MotherBrain
 
     NODE_GROUP_ID_REGX = /^(.+)::(.+)$/.freeze
 
-    attr_reader :components
-    attr_reader :commands
-    attr_reader :dependencies
+    include Chozo::VariaModel
 
     attribute :name,
       type: String,
@@ -65,6 +63,10 @@ module MotherBrain
 
     attribute :bootstrap_routine,
       type: MB::Bootstrap::Routine
+
+    attr_reader :components
+    attr_reader :commands
+    attr_reader :dependencies
 
     def initialize(&block)
       @components   = Set.new
