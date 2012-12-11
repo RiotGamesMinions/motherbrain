@@ -7,11 +7,9 @@ end
 
 module MotherBrain
   module Gear
-    class Mysql
-      include MB::Gear
+    # @author Jesse Howarth <jhowarth@riotgames.com>
+    class Mysql < AbstractGear
       register_gear :mysql
-
-      def initialize; end
 
       # @see [MB::Gear::Mysql::Action]
       #
