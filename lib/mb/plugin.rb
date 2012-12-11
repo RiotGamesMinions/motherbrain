@@ -210,6 +210,7 @@ module MotherBrain
     # and the values are an array of error messages.
     #
     # @param [Hash] errors
+    #
     # @return [String]
     def messages_from_errors(errors)
       buffer = []
@@ -231,9 +232,6 @@ module MotherBrain
         CleanRoom.new(self).instance_eval(&block)
       end
 
-    # A clean room bind the Plugin DSL syntax to. This clean room can later to
-    # populate an instance of Plugin.
-    #
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
