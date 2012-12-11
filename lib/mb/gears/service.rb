@@ -122,8 +122,7 @@ module MotherBrain
         #
         # @return [Service::Action]
         def run(environment, nodes)
-          @nodes = nodes
-          runner = ActionRunner.new(environment, self, component)
+          runner = ActionRunner.new(environment, nodes)
           runner.instance_eval(&block)
 
           responses = nodes.collect do |node|
@@ -153,16 +152,16 @@ module MotherBrain
           include Logging
 
           attr_reader :environment
+          attr_reader :nodes
 
           # @return [Array<Proc>]
           attr_reader :resets
 
-          # @param [Gear::Action] action
-          # @param [MB::Component] component
-          def initialize(environment, action, component)
+          # @param [String] environment
+          # @param [Array<Ridley::Node>] nodes
+          def initialize(environment, nodes)
             @environment = environment
-            @action      = action
-            @component   = component
+            @nodes       = Array(nodes)
             @resets      = []
           end
 
@@ -177,7 +176,7 @@ module MotherBrain
           def environment_attribute(key, value, options = {})
             options[:toggle] ||= false
 
-            log.info "Setting attribute '#{key}' to '#{value}' on #{self.environment}"
+            log.info "Setting environment attribute '#{key}' to '#{value}' on #{self.environment}"
             set_environment_attribute(key, value, options)
           end
 
@@ -192,8 +191,8 @@ module MotherBrain
           def node_attribute(key, value, options = {})
             options[:toggle] ||= false
 
-            futures = action.nodes.collect do |l_node|
-              log.info "Setting attribute '#{key}' to '#{value}' on #{l_node.name}"
+            futures = self.nodes.collect do |l_node|
+              log.info "Setting node attribute '#{key}' to '#{value}' on #{l_node.name}"
               Celluloid::Future.new {
                 set_node_attribute(l_node, key, value, options)
               }
@@ -243,7 +242,6 @@ module MotherBrain
               end
             end
 
-            attr_reader :action
             attr_reader :component
         end
       end
