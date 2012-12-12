@@ -6,6 +6,9 @@ module MotherBrain
     # (based on the plugin components' version attributes).
     #
     class Worker
+      include Celluloid
+      include Celluloid::Logger
+
       # TODO: Change usage of RIDLEY_OPT_KEYS to Ridley::Connection::OPTIONS.
       # see https://github.com/reset/ridley/pull/39.
       RIDLEY_OPT_KEYS = [
@@ -165,14 +168,14 @@ module MotherBrain
           }.flatten.compact.uniq
 
           unless result.any?
-            MB.ui.say "No nodes in environment '#{environment_name}'"
+            info "No nodes in environment '#{environment_name}'"
           end
 
           result
         end
 
         def run_chef
-          MB.ui.say "Running chef on #{nodes}"
+          info "Running chef on #{nodes}"
 
           nodes.map { |node|
             Application.node_querier.future.chef_run(node, options[:ssh])
@@ -183,30 +186,30 @@ module MotherBrain
           environment.save
 
           if cookbook_versions.any?
-            MB.ui.say "Cookbook versions are now #{environment.cookbook_versions}"
+            info "Cookbook versions are now #{environment.cookbook_versions}"
           end
 
           if component_versions.any?
-            MB.ui.say "Override attributes are now #{environment.override_attributes}"
+            info "Override attributes are now #{environment.override_attributes}"
           end
 
           @environment = nil
         end
 
         def set_component_versions
-          MB.ui.say "Setting component versions #{component_versions}"
+          info "Setting component versions #{component_versions}"
 
           set_override_attributes
         end
 
         def set_cookbook_versions
-          MB.ui.say "Setting cookbook versions #{cookbook_versions}"
+          info "Setting cookbook versions #{cookbook_versions}"
 
           environment.cookbook_versions.merge! cookbook_versions
         end
 
         def set_override_attributes
-          MB.ui.say "Setting override attributes #{override_attributes}"
+          info "Setting override attributes #{override_attributes}"
 
           environment.override_attributes.merge! override_attributes
         end
@@ -223,7 +226,7 @@ module MotherBrain
             raise ComponentNotVersioned.new component_name
           end
 
-          MB.ui.say "Component '#{component_name}' versioned with '#{result}'"
+          info "Component '#{component_name}' versioned with '#{result}'"
 
           result
         end
