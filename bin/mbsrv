@@ -2,7 +2,7 @@
 $:.push File.expand_path("../../lib", __FILE__)
 require 'motherbrain'
 
-MB.log.level = Logger::INFO
+MB::Logging.setup(level: Logger::INFO)
 config = MB::Config.from_file(MB::Config.default_path)
 config.rest_gateway.enable = true
 
