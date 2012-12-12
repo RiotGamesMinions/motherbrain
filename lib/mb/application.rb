@@ -6,7 +6,7 @@ trap 'TERM' do
   MB.application.interrupt
 end
 
-trap 'USR1' do
+trap 'HUP' do
   MB::ConfigManager.instance.reload
 end
 
