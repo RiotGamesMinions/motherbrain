@@ -78,10 +78,11 @@ module MotherBrain
       #   does not have a version attribute in the corresponding component
       #
       # @raise [EnvironmentNotFound] if the environment does not exist
+      #
       def run
         assert_environment_exists
 
-        ChefMutex.new(environment_name, options.slice(:force)).synchronize do
+        ChefMutex.new("environment: #{environment_name}", options.slice(:force)).synchronize do
           set_component_versions if component_versions.any?
           set_cookbook_versions if cookbook_versions.any?
 
