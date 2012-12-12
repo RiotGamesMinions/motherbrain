@@ -124,9 +124,11 @@ module MotherBrain
 
         # @return [Array<String>]
         def nodes
-          result = plugin.nodes(environment_name).collect { |group, node|
-            node['default'][0] && node['default'][0].public_hostname
-          }.compact
+          result = plugin.nodes(environment_name).collect { |component, groups|
+            groups.collect { |group, nodes|
+              nodes.collect(&:public_hostname)
+            }
+          }.flatten.compact
 
           unless result.any?
             MB.ui.say "No nodes in environment '#{environment_name}'"
