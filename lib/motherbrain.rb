@@ -52,6 +52,7 @@ module MotherBrain
   autoload :Provisioner, 'mb/provisioner'
   autoload :Provisioners, 'mb/provisioners'
   autoload :RealModelBase, 'mb/real_model_base'
+  autoload :REST, 'mb/rest'
   autoload :SafeReturn, 'mb/safe_return'
 
   class << self
@@ -60,6 +61,11 @@ module MotherBrain
     # @return [Thor::Shell::Color]
     def ui
       @ui ||= Thor::Shell::Color.new
+    end
+
+    # @raise [Celluloid::DeadActorError] if Application has not been started
+    def application
+      Celluloid::Actor[:motherbrain] or raise Celluloid::DeadActorError, "application not running"
     end
 
     # Path to the root directory of the MotherBrain application

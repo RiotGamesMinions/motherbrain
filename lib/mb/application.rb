@@ -1,3 +1,11 @@
+trap 'INT' do
+  MB.application.interrupt
+end
+
+trap 'TERM' do
+  MB.application.interrupt
+end
+
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   #
@@ -25,7 +33,7 @@ module MotherBrain
       #
       # @param [MB::Config] app_config
       def run!(app_config)
-        group = super()
+        Celluloid::Actor[:motherbrain] = group = super()
 
         group.supervise_as :config_manager, ConfigManager, app_config
         group.supervise_as :plugin_manager, PluginManager
@@ -34,6 +42,10 @@ module MotherBrain
         group.supervise_as :node_querier, NodeQuerier
         group.supervise_as :lock_manager, Locks::Manager
         group.supervise_as :ridley, Ridley::Connection, config.to_ridley
+
+        if config.rest_gateway.enable
+          group.supervise_as :rest_gateway, REST::Gateway, config.to_rest_gateway
+        end
 
         group
       end
@@ -98,6 +110,8 @@ module MotherBrain
 
     def initialize(*args)
       super
+      @interrupt_mutex = Mutex.new
+      @interrupted     = false
       subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
     end
 
@@ -105,5 +119,19 @@ module MotherBrain
       MB.log.debug "[Application] ConfigManager has changed: re-configuring components..."
       self.class.ridley.async.configure(new_config.to_ridley)
     end
+
+    def interrupt
+      interrupt_mutex.synchronize do
+        unless interrupted
+          interrupted = true
+          Thread.main.raise Interrupt
+        end
+      end
+    end
+
+    private
+
+      attr_reader :interrupt_mutex
+      attr_reader :interrupted
   end
 end

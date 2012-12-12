@@ -226,6 +226,10 @@ module MotherBrain
       "#{self.name} (#{self.version})"
     end
 
+    def to_hash
+      self.attributes.slice(:name, :version, :description, :author, :email)
+    end
+
     private
 
       def dsl_eval(&block)

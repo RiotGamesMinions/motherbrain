@@ -290,4 +290,27 @@ describe MB::Config do
       end
     end
   end
+
+  describe "#to_rest_gateway" do
+    subject { MB::Config.new }
+
+    it "returns a hash containing a 'host' key and value" do
+      subject.to_rest_gateway.should have_key(:host)
+      subject.to_rest_gateway[:host].should_not be_nil
+    end
+
+    it "returns a hash containing a 'port' key and value" do
+      subject.to_rest_gateway.should have_key(:port)
+      subject.to_rest_gateway[:port].should_not be_nil
+    end
+  end
+
+  describe "#to_rest_client" do
+    subject { MB::Config.new }
+
+    it "returns a hash containing a 'url' key and value" do
+      subject.to_rest_client.should have_key(:url)
+      subject.to_rest_client[:url].should_not be_nil
+    end
+  end
 end
