@@ -56,16 +56,19 @@ module MotherBrain
   autoload :SafeReturn, 'mb/safe_return'
 
   class << self
+    extend Forwardable
+
     attr_writer :ui
+
+    # @raise [Celluloid::DeadActorError] if Application has not been started
+    #
+    # @return [Celluloid::SupervisionGroup(Application)]
+    def_delegator "MB::Application.instance", :application
+    alias_method :app, :application
     
     # @return [Thor::Shell::Color]
     def ui
       @ui ||= Thor::Shell::Color.new
-    end
-
-    # @raise [Celluloid::DeadActorError] if Application has not been started
-    def application
-      Celluloid::Actor[:motherbrain] or raise Celluloid::DeadActorError, "application not running"
     end
 
     # Path to the root directory of the MotherBrain application

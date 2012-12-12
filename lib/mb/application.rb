@@ -1,9 +1,9 @@
 trap 'INT' do
-  MB.application.interrupt
+  MB::Application.instance.interrupt
 end
 
 trap 'TERM' do
-  MB.application.interrupt
+  MB::Application.instance.interrupt
 end
 
 trap 'HUP' do
@@ -32,6 +32,13 @@ module MotherBrain
       #
       # @return [MB::Config]
       def_delegator "MB::ConfigManager.instance", :config
+
+      # @raise [Celluloid::DeadActorError] if Application has not been started
+      #
+      # @return [Celluloid::SupervisionGroup(Application)]
+      def instance
+        Celluloid::Actor[:motherbrain] or raise Celluloid::DeadActorError, "application not running"
+      end
 
       # Run the application asynchronously (terminate after execution)
       #
