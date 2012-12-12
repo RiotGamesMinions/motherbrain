@@ -145,6 +145,15 @@ module MotherBrain
 
         def save_environment
           environment.save
+
+          if cookbook_versions.any?
+            MB.ui.say "Cookbook versions are now #{environment.cookbook_versions}"
+          end
+
+          if component_versions.any?
+            MB.ui.say "Override attributes are now #{environment.override_attributes}"
+          end
+
           @environment = nil
         end
 
