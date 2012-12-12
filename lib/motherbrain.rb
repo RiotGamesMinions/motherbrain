@@ -98,6 +98,13 @@ module MotherBrain
       MB::Logging.set_logger(obj)
     end
 
+    # Is MotherBrain executing in test mode?
+    #
+    # @return [Boolean]
+    def testing?
+      ENV['RUBY_ENV'] == 'test'
+    end
+
     # Takes an array of procs or a an array of arrays of procs and calls them returning their evaluated
     # values in an array at the same depth.
     #

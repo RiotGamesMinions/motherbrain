@@ -4,12 +4,6 @@ module MotherBrain
   module REST
     # @author Jamie Winsor <jamie@vialstudios.com>
     class API < Grape::API
-      class << self
-        def testing?
-          ENV['RUBY_ENV'] == 'test'
-        end
-      end
-
       format :json
 
       rescue_from :all do |e|
@@ -25,7 +19,7 @@ module MotherBrain
         Application.plugin_manager.plugins
       end
 
-      if testing?
+      if MB.testing?
         get '/mb_error' do
           raise MB::InternalError, "a nice error message"
         end
