@@ -27,8 +27,9 @@ module MotherBrain
 
     attribute :plugin_paths,
       default: PluginManager.default_paths,
-      type: [ Array, Set ],
-      required: true
+      type: [ Set, Array ],
+      required: true,
+      coerce: lambda { |m| m.to_set }
 
     attribute 'chef.api_url',
       default: "http://localhost:8080",
@@ -65,7 +66,8 @@ module MotherBrain
       type: String
 
     attribute 'ssh.keys',
-      type: [ Array, Set ]
+      type: [ Set, Array ],
+      coerce: lambda { |m| m.to_set }
 
     attribute 'ssh.sudo',
       default: true,
