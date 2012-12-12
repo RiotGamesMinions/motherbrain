@@ -6,7 +6,6 @@ module MotherBrain
     extend Forwardable
 
     include Celluloid
-    include Celluloid::Notifications
 
     EMBEDDED_RUBY_PATH = "/opt/chef/embedded/bin/ruby".freeze
 
