@@ -14,7 +14,7 @@ module MotherBrain
       #
       # @param [Hash] options # TODO: add options documentation
       #
-      def upgrade(environment, plugin, options)
+      def upgrade(environment, plugin, options = {})
         Worker.new(environment, plugin, options).run
       end
     end

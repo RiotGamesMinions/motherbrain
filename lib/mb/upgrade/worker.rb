@@ -20,7 +20,7 @@ module MotherBrain
       ].freeze
 
       # @return [String]
-      attr_reader :environment
+      attr_reader :environment_name
 
       # @return [Hash]
       attr_reader :options
@@ -28,14 +28,14 @@ module MotherBrain
       # @return [MotherBrain::Plugin]
       attr_reader :plugin
 
-      # @param [String] environment
+      # @param [String] environment_name
       #
       # @param [MotherBrain::Plugin] plugin
       #
       # @param [Hash] options # TODO: add options documentation
       #
-      def initialize(environment, plugin, options = {})
-        @environment = environment
+      def initialize(environment_name, plugin, options = {})
+        @environment_name = environment_name
         @plugin = plugin
         @options = options
       end
@@ -50,30 +50,32 @@ module MotherBrain
       def run
         assert_environment_exists
 
-        set_component_versions if component_versions
-        set_cookbook_versions if cookbook_versions
+        set_component_versions if component_versions.any?
+        set_cookbook_versions if cookbook_versions.any?
 
-        save_environment
-        run_chef
+        if component_versions.any? or cookbook_versions.any?
+          save_environment
+          run_chef
+        end
       end
 
       private
 
         # @raise [EnvironmentNotFound]
         def assert_environment_exists
-          unless chef_environment
-            raise EnvironmentNotFound, "Environment '#{environment}' not found"
+          unless environment
+            raise EnvironmentNotFound, "Environment '#{environment_name}' not found"
           end
         end
 
         # @return [Ridley::Connection]
         def chef_connection
-          @chef_connection = Ridley::Connection.new(options.slice(*RIDLEY_OPT_KEYS))
+          @chef_connection ||= Ridley::Connection.new(options.slice(*RIDLEY_OPT_KEYS))
         end
 
-        # @return [Ridley::Environment] # TODO: verify
-        def chef_environment
-          @chef_environment ||= chef_connection.environment.find(environment)
+        # @return [Ridley::Environment]
+        def environment
+          @environment ||= chef_connection.environment.find(environment_name)
         end
 
         # @param [String] name
@@ -81,8 +83,8 @@ module MotherBrain
         # @return [MotherBrain::Component]
         #
         # @raise [ComponentNotFound]
-        def component(name)
-          result = components.find { |component| component.name == name }
+        def component(component_name)
+          result = components.find { |component| component.name == component_name }
 
           unless result
             raise ComponentNotFound,
@@ -97,14 +99,14 @@ module MotherBrain
           options['component_versions'] || {}
         end
 
-        # @return [Hash]
-        def cookbook_versions
-          options['cookbook_versions'] || {}
-        end
-
         # @return [Array<MotherBrain::Component>]
         def components
           plugin.components
+        end
+
+        # @return [Hash]
+        def cookbook_versions
+          options['cookbook_versions'] || {}
         end
 
         # @return [Hash]
@@ -122,10 +124,12 @@ module MotherBrain
 
         # @return [Array<String>]
         def nodes
-          result = plugin.nodes(environment).collect { |group, node| node['default'][0].public_hostname }
+          result = plugin.nodes(environment_name).collect { |group, node|
+            node['default'][0].public_hostname 
+          }
 
           unless result.any?
-            MB.ui.say "No nodes in environment '#{environment}'"
+            MB.ui.say "No nodes in environment '#{environment_name}'"
           end
 
           result
@@ -140,8 +144,8 @@ module MotherBrain
         end
 
         def save_environment
-          chef_environment.save
-          @chef_environment = nil
+          environment.save
+          @environment = nil
         end
 
         def set_component_versions
@@ -150,16 +154,16 @@ module MotherBrain
           set_override_attributes
         end
 
-        def set_override_attributes
-          MB.ui.say "Setting override attributes #{override_attributes}"
-
-          chef_environment.override_attributes.merge! override_attributes
-        end
-
         def set_cookbook_versions
           MB.ui.say "Setting cookbook versions #{cookbook_versions}"
 
-          chef_environment.cookbook_versions.merge! cookbook_versions
+          environment.cookbook_versions.merge! cookbook_versions
+        end
+
+        def set_override_attributes
+          MB.ui.say "Setting override attributes #{override_attributes}"
+
+          environment.override_attributes.merge! override_attributes
         end
 
         # @param [String] component_name
