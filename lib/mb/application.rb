@@ -1,12 +1,15 @@
 trap 'INT' do
+  MB.log.info "Shutting down..."
   MB::Application.instance.interrupt
 end
 
 trap 'TERM' do
+  MB.log.info "Shutting down..."
   MB::Application.instance.interrupt
 end
 
 trap 'HUP' do
+  MB.log.info "Reloading configuration..."
   MB::ConfigManager.instance.reload
 end
 
