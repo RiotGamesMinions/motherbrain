@@ -50,12 +50,14 @@ module MotherBrain
       def run
         assert_environment_exists
 
-        set_component_versions if component_versions.any?
-        set_cookbook_versions if cookbook_versions.any?
+        ChefMutex.new(environment_name, options.slice(:force)).synchronize do
+          set_component_versions if component_versions.any?
+          set_cookbook_versions if cookbook_versions.any?
 
-        if component_versions.any? or cookbook_versions.any?
-          save_environment
-          run_chef if nodes.any?
+          if component_versions.any? or cookbook_versions.any?
+            save_environment
+            run_chef if nodes.any?
+          end
         end
       end
 

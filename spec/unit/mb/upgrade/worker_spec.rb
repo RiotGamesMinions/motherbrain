@@ -33,7 +33,13 @@ describe MB::Upgrade::Worker do
   its(:options) { should == options }
 
   describe "#run" do
-    let(:run) { worker.run }
+    subject(:run) { worker.run }
+
+    it "wraps the upgrade in a lock" do
+      MB::ChefMutex.any_instance.should_receive :synchronize
+
+      run
+    end
 
     context "when an environment does not exist" do
       before do
