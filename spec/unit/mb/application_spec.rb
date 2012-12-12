@@ -4,12 +4,6 @@ describe MB::Application do
   describe "ClassMethods" do
     subject { described_class }
 
-    describe "::config_manager" do
-      it "returns an instance of MB::ConfigManager" do
-        subject.config_manager.should be_a(MB::ConfigManager)
-      end
-    end
-
     describe "::provisioner_manager" do
       it "returns an instance of MB::Provisioner::Manager" do
         subject.provisioner_manager.should be_a(MB::Provisioner::Manager)
