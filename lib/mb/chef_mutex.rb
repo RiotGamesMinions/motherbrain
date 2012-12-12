@@ -48,6 +48,7 @@ module MotherBrain
         unlock_on_failure: true
       )
 
+      name = name.dup
       name.downcase!
       name.gsub! /[^\w]+/, "-" # dasherize
       name.gsub! /^-+|-+$/, "" # remove dashes from beginning/end
