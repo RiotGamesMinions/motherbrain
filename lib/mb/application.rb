@@ -1,3 +1,18 @@
+trap 'INT' do
+  MB.log.info "Shutting down..."
+  MB::Application.instance.interrupt
+end
+
+trap 'TERM' do
+  MB.log.info "Shutting down..."
+  MB::Application.instance.interrupt
+end
+
+trap 'HUP' do
+  MB.log.info "Reloading configuration..."
+  MB::ConfigManager.instance.reload
+end
+
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   #
@@ -20,13 +35,20 @@ module MotherBrain
       # Return the configuration for the running application
       #
       # @return [MB::Config]
-      def_delegator :config_manager, :config
+      def_delegator "MB::ConfigManager.instance", :config
+
+      # @raise [Celluloid::DeadActorError] if Application has not been started
+      #
+      # @return [Celluloid::SupervisionGroup(Application)]
+      def instance
+        Celluloid::Actor[:motherbrain] or raise Celluloid::DeadActorError, "application not running"
+      end
 
       # Run the application asynchronously (terminate after execution)
       #
       # @param [MB::Config] app_config
       def run!(app_config)
-        group = super()
+        Celluloid::Actor[:motherbrain] = group = super()
 
         group.supervise_as :config_manager, ConfigManager, app_config
         group.supervise_as :plugin_manager, PluginManager
@@ -36,6 +58,10 @@ module MotherBrain
         group.supervise_as :lock_manager, Locks::Manager
         group.supervise_as :ridley, Ridley::Connection, config.to_ridley
         group.supervise_as :upgrade_manager, Upgrade::Manager
+
+        if config.rest_gateway.enable
+          group.supervise_as :rest_gateway, REST::Gateway, config.to_rest_gateway
+        end
 
         group
       end
@@ -60,13 +86,6 @@ module MotherBrain
         Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
       end
       alias_method :bootstrapper, :bootstrap_manager
-      
-      # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
-      #
-      # @return [Celluloid::Actor(ConfigManager)]
-      def config_manager
-        Celluloid::Actor[:config_manager] or raise Celluloid::DeadActorError, "config srv not running"
-      end
 
       # @raise [Celluloid::DeadActorError] if Node Querier has not been started
       #
@@ -104,15 +123,37 @@ module MotherBrain
     end
 
     include Celluloid::Notifications
+    include MB::Logging
 
     def initialize(*args)
       super
+      log.info { "MotherBrain starting..." }
+      @interrupt_mutex = Mutex.new
+      @interrupted     = false
       subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
     end
 
     def reconfigure(_msg, new_config)
-      MB.log.debug "[Application] ConfigManager has changed: re-configuring components..."
+      log.debug { "[Application] ConfigManager has changed: re-configuring components..." }
       self.class.ridley.async.configure(new_config.to_ridley)
     end
+
+    def interrupt
+      interrupt_mutex.synchronize do
+        unless interrupted
+          @interrupted = true
+          Thread.main.raise Interrupt
+        end
+      end
+    end
+
+    def finalize
+      log.info { "MotherBrain stopping..." }
+    end
+
+    private
+
+      attr_reader :interrupt_mutex
+      attr_reader :interrupted
   end
 end

@@ -2,6 +2,7 @@ source :rubygems
 
 gemspec
 
+gem 'reel', git: 'git://github.com/celluloid/reel.git'
 gem 'ridley', git: 'git://github.com/reset/ridley.git'
 gem 'chozo', git: 'git://github.com/reset/chozo.git'
 gem 'ef-rest', git: 'git@github.com:RiotGames/ef-rest.git'
@@ -58,7 +59,7 @@ end
 
 group :test do
   gem 'rake', '>= 0.9.2.2'
-
+  gem 'rack-test'
   gem 'spork'
   gem 'rspec'
 end

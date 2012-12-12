@@ -4,11 +4,14 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class NodeQuerier
     extend Forwardable
-
     include Celluloid
-    include Celluloid::Notifications
+    include MB::Logging
 
     EMBEDDED_RUBY_PATH = "/opt/chef/embedded/bin/ruby".freeze
+
+    def initialize
+      log.info { "Node Querier starting..." }
+    end
 
     # Run an arbitrary SSH command on the target host
     #
@@ -202,6 +205,10 @@ module MotherBrain
       end
 
       copy_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options)
+    end
+
+    def finalize
+      log.info { "Node Querier stopping..." }
     end
   end
 end

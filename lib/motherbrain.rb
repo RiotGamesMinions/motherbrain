@@ -52,11 +52,20 @@ module MotherBrain
   autoload :Provisioner, 'mb/provisioner'
   autoload :Provisioners, 'mb/provisioners'
   autoload :RealModelBase, 'mb/real_model_base'
+  autoload :REST, 'mb/rest'
   autoload :SafeReturn, 'mb/safe_return'
   autoload :Upgrade, 'mb/upgrade'
 
   class << self
+    extend Forwardable
+
     attr_writer :ui
+
+    # @raise [Celluloid::DeadActorError] if Application has not been started
+    #
+    # @return [Celluloid::SupervisionGroup(Application)]
+    def_delegator "MB::Application.instance", :application
+    alias_method :app, :application
     
     # @return [Thor::Shell::Color]
     def ui
@@ -88,6 +97,13 @@ module MotherBrain
     # @return [Logger]
     def set_logger(obj)
       MB::Logging.set_logger(obj)
+    end
+
+    # Is MotherBrain executing in test mode?
+    #
+    # @return [Boolean]
+    def testing?
+      ENV['RUBY_ENV'] == 'test'
     end
 
     # Takes an array of procs or a an array of arrays of procs and calls them returning their evaluated

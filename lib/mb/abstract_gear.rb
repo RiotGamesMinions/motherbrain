@@ -1,4 +1,5 @@
 module MotherBrain
+  # @author Jamie Winsor <jamie@vialstudios.com>
   class AbstractGear
     class << self
       # The identifier for the Gear. The keyword is automatically populated based on the name

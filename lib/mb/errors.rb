@@ -10,6 +10,17 @@ module MotherBrain
     end
 
     alias_method :mesage, :to_s
+
+    def to_hash
+      {
+        code: status_code,
+        message: to_s
+      }
+    end
+
+    def to_json
+      MultiJson.encode(to_hash)
+    end
   end
 
   class InternalError < MBError; status_code(99); end

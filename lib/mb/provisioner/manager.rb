@@ -48,7 +48,12 @@ module MotherBrain
       end
 
       include Celluloid
-      include ActorUtil
+      include MB::Logging
+      include MB::ActorUtil
+
+      def initialize
+        log.info { "Provision Manager starting..." }
+      end
 
       # Returns a SafeReturn array whose body is an array of hashes representing the nodes
       # created for the given manifest
@@ -108,6 +113,10 @@ module MotherBrain
         defer {
           self.class.new_provisioner(options).down(environment.to_s)
         }
+      end
+
+      def finalize
+        log.info { "Provision Manager stopping..." }
       end
     end
   end

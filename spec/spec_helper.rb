@@ -5,6 +5,7 @@ require 'bundler'
 require 'rspec'
 require 'json_spec'
 require 'webmock/rspec'
+require 'rack/test'
 require 'motherbrain'
 
 def setup_rspec

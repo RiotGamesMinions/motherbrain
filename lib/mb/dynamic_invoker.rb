@@ -1,10 +1,8 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   # @private api
-  module DynamicInvoker
-    extend ActiveSupport::Concern
-
-    module ClassMethods
+  class DynamicInvoker < InvokerBase
+    class << self
       # @raise [AbstractFunction] if class is not implementing {#fabricate}
       def fabricate(*args)
         raise AbstractFunction, "Class '#{self}' must implement abstract function"
