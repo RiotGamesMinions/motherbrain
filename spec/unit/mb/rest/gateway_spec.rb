@@ -34,4 +34,32 @@ describe MB::REST::Gateway do
       end
     end
   end
+
+  describe "API Error handling" do
+    describe "MB errors" do
+      it "returns a JSON response containing a code and message" do
+        get '/mb_error'
+        last_response.status.should == 500
+        json = JSON.parse(last_response.body)
+
+        json.should have_key("code")
+        json["code"].should eql(99)
+        json.should have_key("message")
+        json["message"].should eql("a nice error message")
+      end
+    end
+
+    describe "Unknown errors" do
+      it "returns a JSON response containing a -1 code and message" do
+        get '/unknown_error'
+        last_response.status.should == 500
+        json = JSON.parse(last_response.body)
+
+        json.should have_key("code")
+        json["code"].should eql(-1)
+        json.should have_key("message")
+        json["message"].should eql("an unknown error occured")
+      end
+    end
+  end
 end
