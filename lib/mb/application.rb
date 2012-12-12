@@ -6,6 +6,10 @@ trap 'TERM' do
   MB.application.interrupt
 end
 
+trap 'USR1' do
+  MB::ConfigManager.instance.reload
+end
+
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   #
@@ -27,7 +31,7 @@ module MotherBrain
       # Return the configuration for the running application
       #
       # @return [MB::Config]
-      def_delegator :config_manager, :config
+      def_delegator "MB::ConfigManager.instance", :config
 
       # Run the application asynchronously (terminate after execution)
       #
@@ -70,13 +74,6 @@ module MotherBrain
         Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
       end
       alias_method :bootstrapper, :bootstrap_manager
-      
-      # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
-      #
-      # @return [Celluloid::Actor(ConfigManager)]
-      def config_manager
-        Celluloid::Actor[:config_manager] or raise Celluloid::DeadActorError, "config srv not running"
-      end
 
       # @raise [Celluloid::DeadActorError] if Node Querier has not been started
       #
