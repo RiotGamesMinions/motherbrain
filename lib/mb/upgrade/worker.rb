@@ -55,7 +55,7 @@ module MotherBrain
 
         if component_versions.any? or cookbook_versions.any?
           save_environment
-          run_chef
+          run_chef if nodes.any?
         end
       end
 
@@ -125,8 +125,8 @@ module MotherBrain
         # @return [Array<String>]
         def nodes
           result = plugin.nodes(environment_name).collect { |group, node|
-            node['default'][0].public_hostname 
-          }
+            node['default'][0] && node['default'][0].public_hostname
+          }.compact
 
           unless result.any?
             MB.ui.say "No nodes in environment '#{environment_name}'"

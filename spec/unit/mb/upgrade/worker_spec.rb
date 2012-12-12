@@ -13,12 +13,14 @@ describe MB::Upgrade::Worker do
   let(:environment) { stub }
   let(:environment_name) { "environment" }
   let(:options) { Hash.new }
+  let(:nodes) { %w[node1 node2 node3] }
   let(:plugin) { stub MB::Plugin, name: plugin_name }
   let(:plugin_name) { "plugin_name" }
 
   before do
     worker.stub(
       environment: environment,
+      nodes: nodes,
       set_component_versions: nil,
       set_cookbook_versions: nil,
       save_environment: true,
@@ -100,6 +102,25 @@ describe MB::Upgrade::Worker do
         worker.should_receive(:set_cookbook_versions).ordered
         worker.should_receive(:save_environment).ordered
         worker.should_receive(:run_chef).ordered
+
+        run
+      end
+    end
+
+    context "when no nodes exist in the environment" do
+      before do
+        options['cookbook_versions'] = cookbook_versions
+        options['component_versions'] = component_versions
+
+        worker.stub nodes: []
+      end
+
+      it "updates the versions and does not run chef" do
+        worker.should_receive(:set_component_versions).ordered
+        worker.should_receive(:set_cookbook_versions).ordered
+        worker.should_receive(:save_environment).ordered
+
+        worker.should_not_receive :run_chef
 
         run
       end
