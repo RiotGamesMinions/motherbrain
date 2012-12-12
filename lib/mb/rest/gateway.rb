@@ -4,62 +4,36 @@ module MotherBrain
   module REST
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Gateway < Reel::Server
-      DEFAULT_BIND_ADDRESS = '127.0.0.1'.freeze
-      DEFAULT_PORT = 1984.freeze
+      include Celluloid
 
-      # @option options [String] :bind_address (DEFAULT_BIND_ADDRESS)
-      # @option options [Integer] :port (DEFAULT_PORT)
+      DEFAULT_OPTIONS = {
+        host: '0.0.0.0',
+        port: 1984,
+        quiet: false,
+        workers: 10
+      }.freeze
+
+      # @option options [String] :host ('0.0.0.0')
+      # @option options [Integer] :port (1984)
+      # @option options [Boolean] :quiet (false)
+      # @option options [Integer] :workers (10)
       def initialize(options = {})
-        bind_address = options[:bind_address] || DEFAULT_BIND_ADDRESS
-        port         = options[:port] || DEFAULT_PORT
-
-        super(bind_address, port, &method(:on_connect))
+        options       = DEFAULT_OPTIONS.merge(options)
+        options[:app] = REST::API.new
+        
+        @pool = ::Reel::RackWorker.pool_link(size: options[:workers], args: [::Rack::Handler::Reel.new(options)])
+        super(options[:host], options[:port], &method(:on_connect))
       end
 
+      # @param [Reel::Connection] connection
       def on_connect(connection)
-        while request = connection.request
-          case request
-          when Reel::Request
-            route_request connection, request
-          when Reel::WebSocket
-            MB.log.warn "Recieved an unhandled websocket request: #{request}"
-            connection.close
-          end
-        end
-      end
-
-      def route_request(connection, request)
-        case request.url
-        when '/config.json'
-          connection.respond json(:ok, Application.config)
-        when '/plugins.json'
-          connection.respond json(:ok, Application.plugin_srv.plugins)
-        else
-          connection.respond :not_found, "not found"
-        end
+        pool.handle(connection.detach)
       end
 
       private
 
-        def json(*args)
-          JSONResponse.new(*args)
-        end
-
-      class JSONResponse < Reel::Response
-        DEFAULT_HEADERS = {
-          'Accept' => 'application/json',
-          'Content-Type' => 'application/json'
-        }.freeze
-
-        # @param [#to_sym] status
-        # @param [Object] body
-        # @param [Hash] headers
-        def initialize(status, body = {}, headers = {})
-          headers.reverse_merge!(DEFAULT_HEADERS)
-
-          super(status, headers, MultiJson.encode(body))
-        end
-      end
+        # @return [Reel::RackWorker]
+        attr_reader :pool
     end
   end
 end

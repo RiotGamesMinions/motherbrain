@@ -76,12 +76,12 @@ module MotherBrain
       default: false,
       type: Boolean
 
-    attribute 'rest_gateway.bind_address',
-      default: REST::Gateway::DEFAULT_BIND_ADDRESS,
+    attribute 'rest_gateway.host',
+      default: REST::Gateway::DEFAULT_OPTIONS[:host],
       type: String
 
     attribute 'rest_gateway.port',
-      default: REST::Gateway::DEFAULT_PORT,
+      default: REST::Gateway::DEFAULT_OPTIONS[:port],
       type: Integer
 
     attribute 'rest_client.url',
@@ -132,8 +132,8 @@ module MotherBrain
 
     def to_rest_gateway
       {}.tap do |rest_opts|
-        rest_opts[:bind_address] = self.rest_gateway.bind_address
-        rest_opts[:port]         = self.rest_gateway.port
+        rest_opts[:host] = self.rest_gateway.host
+        rest_opts[:port] = self.rest_gateway.port
       end
     end
 

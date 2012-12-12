@@ -4,7 +4,7 @@ module MotherBrain
   module REST
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Client
-      DEFAULT_URL = "http://#{REST::Gateway::DEFAULT_BIND_ADDRESS}:#{REST::Gateway::DEFAULT_PORT}".freeze
+      DEFAULT_URL = "http://#{REST::Gateway::DEFAULT_OPTIONS[:host]}:#{REST::Gateway::DEFAULT_OPTIONS[:port]}".freeze
 
       extend Forwardable
 
