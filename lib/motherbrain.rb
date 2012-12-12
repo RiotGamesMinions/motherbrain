@@ -63,6 +63,11 @@ module MotherBrain
       @ui ||= Thor::Shell::Color.new
     end
 
+    # @raise [Celluloid::DeadActorError] if Application has not been started
+    def application
+      Celluloid::Actor[:motherbrain] or raise Celluloid::DeadActorError, "application not running"
+    end
+
     # Path to the root directory of the MotherBrain application
     #
     # @return [Pathname]
