@@ -59,7 +59,7 @@ end
 
 group :test do
   gem 'rake', '>= 0.9.2.2'
-
+  gem 'rack-test'
   gem 'spork'
   gem 'rspec'
 end

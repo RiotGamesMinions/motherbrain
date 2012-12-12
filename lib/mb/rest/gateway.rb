@@ -4,6 +4,7 @@ module MotherBrain
   module REST
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Gateway < Reel::Server
+      extend Forwardable
       include Celluloid
       include MB::Logging
 
@@ -17,6 +18,8 @@ module MotherBrain
       # @return [Hash]
       attr_reader :options
 
+      def_delegator :handler, :rack_app
+
       # @option options [String] :host ('0.0.0.0')
       # @option options [Integer] :port (1984)
       # @option options [Boolean] :quiet (false)
@@ -25,7 +28,8 @@ module MotherBrain
         @options       = DEFAULT_OPTIONS.merge(options)
         @options[:app] = REST::API.new
         
-        @pool = ::Reel::RackWorker.pool_link(size: @options[:workers], args: [::Rack::Handler::Reel.new(@options)])
+        @handler = ::Rack::Handler::Reel.new(@options)
+        @pool = ::Reel::RackWorker.pool_link(size: @options[:workers], args: [@handler])
 
         MB.log.info "MotherBrain REST Gatway: Listening on #{@options[:host]}:#{@options[:port]}"
         super(@options[:host], @options[:port], &method(:on_connect))
@@ -44,6 +48,7 @@ module MotherBrain
 
         # @return [Reel::RackWorker]
         attr_reader :pool
+        attr_reader :handler
     end
   end
 end
