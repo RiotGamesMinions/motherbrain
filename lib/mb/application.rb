@@ -27,7 +27,7 @@ module MotherBrain
       # Return the configuration for the running application
       #
       # @return [MB::Config]
-      def_delegator "MB::Config.manager", :config
+      def_delegator "MB::ConfigManager.instance", :config
 
       # Run the application asynchronously (terminate after execution)
       #
