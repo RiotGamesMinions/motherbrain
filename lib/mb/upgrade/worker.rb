@@ -96,7 +96,7 @@ module MotherBrain
 
         # @return [Hash]
         def component_versions
-          options['component_versions'] || {}
+          options[:component_versions] || {}
         end
 
         # @return [Array<MotherBrain::Component>]
@@ -106,7 +106,7 @@ module MotherBrain
 
         # @return [Hash]
         def cookbook_versions
-          options['cookbook_versions'] || {}
+          options[:cookbook_versions] || {}
         end
 
         # @return [Hash]
@@ -128,7 +128,7 @@ module MotherBrain
             groups.collect { |group, nodes|
               nodes.collect(&:public_hostname)
             }
-          }.flatten.compact
+          }.flatten.compact.uniq
 
           unless result.any?
             MB.ui.say "No nodes in environment '#{environment_name}'"
@@ -141,7 +141,7 @@ module MotherBrain
           MB.ui.say "Running chef on #{nodes}"
 
           nodes.map { |node|
-            Application.node_querier.future.chef_run(node)
+            Application.node_querier.future.chef_run(node, options[:ssh])
           }.map(&:value)
         end
 

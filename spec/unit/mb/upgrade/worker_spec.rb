@@ -45,8 +45,8 @@ describe MB::Upgrade::Worker do
 
     context "when no component_versions or cookbook_versions are passed" do
       before do
-        options['cookbook_versions'] = nil
-        options['component_versions'] = nil
+        options[:cookbook_versions] = nil
+        options[:component_versions] = nil
       end
 
       it "does not save the environment, nor run chef" do
@@ -59,8 +59,8 @@ describe MB::Upgrade::Worker do
 
     context "when only cookbook_versions is passed as an option" do
       before do
-        options['cookbook_versions'] = cookbook_versions
-        options['component_versions'] = nil
+        options[:cookbook_versions] = cookbook_versions
+        options[:component_versions] = nil
       end
 
       it "updates only the cookbook versions and runs chef" do
@@ -76,8 +76,8 @@ describe MB::Upgrade::Worker do
 
     context "when only component_versions is passed as an option" do
       before do
-        options['cookbook_versions'] = nil
-        options['component_versions'] = component_versions
+        options[:cookbook_versions] = nil
+        options[:component_versions] = component_versions
       end
 
       it "updates only the component versions and runs chef" do
@@ -93,8 +93,8 @@ describe MB::Upgrade::Worker do
 
     context "when both component_versions and cookbook_versions are passed as options" do
       before do
-        options['cookbook_versions'] = cookbook_versions
-        options['component_versions'] = component_versions
+        options[:cookbook_versions] = cookbook_versions
+        options[:component_versions] = component_versions
       end
 
       it "updates the versions and runs chef" do
@@ -109,8 +109,8 @@ describe MB::Upgrade::Worker do
 
     context "when no nodes exist in the environment" do
       before do
-        options['cookbook_versions'] = cookbook_versions
-        options['component_versions'] = component_versions
+        options[:cookbook_versions] = cookbook_versions
+        options[:component_versions] = component_versions
 
         worker.stub nodes: []
       end
@@ -202,7 +202,7 @@ describe MB::Upgrade::Worker do
 
     it "runs chef on the nodes" do
       nodes.each do |node|
-        MB::Application.node_querier.should_receive(:chef_run).with(node)
+        MB::Application.node_querier.should_receive(:chef_run).with(node, nil)
       end
 
       run_chef
