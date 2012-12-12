@@ -6,6 +6,10 @@ trap 'TERM' do
   MB.application.interrupt
 end
 
+trap 'USR1' do
+  MB::ConfigManager.instance.reload
+end
+
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   #
