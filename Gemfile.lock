@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/celluloid/reel.git
-  revision: fd2b1984520181f4bc53d6ba4fc3814b759caec7
+  revision: 5cdf52aeac43823ee2d17a1337b07438e6e3107b
   specs:
     reel (0.3.0)
       celluloid-io (>= 0.8.0)
@@ -221,9 +221,9 @@ DEPENDENCIES
   ef-rest!
   fuubar
   growl
-  guard (>= 1.5.0)
+  guard
   guard-cucumber
-  guard-rspec (>= 2.0.0)
+  guard-rspec
   guard-spork
   guard-yard
   jdbc-mysql

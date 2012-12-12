@@ -2,40 +2,39 @@ source :rubygems
 
 gemspec
 
-gem 'reel', git: 'git://github.com/celluloid/reel.git'
-gem 'ridley', git: 'git://github.com/reset/ridley.git'
-gem 'chozo', git: 'git://github.com/reset/chozo.git'
+gem 'chozo', github: 'reset/chozo'
 gem 'ef-rest', git: 'git@github.com:RiotGames/ef-rest.git'
+gem 'reel', github: 'celluloid/reel'
+gem 'ridley', github: 'reset/ridley'
 
 platforms :ruby do
-  gem 'yajl-ruby'
   gem 'mysql2'
   gem 'yajl-ruby'
 end
 
 platforms :jruby do
+  gem 'jdbc-mysql'
   gem 'jmx4r'
   gem 'json-jruby'
-  gem 'jdbc-mysql'
 end
 
 group :development do
-  gem 'cucumber'
   gem 'aruba'
-  gem 'debugger'
-  gem 'rspec'
-  gem 'fuubar'
-  gem 'yard'
-  gem 'redcarpet'
   gem 'coolline'
-  gem 'webmock'
+  gem 'cucumber'
+  gem 'debugger'
+  gem 'fuubar'
   gem 'json_spec'
+  gem 'redcarpet'
+  gem 'rspec'
+  gem 'webmock'
+  gem 'yard'
 
-  gem 'guard', '>= 1.5.0'
-  gem 'guard-rspec', '>= 2.0.0'
+  gem 'guard'
   gem 'guard-cucumber'
-  gem 'guard-yard'
+  gem 'guard-rspec'
   gem 'guard-spork', platforms: :ruby
+  gem 'guard-yard'
 
   require 'rbconfig'
 
@@ -52,15 +51,15 @@ group :development do
     gem 'rb-inotify', require: false
 
   elsif RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
-    gem 'win32console', require: false
     gem 'rb-notifu', '>= 0.0.4', require: false
     gem 'wdm', require: false
+    gem 'win32console', require: false
   end
 end
 
 group :test do
-  gem 'rake', '>= 0.9.2.2'
   gem 'rack-test'
-  gem 'spork'
+  gem 'rake', '>= 0.9.2.2'
   gem 'rspec'
+  gem 'spork'
 end
