@@ -116,12 +116,6 @@ module MotherBrain
     include Celluloid::Notifications
     include MB::Logging
 
-    trap_exit :fuck
-
-    def fuck(actor, reason)
-      MB.log.info { "#{actor.name} shutdown."}
-    end
-
     def initialize(*args)
       super
       log.info { "MotherBrain starting..." }
