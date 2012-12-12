@@ -22,6 +22,7 @@ end
 group :development do
   gem 'cucumber'
   gem 'aruba'
+  gem 'debugger'
   gem 'rspec'
   gem 'fuubar'
   gem 'yard'
