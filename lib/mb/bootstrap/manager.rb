@@ -32,6 +32,7 @@ module MotherBrain
       end
 
       include Celluloid
+      include MB::Logging
       include MB::ActorUtil
       include MB::Locks
 
@@ -57,6 +58,10 @@ module MotherBrain
         :thread_count,
         :ssl
       ].freeze
+
+      def initialize
+        log.info { "Bootstrap Manager starting..." }
+      end
 
       # Bootstrap a collection of nodes described in the given manifest by performing
       # each {BootTask} in the proper order
@@ -128,7 +133,7 @@ module MotherBrain
           raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
         end
 
-        MB.log.info "Starting bootstrap of nodes on: #{environment}"
+        log.info { "Starting bootstrap of nodes on: #{environment}" }
 
         chef_synchronize("environment.#{environment}", options.slice(:force)) do
           until task_queue.empty?
@@ -136,10 +141,14 @@ module MotherBrain
           end
         end
 
-        MB.log.info "Bootstrap finished for nodes on: #{environment}"
+        log.info { "Bootstrap finished for nodes on: #{environment}" }
         responses
       rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
         raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
+      end
+
+      def finalize
+        log.info { "Bootstrap Manager stopping..." }
       end
 
       private

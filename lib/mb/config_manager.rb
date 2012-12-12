@@ -12,6 +12,7 @@ module MotherBrain
 
     include Celluloid
     include Celluloid::Notifications
+    include MB::Logging
 
     UPDATE_MSG = 'config_manager.configure'.freeze
 
@@ -20,6 +21,7 @@ module MotherBrain
 
     # @param [MB::Config] new_config
     def initialize(new_config)
+      log.info { "Config Manager starting..." }
       @reload_mutex = Mutex.new
       @reloading    = false
       set_config(new_config)
@@ -52,6 +54,10 @@ module MotherBrain
     # @return [Boolean]
     def reloading?
       @reloading
+    end
+
+    def finalize
+      log.info { "Config Manager stopping..." }
     end
 
     private
