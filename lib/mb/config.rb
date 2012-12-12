@@ -6,6 +6,13 @@ module MotherBrain
         ENV["MB_CONFIG"] || "~/.mb/config.json"
       end
 
+      # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
+      #
+      # @return [Celluloid::Actor(ConfigManager)]
+      def manager
+        ConfigManager.instance
+      end
+
       # Validate the given config
       #
       # @param [MB::Config] config

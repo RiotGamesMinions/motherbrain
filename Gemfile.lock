@@ -11,7 +11,7 @@ GIT
 
 GIT
   remote: git://github.com/reset/chozo.git
-  revision: de9f7b57bee824f229a2df0b086fb0ec4998b885
+  revision: 05e1d6e5919fcc325b92be12773a04be3e99790b
   specs:
     chozo (0.2.3)
       activesupport (>= 3.2.0)

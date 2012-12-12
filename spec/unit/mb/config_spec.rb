@@ -27,6 +27,12 @@ describe MB::Config do
         }.to raise_error(MB::InvalidConfig)
       end
     end
+
+    describe "::manager" do
+      it "returns an instance of MB::ConfigManager" do
+        subject.manager.should be_a(MB::ConfigManager)
+      end
+    end
   end
 
   subject do
