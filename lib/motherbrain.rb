@@ -53,6 +53,7 @@ module MotherBrain
   autoload :Provisioners, 'mb/provisioners'
   autoload :RealModelBase, 'mb/real_model_base'
   autoload :SafeReturn, 'mb/safe_return'
+  autoload :Upgrade, 'mb/upgrade'
 
   class << self
     attr_writer :ui

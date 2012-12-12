@@ -191,41 +191,36 @@ module MotherBrain
             end
 
 
-            method_option :versions,
-              type: :hash,
-              required: true
+            method_option :component_versions,
+              type: :hash
+            method_option :cookbook_versions,
+              type: :hash
             desc("upgrade ENVIRONMENT", "Upgrade an environment to the specified versions")
             define_method(:upgrade) do |environment|
-              versions = @options[:versions]
+              upgrade_options = {
+                environment: environment,
+                server_url: Application.ridley.server_url,
+                client_name: Application.ridley.client_name,
+                client_key: Application.ridley.client_key,
+                validator_client: options[:validator_client] || Application.config[:chef][:validator_client],
+                validator_path: options[:validator_path] || Application.config[:chef][:validator_path],
+                bootstrap_proxy: options[:bootstrap_proxy] || Application.config[:chef][:bootstrap_proxy],
+                encrypted_data_bag_secret_path: options[:encrypted_data_bag_secret_path] || Application.config[:chef][:encrypted_data_bag_secret_path],
+                ssh: {
+                  user: options[:ssh_user] || Application.config[:ssh][:user],
+                  password: options[:ssh_password] || Application.config[:ssh][:password],
+                  keys: options[:ssh_keys] || Application.config[:ssh][:keys],
+                  timeout: options[:ssh_timeout] || Application.config[:ssh][:timeout],
+                  sudo: options[:sudo] || Application.config[:ssh][:sudo]
+                },
+                ssl: {
+                  verify: options[:ssl_verify] || Application.config[:ssl][:verify]
+                }
+              }
 
-              assert_environment_exists environment
+              upgrade_options.merge! options.slice(:component_versions, :cookbook_versions)
 
-              versions.each do |component_name, version|
-                component = plugin.components.find { |component| component.name == component_name }
-
-                unless component
-                  raise ComponentNotFound,
-                    "Component '#{component_name}' not found for plugin '#{plugin.name}'"
-                end
-
-                unless component.version_attribute
-                  raise ComponentNotVersioned.new component_name
-                end
-
-                component.send(:context).environment = environment
-
-                nodes = component.nodes.collect { |group, nodes| nodes }.flatten
-
-                if nodes.any?
-                  action = Gear::Service::Action.new context, "upgrade", component do
-                    node_attribute component.version_attribute, version
-                  end
-
-                  action.run nodes
-                else
-                  MB.ui.say "No nodes in environment '#{environment}' for component '#{component_name}' to upgrade"
-                end
-              end
+              MB::Application.upgrade(environment, plugin, upgrade_options)
             end
           end
         end
