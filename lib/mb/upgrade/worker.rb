@@ -158,7 +158,7 @@ module MotherBrain
         end
 
         def set_component_versions
-          MB.ui.say "Setting cookbook versions #{cookbook_versions}"
+          MB.ui.say "Setting component versions #{component_versions}"
 
           set_override_attributes
         end
@@ -187,7 +187,7 @@ module MotherBrain
             raise ComponentNotVersioned.new component_name
           end
 
-          MB.ui.say "Component '#{component_name}' versioned as '#{result}'"
+          MB.ui.say "Component '#{component_name}' versioned with '#{result}'"
 
           result
         end
