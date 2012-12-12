@@ -24,8 +24,10 @@ module MotherBrain
     end
 
     include Celluloid
+    include MB::Logging
 
     def initialize
+      log.info { "Plugin Manager starting..." }
       @plugins = Hash.new
 
       Application.config.plugin_paths.each { |path| self.add_path(path) }
@@ -85,6 +87,10 @@ module MotherBrain
     # @return [Set]
     def clear_paths
       @paths = Set.new
+    end
+
+    def finalize
+      log.info { "Plugin Manager stopping..." }
     end
 
     private

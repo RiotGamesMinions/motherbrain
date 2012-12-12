@@ -104,26 +104,32 @@ module MotherBrain
     end
 
     include Celluloid::Notifications
+    include MB::Logging
 
     def initialize(*args)
       super
+      log.info { "MotherBrain starting..." }
       @interrupt_mutex = Mutex.new
       @interrupted     = false
       subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
     end
 
     def reconfigure(_msg, new_config)
-      MB.log.debug "[Application] ConfigManager has changed: re-configuring components..."
+      log.debug { "[Application] ConfigManager has changed: re-configuring components..." }
       self.class.ridley.async.configure(new_config.to_ridley)
     end
 
     def interrupt
       interrupt_mutex.synchronize do
         unless interrupted
-          interrupted = true
+          @interrupted = true
           Thread.main.raise Interrupt
         end
       end
+    end
+
+    def finalize
+      log.info { "MotherBrain stopping..." }
     end
 
     private

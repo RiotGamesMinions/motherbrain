@@ -5,6 +5,7 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Gateway < Reel::Server
       include Celluloid
+      include MB::Logging
 
       DEFAULT_OPTIONS = {
         host: '0.0.0.0',
@@ -33,6 +34,10 @@ module MotherBrain
       # @param [Reel::Connection] connection
       def on_connect(connection)
         pool.handle(connection.detach)
+      end
+
+      def finalize
+        log.info { "REST Gateway stopping..." }
       end
 
       private

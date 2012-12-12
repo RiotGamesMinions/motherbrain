@@ -5,12 +5,13 @@ module MotherBrain
     # A registry of locks obtained against resources on a Chef Server
     class Manager
       include Celluloid
+      include MB::Logging
 
       # @return [Set<ChefMutex>]
       attr_reader :locks
 
       def initialize
-        super
+        log.info { "Lock Manager starting..." }
         @locks = Set.new
       end
 
@@ -39,6 +40,10 @@ module MotherBrain
       # @param [ChefMutex] mutex
       def unregister(mutex)
         locks.delete(mutex)
+      end
+
+      def finalize
+        log.info { "Lock Manager stopping..." }
       end
     end
   end
