@@ -110,11 +110,9 @@ describe MB::Component do
   end
 
   describe "#versioned" do
-    let(:klass) { MB::Component }
-
     context "when passed nothing" do
       subject {
-        klass.new "component_name", @context do
+        klass.new "component_name" do
           versioned
         end
       }
@@ -124,8 +122,8 @@ describe MB::Component do
 
     context "when passed an attribute name" do
       subject {
-        klass.new "versioned_component", @context do
-          versioned with: "my.custom.attribute"
+        klass.new "versioned_component" do
+          versioned_with "my.custom.attribute"
         end
       }
 
