@@ -60,9 +60,6 @@ module MotherBrain
 
     attr_writer :ui
 
-    # @raise [Celluloid::DeadActorError] if Application has not been started
-    #
-    # @return [Celluloid::SupervisionGroup(Application)]
     def_delegator "MB::Application.instance", :application
     alias_method :app, :application
     

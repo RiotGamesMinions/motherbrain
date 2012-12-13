@@ -30,10 +30,6 @@ module MotherBrain
 
       def_delegator :provisioner_manager, :provision
       def_delegator :bootstrap_manager, :bootstrap
-
-      # Return the configuration for the running application
-      #
-      # @return [MB::Config]
       def_delegator "MB::ConfigManager.instance", :config
 
       # @raise [Celluloid::DeadActorError] if Application has not been started
