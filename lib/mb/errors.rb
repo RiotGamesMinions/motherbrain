@@ -128,7 +128,7 @@ module MotherBrain
         "Component '#{component_name}' is not versioned",
         "You can version components with:",
         "  versioned # defaults to \"#{component_name}.version\"",
-        "  versioned with: \"my.custom.version\""
+        "  versioned_with \"custom.version.attribute\""
       ].join "\n"
     end
   end
