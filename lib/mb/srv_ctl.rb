@@ -89,6 +89,11 @@ module MotherBrain
 
     def start
       if options[:daemonize]
+        if pid
+          puts "mbsrv already started"
+          exit 1
+        end
+
         daemonize
       end
 
@@ -102,7 +107,7 @@ module MotherBrain
       end
 
       Process.kill('TERM', pid)
-      FileUtils.rm(pid)
+      FileUtils.rm(options[:pid_file])
     end
 
     private
@@ -120,13 +125,13 @@ module MotherBrain
       end
 
       def pid
-        return nil unless pidfile?
+        return nil unless pid_file?
         pid = File.read(options[:pid_file]).chomp.to_i
         return nil unless pid > 0
         pid
       end
 
-      def pidfile?
+      def pid_file?
         File.exists?(options[:pid_file])
       end
 
