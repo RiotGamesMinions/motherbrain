@@ -6,7 +6,6 @@ module MotherBrain
     #
     class Manager
       include Celluloid
-      include ActorUtil
 
       # @param [String] environment
       #
