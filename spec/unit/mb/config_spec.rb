@@ -162,8 +162,8 @@ describe MB::Config do
         subject.default_path.should eql("/tmp/config.json")
       end
 
-      it "returns ~/.mb/config.json if ENV['MB_CONFIG'] is not set" do
-        subject.default_path.should eql("~/.mb/config.json")
+      it "returns expanded ~/.mb/config.json if ENV['MB_CONFIG'] is not set" do
+        subject.default_path.should eql(File.expand_path("~/.mb/config.json"))
       end
     end
   end
