@@ -6,7 +6,9 @@ module MotherBrain
     class << self
       def parse(args)
         options = {
-          config: MB::Config.default_path
+          config: MB::Config.default_path,
+          daemon: false,
+          pid: File.expand_path("~/fuck.pid")
         }
 
         OptionParser.new("Usage: mbsrv [options]") do |opts|          
@@ -14,8 +16,8 @@ module MotherBrain
             options[:log_level] = Logger::INFO
           end
 
-          opts.on("-d", "--[no-]debug", "Run debug") do |v|
-            options[:log_level] = Logger::DEBUG
+          opts.on("-d", "--daemonize", "Run in daemon mode") do |v|
+            options[:daemonize] = true
           end
 
           opts.on_tail("-h", "--help", "Show this message") do
@@ -44,11 +46,20 @@ module MotherBrain
     end
 
     def start
+      if options[:daemonize]
+        daemonize
+      end
+      
       MB::Application.run(config)
     end
 
     private
 
       attr_reader :config
+
+      def daemonize
+        Process.daemon
+        File.open(options[:pid], 'w+') { f.write Process.pid }
+      end
   end
 end
