@@ -4,6 +4,15 @@ module MotherBrain
   module REST
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Gateway < Reel::Server
+      class << self
+        # @raise [Celluloid::DeadActorError] if rest gateway has not been started
+        #
+        # @return [Celluloid::Actor(Gateway)]
+        def instance
+          Celluloid::Actor[:rest_gateway] or raise Celluloid::DeadActorError, "REST gateway not running"
+        end
+      end
+
       extend Forwardable
       include Celluloid
       include MB::Logging

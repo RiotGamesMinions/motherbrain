@@ -2,6 +2,13 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class PluginManager
     class << self
+      # @raise [Celluloid::DeadActorError] if Node Querier has not been started
+      #
+      # @return [Celluloid::Actor(PluginManager)]
+      def instance
+        Celluloid::Actor[:plugin_manager] or raise Celluloid::DeadActorError, "plugin manager not running"
+      end
+
       # Returns a Set of expanded file paths that are directories that may contain
       # MotherBrain plugins.
       #

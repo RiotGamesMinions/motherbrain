@@ -3,6 +3,13 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     class Manager
       class << self
+        # @raise [Celluloid::DeadActorError] if Bootstrap Manager has not been started
+        #
+        # @return [Celluloid::Actor(Bootstrap::Manager)]
+        def instance
+          Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
+        end
+
         # @param [Hash] options (Hash.new)
         #
         # @raise [ArgumentError] if any required option or value is missing or invalid

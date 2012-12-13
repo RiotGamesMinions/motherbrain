@@ -3,6 +3,15 @@ require 'net/scp'
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class NodeQuerier
+    class << self
+      # @raise [Celluloid::DeadActorError] if Node Querier has not been started
+      #
+      # @return [Celluloid::Actor(NodeQuerier)]
+      def instance
+        Celluloid::Actor[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
+      end
+    end
+
     extend Forwardable
     include Celluloid
     include MB::Logging

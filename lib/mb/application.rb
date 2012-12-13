@@ -77,7 +77,7 @@ module MotherBrain
       #
       # @return [Celluloid::Actor(Bootstrap::Manager)]
       def bootstrap_manager
-        Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
+        Bootstrap::Manager.instance
       end
       alias_method :bootstrapper, :bootstrap_manager
 
@@ -85,18 +85,21 @@ module MotherBrain
       #
       # @return [Celluloid::Actor(NodeQuerier)]
       def node_querier
-        Celluloid::Actor[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
+        NodeQuerier.instance
       end
 
+      # @raise [Celluloid::DeadActorError] if Node Querier has not been started
+      #
+      # @return [Celluloid::Actor(PluginManager)]
       def plugin_manager
-        Celluloid::Actor[:plugin_manager] or raise Celluloid::DeadActorError, "plugin manager not running"
+        PluginManager.instance
       end
 
       # @raise [Celluloid::DeadActorError] if Provisioner Manager has not been started
       #
       # @return [Celluloid::Actor(Provisioner::Manager)]
       def provisioner_manager
-        Celluloid::Actor[:provisioner_manager] or raise Celluloid::DeadActorError, "provisioner manager not running"
+        Provisioner::Manager.instance
       end
       alias_method :provisioner, :provisioner_manager
 
