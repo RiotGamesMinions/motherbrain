@@ -3,7 +3,7 @@ module MotherBrain
   class Config < Chozo::Config::JSON
     class << self
       def default_path
-        ENV["MB_CONFIG"] || "~/.mb/config.json"
+        File.expand_path(ENV["MB_CONFIG"] || "~/.mb/config.json")
       end
 
       # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
