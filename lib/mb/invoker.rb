@@ -72,7 +72,7 @@ module MotherBrain
       @config.ssh.password     = MB.ui.ask "Enter a SSH password: "
       @config.save
 
-      MB.ui.say "Config written to: '#{path}'"
+      MB.log.info "Config written to: '#{path}'"
     end
 
     desc "plugins", "Display all installed plugins and versions"
