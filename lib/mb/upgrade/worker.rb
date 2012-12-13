@@ -8,6 +8,7 @@ module MotherBrain
     class Worker
       include Celluloid
       include Celluloid::Logger
+      include MB::Locks
 
       # TODO: Change usage of RIDLEY_OPT_KEYS to Ridley::Connection::OPTIONS.
       # see https://github.com/reset/ridley/pull/39.
@@ -88,7 +89,7 @@ module MotherBrain
       def run
         assert_environment_exists
 
-        ChefMutex.new("environment: #{environment_name}", options.slice(:force)).synchronize do
+        chef_synchronize "environment: #{environment_name}", options.slice(:force) do
           set_component_versions if component_versions.any?
           set_cookbook_versions if cookbook_versions.any?
 
