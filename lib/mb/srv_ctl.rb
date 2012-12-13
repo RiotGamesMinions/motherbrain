@@ -73,7 +73,7 @@ module MotherBrain
         setup_logdir
       end
 
-      MB::Logging.setup(@options.slice(:level, :location))
+      MB::Logging.setup(level: @options[:log_level], location: @options[:log_location])
       @config = MB::Config.from_file(@options[:config])
 
       unless @options[:daemonize].nil?
@@ -121,7 +121,7 @@ module MotherBrain
         end
 
         Process.daemon
-        File.open(options[:pid_file], 'w+') { f.write Process.pid }
+        File.open(options[:pid_file], 'w+') { |f| f.write Process.pid }
       end
 
       def pid
