@@ -8,6 +8,13 @@ module MotherBrain
     #
     class Manager
       class << self
+        # @raise [Celluloid::DeadActorError] if Provisioner Manager has not been started
+        #
+        # @return [Celluloid::Actor(Provisioner::Manager)]
+        def instance
+          Celluloid::Actor[:provisioner_manager] or raise Celluloid::DeadActorError, "provisioner manager not running"
+        end
+
         # Returns a provisioner for the given ID. The default provisioner will be returned
         # if nil is provided
         #
