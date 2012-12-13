@@ -81,6 +81,14 @@ module MotherBrain
       default: true,
       type: Boolean
 
+    attribute 'server.daemonize',
+      default: false,
+      type: Boolean
+
+    attribute 'server.pid',
+      default: "/var/run/motherbrain/mb.pid",
+      type: String
+
     attribute 'rest_gateway.enable',
       default: false,
       type: Boolean

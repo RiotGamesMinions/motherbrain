@@ -4,14 +4,17 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class SrvCtl
     class << self
-      def parse(args)
+      # @param [Array] args
+      # @param [#to_s] filename
+      #
+      # @return [Hash]
+      def parse(args, filename)
         options = {
           config: MB::Config.default_path,
-          daemon: false,
-          pid: File.expand_path("~/fuck.pid")
+          log_level: Logger::WARN
         }
 
-        OptionParser.new("Usage: mbsrv [options]") do |opts|          
+        OptionParser.new("Usage: #{filename} [options]") do |opts|
           opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
             options[:log_level] = Logger::INFO
           end
@@ -29,27 +32,37 @@ module MotherBrain
         options
       end
 
-      def run(args)
+      # @param [Array] args
+      # @param [String] filename
+      def run(args, filename)
         MB::Logging.setup(level: Logger::INFO)
-        new(parse(args)).start
+        new(parse(args, filename)).start
       end
     end
 
     attr_reader :options
 
     def initialize(options = {})
+      MB::Logging.setup(level: options[:log_level])
       @options = options
       @config  = MB::Config.from_file(@options[:config])
 
+      unless @options[:daemonize].nil?
+        @config.server.daemonize = @options[:daemonize]
+      end
+
+      if @options[:pid].nil?
+        @options[:pid] = @config.server.pid
+      end
+
       @config.rest_gateway.enable = true
-      MB::Logging.setup(level: @options[:log_level])
     end
 
     def start
       if options[:daemonize]
         daemonize
       end
-      
+
       MB::Application.run(config)
     end
 
@@ -58,6 +71,11 @@ module MotherBrain
       attr_reader :config
 
       def daemonize
+        unless File.writable?(options[:pid])
+          puts "startup failed: couldn't write pid to #{options[:pid]}"
+          exit 1
+        end
+
         Process.daemon
         File.open(options[:pid], 'w+') { f.write Process.pid }
       end

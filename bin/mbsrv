@@ -2,4 +2,4 @@
 $:.push File.expand_path("../../lib", __FILE__)
 require 'motherbrain'
 
-MB::SrvCtl.run(ARGV)
+MB::SrvCtl.run(ARGV, File.basename(__FILE__))
