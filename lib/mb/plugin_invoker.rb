@@ -196,67 +196,14 @@ module MotherBrain
               type: :hash,
               desc: "The cookbook versions to set on the environment",
               aliases: "--cookbooks"
-            method_option :ssl_verify,
-              type: :boolean,
-              desc: "Should we verify SSL connections?",
-              default: false
-            method_option :ssh_user,
-              type: :string,
-              desc: "A shell user that will login to each node and perform the upgrade command on",
-              aliases: "-u"
-            method_option :ssh_password,
-              type: :string,
-              desc: "The password for the shell user that will perform the upgrade",
-              aliases: "-p"
-            method_option :ssh_keys,
-              type: :array,
-              desc: "An array of keys (or a single key) to authenticate the ssh user with instead of a password"
-            method_option :ssh_timeout,
-              type: :numeric,
-              desc: "The timeout for communicating to nodes over SSH"
-            method_option :validator_client,
-              type: :string,
-              desc: "The name of the Chef validator client to use during upgrade"
-            method_option :validator_path,
-              type: :string,
-              desc: "The filepath to the Chef validator client's private key to use during upgrade"
-            method_option :encrypted_data_bag_secret_path,
-              type: :string,
-              aliases: "--secret",
-              desc: "The filepath to your organizations encrypted data bag secret key"
-            method_option :sudo,
-              type: :boolean,
-              default: true,
-              desc: "Should we execute the upgrade with sudo?"
             method_option :force,
               type: :boolean,
               default: false,
-              desc: "Perform upgrade even if the environment is locked"
+              desc: "Perform upgrade even if the environment is locked",
+              aliases: "-f"
             desc("upgrade ENVIRONMENT", "Upgrade an environment to the specified versions")
             define_method(:upgrade) do |environment|
-              upgrade_options = {
-                client_key: Application.ridley.client_key,
-                client_name: Application.ridley.client_name,
-                component_versions: options[:component_versions],
-                cookbook_versions: options[:cookbook_versions],
-                encrypted_data_bag_secret_path: options[:encrypted_data_bag_secret_path] || Application.config[:chef][:encrypted_data_bag_secret_path],
-                force: options[:force],
-                server_url: Application.ridley.server_url,
-                validator_client: options[:validator_client] || Application.config[:chef][:validator_client],
-                validator_path: options[:validator_path] || Application.config[:chef][:validator_path],
-                ssh: {
-                  user: options[:ssh_user] || Application.config[:ssh][:user],
-                  password: options[:ssh_password] || Application.config[:ssh][:password],
-                  keys: options[:ssh_keys] || Application.config[:ssh][:keys],
-                  timeout: options[:ssh_timeout] || Application.config[:ssh][:timeout],
-                  sudo: options[:sudo] || Application.config[:ssh][:sudo]
-                },
-                ssl: {
-                  verify: options[:ssl_verify] || Application.config[:ssl][:verify]
-                }
-              }
-
-              MB::Application.upgrade(environment, plugin, upgrade_options)
+              MB::Application.upgrade(environment, plugin, options)
             end
           end
         end

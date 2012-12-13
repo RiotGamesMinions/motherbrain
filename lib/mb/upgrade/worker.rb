@@ -11,20 +11,6 @@ module MotherBrain
       extend Forwardable
       def_delegator 'MB.log', :info
 
-      # TODO: Change usage of RIDLEY_OPT_KEYS to Ridley::Connection::OPTIONS.
-      # see https://github.com/reset/ridley/pull/39.
-      RIDLEY_OPT_KEYS = [
-        :server_url,
-        :client_name,
-        :client_key,
-        :organization,
-        :validator_client,
-        :validator_path,
-        :encrypted_data_bag_secret_path,
-        :thread_count,
-        :ssl
-      ].freeze
-
       # @return [String]
       attr_reader :environment_name
 
@@ -38,37 +24,11 @@ module MotherBrain
       #
       # @param [MotherBrain::Plugin] plugin
       #
-      # @option options [Hash] :ssh
-      #   * :user (String) a shell user that will login to each node and
-      #     perform the upgrade command on (required)
-      #   * :password (String) the password for the shell user that will
-      #     perform the upgrade
-      #   * :keys (Array, String) an array of keys (or a single key) to
-      #     authenticate the ssh user with instead of a password
-      #   * :timeout (Float) [5.0] timeout value for SSH upgrade
-      #   * :sudo (Boolean) [True] upgrade with sudo
+      # @option options [Hash] component_versions
+      #   Hash of components and the versions to set them to
       #
-      # @option options [String] :server_url
-      #   URL to the Chef API to upgrade the target node(s) to (required)
-      #
-      # @option options [String] :client_name
-      #   name of the client used to authenticate with the Chef API (required)
-      #
-      # @option options [String] :client_key
-      #   filepath to the client's private key used to authenticate with the Chef API (requirec)
-      #
-      # @option options [String] :organization
-      #   the Organization to connect to. This is only used if you are connecting to
-      #   private Chef or hosted Chef
-      #
-      # @option options [String] :validator_client
-      #   the name of the Chef validator client to use in upgrading (requirec)
-      #
-      # @option options [String] :validator_path
-      #   filepath to the validator used to upgrade the node (required)
-      #
-      # @option options [String] :encrypted_data_bag_secret_path (nil)
-      #   filepath on your host machine to your organizations encrypted data bag secret
+      # @option options [Hash] cookbook_versions
+      #   Hash of cookbooks and the versions to set them to
       #
       # @option options [Boolean] :force
       #   Force any locks to be overwritten
@@ -112,7 +72,7 @@ module MotherBrain
 
         # @return [Ridley::Connection]
         def chef_connection
-          @chef_connection ||= Ridley::Connection.new(options.slice(*RIDLEY_OPT_KEYS))
+          @chef_connection ||= Application.ridley
         end
 
         # @return [Ridley::Environment]
@@ -183,7 +143,7 @@ module MotherBrain
           info "Running chef on #{nodes}"
 
           nodes.map { |node|
-            Application.node_querier.future.chef_run(node, options[:ssh])
+            Application.node_querier.future.chef_run(node)
           }.map(&:value)
         end
 
