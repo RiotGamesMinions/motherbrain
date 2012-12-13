@@ -7,12 +7,7 @@ module MotherBrain
     class Manager
       include Celluloid
 
-      # @param [String] environment
-      #
-      # @param [MotherBrain::Plugin] plugin
-      #
-      # @param [Hash] options # TODO: add options documentation
-      #
+      # @see MotherBrain::Upgrade::Worker#initialize
       def upgrade(environment, plugin, options = {})
         Worker.new(environment, plugin, options).run
       end
