@@ -6,9 +6,10 @@ module MotherBrain
     # (based on the plugin components' version attributes).
     #
     class Worker
-      include Celluloid
-      include Celluloid::Logger
       include MB::Locks
+
+      extend Forwardable
+      def_delegator 'MB.log', :info
 
       # TODO: Change usage of RIDLEY_OPT_KEYS to Ridley::Connection::OPTIONS.
       # see https://github.com/reset/ridley/pull/39.
