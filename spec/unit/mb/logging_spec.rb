@@ -31,8 +31,8 @@ describe MB::Logging do
         klass.setup options
       end
 
-      it "defaults to WARN" do
-        logger.warn?.should be_true
+      it "defaults to INFO" do
+        logger.level.should == Logger::INFO
       end
 
       context "with level: INFO" do

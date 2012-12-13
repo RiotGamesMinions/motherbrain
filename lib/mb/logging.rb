@@ -6,7 +6,7 @@ module MotherBrain
     autoload :BasicFormat, 'mb/logging/basic_format'
 
     DEFAULTS = {
-      level: Logger::WARN,
+      level: Logger::INFO,
       location: STDOUT
     }
 
@@ -22,7 +22,6 @@ module MotherBrain
         @preserved_options = nil
       end
 
-      # @option [Boolean] verbose
       # @option [Boolean] debug
       # @option [String] logfile
       #

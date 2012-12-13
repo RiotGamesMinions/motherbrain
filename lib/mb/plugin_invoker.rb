@@ -162,15 +162,15 @@ module MotherBrain
                 }
               }
 
-              MB.ui.say "Provisioning nodes and adding them to: #{environment}"
+              MB.log.info "Provisioning nodes and adding them to: #{environment}"
               response = MB::Application.provision(environment, manifest, plugin, provisioner_options)
 
               if response.ok?
-                MB.ui.say "Provision finished"
+                MB.log.info "Provision finished"
 
                 if options[:skip_bootstrap]
-                  MB.ui.say "Skipping bootstrap"
-                  MB.ui.say response.body
+                  MB.log.info "Skipping bootstrap"
+                  MB.log.info response.body
                   exit 0
                 end
 
@@ -183,7 +183,7 @@ module MotherBrain
 
                 invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
               else
-                MB.ui.error response.body.to_s
+                MB.log.error response.body.to_s
                 exit 1
               end
             end

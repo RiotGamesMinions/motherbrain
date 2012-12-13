@@ -35,7 +35,6 @@ module MotherBrain
       end
 
       level = nil
-      level = Logger::INFO if @options[:verbose]
       level = Logger::DEBUG if @options[:debug]
 
       location = @options[:logfile]
@@ -48,11 +47,6 @@ module MotherBrain
       desc: "Path to a MotherBrain JSON configuration file.",
       aliases: "-c",
       banner: "PATH"
-    class_option :verbose,
-      type: :boolean,
-      desc: "Increase verbosity of output.",
-      default: false,
-      aliases: "-v"
     class_option :debug,
       type: :boolean,
       desc: "Output all log messages.",

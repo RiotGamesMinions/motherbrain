@@ -7,7 +7,7 @@ module MotherBrain
         if match = message.match(/NODE\[.+?\]/)
           format_matched_lines match, message
         else
-          "[#{datetime.utc.iso8601}] PID[#{Process.pid}] TID[#{Thread.current.object_id.to_s(36)}] #{severity}: #{message}\n"
+          "[#{datetime.utc.iso8601}] #{severity}: #{message}\n"
         end
       end
 
