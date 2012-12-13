@@ -16,7 +16,11 @@ module MotherBrain
         }
 
         OptionParser.new("Usage: #{filename} [options]") do |opts|
-          opts.on("-v", "--[no-]verbose", "run with verbose output") do
+          opts.on("-c", "--config PATH", "path to configuration file", "(default: '#{options[:config]}')") do |v|
+            options[:config] = File.expand_path(v)
+          end
+
+          opts.on("-v", "--verbose", "run with verbose output") do
             options[:log_level] = Logger::INFO
           end
 
@@ -29,16 +33,16 @@ module MotherBrain
             options[:log_location] = FileSystem.logs.join('mbsrv.log').to_s
           end
 
-          opts.on("--pid [PATH]", String, "pid file to read/write from") do |opt|
-            options[:pid_file] = File.expand_path(opt)
+          opts.on("--pid PATH", String, "pid file to read/write from") do |v|
+            options[:pid_file] = File.expand_path(v)
           end
 
-          opts.on("-l", "--log [PATH}", String, "path to log file") do |opt|
-            options[:log_location] = opt
+          opts.on("-l", "--log PATH", String, "path to log file") do |v|
+            options[:log_location] = v
           end
 
-          opts.on("-k", "--kill", "kill mbsrv if running") do |opt|
-            options[:kill] = opt
+          opts.on("-k", "--kill", "kill mbsrv if running") do |v|
+            options[:kill] = v
           end
 
           opts.on_tail("-h", "--help", "show this message") do
@@ -57,6 +61,12 @@ module MotherBrain
         ctl = new(parse(args, filename))
 
         ctl.options[:kill] ? ctl.stop : ctl.start
+      rescue MB::MBError => e
+        puts e
+        exit e.status_code
+      rescue Chozo::Errors::ConfigNotFound => e
+        puts e
+        exit 1
       end
     end
 
@@ -121,7 +131,7 @@ module MotherBrain
         end
 
         Process.daemon
-        File.open(options[:pid_file], 'w+') { |f| f.write Process.pid }
+        File.open(options[:pid_file], 'w') { |f| f.write Process.pid }
       end
 
       def pid
