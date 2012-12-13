@@ -68,6 +68,9 @@ module MotherBrain
       # @option options [String] :encrypted_data_bag_secret_path (nil)
       #   filepath on your host machine to your organizations encrypted data bag secret
       #
+      # @option options [Boolean] :force
+      #   Force any locks to be overwritten
+      #
       def initialize(environment_name, plugin, options = {})
         @environment_name = environment_name
         @plugin = plugin
