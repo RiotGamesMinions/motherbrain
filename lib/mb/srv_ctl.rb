@@ -30,14 +30,18 @@ module MotherBrain
           end
 
           opts.on("--pid [PATH]", String, "pid file to read/write from") do |opt|
-            options[:pid] = File.expand_path(opt)
+            options[:pid_file] = File.expand_path(opt)
           end
 
           opts.on("-l", "--log [PATH}", String, "path to log file") do |opt|
             options[:log_location] = opt
           end
 
-          opts.on_tail("-h", "--help", "Show this message") do
+          opts.on("-k", "--kill", "kill mbsrv if running") do |opt|
+            options[:kill] = opt
+          end
+
+          opts.on_tail("-h", "--help", "show this message") do
             puts opts
             exit
           end
@@ -50,12 +54,18 @@ module MotherBrain
       # @param [String] filename
       def run(args, filename)
         MB::Logging.setup(level: Logger::INFO)
-        new(parse(args, filename)).start
+        ctl = new(parse(args, filename))
+
+        ctl.options[:kill] ? ctl.stop : ctl.start
       end
     end
 
     attr_reader :options
 
+    # @option options [Boolean] :daemonize
+    # @option options [String] :pid_file
+    # @option options [Integer] :log_level
+    # @option options [String] :log_location
     def initialize(options = {})
       @options = options
 
@@ -70,8 +80,8 @@ module MotherBrain
         @config.server.daemonize = @options[:daemonize]
       end
 
-      if @options[:pid].nil?
-        @options[:pid] = @config.server.pid
+      if @options[:pid_file].nil?
+        @options[:pid_file] = @config.server.pid
       end
 
       @config.rest_gateway.enable = true
@@ -85,18 +95,39 @@ module MotherBrain
       MB::Application.run(config)
     end
 
+    def stop
+      unless pid
+        puts "mbsrv not started"
+        exit 0
+      end
+
+      Process.kill('TERM', pid)
+      FileUtils.rm(pid)
+    end
+
     private
 
       attr_reader :config
 
       def daemonize
-        unless File.writable?(File.dirname(options[:pid]))
-          puts "startup failed: couldn't write pid to #{options[:pid]}"
+        unless File.writable?(File.dirname(options[:pid_file]))
+          puts "startup failed: couldn't write pid to #{options[:pid_file]}"
           exit 1
         end
 
         Process.daemon
-        File.open(options[:pid], 'w+') { f.write Process.pid }
+        File.open(options[:pid_file], 'w+') { f.write Process.pid }
+      end
+
+      def pid
+        return nil unless pidfile?
+        pid = File.read(options[:pid_file]).chomp.to_i
+        return nil unless pid > 0
+        pid
+      end
+
+      def pidfile?
+        File.exists?(options[:pid_file])
       end
 
       def setup_logdir
