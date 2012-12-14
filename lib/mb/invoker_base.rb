@@ -14,7 +14,7 @@ module MotherBrain
           raise e.class.new "#{e.message}\nCreate one with `mb configure`"
         end
 
-        level = Logger::WARN
+        level = nil
         level = Logger::INFO if options[:verbose]
         level = Logger::DEBUG if options[:debug]
         MB::Logging.setup(level: level, location: options[:logfile])
