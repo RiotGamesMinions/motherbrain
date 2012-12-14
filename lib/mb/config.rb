@@ -195,5 +195,12 @@ module MotherBrain
         opts[:url] = self.rest_client.url
       end
     end
+
+    def to_logger
+      {}.tap do |opts|
+        opts[:level] = self.log.level
+        opts[:location] = self.log.location
+      end
+    end
   end
 end

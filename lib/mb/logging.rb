@@ -79,7 +79,7 @@ module MotherBrain
         end
 
         def setup_logdir(location)
-          FileUtils.mkdir_p(File.dirname(location))
+          FileUtils.mkdir_p(File.dirname(location), mode: 0755)
         end
     end
 

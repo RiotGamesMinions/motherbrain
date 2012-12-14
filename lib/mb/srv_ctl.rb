@@ -18,7 +18,7 @@ module MotherBrain
         options = Hash.new
 
         OptionParser.new("Usage: #{filename} [options]") do |opts|
-          opts.on("-c", "--config PATH", "path to configuration file", "(default: '#{options[:config]}')") do |v|
+          opts.on("-c", "--config PATH", "path to configuration file", "(default: '#{default_options[:config]}')") do |v|
             options[:config] = File.expand_path(v)
           end
 
@@ -64,10 +64,12 @@ module MotherBrain
       # @param [Array] args
       # @param [String] filename
       def run(args, filename)
-        MB::Logging.setup(level: Logger::INFO)
-        ctl = new(parse(args, filename))
+        MB::Logging.setup
 
-        ctl.options[:kill] ? ctl.stop : ctl.start
+        options = parse(args, filename)
+        ctl = new(options)
+
+        options[:kill] ? ctl.stop : ctl.start
       rescue MB::MBError => e
         puts e
         exit e.status_code
@@ -105,8 +107,7 @@ module MotherBrain
       end
 
       @config.rest_gateway.enable = true
-
-      MB::Logging.setup(@config.log)
+      MB::Logging.setup(@config.to_logger)
     end
 
     def start
