@@ -124,7 +124,9 @@ module MotherBrain
       end
 
       Process.kill('TERM', pid)
-      FileUtils.rm(config.server.pid)
+      remove_pid
+    rescue Errno::ESRCH
+      remove_pid
     end
 
     private
@@ -136,7 +138,15 @@ module MotherBrain
         end
 
         Process.daemon
+        create_pid
+      end
+
+      def create_pid
         File.open(config.server.pid, 'w') { |f| f.write Process.pid }
+      end
+
+      def destroy_pid
+        FileUtils.rm(config.server.pid)
       end
 
       def pid
