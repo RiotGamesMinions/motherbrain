@@ -3,7 +3,7 @@ module MotherBrain
   class Config < Chozo::Config::JSON
     class << self
       def default_path
-        ENV["MB_CONFIG"] || "~/.mb/config.json"
+        File.expand_path(ENV["MB_CONFIG"] || "~/.mb/config.json")
       end
 
       # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
@@ -81,6 +81,50 @@ module MotherBrain
       default: true,
       type: Boolean
 
+    attribute 'log.level',
+      default: 'INFO',
+      type: String,
+      coerce: lambda { |m|
+        m = m.is_a?(String) ? m.upcase : m
+        case m
+        when Logger::DEBUG
+          'DEBUG'
+        when Logger::INFO
+          'INFO'
+        when Logger::WARN
+          'WARN'
+        when Logger::ERROR
+          'ERROR'
+        when Logger::FATAL
+          'FATAL'
+        when 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL'
+          m
+        else; nil
+        end
+      }
+
+    attribute 'log.location',
+      default: 'STDOUT',
+      type: String,
+      coerce: lambda { |m|
+        o = m
+        m = m.is_a?(String) ? m.upcase : m
+        case m
+        when STDOUT; 'STDOUT'
+        when STDERR; 'STDERR'
+        when 'STDOUT', 'STDERR'; m
+        else; o
+        end
+      }
+
+    attribute 'server.daemonize',
+      default: false,
+      type: Boolean
+
+    attribute 'server.pid',
+      default: "/var/run/motherbrain/mb.pid",
+      type: String
+
     attribute 'rest_gateway.enable',
       default: false,
       type: Boolean
@@ -149,6 +193,13 @@ module MotherBrain
     def to_rest_client
       {}.tap do |opts|
         opts[:url] = self.rest_client.url
+      end
+    end
+
+    def to_logger
+      {}.tap do |opts|
+        opts[:level] = self.log.level
+        opts[:location] = self.log.location
       end
     end
   end

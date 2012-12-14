@@ -19,6 +19,11 @@ module MotherBrain
         root.join("plugins")
       end
 
+      # @return [Pathname]
+      def logs
+        root.join("logs")
+      end
+
       # @return [String]
       def tmpdir
         FileUtils.mkdir_p(tmp)
