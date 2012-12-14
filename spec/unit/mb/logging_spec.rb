@@ -41,10 +41,34 @@ describe MB::Logging do
         its(:info?) { should be_true }
       end
 
+      context "when passed 'INFO' as string" do
+        let(:options) { { level: 'INFO' } }
+
+        its(:info?) { should be_true }
+      end
+
       context "with level: Logger::DEBUG" do
         let(:options) { { level: Logger::DEBUG } }
 
         its(:debug?) { should be_true }
+      end
+
+      context "when passed 'DEBUG' as string" do
+        let(:options) { { level: 'DEBUG' } }
+
+        its(:debug?) { should be_true }
+      end
+
+      context "when passed 'WARN' as string" do
+        let(:options) { { level: 'WARN' } }
+
+        its(:warn?) { should be_true }
+      end
+
+      context "when passed 'FATAL' as string" do
+        let(:options) { { level: 'FATAL' } }
+
+        its(:fatal?) { should be_true }
       end
 
       it "defaults to STDOUT" do

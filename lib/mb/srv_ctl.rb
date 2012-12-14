@@ -90,8 +90,8 @@ module MotherBrain
         @config.server.daemonize = @options[:daemonize]
       end
 
-      if @options[:pid_file].nil?
-        @options[:pid_file] = @config.server.pid
+      unless @options[:pid_file].nil?
+        @config.server.pid = @options[:pid_file]
       end
 
       @config.rest_gateway.enable = true
@@ -117,7 +117,7 @@ module MotherBrain
       end
 
       Process.kill('TERM', pid)
-      FileUtils.rm(options[:pid_file])
+      FileUtils.rm(config.server.pid)
     end
 
     private
@@ -125,24 +125,24 @@ module MotherBrain
       attr_reader :config
 
       def daemonize
-        unless File.writable?(File.dirname(options[:pid_file]))
-          puts "startup failed: couldn't write pid to #{options[:pid_file]}"
+        unless File.writable?(File.dirname(config.server.pid))
+          puts "startup failed: couldn't write pid to #{config.server.pid}"
           exit 1
         end
 
         Process.daemon
-        File.open(options[:pid_file], 'w') { |f| f.write Process.pid }
+        File.open(config.server.pid, 'w') { |f| f.write Process.pid }
       end
 
       def pid
         return nil unless pid_file?
-        pid = File.read(options[:pid_file]).chomp.to_i
+        pid = File.read(config.server.pid).chomp.to_i
         return nil unless pid > 0
         pid
       end
 
       def pid_file?
-        File.exists?(options[:pid_file])
+        File.exists?(config.server.pid)
       end
 
       def setup_logdir
