@@ -27,7 +27,7 @@ describe MB::Locks do
 
   describe "#find_lock" do
     it "returns a Chef::Mutex if a mutex with the given name is registered" do
-      mutex = double('mutex', type: :chef_environment, identifier: "my_environment")
+      mutex = double('mutex', type: :chef_environment, name: "my_environment")
       MB::Locks.manager.stub(:locks).and_return([mutex])
 
       subject.find_lock(chef_environment: "my_environment").should eql(mutex)
