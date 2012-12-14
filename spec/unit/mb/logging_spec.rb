@@ -65,6 +65,12 @@ describe MB::Logging do
         its(:warn?) { should be_true }
       end
 
+      context "when passed 'ERROR' as string" do
+        let(:options) { { level: 'ERROR' } }
+
+        its(:error?) { should be_true }
+      end
+
       context "when passed 'FATAL' as string" do
         let(:options) { { level: 'FATAL' } }
 

@@ -93,9 +93,11 @@ module MotherBrain
           'INFO'
         when Logger::WARN
           'WARN'
+        when Logger::ERROR
+          'ERROR'
         when Logger::FATAL
           'FATAL'
-        when 'DEBUG', 'INFO', 'WARN', 'FATAL'
+        when 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL'
           m
         else; nil
         end

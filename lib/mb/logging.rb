@@ -35,7 +35,7 @@ module MotherBrain
         level    = options[:level].is_a?(String) ? options[:level].upcase : options[:level]
         location = options[:location]
 
-        if %w[DEBUG INFO WARN FATAL].include?(level)
+        if %w[DEBUG INFO WARN ERROR FATAL].include?(level)
           level = const_get(level)
         end
 
