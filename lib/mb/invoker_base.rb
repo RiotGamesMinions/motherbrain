@@ -14,6 +14,12 @@ module MotherBrain
           raise e.class.new "#{e.message}\nCreate one with `mb configure`"
         end
 
+        level = Logger::WARN
+        level = Logger::INFO if options[:verbose]
+        level = Logger::DEBUG if options[:debug]
+        MB::Logging.setup(level: level, location: options[:logfile])
+
+        config.rest_gateway.enable = false
         config
       end
     end
@@ -33,14 +39,6 @@ module MotherBrain
       unless NOCONFIG_TASKS.include? config[:current_task].try(:name)
         @config = self.class.configure(self.options)
       end
-
-      level = nil
-      level = Logger::INFO if @options[:verbose]
-      level = Logger::DEBUG if @options[:debug]
-
-      location = @options[:logfile]
-
-      MB::Logging.setup level: level, location: location
     end
 
     class_option :config,
