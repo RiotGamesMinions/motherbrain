@@ -21,11 +21,11 @@ module MotherBrain
       #
       # @return [ChefMutex, nil]
       def find(options)
-        type, identifier = options.to_a.flatten
+        type, name = options.to_a.flatten
 
         locks.find { |mutex|
           mutex.type == type &&
-          mutex.identifier == identifier
+          mutex.name == name
         }
       end
 

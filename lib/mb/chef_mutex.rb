@@ -3,10 +3,10 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   #
   # Allows for MotherBrain clients to lock a chef resource. A mutex is created
-  # with a type and identifier. Sending #lock to the mutex will then store a
-  # data bag item with mutex, the requestor's client_name, and the current
-  # time. An attempt to lock an already-locked mutex will fail if the lock is
-  # owned by someone else, or succeed if the lock is owned by the current user.
+  # with a type and name. Sending #lock to the mutex will then store a data bag
+  # item with mutex, the requestor's client_name, and the current time. An
+  # attempt to lock an already-locked mutex will fail if the lock is owned by
+  # someone else, or succeed if the lock is owned by the current user.
   #
   # @example Creating a mutex and obtaining a lock
   #
@@ -37,7 +37,7 @@ module MotherBrain
     ]
 
     attr_reader :type
-    attr_reader :identifier
+    attr_reader :name
 
     attr_accessor :force
     attr_accessor :unlock_on_failure
@@ -54,17 +54,17 @@ module MotherBrain
         unlock_on_failure: true
       )
 
-      type, identifier = options.find { |key, value| LOCK_TYPES.include? key }
+      type, name = options.find { |key, value| LOCK_TYPES.include? key }
 
       @type              = type
-      @identifier        = identifier
+      @name              = name
       @force             = options[:force]
       @unlock_on_failure = options[:unlock_on_failure]
     end
 
     # @return [String]
     def data_bag_id
-      result = name.dup
+      result = to_s.dup
 
       result.downcase!
       result.gsub! /[^\w]+/, "-" # dasherize
@@ -74,8 +74,8 @@ module MotherBrain
     end
 
     # @return [String]
-    def name
-      "#{type}:#{identifier}"
+    def to_s
+      "#{type}:#{name}"
     end
 
     # Attempts to create a lock. Fails if the lock already exists.
@@ -88,7 +88,7 @@ module MotherBrain
         raise InvalidLockType, "Must pass a valid lock type (#{LOCK_TYPES})"
       end
 
-      MB.log.info "Locking #{name}"
+      MB.log.info "Locking #{to_s}"
 
       attempt_lock
     end
@@ -126,7 +126,7 @@ module MotherBrain
     def unlock
       return true if externally_testing?
 
-      MB.log.info "Unlocking #{name}"
+      MB.log.info "Unlocking #{to_s}"
 
       attempt_unlock
     end
@@ -172,7 +172,7 @@ module MotherBrain
       def delete
         return true unless locks
 
-        result = locks.delete(name)
+        result = locks.delete(data_bag_id)
 
         Locks.manager.unregister(Actor.current)
 
@@ -213,7 +213,7 @@ module MotherBrain
       def read
         return unless locks
 
-        result = locks.find(name)
+        result = locks.find(data_bag_id)
 
         result.to_hash if result
       end
@@ -225,9 +225,9 @@ module MotherBrain
         ensure_data_bag_exists
 
         result = locks.new(
-          id: lock_id,
+          id: data_bag_id,
           type: type,
-          identifier: identifier,
+          name: name,
           client_name: client_name,
           time: Time.now
         ).save

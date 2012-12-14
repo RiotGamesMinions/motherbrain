@@ -21,10 +21,10 @@ describe MB::ChefMutex do
   end
 
   its(:type) { should == lockset.keys.first }
-  its(:identifier) { should == lockset.values.first }
+  its(:name) { should == lockset.values.first }
 
-  its(:name) { should == "#{chef_mutex.type}:#{chef_mutex.identifier}" }
-  its(:data_bag_id) { should == "#{chef_mutex.type}-#{chef_mutex.identifier}" }
+  its(:to_s) { should == "#{chef_mutex.type}:#{chef_mutex.name}" }
+  its(:data_bag_id) { should == "#{chef_mutex.type}-#{chef_mutex.name}" }
 
   describe "#lock" do
     subject(:lock) { chef_mutex.lock }
