@@ -105,12 +105,13 @@ module MotherBrain
       default: 'STDOUT',
       type: String,
       coerce: lambda { |m|
+        o = m
         m = m.is_a?(String) ? m.upcase : m
         case m
         when STDOUT; 'STDOUT'
         when STDERR; 'STDERR'
         when 'STDOUT', 'STDERR'; m
-        else; nil
+        else; o
         end
       }
 
