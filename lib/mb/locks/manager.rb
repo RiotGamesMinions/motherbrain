@@ -17,7 +17,7 @@ module MotherBrain
 
       # Find a lock of the given name in the list of registered locks
       #
-      # @see {ChefMutex#initialize}
+      # @see ChefMutex#initialize
       #
       # @return [ChefMutex, nil]
       def find(options)

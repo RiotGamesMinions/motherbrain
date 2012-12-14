@@ -17,7 +17,7 @@ module MotherBrain
 
     # Attempts to create a lock. Fails if the lock already exists.
     #
-    # @see {ChefMutex#initialize}
+    # @see ChefMutex#initialize
     #
     # @raise [MotherBrain::InvalidLockType] if the lock type is invalid
     # @raise [MotherBrain::ResourceLocked] if the lock is unobtainable
@@ -30,7 +30,7 @@ module MotherBrain
     # Creates a new ChefMutex on the given resource and runs the given block inside of it. The lock is
     # released when the block completes.
     #
-    # @see {ChefMutex#initialize}
+    # @see ChefMutex#initialize
     #
     # @raise [MotherBrain::InvalidLockType] if the lock type is invalid
     # @raise [MotherBrain::ResourceLocked] if the lock is unobtainable
@@ -43,10 +43,10 @@ module MotherBrain
     # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
     # held by someone else
     #
+    # @see ChefMutex#initialize
+    #
     # @raise [MotherBrain::InvalidLockType] if the lock type is invalid
     # @raise [MotherBrain::ResourceLocked] if the lock is owned by someone else
-    #
-    # @see {ChefMutex#initialize}
     def chef_unlock(options = {})
       find_or_new(options).unlock
     end
