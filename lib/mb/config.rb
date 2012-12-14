@@ -81,6 +81,39 @@ module MotherBrain
       default: true,
       type: Boolean
 
+    attribute 'log.level',
+      default: 'WARN',
+      type: String,
+      coerce: lambda { |m|
+        m = m.is_a?(String) ? m.upcase : m
+        case m
+        when Logger::DEBUG
+          'DEBUG'
+        when Logger::INFO
+          'INFO'
+        when Logger::WARN
+          'WARN'
+        when Logger::FATAL
+          'FATAL'
+        when 'DEBUG', 'INFO', 'WARN', 'FATAL'
+          m
+        else; nil
+        end
+      }
+
+    attribute 'log.location',
+      default: 'STDOUT',
+      type: String,
+      coerce: lambda { |m|
+        m = m.is_a?(String) ? m.upcase : m
+        case m
+        when STDOUT; 'STDOUT'
+        when STDERR; 'STDERR'
+        when 'STDOUT', 'STDERR'; m
+        else; nil
+        end
+      }
+
     attribute 'server.daemonize',
       default: false,
       type: Boolean

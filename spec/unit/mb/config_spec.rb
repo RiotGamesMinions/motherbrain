@@ -45,6 +45,70 @@ describe MB::Config do
     end
   end
 
+  describe "#log.level" do
+    it "converts the string 'info' to 'INFO'" do
+      subject.log.level = 'info'
+
+      subject.log.level.should eql('INFO')
+    end
+
+    it "converts the string 'debug' to 'DEBUG'" do
+      subject.log.level = 'debug'
+
+      subject.log.level.should eql('DEBUG')
+    end
+
+    it "converts the string 'warn' to 'WARN'" do
+      subject.log.level = 'warn'
+
+      subject.log.level.should eql('WARN')
+    end
+
+    it "converts the string 'fatal' to 'FATAL'" do
+      subject.log.level = 'fatal'
+
+      subject.log.level.should eql('FATAL')
+    end
+
+    it "accepts the Logger::DEBUG constant" do
+      subject.log.level = Logger::DEBUG
+
+      subject.log.level.should eql('DEBUG')
+    end
+
+    it "accepts the Logger::INFO constant" do
+      subject.log.level = Logger::INFO
+
+      subject.log.level.should eql('INFO')
+    end
+
+    it "accepts the Logger::WARN constant" do
+      subject.log.level = Logger::WARN
+
+      subject.log.level.should eql('WARN')
+    end
+
+    it "accepts the Logger::FATAL constant" do
+      subject.log.level = Logger::FATAL
+
+      subject.log.level.should eql('FATAL')
+    end
+  end
+
+  describe "#log.location" do
+    it "accepts the string 'stdout'" do
+      subject.log.location = 'stdout'
+
+      subject.log.location.should eql('STDOUT')
+    end
+
+    it "accepts the string 'stderr'" do
+      subject.log.location = 'stderr'
+
+      subject.log.location.should eql('STDERR')
+    end
+  end
+
   describe "validations" do
     context "given a valid configuration" do
       it "should be valid" do
