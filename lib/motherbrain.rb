@@ -54,6 +54,7 @@ module MotherBrain
   autoload :RealModelBase, 'mb/real_model_base'
   autoload :REST, 'mb/rest'
   autoload :SafeReturn, 'mb/safe_return'
+  autoload :SrvCtl, 'mb/srv_ctl'
 
   class << self
     extend Forwardable
