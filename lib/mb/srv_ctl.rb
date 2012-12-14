@@ -100,7 +100,6 @@ module MotherBrain
         @config.server.pid = options[:pid_file]
       end
 
-      @config.rest_gateway.enable = true
       MB::Logging.setup(@config.to_logger)
     end
 

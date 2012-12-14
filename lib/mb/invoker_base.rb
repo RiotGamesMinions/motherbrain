@@ -14,6 +14,7 @@ module MotherBrain
           raise e.class.new "#{e.message}\nCreate one with `mb configure`"
         end
 
+        config.rest_gateway.enable = false
         config
       end
     end
