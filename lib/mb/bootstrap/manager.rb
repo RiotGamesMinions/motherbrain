@@ -142,7 +142,7 @@ module MotherBrain
 
         log.info { "Starting bootstrap of nodes on: #{environment}" }
 
-        chef_synchronize({ environment: environment }, options.slice(:force)) do
+        chef_synchronize(chef_environment: environment, force: options[:force]) do
           until task_queue.empty?
             responses.push concurrent_bootstrap(chef_conn, manifest, task_queue.shift, options.except(*RIDLEY_OPT_KEYS))
           end

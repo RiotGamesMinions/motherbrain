@@ -43,7 +43,7 @@ module MotherBrain
         raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
       end
       
-      chef_synchronize(environment: environment) do
+      chef_synchronize(chef_environment: environment) do
         CommandRunner.new(environment, scope, execute)
       end
     rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
