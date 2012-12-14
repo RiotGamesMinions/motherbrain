@@ -21,8 +21,7 @@ def setup_rspec
     config.run_all_when_everything_filtered = true
 
     config.before(:all) do
-      MB.set_logger(nil)
-      Celluloid.logger = nil
+      MB::Logging.setup(location: '/dev/null')
 
       @config = MB::Config.new(nil,
         {

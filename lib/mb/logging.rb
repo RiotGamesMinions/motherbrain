@@ -5,8 +5,10 @@ module MotherBrain
   module Logging
     autoload :BasicFormat, 'mb/logging/basic_format'
 
+    include Logger::Severity
+
     DEFAULTS = {
-      level: Logger::WARN,
+      level: INFO,
       location: STDOUT
     }
 
@@ -22,20 +24,27 @@ module MotherBrain
         @preserved_options = nil
       end
 
-      # @option [Boolean] verbose
-      # @option [Boolean] debug
-      # @option [String] logfile
+      # @option options [String, Integer] :level (WARN)
+      # @option options [String, IO] :location (STDOUT)
       #
       # @return [Logger]
       def setup(options = {})
         options = options.keep_if { |key, value| value }
         options = preserve(options).reverse_merge(DEFAULTS)
 
-        level    = options[:level]
+        level    = options[:level].is_a?(String) ? options[:level].upcase : options[:level]
         location = options[:location]
 
-        if %w[STDERR STDOUT].include? location
+        if %w[DEBUG INFO WARN ERROR FATAL].include?(level)
+          level = const_get(level)
+        end
+
+        if %w[STDERR STDOUT].include?(location)
           location = location.constantize
+        end
+
+        unless [STDERR, STDOUT].include?(location)
+          setup_logdir(location)
         end
 
         @logger = Logger.new(location).tap do |log|
@@ -58,16 +67,20 @@ module MotherBrain
 
       private
 
-      # Stores and returns an updated hash, so that #setup can be called
-      # multiple times
-      #
-      # @param [Hash] options
-      #
-      # @return [Hash]
-      def preserve(options)
-        @preserved_options ||= Hash.new
-        @preserved_options.reverse_merge! options
-      end
+        # Stores and returns an updated hash, so that #setup can be called
+        # multiple times
+        #
+        # @param [Hash] options
+        #
+        # @return [Hash]
+        def preserve(options)
+          @preserved_options ||= Hash.new
+          @preserved_options.reverse_merge! options
+        end
+
+        def setup_logdir(location)
+          FileUtils.mkdir_p(File.dirname(location), mode: 0755)
+        end
     end
 
     # @return [Logger]
