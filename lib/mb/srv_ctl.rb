@@ -23,12 +23,6 @@ module MotherBrain
           end
 
           opts.on("-v", "--verbose", "run with verbose output") do
-            if options[:log_level].nil?
-              options[:log_level] = Logger::INFO
-            end
-          end
-
-          opts.on("-D", "--debug", "run with debug output") do
             options[:log_level] = Logger::DEBUG
           end
 

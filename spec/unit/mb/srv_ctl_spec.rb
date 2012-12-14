@@ -31,22 +31,6 @@ describe MB::SrvCtl do
       context "given -v" do
         let(:args) { ["-v"] }
 
-        it "sets :log_level to Logger::INFO" do
-          subject[:log_level].should eql(Logger::INFO)
-        end
-      end
-
-      context "given -D" do
-        let(:args) { ["-D"] }
-
-        it "sets :log_level to Logger::DEBUG" do
-          subject[:log_level].should eql(Logger::DEBUG)
-        end
-      end
-
-      context "given -D and -v" do
-        let(:args) { ["-D", "-v"] }
-
         it "sets :log_level to Logger::DEBUG" do
           subject[:log_level].should eql(Logger::DEBUG)
         end

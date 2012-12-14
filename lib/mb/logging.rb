@@ -8,7 +8,7 @@ module MotherBrain
     include Logger::Severity
 
     DEFAULTS = {
-      level: WARN,
+      level: INFO,
       location: STDOUT
     }
 

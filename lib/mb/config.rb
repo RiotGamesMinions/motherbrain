@@ -82,7 +82,7 @@ module MotherBrain
       type: Boolean
 
     attribute 'log.level',
-      default: 'WARN',
+      default: 'INFO',
       type: String,
       coerce: lambda { |m|
         m = m.is_a?(String) ? m.upcase : m
