@@ -33,7 +33,7 @@ module MotherBrain
             options[:log_location] = FileSystem.logs.join('mbsrv.log').to_s
           end
 
-          opts.on("--pid PATH", String, "pid file to read/write from") do |v|
+          opts.on("-P", "--pid PATH", String, "pid file to read/write from") do |v|
             options[:pid_file] = File.expand_path(v)
           end
 
