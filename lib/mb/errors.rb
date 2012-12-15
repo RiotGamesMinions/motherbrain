@@ -113,4 +113,6 @@ module MotherBrain
       "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
     end
   end
+
+  class InvalidLockType < MBError; status_code(23); end
 end
