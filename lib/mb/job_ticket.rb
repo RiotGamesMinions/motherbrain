@@ -4,6 +4,8 @@ module MotherBrain
     extend Forwardable
 
     def_delegator :job, :id
+    def_delegator :job, :status
+    def_delegator :job, :messages
     def_delegator :job, :completed?
     def_delegator :job, :finished?
     def_delegator :job, :failure?
@@ -16,13 +18,13 @@ module MotherBrain
       @job_id = job_id
     end
 
-    # @return [Job]
-    def job
-      JobManager.instance.find!(job_id)
-    end
-
     private
 
       attr_reader :job_id
+
+      # @return [Job]
+      def job
+        JobManager.instance.find!(job_id)
+      end
   end
 end

@@ -4,22 +4,39 @@ module MotherBrain
     autoload :Status, 'mb/job/status'
     autoload :Type, 'mb/job/type'
 
+    class << self
+      alias_method :old_new, :new
+
+      # @param [String] type
+      def create(type)
+        JobManager.instance.create(type)
+      end
+      alias_method :new, :create
+
+      private
+
+        def __initialize__(id, type)
+          old_new(id, type)
+        end
+    end
+
     include Job::Status
     include Job::Type
 
     attr_reader :id
     attr_reader :type
     attr_reader :status
-    attr_reader :messages
+    attr_reader :result
 
     alias_method :state, :status
 
-    # @param [String] type
-    def initialize(type)
-      @id       = job_manager.create(type)
-      @type     = type
+    # @param [Integer] id
+    # @param [#to_s] type
+    def initialize(id, type)
+      @id       = id
+      @type     = type.to_s
       @status   = PENDING
-      @messages = Array.new
+      @result   = nil
     end
 
     # @return [Boolean]
@@ -56,16 +73,8 @@ module MotherBrain
     # @param [String] status
     #
     # @return [Job]
-    def transition(status)
-      @status = job_manager.transition(self.id, status)
-      self
-    end
-
-    # @param [String] message
-    #
-    # @return [Job]
-    def update(message)
-      @messages = job_manager.update(self.id, message)
+    def transition(status, message = nil)
+      @status, @message = job_manager.transition(self.id, status, message)
       self
     end
 

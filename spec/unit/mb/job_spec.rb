@@ -6,15 +6,15 @@ describe MB::Job do
   describe "ClassMethods" do
     subject { described_class }
 
-    describe "::new" do
+    describe "::create" do
       subject { described_class.new(type) }
 
       it "starts in PENDING state" do
         subject.should be_pending
       end
 
-      it "starts with empty messages" do
-        subject.messages.should be_empty
+      it "starts with a nil result" do
+        subject.result.should be_nil
       end
 
       it "has an ID" do

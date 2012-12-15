@@ -17,12 +17,14 @@ module MotherBrain
     alias_method :list, :jobs
 
     def initialize
-      @jobs  = Hash.new
+      @jobs  = Set.new
       @mutex = Mutex.new
     end
 
     def create(type)
-      1
+      job = Job.send(:__initialize__, 1, type)
+      jobs.add(job)
+      job
     end
 
     # @param [Integer] id
@@ -47,12 +49,12 @@ module MotherBrain
       job
     end
 
-    def transition(id, status)
-      update(id, status: status)
-    end
+    def transition(id, status, message)
+      job = find!(id)
+      job.status = status
+      job.message = message if message
 
-    def update(id, attributes = {})
-      find!(id)
+      [ job.status, job.message ]
     end
   end
 end
