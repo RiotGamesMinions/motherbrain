@@ -18,6 +18,22 @@ module MotherBrain
       @job_id = job_id
     end
 
+    # @return [Hash]
+    def to_hash
+      {
+        id: job.id,
+        status: job.status,
+        result: job.result
+      }
+    end
+
+    # @param [Hash] options
+    #
+    # @return [String]
+    def to_json(options = {})
+      MultiJson.encode(self.to_hash, options)
+    end
+
     private
 
       attr_reader :job_id
