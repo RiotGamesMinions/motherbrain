@@ -47,6 +47,7 @@ module MotherBrain
         Celluloid::Actor[:motherbrain] = group = super()
 
         group.supervise_as :config_manager, ConfigManager, app_config
+        group.supervise_as :job_manager, JobManager
         group.supervise_as :plugin_manager, PluginManager
         group.supervise_as :provisioner_manager, Provisioner::Manager
         group.supervise_as :bootstrap_manager, Bootstrap::Manager
@@ -82,6 +83,13 @@ module MotherBrain
         Bootstrap::Manager.instance
       end
       alias_method :bootstrapper, :bootstrap_manager
+
+      # @raise [Celluloid::DeadActorError] if job manager has not been started
+      #
+      # @return [Celluloid::Actor(JobManager)]
+      def job_manager
+        JobManager.instance
+      end
 
       # @raise [Celluloid::DeadActorError] if Node Querier has not been started
       #
