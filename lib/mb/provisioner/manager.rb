@@ -38,20 +38,6 @@ module MotherBrain
           id = options.delete(:with)
           choose_provisioner(id).new(options)
         end
-
-        # Validate that the created environment factory environment contains the expected number
-        # of instance types
-        #
-        # @param [Array<Hash>] created
-        # @param [Provisioner::Manifest] manifest
-        #
-        # @raise [UnexpectedProvisionCount] if an unexpected amount of nodes was returned by the
-        #   request to the provisioner
-        def validate_create(created, manifest)
-          unless created.length == manifest.node_count
-            raise UnexpectedProvisionCount.new(manifest.node_count, created.length)
-          end
-        end
       end
 
       include Celluloid
