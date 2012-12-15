@@ -24,7 +24,7 @@ module MotherBrain
 
       # @return [Job]
       def job
-        JobManager.instance.find!(job_id)
+        JobManager.instance.find(job_id)
       end
   end
 end

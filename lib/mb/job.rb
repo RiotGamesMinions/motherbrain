@@ -23,18 +23,19 @@ module MotherBrain
 
     attr_reader :id
     attr_reader :type
-    attr_reader :status
-    attr_reader :result
+    
+    attr_accessor :status
+    attr_accessor :result
 
     alias_method :state, :status
 
     # @param [Integer] id
     # @param [#to_s] type
     def initialize(id, type)
-      @id       = id
-      @type     = type.to_s
-      @status   = PENDING
-      @result   = nil
+      @id     = id
+      @type   = type.to_s
+      @status = PENDING
+      @result = nil
     end
 
     # @return [Boolean]
@@ -65,7 +66,7 @@ module MotherBrain
 
     # @return [JobTicket]
     def ticket
-      @ticket ||= JobTicket.new(self.id)
+      JobManager.instance.ticket_for(self.id)
     end
 
     # @param [String] status
@@ -73,15 +74,7 @@ module MotherBrain
     #
     # @return [Job]
     def transition(status, result = nil)
-      @status = status
-      @result = result if result
-      self
+      JobManager.instance.update(self.id, status, result)
     end
-
-    private
-
-      def job_manager
-        JobManager.instance
-      end
   end
 end

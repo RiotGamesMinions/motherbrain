@@ -78,14 +78,11 @@ module MotherBrain
         Provisioner::Manifest.validate(manifest, plugin)
 
         provisioner = self.class.new_provisioner(options)
-        provisioner.async.up(job, environment.to_s, manifest)
+        provisioner.async.up(job.freeze, environment.to_s, manifest)
         job.ticket
       rescue InvalidProvisionManifest => e
         job.transition(Job::Status::FAILURE, e)
         job.ticket
-      rescue => e
-        log.fatal { "An unknown error occured during provision: #{e}" }
-        job.transition(Job::Status::FAILURE, "internal error")
       ensure
         provisioner.terminate if provisioner && provisioner.alive?
       end
@@ -99,11 +96,7 @@ module MotherBrain
       def destroy(environment, options = {})
         job = Job.new(:destroy_provision)
         provisioner = self.class.new_provisioner(options)
-        provisioner.async.down(job, environment.to_s)
-        job.ticket
-      rescue => e
-        log.fatal { "An unknown error occured during destroy_provision: #{e}"}
-        job.transition(Job::Status::FAILURE, "internal error")
+        provisioner.async.down(job.freeze, environment.to_s)
         job.ticket
       ensure
         provisioner.terminate if provisioner && provisioner.alive?

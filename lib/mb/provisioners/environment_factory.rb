@@ -56,6 +56,7 @@ module MotherBrain
       end
 
       include Provisioner
+      include MB::Logging
 
       register_provisioner :environment_factory,
         default: true
@@ -82,7 +83,7 @@ module MotherBrain
       # Create an environment of the given name and provision nodes in based on the contents
       # of the given manifest
       #
-      # @param [MB::Job] job
+      # @param [Job] job
       # @param [String] env_name
       # @param [Provisioner::Manifest] manifest
       #
@@ -100,20 +101,26 @@ module MotherBrain
         job.transition(Job::Status::SUCCESS)
       rescue EF::REST::Error => e
         job.transition(Job::Status::FAILURE, e)
+      rescue => e
+        log.fatal { "An unknown error occured during destroy_provision: #{e}"}
+        job.transition(Job::Status::FAILURE, "internal error")
       end
 
       # Tear down the given environment and the nodes in it
       #
-      # @param [MB::Job] job
+      # @param [Job] job
       # @param [String] env_name
       #
-      # @return [Hash, nil]
+      # @return [Job]
       def down(job, env_name)
         job.transition(Job::Status::RUNNING)
         connection.environment.destroy(env_name)
         job.transition(Job::Status::SUCCESS)
       rescue EF::REST::Error => e
         job.transition(Job::Status::FAILURE, e)
+      rescue => e
+        log.fatal { "An unknown error occured during destroy_provision: #{e}"}
+        job.transition(Job::Status::FAILURE, "internal error")
       end
     end
   end

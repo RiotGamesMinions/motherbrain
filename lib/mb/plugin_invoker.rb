@@ -188,7 +188,7 @@ module MotherBrain
 
                 invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
               else
-                MB.ui.error ticket.result.to_s
+                MB.log.fatal ticket.result
                 exit 1
               end
             end
