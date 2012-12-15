@@ -5,7 +5,7 @@ module MotherBrain
 
     def_delegator :job, :id
     def_delegator :job, :status
-    def_delegator :job, :messages
+    def_delegator :job, :result
     def_delegator :job, :completed?
     def_delegator :job, :finished?
     def_delegator :job, :failure?

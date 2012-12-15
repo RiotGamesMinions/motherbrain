@@ -69,10 +69,12 @@ module MotherBrain
     end
 
     # @param [String] status
+    # @param [#to_json] result
     #
     # @return [Job]
-    def transition(status, message = nil)
-      @status, @message = job_manager.transition(self.id, status, message)
+    def transition(status, result = nil)
+      @status = status
+      @result = result if result
       self
     end
 

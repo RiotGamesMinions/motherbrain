@@ -49,12 +49,18 @@ module MotherBrain
       job
     end
 
-    def transition(id, status, message)
+    # @param [Integer] id
+    # @param [String] status
+    # @param [#to_json] message
+    #
+    # @return [ String, #to_json ]
+    #   an array containing the job status and job result
+    def transition(id, status, result)
       job = find!(id)
       job.status = status
-      job.message = message if message
+      job.result = result if result
 
-      [ job.status, job.message ]
+      [ job.status, job.result ]
     end
   end
 end
