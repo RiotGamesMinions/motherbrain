@@ -72,28 +72,22 @@ module MotherBrain
       # @option options [#to_sym] :with
       #   id of provisioner to use
       #
-      # @return [SafeReturn]
+      # @return [MB::JobTicket]
       def provision(environment, manifest, plugin, options = {})
-        defer {
-          response = safe_return(InvalidProvisionManifest) do
-            Provisioner::Manifest.validate(manifest, plugin)
-          end
+        job = Job.new(:provision)
+        Provisioner::Manifest.validate(manifest, plugin)
 
-          if response.error?
-            return response
-          end
-
-          response = self.class.new_provisioner(options).up(environment.to_s, manifest)
-
-          if response.ok?
-            safe_return do
-              self.class.validate_create(response.body, manifest)
-              response.body
-            end
-          else
-            response
-          end
-        }
+        provisioner = self.class.new_provisioner(options)
+        provisioner.async.up(job, environment.to_s, manifest)
+        job.ticket
+      rescue InvalidProvisionManifest => e
+        job.transition(Job::Status::FAILURE, e)
+        job.ticket
+      rescue => e
+        log.fatal { "An unknown error occured during provision: #{e}" }
+        job.transition(Job::Status::FAILURE, "internal error")
+      ensure
+        provisioner.terminate if provisioner && provisioner.alive?
       end
 
       # @param [#to_s] environment
@@ -101,11 +95,18 @@ module MotherBrain
       # @option options [#to_sym] :with
       #   id of provisioner to use
       #
-      # @return [Boolean]
+      # @return [MB::JobTicket]
       def destroy(environment, options = {})
-        defer {
-          self.class.new_provisioner(options).down(environment.to_s)
-        }
+        job = Job.new(:destroy_provision)
+        provisioner = self.class.new_provisioner(options)
+        provisioner.async.down(job, environment.to_s)
+        job.ticket
+      rescue => e
+        log.fatal { "An unknown error occured during destroy_provision: #{e}"}
+        job.transition(Job::Status::FAILURE, "internal error")
+        job.ticket
+      ensure
+        provisioner.terminate if provisioner && provisioner.alive?
       end
 
       def finalize

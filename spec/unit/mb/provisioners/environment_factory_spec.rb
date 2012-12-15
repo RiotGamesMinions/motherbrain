@@ -41,32 +41,39 @@ describe MB::Provisioners::EnvironmentFactory do
   subject { described_class.new(options) }
 
   describe "#up" do
+    let(:job) { double('job', ticket: double('job-ticket')) }
     let(:env_name) { "mbtest" }
 
     it "creates an environment with the given name and converted manifest" do
+      job.should_receive(:transition).with('running')
+      job.should_receive(:transition).with('success')
       connection = double('connection')
       environment = double('environment')
       converted_manifest = double('converted_manifest')
       described_class.should_receive(:convert_manifest).with(manifest).and_return(converted_manifest)
       described_class.should_receive(:handle_created).with(environment).and_return(Array.new)
+      described_class.should_receive(:validate_create).and_return(true)
       connection.stub_chain(:environment, :create).with(env_name, converted_manifest).and_return(Hash.new)
       connection.stub_chain(:environment, :created?).with(env_name).and_return(true)
       connection.stub_chain(:environment, :find).with(env_name, force: true).and_return(environment)
       subject.connection = connection
 
-      subject.up(env_name, manifest)
+      subject.up(job, env_name, manifest)
     end
   end
 
   describe "#down" do
+    let(:job) { double('job') }
     let(:env_name) { "mbtest" }
 
     it "sends a destroy command to environment factory with the given environment" do
+      job.should_receive(:transition).with('running')
+      job.should_receive(:transition).with('success')
       connection = double('connection')
       connection.stub_chain(:environment, :destroy).with(env_name).and_return(Hash.new)
       subject.connection = connection
 
-      subject.down(env_name)
+      subject.down(job, env_name)
     end
   end
 end

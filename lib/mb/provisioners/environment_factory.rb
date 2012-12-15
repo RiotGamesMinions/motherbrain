@@ -82,31 +82,38 @@ module MotherBrain
       # Create an environment of the given name and provision nodes in based on the contents
       # of the given manifest
       #
+      # @param [MB::Job] job
       # @param [String] env_name
       # @param [Provisioner::Manifest] manifest
       #
-      # @return [Hash]
-      def up(env_name, manifest)
-        safe_return(EF::REST::Error) do
-          connection.environment.create(env_name, self.class.convert_manifest(manifest))
+      # @return [Job]
+      def up(job, env_name, manifest)
+        job.transition(Job::Status::RUNNING)
+        connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
-          until connection.environment.created?(env_name)
-            sleep self.interval
-          end
-
-          self.class.handle_created(connection.environment.find(env_name, force: true))
+        until connection.environment.created?(env_name)
+          sleep self.interval
         end
+
+        response = self.class.handle_created(connection.environment.find(env_name, force: true))
+        self.class.validate_create(response, manifest)
+        job.transition(Job::Status::SUCCESS)
+      rescue EF::REST::Error => e
+        job.transition(Job::Status::FAILURE, e)
       end
 
       # Tear down the given environment and the nodes in it
       #
+      # @param [MB::Job] job
       # @param [String] env_name
       #
       # @return [Hash, nil]
-      def down(env_name)
-        safe_return(EF::REST::Error) do
-          connection.environment.destroy(env_name)
-        end
+      def down(job, env_name)
+        job.transition(Job::Status::RUNNING)
+        connection.environment.destroy(env_name)
+        job.transition(Job::Status::SUCCESS)
+      rescue EF::REST::Error => e
+        job.transition(Job::Status::FAILURE, e)
       end
     end
   end

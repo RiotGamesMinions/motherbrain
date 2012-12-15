@@ -114,7 +114,21 @@ module MotherBrain
         }
       }
 
-      MB::Application.provisioner.destroy(environment, provisioner_options)
+      ticket = MB::Application.provisioner.destroy(environment, provisioner_options)
+
+      until ticket.completed?
+        print "."
+        sleep 1
+      end
+
+      if ticket.success?
+        MB.log.unknown "Successfully destroyed environment: #{environment}"
+        exit 0
+      else
+        MB.log.fatal "Failed to destroy environment: #{environment}"
+        MB.log.fatal ticket.result
+        exit 1
+      end
     end
 
     desc "version", "Display version and license information"
