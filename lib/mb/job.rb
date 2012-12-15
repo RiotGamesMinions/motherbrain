@@ -2,7 +2,6 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Job
     autoload :Status, 'mb/job/status'
-    autoload :Type, 'mb/job/type'
 
     class << self
       alias_method :old_new, :new
@@ -21,7 +20,6 @@ module MotherBrain
     end
 
     include Job::Status
-    include Job::Type
 
     attr_reader :id
     attr_reader :type

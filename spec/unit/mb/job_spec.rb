@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe MB::Job do
-  let(:type) { MB::Job::Type::PROVISION }
+  let(:type) { :provision }
 
   describe "ClassMethods" do
     subject { described_class }
