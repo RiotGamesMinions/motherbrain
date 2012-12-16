@@ -42,7 +42,6 @@ module MotherBrain
 
       include Celluloid
       include MB::Logging
-      include MB::ActorUtil
 
       def initialize
         log.info { "Provision Manager starting..." }
@@ -100,7 +99,7 @@ module MotherBrain
         provisioner = self.class.new_provisioner(options)
 
         # this needs to be async but is currently deadlocking?
-        provisioner.down(job.freeze, environment.to_s)
+        provisioner.async.down(job.freeze, environment.to_s)
 
         job
       ensure

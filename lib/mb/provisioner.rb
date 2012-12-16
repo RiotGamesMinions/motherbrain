@@ -8,7 +8,6 @@ module MotherBrain
       def included(base)
         base.extend(ClassMethods)
         base.send(:include, Celluloid)
-        base.send(:include, ActorUtil)
       end
     end
 

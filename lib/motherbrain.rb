@@ -24,7 +24,6 @@ require 'mb/errors'
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
   autoload :AbstractGear, 'mb/abstract_gear'
-  autoload :ActorUtil, 'mb/actor_util'
   autoload :Application, 'mb/application'
   autoload :Bootstrap, 'mb/bootstrap'
   autoload :ChefMutex, 'mb/chef_mutex'
@@ -55,7 +54,6 @@ module MotherBrain
   autoload :Provisioners, 'mb/provisioners'
   autoload :RealModelBase, 'mb/real_model_base'
   autoload :REST, 'mb/rest'
-  autoload :SafeReturn, 'mb/safe_return'
   autoload :SrvCtl, 'mb/srv_ctl'
   autoload :Upgrade, 'mb/upgrade'
 
