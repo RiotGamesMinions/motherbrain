@@ -45,8 +45,8 @@ describe MB::Provisioners::EnvironmentFactory do
     let(:env_name) { "mbtest" }
 
     it "creates an environment with the given name and converted manifest" do
-      job.should_receive(:transition).with('running')
-      job.should_receive(:transition).with('success')
+      job.should_receive(:transition).with(:running)
+      job.should_receive(:transition).with(:success)
       connection = double('connection')
       environment = double('environment')
       converted_manifest = double('converted_manifest')
@@ -67,8 +67,8 @@ describe MB::Provisioners::EnvironmentFactory do
     let(:env_name) { "mbtest" }
 
     it "sends a destroy command to environment factory with the given environment" do
-      job.should_receive(:transition).with('running')
-      job.should_receive(:transition).with('success')
+      job.should_receive(:transition).with(:running)
+      job.should_receive(:transition).with(:success)
       connection = double('connection')
       connection.stub_chain(:environment, :destroy).with(env_name).and_return(Hash.new)
       subject.connection = connection

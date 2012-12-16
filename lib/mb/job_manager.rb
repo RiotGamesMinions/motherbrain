@@ -11,70 +11,62 @@ module MotherBrain
     end
 
     include Celluloid
+    include Celluloid::Notifications
     include MB::Logging
 
+    trap_exit :force_close
+
     attr_reader :jobs
-    alias_method :list, :jobs
 
     def initialize
       @jobs  = Set.new
       @mutex = Mutex.new
+      subscribe('job.transition', :save)
     end
 
-    def create(type)
-      job = Job.send(:__initialize__, 1, type)
+    def add(job)
       mutex.synchronize do
         jobs.add(job)
+        monitor(job)
       end
-      job.dup
     end
 
-    # @param [Integer] id
-    #
-    # @raise [JobNotFound] if no job found with given ID
-    #
-    # @return [Job]
     def find(id)
-      job = jobs.find { |job| job.id == id }
+      jobs.find { |job| job.id == id }
+    end
 
-      if job.nil?
-        raise JobNotFound.new(id)
+    def remove(job)
+      mutex.synchronize do
+        jobs.delete(job)
+
+        if job.alive?
+          unmonitor(job)
+        end
       end
-
-      job
     end
 
-    # @param [Integer] id
-    #
-    # @raise [JobNotFound] if no job found with given ID
-    #
-    # @return [JobTicket]
-    def ticket_for(id)
-      JobTicket.new(find(id).id)
-    end
-
-    # @param [Integer] id
-    # @param [String] status
-    # @param [#to_json] result
+    # @param [String] _msg
+    # @param [Job] job
     #
     # @raise [ArgumentError] if an unknown job status is given
     # @raise [JobNotFound] if no job found with given ID
     #
     # @return [Job]
-    def update(id, status, result)
-      unless [FAILURE, PENDING, RUNNING, SUCCESS].include?(status)
-        raise ArgumentError, "unknown job status given: #{status}"
-      end
+    def save(_msg, job)
+      log.debug { "updating job #{job.id}" }
+    end
 
-      job = nil
+    def uuid
+      Celluloid::UUID.generate
+    end
 
-      mutex.synchronize do
-        job = find(id)
-        job.status = status
-        job.result = result unless result.nil?
-      end
+    def force_close(actor, reason)
+      log.warn { "job crashed: #{reason}" }
+      remove(actor)
+    end
 
-      job.dup
+    def finalize
+      jobs.map { |job| job.terminate if job.alive? }
     end
 
     private

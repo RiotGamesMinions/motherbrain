@@ -162,25 +162,23 @@ module MotherBrain
                 }
               }
 
-              MB.ui.say "Provisioning nodes and adding them to: #{environment}"
-              ticket = MB::Application.provision(environment, manifest, plugin, provisioner_options)
+              job = Provisioner::Manager.instance.provision(environment, manifest, plugin, provisioner_options)
 
-              until ticket.completed?
-                print "."
-                sleep 1
+              until job.completed?
+                spinner("Provisioning '#{environment}':")
               end
 
-              if ticket.success?
+              if job.success?
                 MB.ui.say "Provision finished"
 
                 if options[:skip_bootstrap]
                   MB.ui.say "Skipping bootstrap"
-                  MB.ui.say ticket.result
+                  MB.ui.say job.result
                   exit 0
                 end
 
                 bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(
-                  ticket.result,
+                  job.result,
                   manifest,
                   Tempfile.new('bootstrap_manifest').path
                 )
@@ -188,7 +186,7 @@ module MotherBrain
 
                 invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
               else
-                MB.log.fatal ticket.result
+                MB.log.fatal job.result
                 exit 1
               end
             end

@@ -1,80 +1,102 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Job
-    autoload :Status, 'mb/job/status'
+    class StateMachine
+      include Celluloid::FSM
+      include Celluloid::Notifications
+      include MB::Logging
 
-    class << self
-      alias_method :old_new, :new
-
-      # @param [String] type
-      def create(type)
-        JobManager.instance.create(type)
+      state :pending, to: [ :running, :failure ], default: true do
+        log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
+        publish('job.transition', actor)
       end
-      alias_method :new, :create
 
-      private
+      state :running, to: [ :success, :failure ] do
+        log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
+        publish('job.transition', actor)
+      end
 
-        def __initialize__(id, type)
-          old_new(id, type)
-        end
+      state :success do
+        log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
+        publish('job.transition', actor)
+      end
+
+      state :failure do
+        log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
+        publish('job.transition', actor)
+      end
     end
 
-    include Job::Status
+    extend Forwardable
+    include Celluloid
+    include MB::Logging
 
     attr_reader :id
     attr_reader :type
-    
-    attr_accessor :status
-    attr_accessor :result
+    attr_reader :result
 
-    alias_method :state, :status
+    def_delegator :machine, :state
 
-    # @param [Integer] id
     # @param [#to_s] type
-    def initialize(id, type)
-      @id     = id
-      @type   = type.to_s
-      @status = PENDING
-      @result = nil
+    def initialize(type)
+      @machine = StateMachine.new
+      @type    = type.to_s
+      @id      = JobManager.instance.uuid
+      @result  = nil
+      JobManager.instance.add(Actor.current)
     end
 
     # @return [Boolean]
     def completed?
-      self.status == SUCCESS || self.status == FAILURE
+      self.success? || self.failure?
     end
     alias_method :finished?, :completed?
 
     # @return [Boolean]
     def failure?
-      self.status == FAILURE
+      self.state == :failure
     end
 
     # @return [Boolean]
     def pending?
-      self.status == PENDING
+      self.state == :pending
     end
 
     # @return [Boolean]
     def running?
-      self.status == RUNNING
+      self.state == :running
     end
 
     # @return [Boolean]
     def success?
-      self.status == SUCCESS
+      self.state == :success
     end
 
-    # @return [JobTicket]
-    def ticket
-      JobManager.instance.ticket_for(self.id)
-    end
-
-    # @param [String] status
+    # @param [Symbol] state
     # @param [#to_json] result
     #
     # @return [Job]
-    def transition(status, result = nil)
-      JobManager.instance.update(self.id, status, result)
+    def transition(state, result = nil, options = {})
+      @result = result unless result.nil?
+      machine.transition(state, options)
+      Actor.current
     end
+
+    def finalize
+      JobManager.instance.remove(Actor.current)
+    end
+
+    def to_hash
+      {
+        id: self.id,
+        type: self.type,
+        state: self.state,
+        result: self.result
+      }
+    end
+
+    private
+
+      attr_reader :machine
   end
 end

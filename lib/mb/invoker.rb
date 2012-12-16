@@ -114,19 +114,18 @@ module MotherBrain
         }
       }
 
-      ticket = MB::Application.provisioner.destroy(environment, provisioner_options)
+      job = Provisioner::Manager.instance.destroy(environment, provisioner_options)
 
-      until ticket.completed?
-        print "."
-        sleep 1
+      until job.completed?
+        spinner("Destroying '#{environment}': ")
       end
 
-      if ticket.success?
+      if job.success?
         MB.log.unknown "Successfully destroyed environment: #{environment}"
         exit 0
       else
         MB.log.fatal "Failed to destroy environment: #{environment}"
-        MB.log.fatal ticket.result
+        MB.log.fatal job.result
         exit 1
       end
     end

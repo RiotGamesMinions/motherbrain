@@ -22,6 +22,17 @@ module MotherBrain
         config.rest_gateway.enable = false
         config
       end
+
+      def spinner
+        Enumerator.new do |e|
+          loop do
+            e.yield '|'
+            e.yield '/'
+            e.yield '-'
+            e.yield '\\'
+          end
+        end
+      end
     end
 
     include MB::Locks
@@ -62,5 +73,16 @@ module MotherBrain
       default: "STDOUT",
       aliases: "-L",
       banner: "PATH"
+
+    private
+
+      def spinner
+        @spinner ||= self.class.spinner
+      end
+
+      def spinner(message = nil)
+        printf("\r#{message}%s", spinner.next)
+        sleep(0.1)
+      end
   end
 end
