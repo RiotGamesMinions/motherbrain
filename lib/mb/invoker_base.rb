@@ -14,9 +14,8 @@ module MotherBrain
           raise e.class.new "#{e.message}\nCreate one with `mb configure`"
         end
 
-        level = Logger::WARN
-        level = Logger::INFO if options[:verbose]
-        level = Logger::DEBUG if options[:debug]
+        level = nil
+        level = Logger::DEBUG if options[:verbose]
         MB::Logging.setup(level: level, location: options[:logfile])
 
         config.rest_gateway.enable = false
@@ -48,14 +47,9 @@ module MotherBrain
       banner: "PATH"
     class_option :verbose,
       type: :boolean,
-      desc: "Increase verbosity of output.",
-      default: false,
-      aliases: "-v"
-    class_option :debug,
-      type: :boolean,
       desc: "Output all log messages.",
       default: false,
-      aliases: "-d"
+      aliases: "-v"
     class_option :logfile,
       type: :string,
       desc: "Set the log file location.",

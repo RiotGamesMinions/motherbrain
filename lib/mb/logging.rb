@@ -24,6 +24,10 @@ module MotherBrain
         @preserved_options = nil
       end
 
+      # Setup the logger with the given options. Each option is individually
+      # memoized, so that subsequent calls with blank options maintain the
+      # originally intended state.
+      #
       # @option options [String, Integer] :level (WARN)
       # @option options [String, IO] :location (STDOUT)
       #
