@@ -55,6 +55,7 @@ module MotherBrain
   autoload :REST, 'mb/rest'
   autoload :SafeReturn, 'mb/safe_return'
   autoload :SrvCtl, 'mb/srv_ctl'
+  autoload :Upgrade, 'mb/upgrade'
 
   class << self
     extend Forwardable

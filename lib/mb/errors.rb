@@ -113,4 +113,25 @@ module MotherBrain
       "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
     end
   end
+
+  class ComponentNotVersioned < MBError
+    status_code(22)
+
+    attr_reader :component_name
+
+    def initialize(component_name)
+      @component_name = component_name
+    end
+
+    def to_s
+      [
+        "Component '#{component_name}' is not versioned",
+        "You can version components with:",
+        "  versioned # defaults to \"#{component_name}.version\"",
+        "  versioned_with \"custom.version.attribute\""
+      ].join "\n"
+    end
+  end
+
+  class InvalidLockType < MBError; status_code(23); end
 end

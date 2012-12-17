@@ -17,11 +17,16 @@ module MotherBrain
 
       # Find a lock of the given name in the list of registered locks
       #
-      # @param [#to_s] name
+      # @see ChefMutex#initialize
       #
       # @return [ChefMutex, nil]
-      def find(name)
-        locks.find { |mutex| mutex.name == name.to_s }
+      def find(options)
+        type, name = options.to_a.flatten
+
+        locks.find { |mutex|
+          mutex.type == type &&
+          mutex.name == name
+        }
       end
 
       # Register the given lock
