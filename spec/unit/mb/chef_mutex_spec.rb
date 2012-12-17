@@ -3,10 +3,10 @@ require 'spec_helper'
 describe MB::ChefMutex do
   subject { chef_mutex }
 
-  let(:chef_mutex) { klass.new(name) }
+  let(:chef_mutex) { klass.new(lockset) }
 
   let(:client_name) { "johndoe" }
-  let(:name) { "my_lock" }
+  let(:lockset) { { chef_environment: "my_environment" } }
 
   let(:chef_connection_stub) { stub client_name: client_name }
   let(:locks_stub) { stub(
@@ -20,13 +20,11 @@ describe MB::ChefMutex do
     chef_mutex.stub externally_testing?: false
   end
 
-  its(:name) { should == name }
+  its(:type) { should == lockset.keys.first }
+  its(:name) { should == lockset.values.first }
 
-  context "with special characters" do
-    let(:name) { "Environment Cloud!" }
-
-    its(:name) { should == "environment-cloud" }
-  end
+  its(:to_s) { should == "#{chef_mutex.type}:#{chef_mutex.name}" }
+  its(:data_bag_id) { should == "#{chef_mutex.type}-#{chef_mutex.name}" }
 
   describe "#lock" do
     subject(:lock) { chef_mutex.lock }
@@ -61,6 +59,12 @@ describe MB::ChefMutex do
 
         it { should be_true }
       end
+    end
+
+    context "without a valid lock type" do
+      let(:lockset) { { something: "something" } }
+
+      it { -> { lock }.should raise_error MB::InvalidLockType }
     end
   end
 

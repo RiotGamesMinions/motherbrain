@@ -132,4 +132,6 @@ module MotherBrain
       ].join "\n"
     end
   end
+
+  class InvalidLockType < MBError; status_code(23); end
 end

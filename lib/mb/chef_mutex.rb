@@ -3,15 +3,14 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   #
   # Allows for MotherBrain clients to lock a chef resource. A mutex is created
-  # with a name. Sending #lock to the mutex will then store a data bag item
-  # with mutex name, the requestor's client_name, and the current time.
-  # An attempt to lock an already-locked name will fail if the lock
-  # is owner by someone else, or succeed if the lock is owned by the current
-  # user.
+  # with a type and name. Sending #lock to the mutex will then store a data bag
+  # item with mutex, the requestor's client_name, and the current time. An
+  # attempt to lock an already-locked mutex will fail if the lock is owned by
+  # someone else, or succeed if the lock is owned by the current user.
   #
   # @example Creating a mutex and obtaining a lock
   #
-  #   mutex = ChefMutex.new("my_resource")
+  #   mutex = ChefMutex.new(chef_environment: "my_environment")
   #
   #   mutex.lock # => true
   #   # do stuff
@@ -19,7 +18,7 @@ module MotherBrain
   #
   # @example Running a block within an obtained lock
   #
-  #   mutex = ChefMutex.new("my_resource")
+  #   mutex = ChefMutex.new(chef_environment: "my_environment")
   #
   #   mutex.synchronize do
   #     # do stuff
@@ -33,33 +32,50 @@ module MotherBrain
 
     DATA_BAG = "_motherbrain_locks_".freeze
 
+    LOCK_TYPES = [
+      :chef_environment
+    ]
+
+    attr_reader :type
     attr_reader :name
+
     attr_accessor :force
     attr_accessor :unlock_on_failure
 
-    # @param [#to_s] name
+    # @option options [#to_s] :chef_environment
+    #   The name of the environment to lock
     # @option options [Boolean] :force (false)
     #   Force the lock to be written, even if it already exists.
     # @option options [Boolean] :unlock_on_failure (true)
     #   If false and the block raises an error, the lock will persist.
-    def initialize(name, options = {})
+    def initialize(options = {})
       options = options.reverse_merge(
         force: false,
         unlock_on_failure: true
       )
 
-      name = name.dup
-      name.downcase!
-      name.gsub! /[^\w]+/, "-" # dasherize
-      name.gsub! /^-+|-+$/, "" # remove dashes from beginning/end
+      type, name = options.find { |key, value| LOCK_TYPES.include? key }
 
+      @type              = type
       @name              = name
       @force             = options[:force]
       @unlock_on_failure = options[:unlock_on_failure]
     end
 
-    def client_name
-      Application.ridley.client_name
+    # @return [String]
+    def data_bag_id
+      result = to_s.dup
+
+      result.downcase!
+      result.gsub! /[^\w]+/, "-" # dasherize
+      result.gsub! /^-+|-+$/, "" # remove dashes from beginning/end
+
+      result
+    end
+
+    # @return [String]
+    def to_s
+      "#{type}:#{name}"
     end
 
     # Attempts to create a lock. Fails if the lock already exists.
@@ -68,7 +84,11 @@ module MotherBrain
     def lock
       return true if externally_testing?
 
-      MB.log.info "Locking #{name}"
+      unless type
+        raise InvalidLockType, "Must pass a valid lock type (#{LOCK_TYPES})"
+      end
+
+      MB.log.info "Locking #{to_s}"
 
       attempt_lock
     end
@@ -106,7 +126,7 @@ module MotherBrain
     def unlock
       return true if externally_testing?
 
-      MB.log.info "Unlocking #{name}"
+      MB.log.info "Unlocking #{to_s}"
 
       attempt_unlock
     end
@@ -136,6 +156,11 @@ module MotherBrain
         delete
       end
 
+      # @return [String]
+      def client_name
+        Application.ridley.client_name
+      end
+
       # @return [Ridley::ChainLink]
       def data_bag
         Application.ridley.data_bag
@@ -147,8 +172,10 @@ module MotherBrain
       def delete
         return true unless locks
 
-        result = locks.delete(name)
+        result = locks.delete(data_bag_id)
+
         Locks.manager.unregister(Actor.current)
+
         result
       rescue
         Locks.manager.register(Actor.current)
@@ -186,7 +213,7 @@ module MotherBrain
       def read
         return unless locks
 
-        result = locks.find(name)
+        result = locks.find(data_bag_id)
 
         result.to_hash if result
       end
@@ -197,8 +224,16 @@ module MotherBrain
       def write
         ensure_data_bag_exists
 
-        result = locks.new(id: name, client_name: client_name, time: Time.now).save
+        result = locks.new(
+          id: data_bag_id,
+          type: type,
+          name: name,
+          client_name: client_name,
+          time: Time.now
+        ).save
+
         Locks.manager.register(Actor.current)
+
         result
       rescue
         Locks.manager.unregister(Actor.current)
