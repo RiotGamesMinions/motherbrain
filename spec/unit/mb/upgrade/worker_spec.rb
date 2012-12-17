@@ -208,7 +208,7 @@ describe MB::Upgrade::Worker do
 
     it "runs chef on the nodes" do
       nodes.each do |node|
-        MB::Application.node_querier.should_receive(:chef_run).with(node, nil)
+        MB::Application.node_querier.should_receive(:chef_run).with(node)
       end
 
       run_chef
