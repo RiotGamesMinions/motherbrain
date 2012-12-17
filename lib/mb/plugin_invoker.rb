@@ -187,6 +187,24 @@ module MotherBrain
                 exit 1
               end
             end
+
+            method_option :component_versions,
+              type: :hash,
+              desc: "The component versions to set with override attributes",
+              aliases: "--components"
+            method_option :cookbook_versions,
+              type: :hash,
+              desc: "The cookbook versions to set on the environment",
+              aliases: "--cookbooks"
+            method_option :force,
+              type: :boolean,
+              default: false,
+              desc: "Perform upgrade even if the environment is locked",
+              aliases: "-f"
+            desc("upgrade ENVIRONMENT", "Upgrade an environment to the specified versions")
+            define_method(:upgrade) do |environment|
+              MB::Application.upgrade(environment, plugin, options)
+            end
           end
         end
 

@@ -28,8 +28,9 @@ module MotherBrain
     class << self
       extend Forwardable
 
-      def_delegator :provisioner_manager, :provision
       def_delegator :bootstrap_manager, :bootstrap
+      def_delegator :provisioner_manager, :provision
+      def_delegator :upgrade_manager, :upgrade
       def_delegator "MB::ConfigManager.instance", :config
 
       # @raise [Celluloid::DeadActorError] if Application has not been started
@@ -52,6 +53,7 @@ module MotherBrain
         group.supervise_as :node_querier, NodeQuerier
         group.supervise_as :lock_manager, Locks::Manager
         group.supervise_as :ridley, Ridley::Connection, config.to_ridley
+        group.supervise_as :upgrade_manager, Upgrade::Manager
 
         if config.rest_gateway.enable
           group.supervise_as :rest_gateway, REST::Gateway, config.to_rest_gateway
@@ -110,6 +112,13 @@ module MotherBrain
         Celluloid::Actor[:ridley] or raise Celluloid::DeadActorError, "Ridley not running"
       end
       alias_method :chef_connection, :ridley
+
+      # @raise [Celluloid::DeadActorError] if Upgrade Manager has not been started
+      #
+      # @return [Celluloid::Actor(Ridley::Connection)]
+      def upgrade_manager
+        Celluloid::Actor[:upgrade_manager] or raise Celluloid::DeadActorError, "upgrade manager not running"
+      end
     end
 
     include Celluloid::Notifications
