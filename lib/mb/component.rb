@@ -11,6 +11,9 @@ module MotherBrain
       type: String,
       required: true
 
+    attribute :version_attribute,
+      type: String
+
     attr_reader :groups
     attr_reader :commands
 
@@ -184,6 +187,12 @@ module MotherBrain
     # @api private
     class CleanRoom < CleanRoomBase
       dsl_attr_writer :description
+      dsl_attr_writer :version_attribute
+
+      def versioned(attribute_name = nil)
+        version_attribute attribute_name || "#{@real_model.name}.version"
+      end
+      alias_method :versioned_with, :versioned
 
       def group(name, &block)
         real_model.add_group Group.new(name, &block)
