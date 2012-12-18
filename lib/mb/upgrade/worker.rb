@@ -53,7 +53,7 @@ module MotherBrain
         job.transition(:running)
         assert_environment_exists
 
-        chef_synchronize(environment: environment_name, force: options[:force]) do
+        chef_synchronize(chef_environment: environment_name, force: options[:force]) do
           set_component_versions if component_versions.any?
           set_cookbook_versions if cookbook_versions.any?
 
