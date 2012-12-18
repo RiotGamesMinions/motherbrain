@@ -77,14 +77,14 @@ module MotherBrain
     no_tasks do
       def spinner_until(message = nil, &block)
         until yield
-          printf("\r#{message}%s %s", spinner.next)
+          printf("\r#{message}%s", spinner.next)
           sleep(0.1)
         end
       end
 
       def spinner_while(message = nil, &block)
         while yield
-          printf("\r#{message}%s %s", spinner.next)
+          printf("\r#{message}%s", spinner.next)
           sleep(0.1)
         end
       end
