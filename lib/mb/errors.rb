@@ -18,8 +18,10 @@ module MotherBrain
       }
     end
 
-    def to_json
-      MultiJson.encode(to_hash)
+    # @param [Hash] options
+    #   a set of options to pass to MultiJson.encode
+    def to_json(options = {})
+      MultiJson.encode(self.to_hash, options)
     end
   end
 
