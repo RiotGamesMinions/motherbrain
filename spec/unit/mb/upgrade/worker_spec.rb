@@ -3,7 +3,7 @@ require 'spec_helper'
 describe MB::Upgrade::Worker do
   subject { worker }
 
-  let(:worker) { klass.new environment_name, plugin, options }
+  let(:worker) { klass.new(environment_name, plugin, options).wrapped_object }
 
   let(:component1) { MB::Component.new component_name }
   let(:component_name) { "component1" }
