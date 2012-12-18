@@ -68,7 +68,7 @@ module MotherBrain
     #
     # @return [Job]
     def transition(state, result = nil, options = {})
-      @result = result unless result.nil?
+      @result = result
       machine.transition(state, options)
       Actor.current
     end
