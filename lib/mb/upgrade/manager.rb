@@ -8,8 +8,14 @@ module MotherBrain
       include Celluloid
 
       # @see MotherBrain::Upgrade::Worker#initialize
+      #
+      # @return [JobTicket]
       def upgrade(environment, plugin, options = {})
-        Worker.new(environment, plugin, options).run
+        job    = Job.new(:upgrade)
+        ticket = job.ticket
+        Worker.new(environment.freeze, plugin.freeze, options.freeze).async.run(job)
+
+        ticket
       end
     end
   end
