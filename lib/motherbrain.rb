@@ -43,6 +43,8 @@ module MotherBrain
   autoload :Invoker, 'mb/invoker'
   autoload :Job, 'mb/job'
   autoload :JobManager, 'mb/job_manager'
+  autoload :JobRecord, 'mb/job_record'
+  autoload :JobTicket, 'mb/job_ticket'
   autoload :JSONManifest, 'mb/json_manifest'
   autoload :Locks, 'mb/locks'
   autoload :Logging, 'mb/logging'

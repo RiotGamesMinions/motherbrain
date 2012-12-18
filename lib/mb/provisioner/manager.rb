@@ -71,20 +71,20 @@ module MotherBrain
       # @option options [#to_sym] :with
       #   id of provisioner to use
       #
-      # @return [Job]
+      # @return [JobTicket]
       def provision(environment, manifest, plugin, options = {})
+        log.info "manager delegating creation of #{environment}..."
         job         = Job.new(:provision)
+        ticket      = job.ticket
         provisioner = self.class.new_provisioner(options)
         Provisioner::Manifest.validate(manifest, plugin)
 
-        # this needs to be async but is currently deadlocking?
-        provisioner.up(job.freeze, environment.to_s, manifest)
+        provisioner.async.up(job.freeze, environment.to_s, manifest)
 
-        job
+        ticket
       rescue InvalidProvisionManifest => e
         job.transition(:failure, e)
-      ensure
-        provisioner.terminate if provisioner && provisioner.alive?
+        ticket
       end
 
       # @param [#to_s] environment
@@ -92,18 +92,16 @@ module MotherBrain
       # @option options [#to_sym] :with
       #   id of provisioner to use
       #
-      # @return [Job]
+      # @return [JobTicket]
       def destroy(environment, options = {})
         log.info "manager delegating destruction of #{environment}..."
         job         = Job.new(:destroy_provision)
+        ticket      = job.ticket
         provisioner = self.class.new_provisioner(options)
 
-        # this needs to be async but is currently deadlocking?
-        provisioner.async.down(job.freeze, environment.to_s)
+        provisioner.async.down(job, environment.to_s)
 
-        job
-      ensure
-        provisioner.terminate if provisioner && provisioner.alive?
+        ticket
       end
 
       def finalize

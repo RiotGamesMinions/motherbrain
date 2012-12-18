@@ -89,6 +89,7 @@ module MotherBrain
       #
       # @return [Job]
       def up(job, env_name, manifest)
+        log.info "provisioner creating #{env_name}"
         job.transition(:running)
         connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
@@ -98,8 +99,9 @@ module MotherBrain
 
         response = self.class.handle_created(connection.environment.find(env_name, force: true))
         self.class.validate_create(response, manifest)
-        job.transition(:success)
+        job.transition(:success, response)
       rescue EF::REST::Error => e
+        log.fatal { "an error occured: #{e}" }
         job.transition(:failure, e)
       rescue => e
         log.fatal { "unknown error occured: #{e}"}
@@ -113,15 +115,17 @@ module MotherBrain
       #
       # @return [Job]
       def down(job, env_name)
+        sleep 2
         log.info "provisioner destroying #{env_name}"
         job.transition(:running)
-        connection.environment.destroy(env_name)
-        job.transition(:success)
+        response = connection.environment.destroy(env_name)
+        job.transition(:success, response)
       rescue EF::REST::Error => e
+        log.fatal { "an error occured: #{e}" }
         job.transition(:failure, e)
       rescue => e
-       log.fatal { "unknown error occured: #{e}"}
-       job.transition(:failure, "internal error")
+        log.fatal { "unknown error occured: #{e}"}
+        job.transition(:failure, "internal error")
       end
     end
   end

@@ -5,11 +5,12 @@ describe MB::JobManager do
     Class.new do
       include Celluloid
 
-      attr_reader :id
+      attr_reader :id, :type, :state, :result
 
-      def initialize
-        @id = 1
-      end
+      @id = 1
+      @type = 'fake'
+      @state = :pending
+      @result = nil
     end
   end
 
@@ -17,11 +18,11 @@ describe MB::JobManager do
   after(:each) { @fake_job.terminate if @fake_job.alive? }
 
   describe "#add" do
-    it "adds a job to the jobs list" do
+    it "adds a job to the active jobs list" do
       subject.add(@fake_job)
 
-      subject.jobs.should have(1).item
-      subject.jobs.should include(@fake_job)
+      subject.active.should have(1).item
+      subject.active.should include(@fake_job)
     end
 
     it "monitors the given job" do
@@ -32,25 +33,21 @@ describe MB::JobManager do
   end
 
   describe "#find" do
-    it "returns a job of the given ID" do
+    it "returns a record of the job" do
       subject.add(@fake_job)
 
-      subject.find(@fake_job.id).should eql(@fake_job)
-    end
-
-    it "returns nil if a job of the given ID is not found" do
-      subject.find(@fake_job.id).should be_nil
+      subject.find(@fake_job.id).should be_a(MB::JobRecord)
     end
   end
 
-  describe "#remove" do
+  describe "#complete_job" do
     before(:each) do
       subject.add(@fake_job)
-      subject.remove(@fake_job)
+      subject.complete_job(@fake_job)
     end
 
-    it "removes the given job from the job list" do
-      subject.jobs.should have(0).items
+    it "removes the given job from the active job list" do
+      subject.active.should have(0).items
     end
 
     it "should not be monitoring the removed job" do

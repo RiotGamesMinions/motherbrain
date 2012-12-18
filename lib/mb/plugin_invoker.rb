@@ -164,8 +164,8 @@ module MotherBrain
 
               job = Provisioner::Manager.instance.provision(environment, manifest, plugin, provisioner_options)
 
-              until job.completed?
-                spinner("Provisioning '#{environment}':")
+              spinner_until("Provisioning '#{environment}': ") do
+                job.completed?
               end
 
               if job.success?

@@ -116,8 +116,8 @@ module MotherBrain
 
       job = Provisioner::Manager.instance.destroy(environment, provisioner_options)
 
-      until job.completed?
-        spinner("Destroying '#{environment}': ")
+      spinner_until("Destroying '#{environment}': ") do
+        job.completed?
       end
 
       if job.success?

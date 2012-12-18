@@ -1,35 +1,41 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
+  #
+  # A Celluloid actor representing an active job. Jobs are handled by the {JobManager}
+  # and should not be returned to a consumer or user from the Public API.
+  #
+  # Jobs start in the 'pending' state and can only be in any one state at a given
+  # time. A Job is completed when in the 'success' or 'failure' state.
+  #
+  # The progress of a Job is recorded by the {JobManager} as a {JobRecord}. API
+  # consumers should reference the status of a running Job by it's {JobRecord}.
+  #
+  # Returning a {JobTicket} from the Public API will give a consumer or user an easy
+  # way to check the status of a job by polling a Job's {JobRecord}.
+  #
+  # @example running a job and checking it's status
+  #
+  #   job = Job.new('example_job')
+  #   ticket = job.ticket
+  #
+  #   ticket.completed? => false
+  #   ticket.state => :pending
+  #
+  #   job.transition(:success, 'done!')
+  #
+  #   ticket.completed? => true
+  #   ticket.state => :success
+  #
+  # @api private
   class Job
-    class StateMachine
-      include Celluloid::FSM
-      include Celluloid::Notifications
-      include MB::Logging
-
-      state :pending, to: [ :running, :failure ], default: true do
-        log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
-        publish('job.transition', actor)
-      end
-
-      state :running, to: [ :success, :failure ] do
-        log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
-        publish('job.transition', actor)
-      end
-
-      state :success do
-        log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
-        publish('job.transition', actor)
-      end
-
-      state :failure do
-        log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
-        publish('job.transition', actor)
-      end
-    end
+    autoload :StateMachine, 'mb/job/state_machine'
+    autoload :States, 'mb/job/states'
 
     extend Forwardable
+
     include Celluloid
     include MB::Logging
+    include MB::Job::States
 
     attr_reader :id
     attr_reader :type
@@ -46,34 +52,19 @@ module MotherBrain
       JobManager.instance.add(Actor.current)
     end
 
-    # @return [Boolean]
-    def completed?
-      self.success? || self.failure?
-    end
-    alias_method :finished?, :completed?
-
-    # @return [Boolean]
-    def failure?
-      self.state == :failure
+    # @return [self]
+    def save
+      JobManager.instance.update(Actor.current)
     end
 
-    # @return [Boolean]
-    def pending?
-      self.state == :pending
-    end
-
-    # @return [Boolean]
-    def running?
-      self.state == :running
-    end
-
-    # @return [Boolean]
-    def success?
-      self.state == :success
+    # @return [JobTicket]
+    def ticket
+      @ticket ||= JobTicket.new(self.id)
     end
 
     # @param [Symbol] state
     # @param [#to_json] result
+    # @param [Hash] options
     #
     # @return [Job]
     def transition(state, result = nil, options = {})
@@ -83,16 +74,7 @@ module MotherBrain
     end
 
     def finalize
-      JobManager.instance.remove(Actor.current)
-    end
-
-    def to_hash
-      {
-        id: self.id,
-        type: self.type,
-        state: self.state,
-        result: self.result
-      }
+      JobManager.instance.complete_job(Actor.current)
     end
 
     private
