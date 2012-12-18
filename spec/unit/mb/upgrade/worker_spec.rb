@@ -49,8 +49,8 @@ describe MB::Upgrade::Worker do
     end
 
     it "marks the job as 'running' and then 'success' if successful" do
-      job.should_receive(:transition).with(:running)
-      job.should_receive(:transition).with(:success)
+      job.should_receive(:report_running)
+      job.should_receive(:report_success)
 
       run
     end

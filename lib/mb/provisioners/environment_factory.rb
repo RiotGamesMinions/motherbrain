@@ -93,7 +93,7 @@ module MotherBrain
       # @return [Job]
       def up(job, env_name, manifest)
         log.debug "environment factory provisioner creating #{env_name}"
-        job.transition(:running)
+        job.report_running
         connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
         until connection.environment.created?(env_name)
@@ -102,13 +102,14 @@ module MotherBrain
 
         response = self.class.handle_created(connection.environment.find(env_name, force: true))
         self.class.validate_create(response, manifest)
-        job.transition(:success, response)
+
+        job.report_success(response)
       rescue EF::REST::Error => e
         log.fatal { "an error occured: #{e}" }
-        job.transition(:failure, e)
+        job.report_failure(e)
       rescue => e
         log.fatal { "unknown error occured: #{e}"}
-        job.transition(:failure, "internal error")
+        job.report_failure("internal error")
       end
 
       # Tear down the given environment and the nodes in it
@@ -121,15 +122,16 @@ module MotherBrain
       # @return [Job]
       def down(job, env_name)
         log.debug "environment factory destroying #{env_name}"
-        job.transition(:running)
+        job.report_running
         response = connection.environment.destroy(env_name)
-        job.transition(:success, response)
+        
+        job.report_success(response)
       rescue EF::REST::Error => e
         log.fatal { "an error occured: #{e}" }
-        job.transition(:failure, e)
+        job.report_failure(e)
       rescue => e
         log.fatal { "unknown error occured: #{e}"}
-        job.transition(:failure, "internal error")
+        job.report_failure("internal error")
       end
     end
   end

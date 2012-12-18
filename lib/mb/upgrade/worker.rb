@@ -50,7 +50,7 @@ module MotherBrain
       #
       # @return [Job]
       def run(job)
-        job.transition(:running)
+        job.report_running
         assert_environment_exists
 
         chef_synchronize(chef_environment: environment_name, force: options[:force]) do
@@ -63,13 +63,13 @@ module MotherBrain
           end
         end
 
-        job.transition(:success)
+        job.report_success
       rescue EnvironmentNotFound => e
         log.fatal { "environment not found: #{e}" }
-        job.transition(:failure, e)
+        job.report_failure(e)
       rescue => e
         log.fatal { "unknown error occured: #{e}"}
-        job.transition(:failure, "internal error")
+        job.report_failure("internal error")
       end
 
       private

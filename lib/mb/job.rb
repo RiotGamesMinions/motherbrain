@@ -52,6 +52,46 @@ module MotherBrain
       JobManager.instance.add(Actor.current)
     end
 
+    # @param [#to_json] result
+    #   a result which can be converted to JSON
+    # @param [Hash] options
+    #   options to pass to the state machine transition
+    #
+    # @return [Job]
+    def report_failure(result = nil, options = {})
+      transition(:failure, result)
+    end
+
+    # @param [#to_json] result
+    #   a result which can be converted to JSON
+    # @param [Hash] options
+    #   options to pass to the state machine transition
+    #
+    # @return [Job]
+    def report_pending(result = nil, options = {})
+      transition(:pending, result)
+    end
+
+    # @param [#to_json] result
+    #   a result which can be converted to JSON
+    # @param [Hash] options
+    #   options to pass to the state machine transition
+    #
+    # @return [Job]
+    def report_running(result = nil, options = {})
+      transition(:running, result)
+    end
+
+    # @param [#to_json] result
+    #   a result which can be converted to JSON
+    # @param [Hash] options
+    #   options to pass to the state machine transition
+    #
+    # @return [Job]
+    def report_success(result = nil, options = {})
+      transition(:success, result)
+    end
+
     # @return [self]
     def save
       JobManager.instance.update(Actor.current)
@@ -63,8 +103,11 @@ module MotherBrain
     end
 
     # @param [Symbol] state
+    #   the state to transition to in the Job's state machine
     # @param [#to_json] result
+    #   a result which can be converted to JSON
     # @param [Hash] options
+    #   options to pass to the state machine transition
     #
     # @return [Job]
     def transition(state, result = nil, options = {})

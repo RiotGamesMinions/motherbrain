@@ -83,7 +83,7 @@ module MotherBrain
 
         ticket
       rescue InvalidProvisionManifest => e
-        job.transition(:failure, e)
+        job.report_failure(e)
         ticket
       end
 
