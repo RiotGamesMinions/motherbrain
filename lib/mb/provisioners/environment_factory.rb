@@ -84,12 +84,15 @@ module MotherBrain
       # of the given manifest
       #
       # @param [Job] job
+      #   a job to track the progress of this action
       # @param [String] env_name
+      #   the name of the environment to create
       # @param [Provisioner::Manifest] manifest
+      #   a manifest describing the way the environment should look
       #
       # @return [Job]
       def up(job, env_name, manifest)
-        log.info "provisioner creating #{env_name}"
+        log.debug "environment factory provisioner creating #{env_name}"
         job.transition(:running)
         connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
@@ -111,12 +114,13 @@ module MotherBrain
       # Tear down the given environment and the nodes in it
       #
       # @param [Job] job
+      #   a job to track the progress of this action
       # @param [String] env_name
+      #   the name of the environment to destroy
       #
       # @return [Job]
       def down(job, env_name)
-        sleep 2
-        log.info "provisioner destroying #{env_name}"
+        log.debug "environment factory destroying #{env_name}"
         job.transition(:running)
         response = connection.environment.destroy(env_name)
         job.transition(:success, response)

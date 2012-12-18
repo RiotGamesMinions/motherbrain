@@ -73,12 +73,12 @@ module MotherBrain
       #
       # @return [JobTicket]
       def provision(environment, manifest, plugin, options = {})
-        log.info "manager delegating creation of #{environment}..."
         job         = Job.new(:provision)
         ticket      = job.ticket
         provisioner = self.class.new_provisioner(options)
         Provisioner::Manifest.validate(manifest, plugin)
 
+        log.debug "manager delegating creation of #{environment}..."
         provisioner.async.up(job.freeze, environment.to_s, manifest)
 
         ticket
@@ -87,6 +87,8 @@ module MotherBrain
         ticket
       end
 
+      # Destroy an environment provisioned by MotherBrain
+      #
       # @param [#to_s] environment
       #   name of the environment to destroy
       # @option options [#to_sym] :with
@@ -94,11 +96,11 @@ module MotherBrain
       #
       # @return [JobTicket]
       def destroy(environment, options = {})
-        log.info "manager delegating destruction of #{environment}..."
         job         = Job.new(:destroy_provision)
         ticket      = job.ticket
         provisioner = self.class.new_provisioner(options)
 
+        log.debug "manager delegating destruction of #{environment}..."
         provisioner.async.down(job, environment.to_s)
 
         ticket

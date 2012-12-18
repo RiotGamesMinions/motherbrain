@@ -10,10 +10,14 @@ module MotherBrain
 
     # @param [Job] job
     def initialize(job)
+      @id = job.id
       mass_assign(job)
     end
 
+    # Update the instantiated JobRecord with the attributes of the given Job
+    #
     # @param [Job] job
+    #   the updated job to update the record with
     #
     # @return [self]
     def update(job)
@@ -24,7 +28,6 @@ module MotherBrain
     private
 
       def mass_assign(job)
-        @id     = job.id
         @type   = job.type
         @state  = job.state
         @result = job.result
