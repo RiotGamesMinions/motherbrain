@@ -54,7 +54,6 @@ module MotherBrain
   autoload :PluginManager, 'mb/plugin_manager'
   autoload :Provisioner, 'mb/provisioner'
   autoload :Provisioners, 'mb/provisioners'
-  autoload :RealModelBase, 'mb/real_model_base'
   autoload :REST, 'mb/rest'
   autoload :SrvCtl, 'mb/srv_ctl'
   autoload :Upgrade, 'mb/upgrade'
