@@ -11,11 +11,11 @@ module MotherBrain
       #
       # @return [JobTicket]
       def upgrade(environment, plugin, options = {})
-        job    = Job.new(:upgrade)
-        ticket = job.ticket
+        job = Job.new(:upgrade)
+
         Worker.new(environment.freeze, plugin.freeze, options.freeze).async.run(job)
 
-        ticket
+        job.ticket
       end
     end
   end
