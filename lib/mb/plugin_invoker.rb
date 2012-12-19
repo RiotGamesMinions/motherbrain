@@ -162,20 +162,23 @@ module MotherBrain
                 }
               }
 
-              MB.ui.say "Provisioning nodes and adding them to: #{environment}"
-              response = MB::Application.provision(environment, manifest, plugin, provisioner_options)
+              job = Provisioner::Manager.instance.provision(environment, manifest, plugin, provisioner_options)
 
-              if response.ok?
+              spinner_until("Provisioning '#{environment}': ") do
+                job.completed?
+              end
+
+              if job.success?
                 MB.ui.say "Provision finished"
 
                 if options[:skip_bootstrap]
                   MB.ui.say "Skipping bootstrap"
-                  MB.ui.say response.body
+                  MB.ui.say job.result
                   exit 0
                 end
 
                 bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(
-                  response.body,
+                  job.result,
                   manifest,
                   Tempfile.new('bootstrap_manifest').path
                 )
@@ -183,7 +186,7 @@ module MotherBrain
 
                 invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
               else
-                MB.ui.error response.body.to_s
+                MB.log.fatal job.result
                 exit 1
               end
             end
@@ -203,7 +206,18 @@ module MotherBrain
               aliases: "-f"
             desc("upgrade ENVIRONMENT", "Upgrade an environment to the specified versions")
             define_method(:upgrade) do |environment|
-              MB::Application.upgrade(environment, plugin, options)
+              job = MB::Application.upgrade(environment, plugin, options)
+
+              spinner_until("Upgrading '#{environment}': ") do
+                job.completed?
+              end
+
+              if job.success?
+                MB.ui.say "Upgrade successful"
+              else
+                MB.ui.error job.result
+                exit 1
+              end
             end
           end
         end

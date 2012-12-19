@@ -40,7 +40,6 @@ module MotherBrain
 
       include Celluloid
       include MB::Logging
-      include MB::ActorUtil
       include MB::Locks
 
       # Required options for {#bootstrap}
