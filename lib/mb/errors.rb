@@ -18,8 +18,10 @@ module MotherBrain
       }
     end
 
-    def to_json
-      MultiJson.encode(to_hash)
+    # @param [Hash] options
+    #   a set of options to pass to MultiJson.encode
+    def to_json(options = {})
+      MultiJson.encode(self.to_hash, options)
     end
   end
 
@@ -56,13 +58,27 @@ module MotherBrain
   class GearError < MBError; status_code(104); end
 
   class ChefRunFailure < MBError
-    status_code(103)
+    status_code(105)
 
     def initialize(errors)
       @errors = errors
     end
   end
   class ChefTestRunFailure < ChefRunFailure; end
+
+  class JobNotFound < MBError
+    status_code(106)
+
+    attr_reader :job_id
+
+    def initialize(id)
+      @job_id = id
+    end
+
+    def to_s
+      "No job with ID: '#{id}' found"
+    end
+  end
 
   class ClusterBusy < MBError; status_code(10); end
   class ClusterNotFound < MBError; status_code(11); end

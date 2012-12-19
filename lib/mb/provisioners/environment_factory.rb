@@ -56,6 +56,7 @@ module MotherBrain
       end
 
       include Provisioner
+      include MB::Logging
 
       register_provisioner :environment_factory,
         default: true
@@ -82,31 +83,55 @@ module MotherBrain
       # Create an environment of the given name and provision nodes in based on the contents
       # of the given manifest
       #
+      # @param [Job] job
+      #   a job to track the progress of this action
       # @param [String] env_name
+      #   the name of the environment to create
       # @param [Provisioner::Manifest] manifest
+      #   a manifest describing the way the environment should look
       #
-      # @return [Hash]
-      def up(env_name, manifest)
-        safe_return(EF::REST::Error) do
-          connection.environment.create(env_name, self.class.convert_manifest(manifest))
+      # @return [Job]
+      def up(job, env_name, manifest)
+        log.debug "environment factory provisioner creating #{env_name}"
+        job.report_running
+        connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
-          until connection.environment.created?(env_name)
-            sleep self.interval
-          end
-
-          self.class.handle_created(connection.environment.find(env_name, force: true))
+        until connection.environment.created?(env_name)
+          sleep self.interval
         end
+
+        response = self.class.handle_created(connection.environment.find(env_name, force: true))
+        self.class.validate_create(response, manifest)
+
+        job.report_success(response)
+      rescue EF::REST::Error => e
+        log.fatal { "an error occured: #{e}" }
+        job.report_failure(e)
+      rescue => e
+        log.fatal { "unknown error occured: #{e}"}
+        job.report_failure("internal error")
       end
 
       # Tear down the given environment and the nodes in it
       #
+      # @param [Job] job
+      #   a job to track the progress of this action
       # @param [String] env_name
+      #   the name of the environment to destroy
       #
-      # @return [Hash, nil]
-      def down(env_name)
-        safe_return(EF::REST::Error) do
-          connection.environment.destroy(env_name)
-        end
+      # @return [Job]
+      def down(job, env_name)
+        log.debug "environment factory destroying #{env_name}"
+        job.report_running
+        response = connection.environment.destroy(env_name)
+        
+        job.report_success(response)
+      rescue EF::REST::Error => e
+        log.fatal { "an error occured: #{e}" }
+        job.report_failure(e)
+      rescue => e
+        log.fatal { "unknown error occured: #{e}"}
+        job.report_failure("internal error")
       end
     end
   end

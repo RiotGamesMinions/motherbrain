@@ -8,7 +8,6 @@ module MotherBrain
       def included(base)
         base.extend(ClassMethods)
         base.send(:include, Celluloid)
-        base.send(:include, ActorUtil)
       end
     end
 
@@ -22,6 +21,20 @@ module MotherBrain
       def register_provisioner(provisioner_id, options = {})
         @provisioner_id = provisioner_id.to_sym
         Provisioners.register(self, options)
+      end
+
+      # Validate that the return created nodes contains the expected number of nodes and the proper
+      # instance types
+      #
+      # @param [Array<Hash>] created
+      # @param [Provisioner::Manifest] manifest
+      #
+      # @raise [UnexpectedProvisionCount] if an unexpected amount of nodes was returned by the
+      #   request to the provisioner
+      def validate_create(created, manifest)
+        unless created.length == manifest.node_count
+          raise UnexpectedProvisionCount.new(manifest.node_count, created.length)
+        end
       end
     end
 

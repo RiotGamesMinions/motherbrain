@@ -3,7 +3,7 @@ require 'spec_helper'
 describe MB::Upgrade::Worker do
   subject { worker }
 
-  let(:worker) { klass.new environment_name, plugin, options }
+  let(:worker) { klass.new(environment_name, plugin, options).wrapped_object }
 
   let(:component1) { MB::Component.new component_name }
   let(:component_name) { "component1" }
@@ -11,7 +11,7 @@ describe MB::Upgrade::Worker do
   let(:components) { [component1] }
   let(:cookbook_versions) { { "ohai" => "1.2.3" } }
   let(:environment) { stub }
-  let(:environment_name) { "environment" }
+  let(:environment_name) { "rspec-test" }
   let(:options) { Hash.new }
   let(:nodes) { %w[node1 node2 node3] }
   let(:plugin) { stub MB::Plugin, name: plugin_name }
@@ -33,7 +33,10 @@ describe MB::Upgrade::Worker do
   its(:options) { should == options }
 
   describe "#run" do
-    subject(:run) { worker.run }
+    let(:job) { MB::Job.new(:upgrade) }
+    after(:each) { job.terminate }
+
+    subject(:run) { worker.run(job) }
 
     it "wraps the upgrade in a lock" do
       MB::ChefMutex.any_instance.should_receive :synchronize
@@ -41,12 +44,24 @@ describe MB::Upgrade::Worker do
       run
     end
 
-    context "when an environment does not exist" do
-      before do
-        worker.stub environment: nil
-      end
+    it "returns a Job" do
+      run.should be_a(MB::Job)
+    end
 
-      it { -> { run }.should raise_error MB::EnvironmentNotFound }
+    it "marks the job as 'running' and then 'success' if successful" do
+      job.should_receive(:report_running)
+      job.should_receive(:report_success)
+
+      run
+    end
+
+    context "when an environment does not exist" do
+      before { worker.stub(environment: nil) }
+
+      it "should set the job state to :failure" do
+        run
+        job.should be_failure
+      end
     end
 
     context "when no component_versions or cookbook_versions are passed" do

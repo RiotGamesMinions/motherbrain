@@ -114,7 +114,20 @@ module MotherBrain
         }
       }
 
-      MB::Application.provisioner.destroy(environment, provisioner_options)
+      job = Provisioner::Manager.instance.destroy(environment, provisioner_options)
+
+      spinner_until("Destroying '#{environment}': ") do
+        job.completed?
+      end
+
+      if job.success?
+        MB.log.unknown "Successfully destroyed environment: #{environment}"
+        exit 0
+      else
+        MB.log.fatal "Failed to destroy environment: #{environment}"
+        MB.log.fatal job.result
+        exit 1
+      end
     end
 
     desc "version", "Display version and license information"

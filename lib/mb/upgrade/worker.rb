@@ -6,10 +6,11 @@ module MotherBrain
     # (based on the plugin components' version attributes).
     #
     class Worker
-      include MB::Locks
-
       extend Forwardable
-      def_delegator 'MB.log', :info
+
+      include Celluloid
+      include MB::Locks
+      include MB::Logging
 
       # @return [String]
       attr_reader :environment_name
@@ -35,8 +36,8 @@ module MotherBrain
       #
       def initialize(environment_name, plugin, options = {})
         @environment_name = environment_name
-        @plugin = plugin
-        @options = options
+        @plugin           = plugin
+        @options          = options
       end
 
       # @raise [ComponentNotFound] if a component version is passed that does
@@ -47,10 +48,12 @@ module MotherBrain
       #
       # @raise [EnvironmentNotFound] if the environment does not exist
       #
-      def run
+      # @return [Job]
+      def run(job)
+        job.report_running
         assert_environment_exists
 
-        chef_synchronize environment: environment_name, force: options[:force] do
+        chef_synchronize(chef_environment: environment_name, force: options[:force]) do
           set_component_versions if component_versions.any?
           set_cookbook_versions if cookbook_versions.any?
 
@@ -59,6 +62,14 @@ module MotherBrain
             run_chef if nodes.any?
           end
         end
+
+        job.report_success
+      rescue EnvironmentNotFound => e
+        log.fatal { "environment not found: #{e}" }
+        job.report_failure(e)
+      rescue => e
+        log.fatal { "unknown error occured: #{e}"}
+        job.report_failure("internal error")
       end
 
       private
@@ -133,14 +144,14 @@ module MotherBrain
           }.flatten.compact.uniq
 
           unless result.any?
-            info "No nodes in environment '#{environment_name}'"
+            log.info "No nodes in environment '#{environment_name}'"
           end
 
           result
         end
 
         def run_chef
-          info "Running chef on #{nodes}"
+          log.info "Running chef on #{nodes}"
 
           nodes.map { |node|
             Application.node_querier.future.chef_run(node)
@@ -151,30 +162,30 @@ module MotherBrain
           environment.save
 
           if cookbook_versions.any?
-            info "Cookbook versions are now #{environment.cookbook_versions}"
+            log.info "Cookbook versions are now #{environment.cookbook_versions}"
           end
 
           if component_versions.any?
-            info "Override attributes are now #{environment.override_attributes}"
+            log.info "Override attributes are now #{environment.override_attributes}"
           end
 
           @environment = nil
         end
 
         def set_component_versions
-          info "Setting component versions #{component_versions}"
+          log.info "Setting component versions #{component_versions}"
 
           set_override_attributes
         end
 
         def set_cookbook_versions
-          info "Setting cookbook versions #{cookbook_versions}"
+          log.info "Setting cookbook versions #{cookbook_versions}"
 
           environment.cookbook_versions.merge! cookbook_versions
         end
 
         def set_override_attributes
-          info "Setting override attributes #{override_attributes}"
+          log.info "Setting override attributes #{override_attributes}"
 
           environment.override_attributes.merge! override_attributes
         end
@@ -191,7 +202,7 @@ module MotherBrain
             raise ComponentNotVersioned.new component_name
           end
 
-          info "Component '#{component_name}' versioned with '#{result}'"
+          log.info "Component '#{component_name}' versioned with '#{result}'"
 
           result
         end
