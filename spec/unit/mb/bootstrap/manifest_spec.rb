@@ -45,7 +45,7 @@ describe MB::Bootstrap::Manifest do
       it "has a key for each node type from the provisioner manifest" do
         @result.should have(2).items
         @result.should have_key("activemq::master")
-        @result.should have_key("activemq::slave")      
+        @result.should have_key("activemq::slave")
       end
 
       it "has a node item for each expected node from provisioner manifest" do

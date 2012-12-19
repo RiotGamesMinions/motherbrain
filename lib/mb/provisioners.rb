@@ -2,7 +2,7 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   module Provisioners
     DEFAULT_PROVISIONER_ID = :environment_factory
-    
+
     class << self
       attr_reader :default_id
 
@@ -69,7 +69,7 @@ module MotherBrain
       # @return [Class, nil]
       def default
         self.default_id ? get(self.default_id) : nil
-      end      
+      end
 
       # Clears all of the registered Provisioners.
       #

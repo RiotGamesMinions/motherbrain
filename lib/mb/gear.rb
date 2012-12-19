@@ -22,7 +22,7 @@ module MotherBrain
   #     end
   #   end
   #
-  module Gear    
+  module Gear
     RESERVED_KEYWORDS = [
       :name,
       :version,

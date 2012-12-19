@@ -88,7 +88,7 @@ module MotherBrain
       #
       #   self.bootstrap_type_filter => [
       #     [ "no-client1.riotgames.com", "no-client2.riotgames.com" ],
-      #     [ 
+      #     [
       #       {
       #         hostname: "has-client.riotgames.com",
       #         node_name: "has-client.internal"
@@ -167,7 +167,7 @@ module MotherBrain
             target_nodes.collect do |node|
               Celluloid::Future.new {
                 MB.log.info "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap"
-                
+
                 chef_conn.node.merge_data(node[:node_name], options)
                 Application.node_querier.put_secret(node[:hostname], options.slice(:ssh))
                 Application.node_querier.chef_run(node[:hostname], options[:ssh])

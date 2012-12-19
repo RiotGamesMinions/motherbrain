@@ -66,7 +66,7 @@ module MotherBrain
 
     def_delegator "MB::Application.instance", :application
     alias_method :app, :application
-    
+
     # @return [Thor::Shell::Color]
     def ui
       @ui ||= Thor::Shell::Color.new

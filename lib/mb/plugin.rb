@@ -126,7 +126,7 @@ module MotherBrain
     end
 
     # Finds the nodes for the given environment for each {Component} of the plugin groups them
-    # by Component#name and Group#name into a Hash where the keys are Component#name and 
+    # by Component#name and Group#name into a Hash where the keys are Component#name and
     # values are a hash where the keys are Group#name and the values are a Hash representing
     # a node from Chef.
     #

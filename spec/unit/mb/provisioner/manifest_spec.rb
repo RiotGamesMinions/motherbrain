@@ -27,7 +27,7 @@ describe MB::Provisioner::Manifest do
       }
     }
   end
-  
+
   describe "ClassMethods" do
     subject { described_class }
 
