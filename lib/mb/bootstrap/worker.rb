@@ -6,9 +6,6 @@ module MotherBrain
       include Celluloid
       include Celluloid::Logger
 
-      # @return [Ridley::Connection]
-      attr_reader :chef_conn
-
       # @return [String]
       attr_reader :group_id
 
@@ -22,8 +19,6 @@ module MotherBrain
       # @param [Array<String>] hosts
       #   an array of hostnames or ipaddresses to bootstrap
       #     [ '33.33.33.10', 'reset.riotgames.com' ]
-      # @param [Ridley::Connection] chef_conn
-      #   connection to a Chef Server
       # @option options [String] :environment ('_default')
       # @option options [Hash] :attributes (Hash.new)
       #   a hash of attributes to use in the first Chef run
@@ -35,10 +30,9 @@ module MotherBrain
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      def initialize(group_id, hosts, chef_conn, options = {})
+      def initialize(group_id, hosts, options = {})
         @group_id     = group_id
         @hosts        = Array(hosts)
-        @chef_conn    = chef_conn
         @options      = options
       end
 
@@ -182,6 +176,10 @@ module MotherBrain
               response_set.add_response(future.value)
             end
           end
+        end
+
+        def chef_conn
+          Application.ridley
         end
 
       private
