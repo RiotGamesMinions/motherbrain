@@ -184,13 +184,8 @@ module MotherBrain
               run_list: boot_task.group.run_list,
               attributes: boot_task.group.chef_attributes
             )
-<<<<<<< HEAD
-            
-            Worker.new(boot_task.id, nodes, worker_options)
-=======
 
-            Worker.new(boot_task.id, nodes, chef_conn, worker_options)
->>>>>>> remove-trailing-whitespace
+            Worker.new(boot_task.id, nodes, worker_options)
           end
 
           futures = workers.collect do |worker|
