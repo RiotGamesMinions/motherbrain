@@ -2,6 +2,8 @@ module MotherBrain
   class CliClient
     attr_reader :jobs
 
+    COLUMNS = `tput cols`.to_i
+
     def initialize(*jobs)
       @jobs = jobs
     end
@@ -18,11 +20,19 @@ module MotherBrain
       end
     end
 
+    def clear_line
+      printf "\r#{' ' * COLUMNS}"
+    end
+
     def final_status(job)
+      clear_line
+
       puts "\r  [#{job.type}] #{job.state.to_s.capitalize}"
     end
 
     def status(job)
+      clear_line
+
       printf "\r%s [#{job.type}] #{job.status}", spinner.next
 
       sleep 0.1
