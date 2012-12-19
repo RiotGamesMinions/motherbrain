@@ -169,5 +169,5 @@ describe MotherBrain::PluginManager do
     it 'it returns the plugin of the given name and version' do
       subject.plugin(plugin.name, plugin.version).should eql(plugin)
     end
-  end  
+  end
 end

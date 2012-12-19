@@ -124,7 +124,7 @@ module MotherBrain
         log.debug "environment factory destroying #{env_name}"
         job.report_running
         response = connection.environment.destroy(env_name)
-        
+
         job.report_success(response)
       rescue EF::REST::Error => e
         log.fatal { "an error occured: #{e}" }

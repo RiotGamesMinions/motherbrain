@@ -119,7 +119,7 @@ describe MB::Gear::Service do
         MB::Gear::Service::Action::ActionRunner.stub(:new).and_return(runner)
       end
 
-      it "runs Chef on every node" do        
+      it "runs Chef on every node" do
         MB::Application.node_querier.should_receive(:chef_run).with(node_1.public_hostname).
           and_return(chef_success)
         MB::Application.node_querier.should_receive(:chef_run).with(node_2.public_hostname).

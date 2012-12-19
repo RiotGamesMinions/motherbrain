@@ -76,7 +76,7 @@ describe MB::Provisioners do
           include MB::Provisioner
           register_provisioner :rspec_provisioner
         end
-        
+
         expect {
           Class.new do
             include MB::Provisioner
@@ -101,7 +101,7 @@ describe MB::Provisioners do
           include MB::Provisioner
           register_provisioner :rspec_provisioner, default: true
         end
-        
+
         expect {
           Class.new do
             include MB::Provisioner

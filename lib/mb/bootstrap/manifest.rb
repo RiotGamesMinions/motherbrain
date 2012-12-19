@@ -50,7 +50,7 @@ module MotherBrain
       def validate!(routine)
         self.keys.each do |node_group|
           match = node_group.match(Plugin::NODE_GROUP_ID_REGX)
-          
+
           unless match
             msg = "Manifest contained the entry: '#{node_group}' which is not"
             msg << " in the proper node group format: 'component::group'"

@@ -2,7 +2,7 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   module FileSystem
     autoload :Tempfile, 'mb/file_system/tempfile'
-    
+
     class << self
       # @return [Pathname]
       def root

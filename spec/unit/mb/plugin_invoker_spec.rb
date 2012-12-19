@@ -63,7 +63,7 @@ describe MotherBrain::PluginInvoker do
           end
 
           it "has a 'provision' task" do
-            subject.fabricate(plugin).tasks.should have_key("provision") 
+            subject.fabricate(plugin).tasks.should have_key("provision")
           end
         end
 

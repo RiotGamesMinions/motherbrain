@@ -7,7 +7,7 @@ describe MB::FileSystem::Tempfile do
     it "creates a new temp file within MB's temp file system" do
       file = subject.new
       file.close
-      
+
       file.path.should include(MB::FileSystem.tmp.to_s)
     end
   end

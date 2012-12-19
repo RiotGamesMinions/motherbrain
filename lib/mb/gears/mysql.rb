@@ -40,7 +40,7 @@ module MotherBrain
           end
         end
 
-        # @param [String] sql 
+        # @param [String] sql
         #   the sql to run
         #
         # @option options [Hash] :data_bag
@@ -58,7 +58,7 @@ module MotherBrain
         def run(environment, nodes)
           threads = []
 
-          nodes.each do |node| 
+          nodes.each do |node|
             threads << Thread.new(node) do |node|
               query(environment, sql, node)
             end
@@ -69,7 +69,7 @@ module MotherBrain
 
         # The MySQL connection information/credentials for the specified node.
         #
-        # @param [Ridley::Node] node 
+        # @param [Ridley::Node] node
         #   the node to to find connection information for
         #
         # @return [Hash] MySQL connection information for the node

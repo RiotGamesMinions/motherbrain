@@ -1,4 +1,4 @@
-module MotherBrain 
+module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class InvokerBase < Thor
     class << self

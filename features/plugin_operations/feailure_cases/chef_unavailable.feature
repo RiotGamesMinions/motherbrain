@@ -11,7 +11,7 @@ Feature: recovering from incorrect permissions when when sending cluster operati
     When I run the pvpnet "<command_name>" command on the "mb-dev" environment with "<arguments>"
     Then the output should contain:
       """
-      Error connecting to Chef Server: 
+      Error connecting to Chef Server:
       """
     And the exit status should be the code for error "ChefConnectionError"
 

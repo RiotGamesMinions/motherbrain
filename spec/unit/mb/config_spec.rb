@@ -124,7 +124,7 @@ describe MB::Config do
 
     it "is invalid if chef.api_url is not a valid HTTP or HTTPS url" do
       pending
-      
+
       subject.chef.api_url = 'not_a_uri'
 
       subject.should_not be_valid

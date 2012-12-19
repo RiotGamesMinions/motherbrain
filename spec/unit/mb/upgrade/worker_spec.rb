@@ -149,7 +149,7 @@ describe MB::Upgrade::Worker do
   end
 
   describe "#assert_environment_exists" do
-    subject(:assert_environment_exists) { 
+    subject(:assert_environment_exists) {
       worker.send :assert_environment_exists
     }
 
