@@ -59,7 +59,7 @@ module MotherBrain
     #
     # @return [Job]
     def report_failure(result = nil, options = {})
-      transition(:failure, result)
+      transition(:failure, result, options)
     end
 
     # @param [#to_json] result
@@ -69,7 +69,7 @@ module MotherBrain
     #
     # @return [Job]
     def report_pending(result = nil, options = {})
-      transition(:pending, result)
+      transition(:pending, result, options)
     end
 
     # @param [#to_json] result
@@ -79,7 +79,7 @@ module MotherBrain
     #
     # @return [Job]
     def report_running(result = nil, options = {})
-      transition(:running, result)
+      transition(:running, result, options)
     end
 
     # @param [#to_json] result
@@ -89,7 +89,7 @@ module MotherBrain
     #
     # @return [Job]
     def report_success(result = nil, options = {})
-      transition(:success, result)
+      transition(:success, result, options)
     end
 
     # @return [self]
