@@ -15,6 +15,9 @@ module MotherBrain
       # @return [String]
       attr_reader :environment_name
 
+      # @return [MotherBrain::Job]
+      attr_reader :job
+
       # @return [Hash]
       attr_reader :options
 
@@ -50,19 +53,25 @@ module MotherBrain
       #
       # @return [Job]
       def run(job)
+        @job = job
+
+        job.status = "Starting"
         job.report_running
+
         assert_environment_exists
 
+        job.status = "Locking environment"
         chef_synchronize(chef_environment: environment_name, force: options[:force]) do
           set_component_versions if component_versions.any?
           set_cookbook_versions if cookbook_versions.any?
 
           if component_versions.any? or cookbook_versions.any?
-            save_environment
             run_chef if nodes.any?
           end
+          job.status = "Unlocking environment"
         end
 
+        job.status = "Finishing up"
         job.report_success
       rescue EnvironmentNotFound => e
         log.fatal { "environment not found: #{e}" }
@@ -137,6 +146,7 @@ module MotherBrain
 
         # @return [Array<String>]
         def nodes
+          job.status = "Looking for nodes"
           result = plugin.nodes(environment_name).collect { |component, groups|
             groups.collect { |group, nodes|
               nodes.collect(&:public_hostname)
@@ -151,7 +161,8 @@ module MotherBrain
         end
 
         def run_chef
-          log.info "Running chef on #{nodes}"
+          log.info "Running Chef on #{nodes}"
+          job.status = "Running Chef on nodes"
 
           nodes.map { |node|
             Application.node_querier.future.chef_run(node)
@@ -180,14 +191,18 @@ module MotherBrain
 
         def set_cookbook_versions
           log.info "Setting cookbook versions #{cookbook_versions}"
+          job.status = "Setting cookbook versions"
 
           environment.cookbook_versions.merge! cookbook_versions
+          save_environment
         end
 
         def set_override_attributes
           log.info "Setting override attributes #{override_attributes}"
+          job.status = "Setting override attributes"
 
           environment.override_attributes.merge! override_attributes
+          save_environment
         end
 
         # @param [String] component_name

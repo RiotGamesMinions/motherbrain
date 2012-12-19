@@ -97,6 +97,15 @@ module MotherBrain
       JobManager.instance.update(Actor.current)
     end
 
+    def status
+      @status || state.to_s.capitalize
+    end
+
+    def status=(string)
+      @status = string
+      save
+    end
+
     # @return [JobTicket]
     def ticket
       @ticket ||= JobTicket.new(self.id)

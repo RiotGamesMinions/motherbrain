@@ -12,9 +12,10 @@ module MotherBrain
 
     attr_reader :id
 
-    def_delegator :record, :type
-    def_delegator :record, :state
     def_delegator :record, :result
+    def_delegator :record, :state
+    def_delegator :record, :status
+    def_delegator :record, :type
 
     # @param [Integer] id
     def initialize(id)
@@ -25,9 +26,10 @@ module MotherBrain
     def to_hash
       {
         id: id,
-        type: type,
+        result: result,
         state: state,
-        result: result
+        status: status,
+        type: type
       }
     end
 

@@ -28,6 +28,7 @@ module MotherBrain
   autoload :Bootstrap, 'mb/bootstrap'
   autoload :ChefMutex, 'mb/chef_mutex'
   autoload :CleanRoomBase, 'mb/clean_room_base'
+  autoload :CliClient, 'mb/cli_client'
   autoload :Command, 'mb/command'
   autoload :CommandRunner, 'mb/command_runner'
   autoload :Component, 'mb/component'

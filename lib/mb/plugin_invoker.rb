@@ -207,17 +207,7 @@ module MotherBrain
             desc("upgrade ENVIRONMENT", "Upgrade an environment to the specified versions")
             define_method(:upgrade) do |environment|
               job = MB::Application.upgrade(environment, plugin, options)
-
-              spinner_until("Upgrading '#{environment}': ") do
-                job.completed?
-              end
-
-              if job.success?
-                MB.ui.say "Upgrade successful"
-              else
-                MB.ui.error job.result
-                exit 1
-              end
+              CliClient.new(job).display
             end
           end
         end

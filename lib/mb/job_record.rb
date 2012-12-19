@@ -4,9 +4,10 @@ module MotherBrain
     include MB::Job::States
 
     attr_reader :id
-    attr_reader :type
-    attr_reader :state
     attr_reader :result
+    attr_reader :state
+    attr_reader :status
+    attr_reader :type
 
     # @param [Job] job
     def initialize(job)
@@ -28,9 +29,10 @@ module MotherBrain
     private
 
       def mass_assign(job)
-        @type   = job.type
-        @state  = job.state
         @result = job.result
+        @state  = job.state
+        @status = job.status
+        @type   = job.type
       end
   end
 end
