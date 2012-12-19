@@ -15,7 +15,7 @@ module MotherBrain
         end
       end
 
-      # Returns an array of groups or an array of an array groups representing the order in 
+      # Returns an array of groups or an array of an array groups representing the order in
       # which the cluster should be bootstrapped in. Groups which can be bootstrapped together
       # are contained within an array. Groups should be bootstrapped starting from index 0 of
       # the returned array.

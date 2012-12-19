@@ -40,7 +40,7 @@ module MotherBrain
 
     # Complete the given active job
     #
-    # @param [Job] job   
+    # @param [Job] job
     def complete_job(job)
       active.delete(job)
 

@@ -23,7 +23,7 @@ module MotherBrain
   #
   # @example running the application asynchronously
   #   MB::Application.run!(config)
-  #   
+  #
   class Application < Celluloid::SupervisionGroup
     class << self
       extend Forwardable

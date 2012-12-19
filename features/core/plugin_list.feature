@@ -25,6 +25,6 @@ Feature: listing the plugins available to MotherBrain
       """
       No MotherBrain plugins found in any of your configured plugin paths!
 
-      Paths: 
+      Paths:
       """
     And the exit status should be 0

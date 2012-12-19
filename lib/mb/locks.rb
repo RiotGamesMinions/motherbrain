@@ -2,7 +2,7 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   module Locks
     autoload :Manager, 'mb/locks/manager'
-    
+
     class << self
       # @return [Locks::Manager]
       def manager

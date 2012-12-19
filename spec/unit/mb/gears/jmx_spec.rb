@@ -5,7 +5,7 @@ if jruby?
 
     describe "Class" do
       subject { MB::Gear::Jmx }
-      
+
       it "is registered with MB::Gear" do
         MB::Gear.all.should include(subject)
       end
@@ -43,13 +43,13 @@ if jruby?
       end
 
       it "should be given a block" do
-        lambda do 
+        lambda do
           obj = subject.new(@context, port, object_name)
         end.should raise_error(MB::ArgumentError)
       end
 
       it "should be given a block with 1 argument" do
-        lambda do 
+        lambda do
           obj = subject.new(@context, port, object_name) do
           end
         end.should raise_error(MB::ArgumentError)
@@ -58,7 +58,7 @@ if jruby?
       it "should complain if not on jruby" do
         subject.any_instance.stub(:jruby?).and_return(false)
 
-        lambda do 
+        lambda do
           obj = subject.new(@context, port, object_name) do |mbean|
           end
         end.should raise_error(MB::ActionNotSupported)
