@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::NodeQuerier do 
+describe MB::NodeQuerier do
   subject { described_class.new }
 
   describe "#ruby_script" do

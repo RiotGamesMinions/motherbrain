@@ -46,7 +46,7 @@ module MotherBrain
     # @return [MB::Group]
     def group!(group_name)
       group = group(group_name)
-      
+
       if group.nil?
         raise GroupNotFound, "Group #{group_name} does not exist on #{name}!"
       end
@@ -142,7 +142,7 @@ module MotherBrain
     def add_gear(gear)
       klass = gear.class
 
-      unless get_gear(klass, gear.name).nil? 
+      unless get_gear(klass, gear.name).nil?
         raise DuplicateGear, "#{klass.keyword.capitalize} '#{gear.name}' already defined"
       end
 

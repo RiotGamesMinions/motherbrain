@@ -5,7 +5,7 @@ describe MB::REST::Gateway do
 
   before(:all) { @gateway = MB::REST::Gateway.new }
   after(:all) { @gateway.terminate }
-  
+
   let(:app) { @gateway.rack_app }
   subject { @gateway }
 
