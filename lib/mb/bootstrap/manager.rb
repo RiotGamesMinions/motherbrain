@@ -133,7 +133,7 @@ module MotherBrain
 
         responses  = Array.new
         task_queue = routine.task_queue.dup
-        
+
         unless Application.ridley.environment.find(environment)
           raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
         end
@@ -184,7 +184,7 @@ module MotherBrain
               run_list: boot_task.group.run_list,
               attributes: boot_task.group.chef_attributes
             )
-            
+
             Worker.new(boot_task.id, nodes, worker_options)
           end
 

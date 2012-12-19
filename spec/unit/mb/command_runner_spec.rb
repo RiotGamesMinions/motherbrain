@@ -29,7 +29,7 @@ describe MB::CommandRunner do
       command_block = Proc.new do
         on("master_group")
       end
-      
+
       lambda { subject.new(environment, scope, command_block)}.should raise_error(MB::PluginSyntaxError)
     end
 
@@ -45,7 +45,7 @@ describe MB::CommandRunner do
           # block
         end
       end
-      
+
       subject.new(environment, scope, command_block)
     end
 
@@ -62,7 +62,7 @@ describe MB::CommandRunner do
           # block
         end
       end
-      
+
       subject.new(environment, scope, command_block)
     end
 
@@ -79,7 +79,7 @@ describe MB::CommandRunner do
           # block
         end
       end
-      
+
       subject.new(environment, scope, command_block)
     end
 
@@ -95,7 +95,7 @@ describe MB::CommandRunner do
           # block
         end
       end
-      
+
       subject.new(environment, scope, command_block)
     end
 
@@ -112,7 +112,7 @@ describe MB::CommandRunner do
           # block
         end
       end
-      
+
       subject.new(environment, scope, command_block)
     end
 
@@ -125,7 +125,7 @@ describe MB::CommandRunner do
         action.should_receive(:run).with(environment, [node_2])
         action.should_receive(:run).with(environment, [node_3])
       end
-      
+
       command_block = Proc.new do
         on("master_group", max_concurrent: 1) do
           # block
@@ -135,7 +135,7 @@ describe MB::CommandRunner do
           # block
         end
       end
-      
+
       subject.new(environment, scope, command_block)
     end
   end
@@ -146,7 +146,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       subject.any_instance.should_receive(:run).exactly(1).times
-      
+
       command_block = Proc.new do
         async do
           on("master_group", max_concurrent: 1) do
@@ -158,12 +158,12 @@ describe MB::CommandRunner do
           end
         end
       end
-      
+
       subject.new(environment, scope, command_block)
     end
 
     context "when there are no nodes in the target groups" do
-      let(:empty_group) { double('empty_group', nodes: Array.new) } 
+      let(:empty_group) { double('empty_group', nodes: Array.new) }
 
       it "runs no actions" do
         scope.should_receive(:group!).with("empty_group").and_return(empty_group)

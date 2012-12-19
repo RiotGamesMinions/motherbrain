@@ -75,7 +75,7 @@ describe MB::Gear do
 
   describe "::register_gear" do
     it "sets the keyword class attribute" do
-      @klass = Class.new(MB::AbstractGear) do  
+      @klass = Class.new(MB::AbstractGear) do
         register_gear :racer
       end
 

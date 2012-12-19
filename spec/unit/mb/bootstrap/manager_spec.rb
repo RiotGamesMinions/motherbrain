@@ -24,7 +24,7 @@ describe MB::Bootstrap::Manager do
         valid_options.keys.each do |opt|
           options = valid_options.dup
           options.delete(opt)
-          
+
           expect { subject.validate_options(options) }.to raise_error(MB::ArgumentError)
         end
       end

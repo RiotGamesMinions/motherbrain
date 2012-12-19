@@ -32,7 +32,7 @@ module MotherBrain
 
             node_groups.each_pair do |name, value|
               match = name.match(Plugin::NODE_GROUP_ID_REGX)
-              
+
               unless match
                 raise InvalidProvisionManifest, "Provision manifest contained an entry not in the proper format: '#{name}'. Expected: 'component::group'"
               end
@@ -56,8 +56,8 @@ module MotherBrain
       #
       # @return [Integer]
       def node_count
-        self.collect do |type, node_groups| 
-          node_groups.values.inject(:+) 
+        self.collect do |type, node_groups|
+          node_groups.values.inject(:+)
         end.inject(:+)
       end
     end

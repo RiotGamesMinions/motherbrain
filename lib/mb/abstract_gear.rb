@@ -11,7 +11,7 @@ module MotherBrain
 
       # Register the gear with {MotherBrain::Gear} with the given keyword. This is how a gear is
       # identified within a plugin.
-      # 
+      #
       # @param [#to_sym] keyword
       def register_gear(keyword)
         @keyword = keyword.to_sym

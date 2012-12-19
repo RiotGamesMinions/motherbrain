@@ -82,7 +82,7 @@ describe MB::Job do
 
     it "should not be a pending if status is not 'pending'" do
       subject.transition(:running)
-      
+
       subject.should_not be_pending
     end
   end
