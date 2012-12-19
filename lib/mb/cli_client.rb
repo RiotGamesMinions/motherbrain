@@ -1,24 +1,29 @@
 module MotherBrain
   class CliClient
-    attr_reader :job
+    attr_reader :jobs
 
-    def initialize(job)
-      @job = job
+    def initialize(*jobs)
+      @jobs = jobs
     end
 
     def display
-      status job.status until job.completed?
+      until jobs.all?(&:completed?)
+        jobs.each do |job|
+          status job
+        end
+      end
 
-      if job.state == :success
-        MB.ui.say "Success"
-      else
-        MB.ui.say "Failed"
-        exit 1
+      jobs.each do |job|
+        final_status job
       end
     end
 
-    def status(text)
-      printf "\r%s #{text}", spinner.next
+    def final_status(job)
+      puts "\r  [#{job.type}] #{job.state.to_s.capitalize}"
+    end
+
+    def status(job)
+      printf "\r%s [#{job.type}] #{job.status}", spinner.next
 
       sleep 0.1
     end
