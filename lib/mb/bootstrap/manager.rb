@@ -133,9 +133,8 @@ module MotherBrain
 
         responses  = Array.new
         task_queue = routine.task_queue.dup
-        chef_conn  = Ridley::Connection.new(options.slice(*RIDLEY_OPT_KEYS))
         
-        unless chef_conn.environment.find(environment)
+        unless Application.ridley.environment.find(environment)
           raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
         end
 
@@ -143,7 +142,7 @@ module MotherBrain
 
         chef_synchronize(chef_environment: environment, force: options[:force]) do
           until task_queue.empty?
-            responses.push concurrent_bootstrap(chef_conn, manifest, task_queue.shift, options.except(*RIDLEY_OPT_KEYS))
+            responses.push concurrent_bootstrap(manifest, task_queue.shift, options.except(*RIDLEY_OPT_KEYS))
           end
         end
 
@@ -163,8 +162,6 @@ module MotherBrain
         # their results. This function will block until all nodes have finished
         # bootstrapping.
         #
-        # @param [Ridley::Connection] chef_conn
-        #   connection for Chef
         # @param [Bootstrap::Manifest] manifest
         #   a hash where the keys are node group names and the values are arrays of hostnames
         # @param [BootTask, Array<BootTask>] boot_tasks
@@ -179,7 +176,7 @@ module MotherBrain
         #
         # @return [Hash]
         #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
-        def concurrent_bootstrap(chef_conn, manifest, boot_tasks, options = {})
+        def concurrent_bootstrap(manifest, boot_tasks, options = {})
           workers = Array.new
           workers = Array(boot_tasks).collect do |boot_task|
             nodes = manifest[boot_task.id]
@@ -188,7 +185,7 @@ module MotherBrain
               attributes: boot_task.group.chef_attributes
             )
             
-            Worker.new(boot_task.id, nodes, chef_conn, worker_options)
+            Worker.new(boot_task.id, nodes, worker_options)
           end
 
           futures = workers.collect do |worker|
