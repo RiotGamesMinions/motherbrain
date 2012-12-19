@@ -180,7 +180,7 @@ module MotherBrain
             set_environment_attribute(key, value, options)
           end
 
-          # Set a node level attribute on all nodes for this action to the given value. 
+          # Set a node level attribute on all nodes for this action to the given value.
           # The key is represented by a dotted path.
           #
           # @param [String] key
@@ -219,7 +219,7 @@ module MotherBrain
               end
             end
 
-            # Set a node level attribute on a single node to the given value. 
+            # Set a node level attribute on a single node to the given value.
             # The key is represented by a dotted path.
             #
             # @param [Ridley::Node] l_node the node to set the attribute on

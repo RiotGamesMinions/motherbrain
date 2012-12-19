@@ -113,7 +113,7 @@ module MotherBrain
   class InvalidProvisionManifest < MBError; status_code(19); end
   class ManifestNotFound < MBError; status_code(20); end
   class InvalidJSONManifest < MBError; status_code(21); end
-  
+
   class UnexpectedProvisionCount < MBError
     status_code(20)
 

@@ -6,7 +6,7 @@ module MotherBrain
     # JobTicket. The helper functions are based on states set by {Job::StateMachine}
     module States
       attr_reader :state
-      
+
       # If a job has succeeded or failed it considered completed
       #
       # @return [Boolean]

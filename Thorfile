@@ -53,7 +53,7 @@ class Default < Thor
 
     desc "unit", "run only unit tests"
     def unit
-      exec "rspec --color --format=documentation spec --tag ~type:acceptance" 
+      exec "rspec --color --format=documentation spec --tag ~type:acceptance"
     end
 
     desc "acceptance", "run only acceptance tests"

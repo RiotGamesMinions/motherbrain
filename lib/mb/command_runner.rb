@@ -55,7 +55,7 @@ module MotherBrain
     # @option options [Integer] :max_concurrent
     #   the number of nodes to run on at a time
     #
-    # @example running on masters and slaves, only 2 of them, 1 at a time 
+    # @example running on masters and slaves, only 2 of them, 1 at a time
     #
     #   on("masters", "slaves", any: 2, max_concurrent: 1) do
     #     # actions
@@ -84,7 +84,7 @@ module MotherBrain
       if options[:any]
         nodes = nodes.first(options[:any])
       end
-      
+
       options[:max_concurrent] ||= nodes.count
       node_groups = nodes.each_slice(options[:max_concurrent]).to_a
 

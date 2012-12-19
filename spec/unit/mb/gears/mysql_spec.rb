@@ -3,7 +3,7 @@ require 'spec_helper'
 describe MB::Gear::Mysql do
   describe "Class" do
     subject { MB::Gear::Mysql }
-    
+
     it "is registered with MB::Gear" do
       MB::Gear.all.should include(subject)
     end
