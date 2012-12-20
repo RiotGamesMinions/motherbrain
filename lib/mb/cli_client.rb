@@ -8,7 +8,13 @@ module MotherBrain
       @jobs = jobs
     end
 
+    def debugging?
+      MB.log.info?
+    end
+
     def display
+      wait and return if debugging?
+
       until jobs.all?(&:completed?)
         jobs.each do |job|
           status job
@@ -54,6 +60,12 @@ module MotherBrain
           end
         end
       end
+    end
+
+    def wait
+      sleep 0.1 until jobs.all?(&:completed?)
+
+      true
     end
   end
 end
