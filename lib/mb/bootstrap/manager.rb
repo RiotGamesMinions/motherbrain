@@ -129,6 +129,7 @@ module MotherBrain
       #
       def bootstrap(environment, manifest, routine, options = {})
         job = Job.new :bootstrap
+        job.report_running
 
         self.class.validate_options(options)
         manifest.validate!(routine)
@@ -161,9 +162,7 @@ module MotherBrain
           end
         end
 
-        job.status = "Finishing up"
-
-        finalize
+        job.report_success
       end
 
       # Concurrently bootstrap a grouped collection of nodes from a manifest and return
