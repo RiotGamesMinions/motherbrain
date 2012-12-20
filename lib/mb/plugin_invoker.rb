@@ -166,31 +166,18 @@ module MotherBrain
 
               job = Provisioner::Manager.instance.provision(environment, manifest, plugin, provisioner_options)
 
-              spinner_until("Provisioning '#{environment}': ") do
-                job.completed?
-              end
+              CliClient.new(job).display
 
-              if job.success?
-                MB.ui.say "Provision finished"
+              return if options[:skip_bootstrap]
 
-                if options[:skip_bootstrap]
-                  MB.ui.say "Skipping bootstrap"
-                  MB.ui.say job.result
-                  exit 0
-                end
+              bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(
+                job.result,
+                manifest,
+                Tempfile.new('bootstrap_manifest').path
+              )
+              bootstrap_manifest.save
 
-                bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(
-                  job.result,
-                  manifest,
-                  Tempfile.new('bootstrap_manifest').path
-                )
-                bootstrap_manifest.save
-
-                invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
-              else
-                MB.log.fatal job.result
-                exit 1
-              end
+              invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
             end
 
             method_option :component_versions,
