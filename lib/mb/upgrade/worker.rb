@@ -144,18 +144,21 @@ module MotherBrain
 
         # @return [Array<String>]
         def nodes
+          return @nodes if @nodes
+
           job.status = "Looking for nodes"
-          result = plugin.nodes(environment_name).collect { |component, groups|
+
+          @nodes = plugin.nodes(environment_name).collect { |component, groups|
             groups.collect { |group, nodes|
               nodes.collect(&:public_hostname)
             }
           }.flatten.compact.uniq
 
-          unless result.any?
+          unless @nodes.any?
             log.info "No nodes in environment '#{environment_name}'"
           end
 
-          result
+          @nodes
         end
 
         def run_chef
