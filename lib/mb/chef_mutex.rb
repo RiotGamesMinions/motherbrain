@@ -40,12 +40,15 @@ module MotherBrain
     attr_reader :name
 
     attr_accessor :force
+    attr_accessor :job
     attr_accessor :unlock_on_failure
 
     # @option options [#to_s] :chef_environment
     #   The name of the environment to lock
     # @option options [Boolean] :force (false)
     #   Force the lock to be written, even if it already exists.
+    # @option options [MotherBrain::Job] :job
+    #   A job that will receive status updates during lock/unlock
     # @option options [Boolean] :unlock_on_failure (true)
     #   If false and the block raises an error, the lock will persist.
     def initialize(options = {})
@@ -59,6 +62,7 @@ module MotherBrain
       @type              = type
       @name              = name
       @force             = options[:force]
+      @job               = options[:job]
       @unlock_on_failure = options[:unlock_on_failure]
     end
 
@@ -89,6 +93,7 @@ module MotherBrain
       end
 
       MB.log.info "Locking #{to_s}"
+      job.status = "Locking #{to_s}" if job
 
       attempt_lock
     end
@@ -127,6 +132,7 @@ module MotherBrain
       return true if externally_testing?
 
       MB.log.info "Unlocking #{to_s}"
+      job.status = "Unlocking #{to_s}" if job
 
       attempt_unlock
     end

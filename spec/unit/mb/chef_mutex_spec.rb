@@ -3,10 +3,11 @@ require 'spec_helper'
 describe MB::ChefMutex do
   subject { chef_mutex }
 
-  let(:chef_mutex) { klass.new(lockset) }
+  let(:chef_mutex) { klass.new(options.merge lockset) }
 
   let(:client_name) { "johndoe" }
   let(:lockset) { { chef_environment: "my_environment" } }
+  let(:options) { Hash.new }
 
   let(:chef_connection_stub) { stub client_name: client_name }
   let(:locks_stub) { stub(
@@ -66,6 +67,19 @@ describe MB::ChefMutex do
 
       it { -> { lock }.should raise_error MB::InvalidLockType }
     end
+
+    context "when passed a job" do
+      let(:job_stub) { stub }
+      let(:options) { { job: job_stub } }
+
+      it "sets the job status" do
+        job_stub.should_receive(:status=).with(
+          "Locking chef_environment:my_environment"
+        )
+
+        lock
+      end
+    end
   end
 
   describe "#synchronize" do
@@ -73,7 +87,6 @@ describe MB::ChefMutex do
 
     TestProbe = Object.new
 
-    let(:options) { Hash.new }
     let(:test_block) { -> { TestProbe.testing } }
 
     before do
@@ -164,6 +177,19 @@ describe MB::ChefMutex do
       chef_mutex.should_receive :attempt_unlock
 
       unlock
+    end
+
+    context "when passed a job" do
+      let(:job_stub) { stub }
+      let(:options) { { job: job_stub } }
+
+      it "sets the job status" do
+        job_stub.should_receive(:status=).with(
+          "Unlocking chef_environment:my_environment"
+        )
+
+        unlock
+      end
     end
   end
 end

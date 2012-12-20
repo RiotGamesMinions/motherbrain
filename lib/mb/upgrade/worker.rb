@@ -60,15 +60,13 @@ module MotherBrain
 
         assert_environment_exists
 
-        job.status = "Locking environment"
-        chef_synchronize(chef_environment: environment_name, force: options[:force]) do
+        chef_synchronize(chef_environment: environment_name, force: options[:force], job: job) do
           set_component_versions if component_versions.any?
           set_cookbook_versions if cookbook_versions.any?
 
           if component_versions.any? or cookbook_versions.any?
             run_chef if nodes.any?
           end
-          job.status = "Unlocking environment"
         end
 
         job.status = "Finishing up"
