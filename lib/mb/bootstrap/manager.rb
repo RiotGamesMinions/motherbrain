@@ -52,19 +52,6 @@ module MotherBrain
         :ssh
       ].freeze
 
-      # Options given to {#bootstrap} to be passed to Ridley
-      RIDLEY_OPT_KEYS = [
-        :server_url,
-        :client_name,
-        :client_key,
-        :organization,
-        :validator_client,
-        :validator_path,
-        :encrypted_data_bag_secret_path,
-        :thread_count,
-        :ssl
-      ].freeze
-
       def initialize
         log.info { "Bootstrap Manager starting..." }
       end
@@ -158,7 +145,7 @@ module MotherBrain
           while tasks = task_queue.shift
             job.status = "Bootstrapping #{tasks.collect(&:id).join(', ')}"
 
-            concurrent_bootstrap(manifest, tasks, options.except(*RIDLEY_OPT_KEYS))
+            concurrent_bootstrap(manifest, tasks, options)
           end
         end
 
