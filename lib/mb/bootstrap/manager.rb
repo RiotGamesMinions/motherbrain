@@ -128,10 +128,11 @@ module MotherBrain
       #   ]
       #
       def bootstrap(environment, manifest, routine, options = {})
+        job = Job.new :bootstrap
+
         self.class.validate_options(options)
         manifest.validate!(routine)
 
-        responses  = Array.new
         task_queue = routine.task_queue.dup
 
         unless Application.ridley.environment.find(environment)
@@ -139,70 +140,77 @@ module MotherBrain
         end
 
         log.info { "Starting bootstrap of nodes on: #{environment}" }
-
-        chef_synchronize(chef_environment: environment, force: options[:force]) do
-          until task_queue.empty?
-            responses.push concurrent_bootstrap(manifest, task_queue.shift, options.except(*RIDLEY_OPT_KEYS))
-          end
-        end
-
-        log.info { "Bootstrap finished for nodes on: #{environment}" }
-        responses
-      rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
-        raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
+        async.sequential_bootstrap environment, manifest, task_queue, job, options
+      rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => error
+        job.report_failure(error)
+        # raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{error}"
+      ensure
+        return job.ticket
       end
 
       def finalize
         log.info { "Bootstrap Manager stopping..." }
       end
 
-      private
+      def sequential_bootstrap(environment, manifest, task_queue, job, options)
+        chef_synchronize(chef_environment: environment, force: options[:force], job: job) do
+          while tasks = task_queue.shift
+            job.status = "Bootstrapping #{tasks.collect(&:id).join(', ')}"
 
-        # Concurrently bootstrap a grouped collection of nodes from a manifest and return
-        # their results. This function will block until all nodes have finished
-        # bootstrapping.
-        #
-        # @param [Bootstrap::Manifest] manifest
-        #   a hash where the keys are node group names and the values are arrays of hostnames
-        # @param [BootTask, Array<BootTask>] boot_tasks
-        #   a hash where the keys are node group names and the values are arrays of hostnames
-        # @option options [String] :environment ('_default')
-        # @option options [Hash] :hints (Hash.new)
-        #   a hash of Ohai hints to place on the bootstrapped node
-        # @option options [String] :template ("omnibus")
-        #   bootstrap template to use
-        # @option options [String] :bootstrap_proxy (nil)
-        #   URL to a proxy server to bootstrap through
-        #
-        # @return [Hash]
-        #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
-        def concurrent_bootstrap(manifest, boot_tasks, options = {})
-          workers = Array.new
-          workers = Array(boot_tasks).collect do |boot_task|
-            nodes = manifest[boot_task.id]
-            worker_options = options.merge(
-              run_list: boot_task.group.run_list,
-              attributes: boot_task.group.chef_attributes
-            )
-
-            Worker.new(boot_task.id, nodes, worker_options)
+            concurrent_bootstrap(manifest, tasks, options.except(*RIDLEY_OPT_KEYS))
           end
-
-          futures = workers.collect do |worker|
-            [
-              worker.group_id,
-              worker.future.run
-            ]
-          end
-
-          {}.tap do |response|
-            futures.each do |group_id, future|
-              response[group_id] = future.value
-            end
-          end
-        ensure
-          workers.map { |worker| worker.terminate if worker.alive? }
         end
+
+        job.status = "Finishing up"
+
+        finalize
+      end
+
+      # Concurrently bootstrap a grouped collection of nodes from a manifest and return
+      # their results. This function will block until all nodes have finished
+      # bootstrapping.
+      #
+      # @param [Bootstrap::Manifest] manifest
+      #   a hash where the keys are node group names and the values are arrays of hostnames
+      # @param [BootTask, Array<BootTask>] boot_tasks
+      #   a hash where the keys are node group names and the values are arrays of hostnames
+      # @option options [String] :environment ('_default')
+      # @option options [Hash] :hints (Hash.new)
+      #   a hash of Ohai hints to place on the bootstrapped node
+      # @option options [String] :template ("omnibus")
+      #   bootstrap template to use
+      # @option options [String] :bootstrap_proxy (nil)
+      #   URL to a proxy server to bootstrap through
+      #
+      # @return [Hash]
+      #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
+      def concurrent_bootstrap(manifest, boot_tasks, options = {})
+        workers = Array(boot_tasks).collect do |boot_task|
+          nodes = manifest[boot_task.id]
+
+          worker_options = options.merge(
+            run_list: boot_task.group.run_list,
+            attributes: boot_task.group.chef_attributes
+          )
+
+          Worker.new(boot_task.id, nodes, worker_options)
+        end
+
+        futures = workers.collect do |worker|
+          [
+            worker.group_id,
+            worker.future.run
+          ]
+        end
+
+        {}.tap do |response|
+          futures.each do |group_id, future|
+            response[group_id] = future.value
+          end
+        end
+      ensure
+        workers.map { |worker| worker.terminate if worker.alive? }
+      end
     end
   end
 end

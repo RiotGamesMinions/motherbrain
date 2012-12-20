@@ -101,7 +101,9 @@ module MotherBrain
                 force: options[:force]
               }
 
-              MB::Application.bootstrap(environment, manifest, plugin.bootstrap_routine, bootstrap_options)
+              job = MB::Application.bootstrap(environment, manifest, plugin.bootstrap_routine, bootstrap_options)
+
+              CliClient.new(job).display
             end
 
             method_option :api_url,
