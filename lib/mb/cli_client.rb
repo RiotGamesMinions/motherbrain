@@ -23,16 +23,10 @@ module MotherBrain
     # Block and wait for all jobs to be completed, while displaying the status
     # of each job.
     def display
-      wait and return if debugging?
-
-      until jobs.all?(&:completed?)
-        jobs.each do |job|
-          status job
-        end
-      end
-
-      jobs.each do |job|
-        final_status job
+      if debugging?
+        wait_for_jobs
+      else
+        display_jobs
       end
     end
 
@@ -45,6 +39,18 @@ module MotherBrain
       # @return [Boolean]
       def debugging?
         MB.log.info?
+      end
+
+      def display_jobs
+        until jobs.all?(&:completed?)
+          jobs.each do |job|
+            status job
+          end
+        end
+
+        jobs.each do |job|
+          final_status job
+        end
       end
 
       # @param [MotherBrain::Job] job
@@ -82,11 +88,8 @@ module MotherBrain
         sleep TICK
       end
 
-      # @return [true]
-      def wait
+      def wait_for_jobs
         sleep TICK until jobs.all?(&:completed?)
-
-        true
       end
   end
 end
