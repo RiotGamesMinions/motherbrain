@@ -99,7 +99,7 @@ module MotherBrain
           @environment ||= chef_connection.environment.find(environment_name)
         end
 
-        # @param [String] name
+        # @param [String] component_name
         #
         # @return [MotherBrain::Component]
         #
