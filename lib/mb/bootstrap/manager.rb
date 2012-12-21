@@ -91,29 +91,6 @@ module MotherBrain
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      #
-      # @raise [InvalidBootstrapManifest] if the given manifest does not pass validation
-      # @raise [ArgumentError] if a required option is not given
-      # @raise [MB::EnvironmentNotFound] if the target environment does not exist
-      # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
-      #
-      # @return [Array<Hash>]
-      #   an array containing hashes from each item in the task_queue. The hashes contain
-      #   keys for bootstrapped node groups and values that are the Ridley::SSH::ResultSet
-      #   which contains the result of bootstrapping each node.
-      #
-      # @example
-      #   bootstrap(manifest, routine, options) => [
-      #     {
-      #       instance_type: "m1.large",
-      #       public_hostname: "euca-10-20-37-146.eucalyptus.cloud.riotgames.com"
-      #     },
-      #     {
-      #       instance_type: "m1.large",
-      #       public_hostname: "euca-10-20-37-134.eucalyptus.cloud.riotgames.com"
-      #     }
-      #   ]
-      #
       def bootstrap(environment, manifest, routine, options = {})
         job = Job.new(:bootstrap)
 
@@ -122,6 +99,9 @@ module MotherBrain
         job.ticket
       end
 
+      # @see #bootstrap
+      #
+      # @param [MotherBrain::Job] job
       def start(environment, manifest, routine, job, options = {})
         job.report_running
 
@@ -144,7 +124,10 @@ module MotherBrain
         log.info { "Bootstrap Manager stopping..." }
       end
 
-      def sequential_bootstrap(environment, manifest, task_queue, job, options)
+      # @see #bootstrap
+      #
+      # @param [MotherBrain::Job] job
+      def sequential_bootstrap(environment, manifest, task_queue, job, options = {})
         chef_synchronize(chef_environment: environment, force: options[:force], job: job) do
           while tasks = task_queue.shift
             job.status = "Bootstrapping #{tasks.collect(&:id).join(', ')}"

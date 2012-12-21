@@ -108,33 +108,4 @@ describe MB::Bootstrap::Manager do
     stub_request(:get, "https://api.opscode.com/organizations/vialstudios/environments/test").
       to_return(status: 200, body: {})
   end
-
-  describe "#bootstrap" do
-    it "returns an array of hashes" do
-      result = subject.bootstrap(environment, manifest, routine, bootstrap_options)
-
-      result.should be_a(Array)
-      result.should each be_a(Hash)
-    end
-
-    it "returns an item for every item in the task_queue" do
-      subject.bootstrap(environment, manifest, routine, bootstrap_options).should have(2).items
-    end
-
-    it "returns items where each is a hash with a key for each node group of each task_queue item" do
-      result = subject.bootstrap(environment, manifest, routine, bootstrap_options)
-
-      result[0].should have_key("activemq::master")
-      result[0].should have_key("activemq::slave")
-      result[1].should have_key("nginx::master")
-    end
-
-    it "has a Ridley::SSH::ResponseSet for each value" do
-      result = subject.bootstrap(environment, manifest, routine, bootstrap_options)
-
-      result[0]["activemq::master"].should be_a(Ridley::SSH::ResponseSet)
-      result[0]["activemq::slave"].should be_a(Ridley::SSH::ResponseSet)
-      result[1]["nginx::master"].should be_a(Ridley::SSH::ResponseSet)
-    end
-  end
 end
