@@ -15,6 +15,8 @@ module MotherBrain
     def_delegator :record, :type
     def_delegator :record, :state
     def_delegator :record, :result
+    def_delegator :record, :time_start
+    def_delegator :record, :time_end
 
     # @param [Integer] id
     def initialize(id)
@@ -27,7 +29,9 @@ module MotherBrain
         id: id,
         type: type,
         state: state,
-        result: result
+        result: result,
+        time_start: time_start,
+        time_end: time_end
       }
     end
 

@@ -16,16 +16,19 @@ module MotherBrain
 
       state :running, to: [ :success, :failure ] do
         log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
+        actor.time_start = Time.now
         actor.save
       end
 
       state :success do
         log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
+        actor.time_end = Time.now
         actor.save
       end
 
       state :failure do
         log.debug { "job (#{actor.id}) transitioning to '#{state}'" }
+        actor.time_end = Time.now
         actor.save
       end
     end

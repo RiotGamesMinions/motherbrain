@@ -28,9 +28,11 @@ module MotherBrain
     private
 
       def mass_assign(job)
-        @type   = job.type
-        @state  = job.state
-        @result = job.result
+        @type       = job.type
+        @state      = job.state
+        @result     = job.result
+        @time_start = job.time_start
+        @time_end   = job.time_end
       end
   end
 end
