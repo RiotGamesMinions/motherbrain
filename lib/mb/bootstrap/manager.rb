@@ -115,7 +115,14 @@ module MotherBrain
       #   ]
       #
       def bootstrap(environment, manifest, routine, options = {})
-        job = Job.new :bootstrap
+        job = Job.new(:bootstrap)
+
+        async.start(environment, manifest, routine, job, options)
+
+        job.ticket
+      end
+
+      def start(environment, manifest, routine, job, options = {})
         job.report_running
 
         self.class.validate_options(options)
