@@ -7,14 +7,18 @@ module MotherBrain
   #
   # @api public
   class JobTicket < BasicObject
+    attr_reader :id
+    
     # @param [Integer] id
     def initialize(id)
-      @record = JobManager.instance.find(id)
+      @id = id
     end
 
     private
 
-      attr_reader :record
+      def record
+        JobManager.instance.find(id)
+      end
 
       def method_missing(method, *args, &block)
         record.send(method, *args, &block)
