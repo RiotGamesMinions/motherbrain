@@ -54,9 +54,7 @@ describe MB::ChefMutex do
       it { should be_false }
 
       context "and force enabled" do
-        before do
-          chef_mutex.force = true
-        end
+        let(:options) { { force: true } }
 
         it { should be_true }
       end
@@ -129,9 +127,7 @@ describe MB::ChefMutex do
       end
 
       context "and force enabled" do
-        before do
-          chef_mutex.force = true
-        end
+        let(:options) { { force: true } }
 
         it "locks with force" do
           chef_mutex.should_receive(:lock).and_return(true)

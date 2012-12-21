@@ -39,9 +39,9 @@ module MotherBrain
     attr_reader :type
     attr_reader :name
 
-    attr_accessor :force
-    attr_accessor :job
-    attr_accessor :unlock_on_failure
+    attr_reader :force
+    attr_reader :job
+    attr_reader :unlock_on_failure
 
     # @option options [#to_s] :chef_environment
     #   The name of the environment to lock
