@@ -28,6 +28,8 @@ module MotherBrain
       #
       # @param [MotherBrain::Plugin] plugin
       #
+      # @param [MotherBrain::Job] job
+      #
       # @option options [Hash] component_versions
       #   Hash of components and the versions to set them to
       #
@@ -37,9 +39,10 @@ module MotherBrain
       # @option options [Boolean] :force
       #   Force any locks to be overwritten
       #
-      def initialize(environment_name, plugin, options = {})
+      def initialize(environment_name, plugin, job, options = {})
         @environment_name = environment_name
         @plugin           = plugin
+        @job              = job
         @options          = options
       end
 
@@ -52,9 +55,7 @@ module MotherBrain
       # @raise [EnvironmentNotFound] if the environment does not exist
       #
       # @return [Job]
-      def run(job)
-        @job = job
-
+      def run
         job.status = "Starting"
         job.report_running
 
@@ -71,11 +72,11 @@ module MotherBrain
 
         job.status = "Finishing up"
         job.report_success
-      rescue EnvironmentNotFound => e
-        log.fatal { "environment not found: #{e}" }
-        job.report_failure(e)
-      rescue => e
-        log.fatal { "unknown error occured: #{e}"}
+      rescue EnvironmentNotFound => error
+        log.fatal { "environment not found: #{error}" }
+        job.report_failure(error)
+      rescue => error
+        log.fatal { "unknown error occured: #{error}"}
         job.report_failure("internal error")
       end
 

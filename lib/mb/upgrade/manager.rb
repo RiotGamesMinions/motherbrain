@@ -13,7 +13,7 @@ module MotherBrain
       def upgrade(environment, plugin, options = {})
         job = Job.new(:upgrade)
 
-        Worker.new(environment.freeze, plugin.freeze, options.freeze).async.run(job)
+        Worker.new(environment, plugin, job, options).async.run
 
         job.ticket
       end
