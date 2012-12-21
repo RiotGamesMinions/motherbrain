@@ -7,6 +7,8 @@ module MotherBrain
     attr_reader :type
     attr_reader :state
     attr_reader :result
+    attr_reader :time_start
+    attr_reader :time_end
 
     # @param [Job] job
     def initialize(job)
@@ -23,6 +25,25 @@ module MotherBrain
     def update(job)
       mass_assign(job)
       self
+    end
+
+    # @return [Hash]
+    def to_hash
+      {
+        id: id,
+        type: type,
+        state: state,
+        result: result,
+        time_start: time_start,
+        time_end: time_end
+      }
+    end
+
+    # @param [Hash] options
+    #
+    # @return [String]
+    def to_json(options = {})
+      MultiJson.encode(self.to_hash, options)
     end
 
     private
