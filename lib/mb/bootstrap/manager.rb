@@ -136,11 +136,8 @@ module MotherBrain
 
         log.info { "Starting bootstrap of nodes on: #{environment}" }
         async.sequential_bootstrap environment, manifest, task_queue, job, options
-      rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => error
+      rescue => error
         job.report_failure(error)
-        # raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{error}"
-      ensure
-        return job.ticket
       end
 
       def finalize
@@ -157,6 +154,8 @@ module MotherBrain
         end
 
         job.report_success
+      rescue => error
+        job.report_failure(error)
       end
 
       # Concurrently bootstrap a grouped collection of nodes from a manifest and return
