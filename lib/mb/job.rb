@@ -41,6 +41,20 @@ module MotherBrain
     attr_reader :type
     attr_reader :result
 
+    # Set when the state of the Job changes from 'pending' to 'running'
+    #
+    # @note do not modify outside of the state machine
+    #
+    # @return [Time]
+    attr_accessor :time_start
+
+    # Set when the state of the Job changes from 'running' to 'sucess' or 'failure'
+    #
+    # @note do not modify outside of the state machine
+    #
+    # @return [Time]
+    attr_accessor :time_end
+
     def_delegator :machine, :state
 
     # @param [#to_s] type
