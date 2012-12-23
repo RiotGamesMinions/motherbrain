@@ -34,7 +34,8 @@ def setup_rspec
             user: 'reset',
             password: 'whatever',
             keys: []
-          }
+          },
+          plugin_paths: Set.new
         }
       )
       @app = MB::Application.run!(@config)
