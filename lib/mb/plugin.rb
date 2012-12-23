@@ -38,6 +38,7 @@ module MotherBrain
 
     NODE_GROUP_ID_REGX = /^(.+)::(.+)$/.freeze
 
+    include Comparable
     include Chozo::VariaModel
 
     attribute :name,
@@ -220,6 +221,22 @@ module MotherBrain
       end
 
       buffer.join "\n"
+    end
+
+    def <=>(other)
+      unless other.is_a?(self.class)
+        return 0
+      end
+
+      if self.name == other.name
+        self.version <=> other.version
+      else
+        self.name <=> other.name
+      end
+    end
+
+    def eql?(other)
+      other.is_a?(self.class) && self == other
     end
 
     def to_s
