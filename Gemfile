@@ -5,7 +5,6 @@ gemspec
 gem 'chozo', github: 'reset/chozo'
 gem 'ef-rest', git: 'git@github.com:RiotGames/ef-rest.git'
 gem 'reel', github: 'celluloid/reel'
-gem 'ridley', github: 'reset/ridley'
 
 platforms :ruby do
   gem 'mysql2'
