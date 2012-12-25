@@ -44,40 +44,14 @@ module MotherBrain
             define_method(:bootstrap) do |environment, manifest_file|
               manifest = MB::Bootstrap::Manifest.from_file(manifest_file)
 
-<<<<<<< HEAD
-              bootstrap_options = {
-                environment: environment,
-                server_url: Application.ridley.server_url,
-                client_name: Application.ridley.client_name,
-                client_key: Application.ridley.client_key,
-                validator_client: options[:validator_client] || Application.config[:chef][:validator_client],
-                validator_path: options[:validator_path] || Application.config[:chef][:validator_path],
-                bootstrap_proxy: options[:bootstrap_proxy] || Application.config[:chef][:bootstrap_proxy],
-                encrypted_data_bag_secret_path: options[:encrypted_data_bag_secret_path] || Application.config[:chef][:encrypted_data_bag_secret_path],
-                ssh: {
-                  user: options[:ssh_user] || Application.config[:ssh][:user],
-                  password: options[:ssh_password] || Application.config[:ssh][:password],
-                  keys: options[:ssh_keys] || Application.config[:ssh][:keys],
-                  timeout: options[:ssh_timeout] || Application.config[:ssh][:timeout],
-                  sudo: options[:sudo] || Application.config[:ssh][:sudo]
-                },
-                ssl: {
-                  verify: options[:ssl_verify] || Application.config[:ssl][:verify]
-                },
-                force: options[:force]
-              }
-
-              job = MB::Application.bootstrap(environment, manifest, plugin.bootstrap_routine, bootstrap_options)
-
-              CliClient.new(job).display
-=======
-              MB::Application.bootstrap(
+              job = MB::Application.bootstrap(
                 environment.freeze,
                 manifest.freeze,
                 plugin.bootstrap_routine.freeze,
                 options.freeze
               )
->>>>>>> plugin invoker reflects simplified passed options
+
+              CliClient.new(job).display
             end
 
             method_option :skip_bootstrap,

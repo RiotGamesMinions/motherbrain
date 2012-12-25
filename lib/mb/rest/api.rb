@@ -56,6 +56,14 @@ module MotherBrain
         rack_response(ex.to_json, 404, "Content-type" => "application/json")
       end
 
+      rescue_from NoBootstrapRoutine do |ex|
+        rack_response(ex.to_json, 405, "Content-type" => "application/json")
+      end
+
+      rescue_from InvalidProvisionManifest, InvalidBootstrapManifest do |ex|
+        rack_response(ex.to_json, 400, "Content-type" => "application/json")
+      end
+
       rescue_from :all do |ex|
         body = if ex.is_a?(MB::MBError)
           ex.to_json
@@ -123,6 +131,7 @@ module MotherBrain
         post ':name/provision' do
           plugin   = find_plugin!(params[:name])
           manifest = Provisioner::Manifest.from_hash(params[:manifest].to_hash)
+          manifest.validate!(plugin)
 
           provisioner.provision(
             params[:environment].freeze,
@@ -136,16 +145,19 @@ module MotherBrain
           requires :name, type: String, desc: "plugin name"
           requires :environment, type: String, desc: "name of the environment to bootstrap"
           requires :manifest, desc: "description of the node group to bootstrap"
+          optional :force, type: Boolean
+          optional :hints
         end
         post ':name/bootstrap' do
           plugin   = find_plugin!(params[:name])
-          manifest = Bootstrap::Manifest.from_hash(params[:manifest])
+          manifest = Bootstrap::Manifest.from_hash(params[:manifest].to_hash)
+          manifest.validate!(plugin)
 
           bootstrapper.bootstrap(
-            params[:environment],
-            manifest,
-            plugin.bootstrap_routine,
-            param[:options]
+            params[:environment].freeze,
+            manifest.freeze,
+            plugin.freeze,
+            params.slice(:force, :bootstrap_proxy, :hints).freeze
           )
         end
 
@@ -169,6 +181,7 @@ module MotherBrain
         post ':name/:version/provision' do
           plugin   = find_plugin!(params[:name], params[:version])
           manifest = Provisioner::Manifest.from_hash(params[:manifest].to_hash)
+          manifest.validate!(plugin)
 
           provisioner.provision(
             params[:environment].freeze,
@@ -181,17 +194,21 @@ module MotherBrain
         params do
           requires :name, type: String, desc: "plugin name"
           requires :version, sem_ver: true
+          requires :manifest, desc: "description of the node group to bootstrap"
+          optional :force, type: Boolean
+          optional :hints
         end
         desc "bootstrap a cluster of nodes using the given version of the given plugin"
         post ':name/:version/bootstrap' do
           plugin   = find_plugin!(params[:name], params[:version])
-          manifest = Bootstrap::Manifest.from_hash(params[:manifest])
+          manifest = Bootstrap::Manifest.from_hash(params[:manifest].to_hash)
+          manifest.validate!(plugin)
 
           bootstrapper.bootstrap(
-            params[:environment],
-            manifest,
-            plugin.bootstrap_routine,
-            param[:options]
+            params[:environment].freeze,
+            manifest.freeze,
+            plugin.freeze,
+            params.slice(:force, :bootstrap_proxy, :hints).freeze
           )
         end
       end
