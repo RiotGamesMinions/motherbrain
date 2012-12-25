@@ -36,41 +36,6 @@ module MotherBrain
           end
 
           if plugin.bootstrap_routine.present?
-            method_option :ssl_verify,
-              type: :boolean,
-              desc: "Should we verify SSL connections?",
-              default: false
-            method_option :ssh_user,
-              type: :string,
-              desc: "A shell user that will login to each node and perform the bootstrap command on",
-              aliases: "-u"
-            method_option :ssh_password,
-              type: :string,
-              desc: "The password for the shell user that will perform the bootstrap",
-              aliases: "-p"
-            method_option :ssh_keys,
-              type: :array,
-              desc: "An array of keys (or a single key) to authenticate the ssh user with instead of a password"
-            method_option :ssh_timeout,
-              type: :numeric,
-              desc: "The timeout for communicating to nodes over SSH"
-            method_option :validator_client,
-              type: :string,
-              desc: "The name of the Chef validator client to use in bootstrapping"
-            method_option :validator_path,
-              type: :string,
-              desc: "The filepath to the Chef validator client's private key to use in bootstrapping"
-            method_option :bootstrap_proxy,
-              type: :string,
-              desc: "A proxy server for the node being bootstrapped"
-            method_option :encrypted_data_bag_secret_path,
-              type: :string,
-              aliases: "--secret",
-              desc: "The filepath to your organizations encrypted data bag secret key"
-            method_option :sudo,
-              type: :boolean,
-              default: true,
-              desc: "Should we execute the bootstrap with sudo?"
             method_option :force,
               type: :boolean,
               default: false,
@@ -79,6 +44,7 @@ module MotherBrain
             define_method(:bootstrap) do |environment, manifest_file|
               manifest = MB::Bootstrap::Manifest.from_file(manifest_file)
 
+<<<<<<< HEAD
               bootstrap_options = {
                 environment: environment,
                 server_url: Application.ridley.server_url,
@@ -104,67 +70,28 @@ module MotherBrain
               job = MB::Application.bootstrap(environment, manifest, plugin.bootstrap_routine, bootstrap_options)
 
               CliClient.new(job).display
+=======
+              MB::Application.bootstrap(
+                environment.freeze,
+                manifest.freeze,
+                plugin.bootstrap_routine.freeze,
+                options.freeze
+              )
+>>>>>>> plugin invoker reflects simplified passed options
             end
 
-            method_option :api_url,
-              type: :string,
-              desc: "URL to the Environment Factory API endpoint",
-              required: true
-            method_option :api_key,
-              type: :string,
-              desc: "API authentication key for the Environment Factory",
-              required: true
-            method_option :ssl_verify,
-              type: :boolean,
-              desc: "Should we verify SSL connections?",
-              default: false
             method_option :skip_bootstrap,
               type: :boolean,
               desc: "Nodes will be created and added to the Chef environment but not bootstrapped",
               default: false
-            method_option :ssh_user,
-              type: :string,
-              desc: "A shell user that will login to each node and perform the bootstrap command on",
-              aliases: "-u"
-            method_option :ssh_password,
-              type: :string,
-              desc: "The password for the shell user that will perform the bootstrap",
-              aliases: "-p"
-            method_option :ssh_keys,
-              type: :array,
-              desc: "An array of keys (or a single key) to authenticate the ssh user with instead of a password"
-            method_option :ssh_timeout,
-              type: :numeric,
-              desc: "The timeout for communicating to nodes over SSH"
-            method_option :validator_client,
-              type: :string,
-              desc: "The name of the Chef validator client to use in bootstrapping"
-            method_option :validator_path,
-              type: :string,
-              desc: "The filepath to the Chef validator client's private key to use in bootstrapping"
-            method_option :bootstrap_proxy,
-              type: :string,
-              desc: "A proxy server for the node being bootstrapped"
-            method_option :encrypted_data_bag_secret_path,
-              type: :string,
-              aliases: "--secret",
-              desc: "The filepath to your organizations encrypted data bag secret key"
-            method_option :sudo,
+            method_option :force,
               type: :boolean,
-              default: true,
-              desc: "Should we execute the bootstrap with sudo?"
+              default: false,
+              desc: "Perform bootstrap even if the environment is locked"
             desc("provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment")
             define_method(:provision) do |environment, manifest_file|
               manifest = Provisioner::Manifest.from_file(manifest_file)
-              provisioner_options = {
-                api_url: options[:api_url],
-                api_key: options[:api_key],
-                ssl: {
-                  verify: options[:ssl_verify]
-                }
-              }
-
-              job = Provisioner::Manager.instance.provision(environment, manifest, plugin, provisioner_options)
+              job      = Provisioner::Manager.instance.provision(environment, manifest, plugin)
 
               CliClient.new(job).display
 
