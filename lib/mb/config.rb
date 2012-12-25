@@ -169,7 +169,9 @@ module MotherBrain
     #     server_url: "https://api.opscode.com",
     #     client_name: "reset",
     #     client_key: "/Users/reset/.chef/reset.pem",
-    #     organization: "vialstudios"
+    #     organization: "vialstudios",
+    #     validator_client: nil,
+    #     validator_path: nil
     #   }
     #
     # @return [Hash]
@@ -179,6 +181,8 @@ module MotherBrain
         ridley_opts[:client_name] = self.chef.api_client
         ridley_opts[:client_key] = self.chef.api_key
         ridley_opts[:encrypted_data_bag_secret_path] = self.chef.encrypted_data_bag_secret_path
+        ridley_opts[:validator_path] = self.chef.validator_path
+        ridley_opts[:validator_client] = self.chef.validator_client
         ridley_opts[:ssl] = {
           verify: self.ssl.verify
         }
