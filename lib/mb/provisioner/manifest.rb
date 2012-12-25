@@ -20,7 +20,7 @@ module MotherBrain
         # @param [MotherBrain::Plugin] plugin
         #
         # @raise [InvalidProvisionManifest] if the given manifest is not well formed
-        def validate(manifest, plugin)
+        def validate!(manifest, plugin)
           unless manifest.is_a?(Hash)
             raise InvalidProvisionManifest, "Provisioner manifest needs to be type of Hash. You gave: '#{manifest.class}'"
           end
@@ -59,6 +59,13 @@ module MotherBrain
         self.collect do |type, node_groups|
           node_groups.values.inject(:+)
         end.inject(:+)
+      end
+
+      # @param [Provisioner::Manifest] manifest
+      #
+      # @raise [InvalidProvisionManifest] if the given manifest is not well formed
+      def validate!(plugin)
+        self.class.validate!(self, plugin)
       end
     end
   end

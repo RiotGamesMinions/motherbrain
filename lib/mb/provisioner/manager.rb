@@ -76,7 +76,7 @@ module MotherBrain
         job         = Job.new(:provision)
         ticket      = job.ticket
         provisioner = self.class.new_provisioner(options)
-        Provisioner::Manifest.validate(manifest, plugin)
+        Provisioner::Manifest.validate!(manifest, plugin)
 
         log.debug "manager delegating creation of #{environment}..."
         provisioner.async.up(job.freeze, environment.to_s, manifest)
