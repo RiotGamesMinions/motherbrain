@@ -40,7 +40,7 @@ module MotherBrain
     #
     # @return [Array]
     def ssh_command(host, command, options = {})
-      options            = options.dup.reverse_merge(Application.config.ssh.to_hash).symbolize_keys
+      options            = options.reverse_merge(Application.config.ssh.to_hash).symbolize_keys
       options[:paranoid] = false
 
       if options[:sudo]
