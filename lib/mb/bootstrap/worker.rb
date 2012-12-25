@@ -19,7 +19,6 @@ module MotherBrain
       # @param [Array<String>] hosts
       #   an array of hostnames or ipaddresses to bootstrap
       #     [ '33.33.33.10', 'reset.riotgames.com' ]
-      # @option options [String] :environment ('_default')
       # @option options [Hash] :attributes (Hash.new)
       #   a hash of attributes to use in the first Chef run
       # @option options [Array] :run_list (Array.new)
@@ -63,7 +62,7 @@ module MotherBrain
 
           unless partial_nodes.empty?
             futures << Celluloid::Future.new {
-              partial_bootstrap(partial_nodes, options.slice(:ssh, :attributes, :run_list))
+              partial_bootstrap(partial_nodes, options.slice(:attributes, :run_list))
             }
           end
         end.map(&:value).flatten.inject(:merge)
@@ -140,7 +139,7 @@ module MotherBrain
         @nodes ||= hosts.collect do |host|
           {
             hostname: host,
-            node_name: Application.node_querier.future.node_name(host, options[:ssh])
+            node_name: Application.node_querier.future.node_name(host)
           }
         end.collect! do |node|
           node[:node_name] = node[:node_name].value
@@ -169,8 +168,8 @@ module MotherBrain
                 MB.log.info "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap"
 
                 chef_conn.node.merge_data(node[:node_name], options)
-                Application.node_querier.put_secret(node[:hostname], options.slice(:ssh))
-                Application.node_querier.chef_run(node[:hostname], options[:ssh])
+                Application.node_querier.put_secret(node[:hostname])
+                Application.node_querier.chef_run(node[:hostname])
               }
             end.map do |future|
               response_set.add_response(future.value)
