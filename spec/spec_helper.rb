@@ -26,9 +26,11 @@ def setup_rspec
       @config = MB::Config.new(nil,
         {
           chef: {
-            server_url: "http://chef.riotgames.com",
+            api_url: "http://chef.riotgames.com",
             api_client: "fake",
-            api_key: File.join(fixtures_path, "fake_key.pem")
+            api_key: File.join(fixtures_path, "fake_key.pem"),
+            validator_client: "fake",
+            validator_path: File.join(fixtures_path, "fake_key.pem")
           },
           ssh: {
             user: 'reset',
