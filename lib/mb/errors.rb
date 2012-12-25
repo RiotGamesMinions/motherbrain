@@ -100,6 +100,8 @@ module MotherBrain
     end
   end
 
+  class NoBootstrapRoutine < MBError; status_code(108); end
+
   class ClusterBusy < MBError; status_code(10); end
   class ClusterNotFound < MBError; status_code(11); end
   class EnvironmentNotFound < MBError; status_code(12); end
