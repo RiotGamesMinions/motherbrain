@@ -20,6 +20,16 @@ module MotherBrain
           Provisioner::Manager.instance
         end
 
+        def list_plugins!(name = nil)
+          plugins = plugin_manager.plugins(name)
+
+          if plugins.empty?
+            raise PluginNotFound.new(name)
+          end
+
+          plugins
+        end
+
         def find_plugin!(name, version = nil)
           plugin = plugin_manager.find(name, version)
 
@@ -88,11 +98,19 @@ module MotherBrain
           plugin_manager.plugins
         end
 
-        desc "display the latest version of the plugin of the given name"
+        desc "display all the versions of the given plugin"
         params do
           requires :name, type: String, desc: "plugin name"
         end
         get ':name' do
+          list_plugins!(params[:name])
+        end
+
+        desc "display the latest version of the plugin of the given name"
+        params do
+          requires :name, type: String, desc: "plugin name"
+        end
+        get ':name/latest' do
           find_plugin!(params[:name])
         end
 

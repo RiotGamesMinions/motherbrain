@@ -36,9 +36,6 @@ module MotherBrain
     # @return [Set<Pathname>]
     attr_reader :paths
 
-    # @return [Set<Plugin>]
-    attr_reader :plugins
-
     def initialize
       log.info { "Plugin Manager starting..." }
       @paths   = Set.new
@@ -82,8 +79,11 @@ module MotherBrain
       @plugins = Set.new
     end
 
+    # Find and return a registered plugin of the given name and version. If no version
+    # attribute is specified the latest version of the plugin is returned.
+    #
     # @param [String] name
-    # @param [#to_s] version
+    # @param [#to_s] version (nil)
     #
     # @return [Plugin, nil]
     def find(name, version = nil)
@@ -114,6 +114,20 @@ module MotherBrain
     # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
     def load(path)
       add Plugin.from_file(path.to_s)
+    end
+
+    # Return all of the registered plugins. If the optional name parameter is provided the
+    # results will be filtered and only plugin versions of that given name will be returned
+    #
+    # @param [String, nil] name (nil)
+    #
+    # @return [Set<Plugin>]
+    def plugins(name = nil)
+      if name.nil?
+        @plugins
+      else
+        @plugins.select { |plugin| plugin.name == name }
+      end
     end
 
     # @param [Pathname] path
