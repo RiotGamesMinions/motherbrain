@@ -19,10 +19,10 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'celluloid'
   s.add_runtime_dependency 'reel'
-  s.add_runtime_dependency 'grape'
+  s.add_runtime_dependency 'grape', '>= 0.2.3'
   s.add_runtime_dependency 'net-ssh'
   s.add_runtime_dependency 'net-scp'
-  s.add_runtime_dependency 'solve', '>= 0.3.1'
+  s.add_runtime_dependency 'solve', '>= 0.4.1'
   s.add_runtime_dependency 'ridley', '>= 0.6.1'
   s.add_runtime_dependency 'chozo', '>= 0.2.2'
   s.add_runtime_dependency 'activesupport'

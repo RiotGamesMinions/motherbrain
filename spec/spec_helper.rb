@@ -35,6 +35,10 @@ def setup_rspec
             password: 'whatever',
             keys: []
           },
+          ef: {
+            api_key: "asdf",
+            api_url: "https://ef.riotgames.com"
+          },
           plugin_paths: Set.new
         }
       )

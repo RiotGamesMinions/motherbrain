@@ -20,6 +20,8 @@ module MotherBrain
 
     # @param [Hash] options
     #   a set of options to pass to MultiJson.encode
+    #
+    # @return [String]
     def to_json(options = {})
       MultiJson.encode(self.to_hash, options)
     end
@@ -77,6 +79,24 @@ module MotherBrain
 
     def to_s
       "No job with ID: '#{id}' found"
+    end
+  end
+
+  class PluginNotFound < MBError
+    status_code(107)
+
+    attr_reader :name
+    attr_reader :version
+
+    def initialize(name, version = nil)
+      @name    = name
+      @version = version
+    end
+
+    def to_s
+      msg = "No plugin named '#{name}'"
+      msg << " of version (#{version})" unless version.nil?
+      msg << " found"
     end
   end
 

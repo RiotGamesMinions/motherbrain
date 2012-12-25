@@ -247,6 +247,14 @@ module MotherBrain
       self.attributes.slice(:name, :version, :description, :author, :email)
     end
 
+    # @param [Hash] options
+    #   a set of options to pass to MultiJson.encode
+    #
+    # @return [String]
+    def to_json(options = {})
+      MultiJson.encode(self.to_hash, options)
+    end
+
     private
 
       def dsl_eval(&block)

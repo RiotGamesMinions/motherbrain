@@ -6,13 +6,27 @@ module MotherBrain
       #
       # @raise [ManifestNotFound] if the manifest file is not found
       #
-      # @return [Provisioner::Manifest]
+      # @return [JSONManifest]
       def from_file(path)
         path = File.expand_path(path.to_s)
         data = File.read(path)
         new(path).from_json(data)
       rescue Errno::ENOENT
         raise ManifestNotFound, "No manifest found at: '#{path}'"
+      end
+
+      # @param [#to_s] data
+      #
+      # @return [JSONManifest]
+      def from_json(data)
+        new().from_json(data)
+      end
+
+      # @param [Hash] data
+      #
+      # @return [JSONManifest]
+      def from_hash(data)
+        new().from_hash(data)
       end
     end
 

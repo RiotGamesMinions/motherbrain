@@ -33,6 +33,46 @@ describe MB::REST::Gateway do
         JSON.parse(last_response.body).should have(MB::Application.plugin_manager.plugins.length).items
       end
     end
+
+    describe "GET /plugins/:name" do
+      context "when plugin not found" do
+        before(:each) { get '/plugins/test' }
+
+        it "returns a 404 response" do
+          last_response.status.should == 404
+        end
+
+        it "has the error code for PluginNotFound" do
+          result = JSON.parse(last_response.body)
+          result.should have_key("code")
+          result["code"].should be_error_code(MB::PluginNotFound)
+        end
+      end
+    end
+
+    describe "GET /plugins/:name/:version" do
+      context "when plugin not found" do
+        before(:each) { get '/plugins/test/1_0_0' }
+
+        it "returns a 404 response" do
+          last_response.status.should == 404
+        end
+
+        it "has the error code for PluginNotFound" do
+          result = JSON.parse(last_response.body)
+          result.should have_key("code")
+          result["code"].should be_error_code(MB::PluginNotFound)
+        end
+      end
+
+      context "when an invalid version string is given" do
+        before(:each) { get '/plugins/test/fake_version' }
+
+        it "returns a 400 response" do
+          last_response.status.should == 400
+        end
+      end
+    end
   end
 
   describe "API Error handling" do

@@ -76,7 +76,14 @@ module MotherBrain
       # @option options [#to_s] :api_key
       # @option options [Hash] :ssl
       def initialize(options = {})
-        @interval   = (options.delete(:interval) || 30.0).to_f
+        options = options.reverse_merge(
+          api_url: Application.config[:ef][:api_url],
+          api_key: Application.config[:ef][:api_key],
+          interval: 30.0,
+          ssl: Application.config[:ssl]
+        )
+
+        @interval   = options[:interval].to_f
         @connection = EF::REST.connection(options)
       end
 

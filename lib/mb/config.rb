@@ -137,6 +137,12 @@ module MotherBrain
       default: REST::Gateway::DEFAULT_OPTIONS[:port],
       type: Integer
 
+    attribute 'ef.api_url',
+      type: String
+
+    attribute 'ef.api_key',
+      type: String
+
     attribute 'rest_client.url',
       default: REST::Client::DEFAULT_URL,
       type: String
