@@ -15,9 +15,9 @@ describe MB::Upgrade::Manager do
     it "creates a job and delegates to a worker" do
       future = double
       MB::Job.should_receive(:new).with(:upgrade).and_return(job)
-      MB::Upgrade::Worker.should_receive(:new).with(environment, plugin, options).and_return(worker_stub)
+      MB::Upgrade::Worker.should_receive(:new).with(environment, plugin, job, options).and_return(worker_stub)
       worker_stub.stub(:async).and_return(future)
-      future.should_receive(:run).with(job)
+      future.should_receive(:run)
 
       upgrade
     end

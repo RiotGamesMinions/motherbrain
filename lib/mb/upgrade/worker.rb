@@ -15,6 +15,9 @@ module MotherBrain
       # @return [String]
       attr_reader :environment_name
 
+      # @return [MotherBrain::Job]
+      attr_reader :job
+
       # @return [Hash]
       attr_reader :options
 
@@ -25,6 +28,8 @@ module MotherBrain
       #
       # @param [MotherBrain::Plugin] plugin
       #
+      # @param [MotherBrain::Job] job
+      #
       # @option options [Hash] component_versions
       #   Hash of components and the versions to set them to
       #
@@ -34,9 +39,10 @@ module MotherBrain
       # @option options [Boolean] :force
       #   Force any locks to be overwritten
       #
-      def initialize(environment_name, plugin, options = {})
+      def initialize(environment_name, plugin, job, options = {})
         @environment_name = environment_name
         @plugin           = plugin
+        @job              = job
         @options          = options
       end
 
@@ -49,26 +55,28 @@ module MotherBrain
       # @raise [EnvironmentNotFound] if the environment does not exist
       #
       # @return [Job]
-      def run(job)
+      def run
+        job.status = "Starting"
         job.report_running
+
         assert_environment_exists
 
-        chef_synchronize(chef_environment: environment_name, force: options[:force]) do
+        chef_synchronize(chef_environment: environment_name, force: options[:force], job: job) do
           set_component_versions if component_versions.any?
           set_cookbook_versions if cookbook_versions.any?
 
           if component_versions.any? or cookbook_versions.any?
-            save_environment
             run_chef if nodes.any?
           end
         end
 
+        job.status = "Finishing up"
         job.report_success
-      rescue EnvironmentNotFound => e
-        log.fatal { "environment not found: #{e}" }
-        job.report_failure(e)
-      rescue => e
-        log.fatal { "unknown error occured: #{e}"}
+      rescue EnvironmentNotFound => error
+        log.fatal { "environment not found: #{error}" }
+        job.report_failure(error)
+      rescue => error
+        log.fatal { "unknown error occured: #{error}"}
         job.report_failure("internal error")
       end
 
@@ -91,7 +99,7 @@ module MotherBrain
           @environment ||= chef_connection.environment.find(environment_name)
         end
 
-        # @param [String] name
+        # @param [String] component_name
         #
         # @return [MotherBrain::Component]
         #
@@ -137,21 +145,26 @@ module MotherBrain
 
         # @return [Array<String>]
         def nodes
-          result = plugin.nodes(environment_name).collect { |component, groups|
+          return @nodes if @nodes
+
+          job.status = "Looking for nodes"
+
+          @nodes = plugin.nodes(environment_name).collect { |component, groups|
             groups.collect { |group, nodes|
               nodes.collect(&:public_hostname)
             }
           }.flatten.compact.uniq
 
-          unless result.any?
+          unless @nodes.any?
             log.info "No nodes in environment '#{environment_name}'"
           end
 
-          result
+          @nodes
         end
 
         def run_chef
-          log.info "Running chef on #{nodes}"
+          log.info "Running Chef on #{nodes}"
+          job.status = "Running Chef on nodes"
 
           nodes.map { |node|
             Application.node_querier.future.chef_run(node)
@@ -180,14 +193,18 @@ module MotherBrain
 
         def set_cookbook_versions
           log.info "Setting cookbook versions #{cookbook_versions}"
+          job.status = "Setting cookbook versions"
 
           environment.cookbook_versions.merge! cookbook_versions
+          save_environment
         end
 
         def set_override_attributes
           log.info "Setting override attributes #{override_attributes}"
+          job.status = "Setting override attributes"
 
           environment.override_attributes.merge! override_attributes
+          save_environment
         end
 
         # @param [String] component_name

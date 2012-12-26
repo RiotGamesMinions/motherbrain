@@ -101,7 +101,9 @@ module MotherBrain
                 force: options[:force]
               }
 
-              MB::Application.bootstrap(environment, manifest, plugin.bootstrap_routine, bootstrap_options)
+              job = MB::Application.bootstrap(environment, manifest, plugin.bootstrap_routine, bootstrap_options)
+
+              CliClient.new(job).display
             end
 
             method_option :api_url,
@@ -164,31 +166,18 @@ module MotherBrain
 
               job = Provisioner::Manager.instance.provision(environment, manifest, plugin, provisioner_options)
 
-              spinner_until("Provisioning '#{environment}': ") do
-                job.completed?
-              end
+              CliClient.new(job).display
 
-              if job.success?
-                MB.ui.say "Provision finished"
+              return if options[:skip_bootstrap]
 
-                if options[:skip_bootstrap]
-                  MB.ui.say "Skipping bootstrap"
-                  MB.ui.say job.result
-                  exit 0
-                end
+              bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(
+                job.result,
+                manifest,
+                Tempfile.new('bootstrap_manifest').path
+              )
+              bootstrap_manifest.save
 
-                bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(
-                  job.result,
-                  manifest,
-                  Tempfile.new('bootstrap_manifest').path
-                )
-                bootstrap_manifest.save
-
-                invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
-              else
-                MB.log.fatal job.result
-                exit 1
-              end
+              invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
             end
 
             method_option :component_versions,
@@ -207,17 +196,7 @@ module MotherBrain
             desc("upgrade ENVIRONMENT", "Upgrade an environment to the specified versions")
             define_method(:upgrade) do |environment|
               job = MB::Application.upgrade(environment, plugin, options)
-
-              spinner_until("Upgrading '#{environment}': ") do
-                job.completed?
-              end
-
-              if job.success?
-                MB.ui.say "Upgrade successful"
-              else
-                MB.ui.error job.result
-                exit 1
-              end
+              CliClient.new(job).display
             end
           end
         end

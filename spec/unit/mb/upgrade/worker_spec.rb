@@ -3,7 +3,7 @@ require 'spec_helper'
 describe MB::Upgrade::Worker do
   subject { worker }
 
-  let(:worker) { klass.new(environment_name, plugin, options).wrapped_object }
+  let(:worker) { klass.new(environment_name, plugin, job, options).wrapped_object }
 
   let(:component1) { MB::Component.new component_name }
   let(:component_name) { "component1" }
@@ -12,6 +12,7 @@ describe MB::Upgrade::Worker do
   let(:cookbook_versions) { { "ohai" => "1.2.3" } }
   let(:environment) { stub }
   let(:environment_name) { "rspec-test" }
+  let(:job) { MB::Job.new(:upgrade) }
   let(:options) { Hash.new }
   let(:nodes) { %w[node1 node2 node3] }
   let(:plugin) { stub MB::Plugin, name: plugin_name }
@@ -33,10 +34,9 @@ describe MB::Upgrade::Worker do
   its(:options) { should == options }
 
   describe "#run" do
-    let(:job) { MB::Job.new(:upgrade) }
     after(:each) { job.terminate }
 
-    subject(:run) { worker.run(job) }
+    subject(:run) { worker.run }
 
     it "wraps the upgrade in a lock" do
       MB::ChefMutex.any_instance.should_receive :synchronize
@@ -71,7 +71,6 @@ describe MB::Upgrade::Worker do
       end
 
       it "does not save the environment, nor run chef" do
-        worker.should_not_receive :save_environment
         worker.should_not_receive :run_chef
 
         run
@@ -86,7 +85,6 @@ describe MB::Upgrade::Worker do
 
       it "updates only the cookbook versions and runs chef" do
         worker.should_receive(:set_cookbook_versions).ordered
-        worker.should_receive(:save_environment).ordered
         worker.should_receive(:run_chef).ordered
 
         worker.should_not_receive :set_component_versions
@@ -103,7 +101,6 @@ describe MB::Upgrade::Worker do
 
       it "updates only the component versions and runs chef" do
         worker.should_receive(:set_component_versions).ordered
-        worker.should_receive(:save_environment).ordered
         worker.should_receive(:run_chef).ordered
 
         worker.should_not_receive :set_cookbook_versions
@@ -121,7 +118,6 @@ describe MB::Upgrade::Worker do
       it "updates the versions and runs chef" do
         worker.should_receive(:set_component_versions).ordered
         worker.should_receive(:set_cookbook_versions).ordered
-        worker.should_receive(:save_environment).ordered
         worker.should_receive(:run_chef).ordered
 
         run
@@ -139,7 +135,6 @@ describe MB::Upgrade::Worker do
       it "updates the versions and does not run chef" do
         worker.should_receive(:set_component_versions).ordered
         worker.should_receive(:set_cookbook_versions).ordered
-        worker.should_receive(:save_environment).ordered
 
         worker.should_not_receive :run_chef
 

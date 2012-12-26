@@ -8,7 +8,7 @@ module MotherBrain
   # @api public
   class JobTicket < BasicObject
     attr_reader :id
-    
+
     # @param [Integer] id
     def initialize(id)
       @id = id
