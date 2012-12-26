@@ -131,5 +131,73 @@ describe MB::Job do
       subject.result.should eql("a reason")
       subject.should be_running
     end
+
+    describe "to pending" do
+      it "has a nil time_start field" do
+        subject.transition(:pending)
+
+        subject.time_start.should be_nil
+      end
+
+      it "has a nil time_end field" do
+        subject.transition(:pending)
+
+        subject.time_end.should be_nil
+      end
+    end
+
+    describe "to running" do
+      before(:each) { subject.transition(:pending) }
+
+      it "has a Time value for time_start" do
+        subject.transition(:running)
+
+        subject.time_start.should be_a(Time)
+      end
+
+      it "has a nil time_end field" do
+        subject.time_end.should be_nil
+      end
+    end
+
+    describe "to success" do
+      before(:each) do
+        subject.transition(:pending)
+        subject.transition(:running)
+        @time_start = subject.time_start
+      end
+
+      it "doesn't modify the value for time_start" do
+        subject.transition(:success)
+
+        subject.time_start.should eql(@time_start)
+      end
+
+      it "has a Time value for time_end" do
+        subject.transition(:success)
+
+        subject.time_end.should be_a(Time)
+      end
+    end
+
+    describe "to failure" do
+      before(:each) do
+        subject.transition(:pending)
+        subject.transition(:running)
+        @time_start = subject.time_start
+      end
+
+      it "doesn't modify the value for time_start" do
+        subject.transition(:failure)
+
+        subject.time_start.should eql(@time_start)
+      end
+
+      it "has a Time value for time_end" do
+        subject.transition(:failure)
+
+        subject.time_end.should be_a(Time)
+      end
+    end
   end
 end
