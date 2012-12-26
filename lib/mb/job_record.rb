@@ -4,9 +4,12 @@ module MotherBrain
     include MB::Job::States
 
     attr_reader :id
-    attr_reader :type
-    attr_reader :state
+
     attr_reader :result
+    attr_reader :state
+    attr_reader :status
+    attr_reader :type
+
     attr_reader :time_start
     attr_reader :time_end
 
@@ -49,11 +52,12 @@ module MotherBrain
     private
 
       def mass_assign(job)
-        @type       = job.type
-        @state      = job.state
         @result     = job.result
-        @time_start = job.time_start
+        @state      = job.state
+        @status     = job.status
         @time_end   = job.time_end
+        @time_start = job.time_start
+        @type       = job.type
       end
   end
 end

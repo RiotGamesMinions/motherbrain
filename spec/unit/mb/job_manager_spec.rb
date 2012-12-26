@@ -5,12 +5,13 @@ describe MB::JobManager do
     Class.new do
       include Celluloid
 
-      attr_reader :id, :type, :state, :result
+      attr_reader :id, :type, :state, :status, :result
       attr_reader :time_start, :time_end
 
       @id = 1
       @type = 'fake'
       @state = :pending
+      @status = ""
       @result = nil
     end
   end
