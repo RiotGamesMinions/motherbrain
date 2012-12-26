@@ -44,7 +44,7 @@ module MotherBrain
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      def bootstrap(environment, manifest, routine, options = {})
+      def bootstrap(environment, manifest, plugin, options = {})
         options = options.reverse_merge(
           hints: Hash.new,
           bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
@@ -54,7 +54,7 @@ module MotherBrain
 
         job = Job.new(:bootstrap)
 
-        async.start(environment, manifest, routine, job, options)
+        async.start(environment, manifest, plugin, job, options)
 
         job.ticket
       end
@@ -62,13 +62,13 @@ module MotherBrain
       # @see #bootstrap
       #
       # @param [MotherBrain::Job] job
-      def start(environment, manifest, routine, job, options = {})
+      def start(environment, manifest, plugin, job, options = {})
         job.report_running
 
         self.class.validate_options(options)
-        manifest.validate!(routine)
+        manifest.validate!(plugin)
 
-        task_queue = routine.task_queue.dup
+        task_queue = plugin.bootstrap_routine.task_queue.dup
 
         unless Application.ridley.environment.find(environment)
           raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
