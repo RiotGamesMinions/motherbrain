@@ -47,7 +47,7 @@ module MotherBrain
               job = MB::Application.bootstrap(
                 environment.freeze,
                 manifest.freeze,
-                plugin.bootstrap_routine.freeze,
+                plugin.freeze,
                 options.freeze
               )
 
