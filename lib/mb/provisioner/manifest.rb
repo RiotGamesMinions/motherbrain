@@ -61,7 +61,7 @@ module MotherBrain
         end.inject(:+)
       end
 
-      # @param [Provisioner::Manifest] manifest
+      # @param [Plugin] plugin
       #
       # @raise [InvalidProvisionManifest] if the given manifest is not well formed
       def validate!(plugin)

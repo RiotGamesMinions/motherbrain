@@ -38,6 +38,29 @@ module MotherBrain
       # @param [Plugin] plugin
       #   a MotherBrain plugin with a bootstrap routine to follow
       #
+      # @option options [Boolean] :force
+      #   ignore and bypass any existing locks on an environment
+      # @option options [Hash] :ssh
+      #   * :user (String) a shell user that will login to each node and perform the bootstrap command on
+      #   * :password (String) the password for the shell user that will perform the bootstrap
+      #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
+      #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
+      #   * :sudo (Boolean) [True] bootstrap with sudo
+      # @option options [String] :server_url
+      #   URL to the Chef API to bootstrap the target node(s) to
+      # @option options [String] :client_name
+      #   name of the client used to authenticate with the Chef API
+      # @option options [String] :client_key
+      #   filepath to the client's private key used to authenticate with the Chef API
+      # @option options [String] :organization
+      #   the Organization to connect to. This is only used if you are connecting to
+      #   private Chef or hosted Chef
+      # @option options [String] :validator_client
+      #   the name of the Chef validator client to use in bootstrapping
+      # @option options [String] :validator_path
+      #   filepath to the validator used to bootstrap the node
+      # @option options [String] :encrypted_data_bag_secret_path
+      #   filepath on your host machine to your organizations encrypted data bag secret
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
       # @option options [String] :template ("omnibus")
@@ -59,9 +82,14 @@ module MotherBrain
         job.ticket
       end
 
-      # @see #bootstrap
-      #
+      # @param [String] environment
+      # @param [Bootstrap::Manifest] manifest
+      #   manifest of nodes and what they should become
+      # @param [Plugin] plugin
+      #   a MotherBrain plugin with a bootstrap routine to follow
       # @param [MotherBrain::Job] job
+      #
+      # @see #bootstrap for options
       def start(environment, manifest, plugin, job, options = {})
         job.report_running
 
@@ -84,9 +112,14 @@ module MotherBrain
         log.info { "Bootstrap Manager stopping..." }
       end
 
-      # @see #bootstrap
-      #
+      # @param [String] environment
+      # @param [Bootstrap::Manifest] manifest
+      #   manifest of nodes and what they should become
+      # @param [Array<Bootstrap::BootTask>] task_queue
+      #   a MotherBrain plugin with a bootstrap routine to follow
       # @param [MotherBrain::Job] job
+      #
+      # @see #bootstrap for options
       def sequential_bootstrap(environment, manifest, task_queue, job, options = {})
         chef_synchronize(chef_environment: environment, force: options[:force], job: job) do
           while tasks = task_queue.shift
@@ -110,13 +143,8 @@ module MotherBrain
       #   a hash where the keys are node group names and the values are arrays of hostnames
       # @param [BootTask, Array<BootTask>] boot_tasks
       #   a hash where the keys are node group names and the values are arrays of hostnames
-      # @option options [String] :environment ('_default')
-      # @option options [Hash] :hints (Hash.new)
-      #   a hash of Ohai hints to place on the bootstrapped node
-      # @option options [String] :template ("omnibus")
-      #   bootstrap template to use
-      # @option options [String] :bootstrap_proxy (nil)
-      #   URL to a proxy server to bootstrap through
+      #
+      # @see #bootstrap for options
       #
       # @return [Hash]
       #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
