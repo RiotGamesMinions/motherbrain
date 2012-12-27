@@ -1,51 +1,37 @@
 require 'spec_helper'
 
 describe MB::Command do
-  let(:scope) { double('plugin') }
+  subject { command }
 
-  describe "ClassMethods" do
-    subject { MB::Command }
-
-    describe "::new" do
-      before(:each) do
-        @command = subject.new("start", scope) do
-          description "start all services"
-
-          execute do
-            4 + 2
-          end
-        end
-      end
-
-      it "assigns a name from the given block" do
-        @command.name.should eql("start")
-      end
-
-      it "assigns a description from the given block" do
-        @command.description.should eql("start all services")
-      end
-
-      it "assigns a Proc as the value for execute" do
-        @command.execute.should be_a(Proc)
-      end
-    end
-  end
-
-  subject do
+  let(:command) {
     described_class.new("start", scope) do
       description "start all services"
       execute do; true; end
     end
-  end
+  }
+
+  let(:scope) { double('plugin') }
+
+  its(:name) { should eql("start") }
+  its(:description) { should eql("start all services") }
+  its(:execute) { should be_a Proc }
 
   describe "#invoke" do
-    it "raises an EnvironmentNotFound error if the environment does not exist" do
-      MB::Application.stub_chain(:ridley, :server_url)
-      MB::Application.stub_chain(:ridley, :environment, :find).with("production").and_return(nil)
+    subject(:invoke) { command.invoke(environment) }
 
-      expect {
-        subject.invoke("production")
-      }.to raise_error(MB::EnvironmentNotFound)
+    let(:environment) { "production" }
+
+    context "if the environment does not exist" do
+      before do
+        MB::Application.stub_chain(:ridley, :server_url)
+        MB::Application.stub_chain(:ridley, :environment, :find).with(environment).and_return(nil)
+      end
+
+      it "raises an EnvironmentNotFound error" do
+        expect {
+          invoke
+        }.to raise_error(MB::EnvironmentNotFound)
+      end
     end
   end
 end
