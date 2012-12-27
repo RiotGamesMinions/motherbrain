@@ -44,7 +44,7 @@ module MotherBrain
       end
 
       chef_synchronize(chef_environment: environment) do
-        CommandRunner.new(environment, scope, execute)
+        CommandRunner.new(environment, scope, execute, *args)
       end
     rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
       raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"

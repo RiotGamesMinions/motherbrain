@@ -8,13 +8,14 @@ module MotherBrain
     #   the environment to run this command on
     # @param [Object] scope
     # @param [Proc] execute
-    def initialize(environment, scope, execute)
+    def initialize(environment, scope, execute, *args)
       @environment = environment
       @scope       = scope
       @on_procs    = []
       @async       = false
 
-      instance_eval(&execute)
+      curried_execute = proc { execute.call *args }
+      instance_eval(&curried_execute)
     end
 
     # Run the stored procs created by on() that have not been ran yet.
