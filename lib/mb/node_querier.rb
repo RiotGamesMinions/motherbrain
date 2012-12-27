@@ -33,14 +33,14 @@ module MotherBrain
     #   the password for the shell user that will perform the bootstrap
     # @option options [Array, String] :keys
     #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    # @option options [Float] :timeout (5.0)
+    # @option options [Float] :timeout (10.0)
     #   timeout value for SSH bootstrap
     # @option options [Boolean] :sudo (true)
     #   bootstrap with sudo
     #
     # @return [Array]
     def ssh_command(host, command, options = {})
-      options            = options.reverse_merge(Application.config.ssh.to_hash).symbolize_keys
+      options            = options.reverse_merge(Application.config[:ssh].to_hash)
       options[:paranoid] = false
 
       if options[:sudo]
@@ -63,12 +63,12 @@ module MotherBrain
     #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
     #   * :password (String) the password for the shell user that will perform the bootstrap
     #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
+    #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
     #   * :sudo (Boolean) [True] bootstrap with sudo
     def copy_file(local_file, remote_file, host, options = {})
-      options                  = options.dup
-      options[:ssh]            = options[:ssh].slice(*Net::SSH::VALID_OPTIONS)
+      options                  = options.reverse_merge(Application.config.slice(:ssh))
       options[:ssh][:paranoid] = false
+      options[:ssh].slice!(*Net::SSH::VALID_OPTIONS)
 
       MB.log.debug "Copying file '#{local_file}' to '#{host}:#{remote_file}'"
       Net::SCP.upload!(host, nil, local_file, remote_file, options)
@@ -83,7 +83,7 @@ module MotherBrain
     #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
     #   * :password (String) the password for the shell user that will perform the bootstrap
     #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
+    #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
     #   * :sudo (Boolean) [True] bootstrap with sudo
     def write_file(data, remote_file, host, options = {})
       file = FileSystem::Tempfile.new
@@ -113,7 +113,7 @@ module MotherBrain
     #   the password for the shell user that will perform the bootstrap
     # @option options [Array, String] :keys
     #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    # @option options [Float] :timeout (5.0)
+    # @option options [Float] :timeout (10.0)
     #   timeout value for SSH bootstrap
     # @option options [Boolean] :sudo (true)
     #   bootstrap with sudo
@@ -146,7 +146,7 @@ module MotherBrain
     #   the password for the shell user that will perform the bootstrap
     # @option options [Array, String] :keys
     #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    # @option options [Float] :timeout (5.0)
+    # @option options [Float] :timeout (10.0)
     #   timeout value for SSH bootstrap
     # @option options [Boolean] :sudo (true)
     #   bootstrap with sudo
@@ -167,7 +167,7 @@ module MotherBrain
     #   the password for the shell user that will perform the bootstrap
     # @option options [Array, String] :keys
     #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    # @option options [Float] :timeout (5.0)
+    # @option options [Float] :timeout (10.0)
     #   timeout value for SSH bootstrap
     # @option options [Boolean] :sudo (true)
     #   bootstrap with sudo
@@ -206,8 +206,9 @@ module MotherBrain
     #
     # @return [Ridley::SSH::Response]
     def put_secret(host, options = {})
-      options = options.dup
-      options[:secret] ||= Application.ridley.encrypted_data_bag_secret_path
+      options = options.reverse_merge(
+        secret: Application.config.chef.encrypted_data_bag_secret_path
+      )
 
       if options[:secret].nil? || !File.exists?(options[:secret])
         return nil

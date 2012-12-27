@@ -80,7 +80,7 @@ module MotherBrain
           api_url: Application.config[:ef][:api_url],
           api_key: Application.config[:ef][:api_key],
           interval: 30.0,
-          ssl: Application.config[:ssl]
+          ssl: Application.config[:ssl].to_hash
         )
 
         @interval   = options[:interval].to_f
