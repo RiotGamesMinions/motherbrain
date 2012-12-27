@@ -65,7 +65,6 @@ module MotherBrain
       def start(environment, manifest, plugin, job, options = {})
         job.report_running
 
-        self.class.validate_options(options)
         manifest.validate!(plugin)
 
         task_queue = plugin.bootstrap_routine.task_queue.dup
@@ -77,6 +76,7 @@ module MotherBrain
         log.info { "Starting bootstrap of nodes on: #{environment}" }
         async.sequential_bootstrap(environment, manifest, task_queue, job, options)
       rescue => error
+        log.fatal { "unknown error occured: #{error}"}
         job.report_failure(error)
       end
 
@@ -98,6 +98,7 @@ module MotherBrain
 
         job.report_success
       rescue => error
+        log.fatal { "unknown error occured: #{error}"}
         job.report_failure(error)
       end
 
