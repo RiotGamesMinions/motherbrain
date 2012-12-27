@@ -14,8 +14,12 @@ module MotherBrain
       @on_procs    = []
       @async       = false
 
-      curried_execute = proc { execute.call *args }
-      instance_eval(&curried_execute)
+      if args.any?
+        curried_execute = proc { execute.call *args }
+        instance_eval(&curried_execute)
+      else
+        instance_eval(&execute)
+      end
     end
 
     # Run the stored procs created by on() that have not been ran yet.
