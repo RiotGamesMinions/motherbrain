@@ -14,10 +14,21 @@ module MotherBrain
         #
         # @param [MotherBrain::Command] command
         def define_command(command)
-          desc("#{command.name} ENVIRONMENT", command.description.to_s)
-          define_method(command.name.to_sym) do |environment|
-            command.invoke(environment)
+          arguments = ["environment"]
+
+          command.execute.parameters.each do |type, parameter|
+            arguments << parameter.to_s
           end
+
+          arguments_string = arguments.join ", "
+          description_string = arguments.map(&:upcase).join " "
+
+          desc("#{command.name} #{description_string}", command.description.to_s)
+          instance_eval <<-RUBY
+            define_method(:#{command.name}) do |#{arguments_string}|
+              command.invoke(#{arguments_string})
+            end
+          RUBY
         end
     end
   end
