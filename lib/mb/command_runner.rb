@@ -8,6 +8,7 @@ module MotherBrain
     #   the environment to run this command on
     # @param [Object] scope
     # @param [Proc] execute
+    # @param [Array] args
     def initialize(environment, scope, execute, *args)
       @environment = environment
       @scope       = scope
