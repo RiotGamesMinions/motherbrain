@@ -59,7 +59,6 @@ module MotherBrain
     class_option :logfile,
       type: :string,
       desc: "Set the log file location.",
-      default: "STDOUT",
       aliases: "-L",
       banner: "PATH"
   end
