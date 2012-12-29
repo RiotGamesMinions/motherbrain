@@ -94,40 +94,21 @@ module MotherBrain
 
     method_option :api_url,
       type: :string,
-      desc: "URL to the Environment Factory API endpoint",
-      required: true
+      desc: "URL to the Environment Factory API endpoint"
     method_option :api_key,
       type: :string,
-      desc: "API authentication key for the Environment Factory",
-      required: true
+      desc: "API authentication key for the Environment Factory"
     method_option :ssl_verify,
       type: :boolean,
       desc: "Should we verify SSL connections?",
       default: false
     desc "destroy ENVIRONMENT", "Destroy a provisioned environment"
     def destroy(environment)
-      provisioner_options = {
-        api_url: options[:api_url],
-        api_key: options[:api_key],
-        ssl: {
-          verify: options[:ssl_verify]
-        }
-      }
+      destroy_options = Hash.new.merge(options).deep_symbolize_keys
 
-      job = Provisioner::Manager.instance.destroy(environment, provisioner_options)
+      job = Provisioner::Manager.instance.destroy(environment, destroy_options)
 
-      spinner_until("Destroying '#{environment}': ") do
-        job.completed?
-      end
-
-      if job.success?
-        MB.log.unknown "Successfully destroyed environment: #{environment}"
-        exit 0
-      else
-        MB.log.fatal "Failed to destroy environment: #{environment}"
-        MB.log.fatal job.result
-        exit 1
-      end
+      CliClient.new(job).display
     end
 
     desc "version", "Display version and license information"
