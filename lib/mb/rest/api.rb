@@ -100,6 +100,16 @@ module MotherBrain
         end
       end
 
+      resource :environments do
+        desc "destroy a provisioned environment"
+        params do
+          requires :name, type: String, desc: "environment name"
+        end
+        delete ':name' do
+          provisioner.destroy(params[:name])
+        end
+      end
+
       resource :plugins do
         desc "list all loaded plugins and their versions"
         get do
