@@ -42,13 +42,14 @@ module MotherBrain
               desc: "Perform bootstrap even if the environment is locked"
             desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
             define_method(:bootstrap) do |environment, manifest_file|
-              manifest = MB::Bootstrap::Manifest.from_file(manifest_file)
+              boot_options = Hash.new.merge(options).deep_symbolize_keys
+              manifest     = MB::Bootstrap::Manifest.from_file(manifest_file)
 
-              job = MB::Application.bootstrap(
+              job = Application.bootstrap(
                 environment.freeze,
                 manifest.freeze,
                 plugin.freeze,
-                options.freeze
+                boot_options.freeze
               )
 
               CliClient.new(job).display
@@ -64,31 +65,17 @@ module MotherBrain
               desc: "Perform bootstrap even if the environment is locked"
             desc("provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment")
             define_method(:provision) do |environment, manifest_file|
-              manifest = Provisioner::Manifest.from_file(manifest_file)
-              job      = Provisioner::Manager.instance.provision(environment, manifest, plugin)
+              prov_options = Hash.new.merge(options).deep_symbolize_keys
+              manifest     = Provisioner::Manifest.from_file(manifest_file)
+
+              job = Application.provision(
+                environment.freeze,
+                manifest.freeze,
+                plugin.freeze,
+                prov_options.freeze
+              )
 
               CliClient.new(job).display
-
-              if job.success?
-                MB.ui.say "Provision finished"
-
-                if options[:skip_bootstrap]
-                  MB.ui.say "Skipping bootstrap"
-                  MB.ui.say job.result
-                  exit 0
-                end
-
-                bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(
-                  job.result,
-                  manifest,
-                  Tempfile.new('bootstrap_manifest').path
-                )
-                bootstrap_manifest.save
-
-                invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
-              else
-                exit 1
-              end
             end
 
             method_option :component_versions,
@@ -106,7 +93,14 @@ module MotherBrain
               aliases: "-f"
             desc("upgrade ENVIRONMENT", "Upgrade an environment to the specified versions")
             define_method(:upgrade) do |environment|
-              job = MB::Application.upgrade(environment, plugin, options)
+              upgrade_options = Hash.new.merge(options).deep_symbolize_keys
+
+              job = Application.upgrade(
+                environment.freeze,
+                plugin.freeze,
+                upgrade_options.freeze
+              )
+
               CliClient.new(job).display
             end
           end

@@ -38,6 +38,7 @@ module MotherBrain
       # @param [Plugin] plugin
       #   a MotherBrain plugin with a bootstrap routine to follow
       #
+      # @option options [MB::Job] :job
       # @option options [Boolean] :force
       #   ignore and bypass any existing locks on an environment
       # @option options [Hash] :ssh
@@ -71,15 +72,14 @@ module MotherBrain
         options = options.reverse_merge(
           hints: Hash.new,
           bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
-          force: false
+          force: false,
+          job: Job.new(:bootstrap)
         )
         options[:environment] = environment
 
-        job = Job.new(:bootstrap)
+        async.start(environment, manifest, plugin, options[:job], options)
 
-        async.start(environment, manifest, plugin, job, options)
-
-        job.ticket
+        options[:job].ticket
       end
 
       # @param [String] environment
@@ -102,7 +102,7 @@ module MotherBrain
         end
 
         log.info { "Starting bootstrap of nodes on: #{environment}" }
-        async.sequential_bootstrap(environment, manifest, task_queue, job, options)
+        sequential_bootstrap(environment, manifest, task_queue, job, options)
       rescue => error
         log.fatal { "unknown error occured: #{error}"}
         job.report_failure(error)
@@ -123,7 +123,7 @@ module MotherBrain
       def sequential_bootstrap(environment, manifest, task_queue, job, options = {})
         chef_synchronize(chef_environment: environment, force: options[:force], job: job) do
           while tasks = task_queue.shift
-            job.status = "Bootstrapping #{tasks.collect(&:id).join(', ')}"
+            job.status = "Bootstrapping #{Array(tasks).collect(&:id).join(', ')}"
 
             concurrent_bootstrap(manifest, tasks, options)
           end

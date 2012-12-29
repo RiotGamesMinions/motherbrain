@@ -4,7 +4,7 @@ module MotherBrain
     # @api private
     class Worker
       include Celluloid
-      include Celluloid::Logger
+      include MB::Logging
 
       # @return [String]
       attr_reader :group_id
@@ -67,9 +67,9 @@ module MotherBrain
       #
       # @return [Array<Ridley::SSH::ResponseSet]
       def run
-        MB.log.info "Bootstrapping group: '#{group_id}' [ #{hosts.join(', ')} ] with options: '#{options}'"
+        log.info { "Bootstrapping group: '#{group_id}' [ #{hosts.join(', ')} ] with options: '#{options}'" }
         unless hosts && hosts.any?
-          MB.log.info "No hosts in group: '#{group_id}'. Skipping..."
+          log.info { "No hosts in group: '#{group_id}'. Skipping..." }
           return [ :ok, [] ]
         end
 
@@ -189,7 +189,7 @@ module MotherBrain
           Ridley::SSH::ResponseSet.new.tap do |response_set|
             target_nodes.collect do |node|
               Celluloid::Future.new {
-                MB.log.info "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap"
+                log.info { "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap" }
 
                 chef_conn.node.merge_data(node[:node_name], options)
                 Application.node_querier.put_secret(node[:hostname])
