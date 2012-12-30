@@ -106,7 +106,7 @@ module MotherBrain
           job: job
         )
 
-        log.debug "environment factory provisioner creating #{env_name}"
+        job.status = "environment factory provisioner creating #{env_name}"
         job.report_running
         connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
