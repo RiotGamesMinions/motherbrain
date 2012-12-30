@@ -144,7 +144,7 @@ module MotherBrain
       type: String
 
     attribute 'rest_client.url',
-      default: REST::Client::DEFAULT_URL,
+      default: ApiClient::DEFAULT_URL,
       type: String
 
     # Validate the instantiated config

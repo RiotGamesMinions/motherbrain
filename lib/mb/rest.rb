@@ -1,7 +1,6 @@
 module MotherBrain
   module REST
     autoload :API, 'mb/rest/api'
-    autoload :Client, 'mb/rest/client'
     autoload :Gateway, 'mb/rest/gateway'
     autoload :Validators, 'mb/rest/validators'
 
