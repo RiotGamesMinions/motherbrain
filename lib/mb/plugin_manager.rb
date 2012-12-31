@@ -67,7 +67,7 @@ module MotherBrain
     #
     # @return [Set]
     def clear_paths
-      @paths = Set.new
+      @paths.clear
     end
 
     # Clear list of known plugins
@@ -76,7 +76,7 @@ module MotherBrain
     #
     # @return [Set]
     def clear_plugins
-      @plugins = Set.new
+      @plugins.clear
     end
 
     # Find and return a registered plugin of the given name and version. If no version

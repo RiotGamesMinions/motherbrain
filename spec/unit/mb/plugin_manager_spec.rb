@@ -210,4 +210,29 @@ describe MotherBrain::PluginManager do
       end
     end
   end
+
+  describe "#clear_paths" do
+    it "clears any configured paths" do
+      subject.add_path('/tmp/one')
+      subject.clear_paths
+
+      subject.paths.should be_empty
+    end
+  end
+
+  describe "#clear_plugins" do
+    let(:plugin) do
+      MB::Plugin.new do
+        name 'apple'
+        version '1.0.0'
+      end
+    end
+
+    it "clears any loaded plugins" do
+      subject.add(plugin)
+      subject.clear_plugins
+
+      subject.plugins.should be_empty
+    end
+  end
 end
