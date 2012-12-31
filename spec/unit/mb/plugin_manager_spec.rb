@@ -150,7 +150,7 @@ describe MotherBrain::PluginManager do
     end
   end
 
-  describe "#remove_pat" do
+  describe "#remove_path" do
     let(:path) { Pathname.new('/tmp/one') }
     before(:each) do
       subject.clear_paths
