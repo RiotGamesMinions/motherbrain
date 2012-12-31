@@ -30,7 +30,7 @@ module MotherBrain
             options[:daemonize] = true
 
             unless options[:log_location]
-              options[:log_location] = FileSystem.logs.join('mbsrv.log').to_s
+              options[:log_location] = FileSystem.logs.join('application.log').to_s
             end
           end
 
