@@ -69,17 +69,19 @@ module MotherBrain
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
       def bootstrap(environment, manifest, plugin, options = {})
+        job = Job.new(:bootstrap)
+
         options = options.reverse_merge(
           hints: Hash.new,
           bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
           force: false,
-          job: Job.new(:bootstrap)
+          job: job
         )
         options[:environment] = environment
 
-        async.start(environment, manifest, plugin, options[:job], options)
+        async.start(environment, manifest, plugin, job, options)
 
-        options[:job].ticket
+        job.ticket
       end
 
       # @param [String] environment
