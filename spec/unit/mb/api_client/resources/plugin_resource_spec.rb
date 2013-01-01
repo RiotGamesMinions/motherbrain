@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe MB::ApiClient::PluginResource do
-  subject { MB::ApiClient.new }
+  subject { MB::ApiClient.new.plugin }
 
   describe "#find" do
     let(:plugin_id) { "rspec-test" }
@@ -10,7 +10,7 @@ describe MB::ApiClient::PluginResource do
       stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}.json").
         to_return(status: 200, body: MultiJson.encode({}))
 
-      subject.plugin.find(plugin_id).should be_a(Hash)
+      subject.find(plugin_id).should be_a(Hash)
     end
 
     context "when given a version" do
@@ -20,8 +20,19 @@ describe MB::ApiClient::PluginResource do
         stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}/1_0_0.json").
           to_return(status: 200, body: MultiJson.encode({}))
 
-        subject.plugin.find(plugin_id, plugin_version).should be_a(Hash)
+        subject.find(plugin_id, plugin_version).should be_a(Hash)
       end
+    end
+  end
+
+  describe "#latest" do
+    let(:plugin_id) { "rspec-test" }
+
+    it "returns decoded JSON from /plugins/{plugin_id}.json" do
+      stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}/latest.json").
+        to_return(status: 200, body: MultiJson.encode({}))
+
+      subject.latest(plugin_id).should be_a(Hash)
     end
   end
 
@@ -32,7 +43,7 @@ describe MB::ApiClient::PluginResource do
     end
 
     it "returns an Array" do
-      subject.plugin.list.should be_a(Array)
+      subject.list.should be_a(Array)
     end
   end
 end

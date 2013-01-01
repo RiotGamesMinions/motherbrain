@@ -14,6 +14,13 @@ module MotherBrain
         end
       end
 
+      # @param [String] name
+      #
+      # @return [Hash]
+      def latest(name)
+        json_get("/plugins/#{name}/latest.json")
+      end
+
       # @return [Array]
       def list
         json_get('/plugins.json')
