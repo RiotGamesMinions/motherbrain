@@ -20,6 +20,11 @@ module MotherBrain
         def_delegator :connection, :post
         def_delegator :connection, :delete
         def_delegator :connection, :head
+
+        # Perform a GET to the target resource and return the decoded JSON response body
+        def json_get(*args)
+          MultiJson.decode get(*args).body
+        end
     end
   end
 end

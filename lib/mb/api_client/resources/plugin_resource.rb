@@ -7,18 +7,16 @@ module MotherBrain
       #
       # @return [Hash]
       def find(name, version = nil)
-        result = if version.nil?
-          get("/plugins/#{name}.json").body
+        if version.nil?
+          json_get("/plugins/#{name}.json")
         else
-          get("/plugins/#{name}/#{version.gsub('.', '_')}.json").body
+          json_get("/plugins/#{name}/#{version.gsub('.', '_')}.json")
         end
-
-        MultiJson.decode result
       end
 
       # @return [Array]
       def list
-        MultiJson.decode get('/plugins.json').body
+        json_get('/plugins.json')
       end
     end
   end
