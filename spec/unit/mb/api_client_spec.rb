@@ -6,19 +6,19 @@ describe MB::ApiClient do
       subject { described_class.new }
 
       it "sets a new connection to #pool" do
-        subject.pool.should be_a(MB::ApiClient::Connection)
+        subject.connection.should be_a(MB::ApiClient::Connection)
       end
 
       it "sets a default value for 'host' on the connection" do
-        subject.pool.host.should eql("0.0.0.0")
+        subject.connection.host.should eql("0.0.0.0")
       end
 
       it "sets a default value for 'port' on the connection" do
-        subject.pool.port.should eql(1984)
+        subject.connection.port.should eql(1984)
       end
 
       it "uses the net_http_persistent adapter" do
-        subject.pool.builder.handlers.should include(Faraday::Adapter::NetHttpPersistent)
+        subject.connection.builder.handlers.should include(Faraday::Adapter::NetHttpPersistent)
       end
     end
   end

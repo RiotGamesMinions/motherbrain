@@ -22,16 +22,11 @@ module MotherBrain
 
     extend Forwardable
 
-    trap_exit :restart_connection
-
-    attr_reader :pool
-    attr_reader :options
-
-    def_delegator :pool, :get
-    def_delegator :pool, :put
-    def_delegator :pool, :post
-    def_delegator :pool, :delete
-    def_delegator :pool, :head
+    def_delegator :connection, :get
+    def_delegator :connection, :put
+    def_delegator :connection, :post
+    def_delegator :connection, :delete
+    def_delegator :connection, :head
 
     resource ApiClient::ConfigResource, :config
     resource ApiClient::PluginResource, :plugin
@@ -56,27 +51,20 @@ module MotherBrain
         builder: Faraday::Builder.new { |b| b.adapter :net_http_persistent }
       )
 
-      @registry = Celluloid::Registry.new
-      @options = { size: 4, args: [options] }
-      @pool    = ApiClient::Connection.pool_link(@options)
-
-      super(@registry)
+      super(Celluloid::Registry.new)
+      pool(ApiClient::Connection, size: 4, args: [options], as: :connection_pool)
     end
 
     def finalize
-      pool.terminate if pool.alive?
+      connection.terminate if connection.alive?
+    end
+
+    def connection
+      registry[:connection_pool]
     end
 
     protected
 
       attr_reader :registry
-
-    private
-
-      def restart_connection(actor, reason)
-        return unless reason
-
-        @connection = ApiClient::Connection.pool_link(self.options)
-      end
   end
 end
