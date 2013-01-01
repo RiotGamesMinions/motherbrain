@@ -77,8 +77,8 @@ describe MB::Logging do
         its(:fatal?) { should be_true }
       end
 
-      it "defaults to STDOUT" do
-        logger.instance_variable_get(:@logdev).dev.should == STDOUT
+      it "defaults to 'application.log' in the MB Logs directory" do
+        logger.instance_variable_get(:@logdev).dev.path.should == MB::FileSystem.logs.join('application.log').to_s
       end
 
       context "when passed STDOUT as a string" do

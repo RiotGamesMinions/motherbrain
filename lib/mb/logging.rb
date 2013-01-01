@@ -4,15 +4,11 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   module Logging
     autoload :BasicFormat, 'mb/logging/basic_format'
-
     include Logger::Severity
 
-    DEFAULTS = {
-      level: INFO,
-      location: STDOUT
-    }
-
     class << self
+      include Logger::Severity
+
       # @return [Logger]
       def logger
         @logger ||= setup
@@ -24,13 +20,16 @@ module MotherBrain
         @preserved_options = nil
       end
 
-      # @option options [String, Integer] :level (WARN)
-      # @option options [String, IO] :location (STDOUT)
+      # @option options [String, Integer] :level (INFO)
+      # @option options [String, IO] :location
       #
       # @return [Logger]
       def setup(options = {})
         options = options.keep_if { |key, value| value }
-        options = preserve(options).reverse_merge(DEFAULTS)
+        options = preserve(options).reverse_merge(
+          level: INFO,
+          location: FileSystem.logs.join('application.log')
+        )
 
         level    = options[:level].is_a?(String) ? options[:level].upcase : options[:level]
         location = options[:location]
