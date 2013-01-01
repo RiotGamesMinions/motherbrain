@@ -3,18 +3,14 @@ require 'faraday'
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class ApiClient < Celluloid::SupervisionGroup
+    autoload :Connection, 'mb/api_client/connection'
     autoload :Resource, 'mb/api_client/resource'
     require 'mb/api_client/resources'
-
-    # @api private
-    class Connection < Faraday::Connection
-      include Celluloid
-    end
 
     class << self
       def resource(klass, method_name)
         actor_name = "api_client_#{method_name}"
-        
+
         define_method(method_name) do
           if Celluloid::Actor[actor_name].nil?
             supervise_as(actor_name, klass, Celluloid::Actor.current)
