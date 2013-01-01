@@ -31,6 +31,12 @@ describe MB::ApiClient do
     end
   end
 
+  describe "#job" do
+    it "returns an instance of MB::ApiClient::JobResource" do
+      subject.job.should be_a(MB::ApiClient::JobResource)
+    end
+  end
+
   describe "#plugin" do
     it "returns an instance of MB::ApiClient::PluginResource" do
       subject.plugin.should be_a(MB::ApiClient::PluginResource)
