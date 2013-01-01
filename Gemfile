@@ -2,7 +2,6 @@ source :rubygems
 
 gemspec
 
-gem 'chozo', github: 'reset/chozo'
 gem 'ef-rest', git: 'git@github.com:RiotGames/ef-rest.git'
 gem 'reel', github: 'celluloid/reel'
 

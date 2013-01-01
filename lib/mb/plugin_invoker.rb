@@ -36,148 +36,46 @@ module MotherBrain
           end
 
           if plugin.bootstrap_routine.present?
-            method_option :ssl_verify,
-              type: :boolean,
-              desc: "Should we verify SSL connections?",
-              default: false
-            method_option :ssh_user,
-              type: :string,
-              desc: "A shell user that will login to each node and perform the bootstrap command on",
-              aliases: "-u"
-            method_option :ssh_password,
-              type: :string,
-              desc: "The password for the shell user that will perform the bootstrap",
-              aliases: "-p"
-            method_option :ssh_keys,
-              type: :array,
-              desc: "An array of keys (or a single key) to authenticate the ssh user with instead of a password"
-            method_option :ssh_timeout,
-              type: :numeric,
-              desc: "The timeout for communicating to nodes over SSH"
-            method_option :validator_client,
-              type: :string,
-              desc: "The name of the Chef validator client to use in bootstrapping"
-            method_option :validator_path,
-              type: :string,
-              desc: "The filepath to the Chef validator client's private key to use in bootstrapping"
-            method_option :bootstrap_proxy,
-              type: :string,
-              desc: "A proxy server for the node being bootstrapped"
-            method_option :encrypted_data_bag_secret_path,
-              type: :string,
-              aliases: "--secret",
-              desc: "The filepath to your organizations encrypted data bag secret key"
-            method_option :sudo,
-              type: :boolean,
-              default: true,
-              desc: "Should we execute the bootstrap with sudo?"
             method_option :force,
               type: :boolean,
               default: false,
               desc: "Perform bootstrap even if the environment is locked"
             desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
             define_method(:bootstrap) do |environment, manifest_file|
-              manifest = MB::Bootstrap::Manifest.from_file(manifest_file)
+              boot_options = Hash.new.merge(options).deep_symbolize_keys
+              manifest     = MB::Bootstrap::Manifest.from_file(manifest_file)
 
-              bootstrap_options = {
-                environment: environment,
-                server_url: Application.ridley.server_url,
-                client_name: Application.ridley.client_name,
-                client_key: Application.ridley.client_key,
-                validator_client: options[:validator_client] || Application.config[:chef][:validator_client],
-                validator_path: options[:validator_path] || Application.config[:chef][:validator_path],
-                bootstrap_proxy: options[:bootstrap_proxy] || Application.config[:chef][:bootstrap_proxy],
-                encrypted_data_bag_secret_path: options[:encrypted_data_bag_secret_path] || Application.config[:chef][:encrypted_data_bag_secret_path],
-                ssh: {
-                  user: options[:ssh_user] || Application.config[:ssh][:user],
-                  password: options[:ssh_password] || Application.config[:ssh][:password],
-                  keys: options[:ssh_keys] || Application.config[:ssh][:keys],
-                  timeout: options[:ssh_timeout] || Application.config[:ssh][:timeout],
-                  sudo: options[:sudo] || Application.config[:ssh][:sudo]
-                },
-                ssl: {
-                  verify: options[:ssl_verify] || Application.config[:ssl][:verify]
-                },
-                force: options[:force]
-              }
-
-              job = MB::Application.bootstrap(environment, manifest, plugin.bootstrap_routine, bootstrap_options)
+              job = Application.bootstrap(
+                environment.freeze,
+                manifest.freeze,
+                plugin.freeze,
+                boot_options.freeze
+              )
 
               CliClient.new(job).display
             end
 
-            method_option :api_url,
-              type: :string,
-              desc: "URL to the Environment Factory API endpoint",
-              required: true
-            method_option :api_key,
-              type: :string,
-              desc: "API authentication key for the Environment Factory",
-              required: true
-            method_option :ssl_verify,
-              type: :boolean,
-              desc: "Should we verify SSL connections?",
-              default: false
             method_option :skip_bootstrap,
               type: :boolean,
               desc: "Nodes will be created and added to the Chef environment but not bootstrapped",
               default: false
-            method_option :ssh_user,
-              type: :string,
-              desc: "A shell user that will login to each node and perform the bootstrap command on",
-              aliases: "-u"
-            method_option :ssh_password,
-              type: :string,
-              desc: "The password for the shell user that will perform the bootstrap",
-              aliases: "-p"
-            method_option :ssh_keys,
-              type: :array,
-              desc: "An array of keys (or a single key) to authenticate the ssh user with instead of a password"
-            method_option :ssh_timeout,
-              type: :numeric,
-              desc: "The timeout for communicating to nodes over SSH"
-            method_option :validator_client,
-              type: :string,
-              desc: "The name of the Chef validator client to use in bootstrapping"
-            method_option :validator_path,
-              type: :string,
-              desc: "The filepath to the Chef validator client's private key to use in bootstrapping"
-            method_option :bootstrap_proxy,
-              type: :string,
-              desc: "A proxy server for the node being bootstrapped"
-            method_option :encrypted_data_bag_secret_path,
-              type: :string,
-              aliases: "--secret",
-              desc: "The filepath to your organizations encrypted data bag secret key"
-            method_option :sudo,
+            method_option :force,
               type: :boolean,
-              default: true,
-              desc: "Should we execute the bootstrap with sudo?"
+              default: false,
+              desc: "Perform bootstrap even if the environment is locked"
             desc("provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment")
             define_method(:provision) do |environment, manifest_file|
-              manifest = Provisioner::Manifest.from_file(manifest_file)
-              provisioner_options = {
-                api_url: options[:api_url],
-                api_key: options[:api_key],
-                ssl: {
-                  verify: options[:ssl_verify]
-                }
-              }
+              prov_options = Hash.new.merge(options).deep_symbolize_keys
+              manifest     = Provisioner::Manifest.from_file(manifest_file)
 
-              job = Provisioner::Manager.instance.provision(environment, manifest, plugin, provisioner_options)
+              job = Application.provision(
+                environment.freeze,
+                manifest.freeze,
+                plugin.freeze,
+                prov_options.freeze
+              )
 
               CliClient.new(job).display
-
-              return if options[:skip_bootstrap]
-
-              bootstrap_manifest = MB::Bootstrap::Manifest.from_provisioner(
-                job.result,
-                manifest,
-                Tempfile.new('bootstrap_manifest').path
-              )
-              bootstrap_manifest.save
-
-              invoke(:bootstrap, [environment, bootstrap_manifest.path], options)
             end
 
             method_option :component_versions,
@@ -195,7 +93,14 @@ module MotherBrain
               aliases: "-f"
             desc("upgrade ENVIRONMENT", "Upgrade an environment to the specified versions")
             define_method(:upgrade) do |environment|
-              job = MB::Application.upgrade(environment, plugin, options)
+              upgrade_options = Hash.new.merge(options).deep_symbolize_keys
+
+              job = Application.upgrade(
+                environment.freeze,
+                plugin.freeze,
+                upgrade_options.freeze
+              )
+
               CliClient.new(job).display
             end
           end

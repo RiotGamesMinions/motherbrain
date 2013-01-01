@@ -76,7 +76,14 @@ module MotherBrain
       # @option options [#to_s] :api_key
       # @option options [Hash] :ssl
       def initialize(options = {})
-        @interval   = (options.delete(:interval) || 30.0).to_f
+        options = options.reverse_merge(
+          api_url: Application.config[:ef][:api_url],
+          api_key: Application.config[:ef][:api_key],
+          interval: 30.0,
+          ssl: Application.config[:ssl].to_hash
+        )
+
+        @interval   = options[:interval].to_f
         @connection = EF::REST.connection(options)
       end
 
@@ -90,9 +97,16 @@ module MotherBrain
       # @param [Provisioner::Manifest] manifest
       #   a manifest describing the way the environment should look
       #
+      # @option options [Boolean] :skip_bootstrap (false)
+      #
       # @return [Job]
-      def up(job, env_name, manifest)
-        log.debug "environment factory provisioner creating #{env_name}"
+      def up(job, env_name, manifest, plugin, options = {})
+        options = options.reverse_merge(
+          skip_bootstrap: false,
+          job: job
+        )
+
+        job.status = "environment factory provisioner creating #{env_name}"
         job.report_running
         connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
@@ -103,7 +117,17 @@ module MotherBrain
         response = self.class.handle_created(connection.environment.find(env_name, force: true))
         self.class.validate_create(response, manifest)
 
-        job.report_success(response)
+        if options[:skip_bootstrap]
+          job.report_success(response)
+        else
+          bootstrap_manifest = Bootstrap::Manifest.from_provisioner(response, manifest)
+
+          job = Application.bootstrap(env_name, bootstrap_manifest, plugin, options)
+          
+          until job.completed?
+            sleep 0.1
+          end
+        end
       rescue EF::REST::Error => e
         log.fatal { "an error occured: #{e}" }
         job.report_failure(e)

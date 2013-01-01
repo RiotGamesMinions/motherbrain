@@ -33,25 +33,67 @@ module MotherBrain
     include Celluloid
     include MB::Logging
 
+    # @return [Set<Pathname>]
+    attr_reader :paths
+
     def initialize
       log.info { "Plugin Manager starting..." }
-      @plugins = Hash.new
+      @paths   = Set.new
+      @plugins = Set.new
 
       Application.config.plugin_paths.each { |path| self.add_path(path) }
       load_all
     end
 
-    # @return [Array<MotherBrain::Plugin>]
-    def plugins
-      @plugins.values
+    # @param [MotherBrain::Plugin] plugin
+    #
+    # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
+    def add(plugin)
+      unless find(plugin.name, plugin.version).nil?
+        raise AlreadyLoaded, "A plugin with the name: '#{plugin.name}' and version: '#{plugin.version}' is already loaded"
+      end
+
+      @plugins.add(plugin)
     end
 
-    # @param [String] name
-    # @param [Version] version
+    # @param [String, Pathname] path
+    def add_path(path)
+      self.paths.add(Pathname.new(File.expand_path(path)))
+    end
+
+    # Clear all previously set paths
     #
-    # @return [MotherBrain::Plugin]
-    def plugin(name, version)
-      @plugins.fetch(Plugin.key_for(name, version), nil)
+    # @note this is for testing; you probably don't want to use this
+    #
+    # @return [Set]
+    def clear_paths
+      @paths.clear
+    end
+
+    # Clear list of known plugins
+    #
+    # @note this is for testing; you probably don't want to use this
+    #
+    # @return [Set]
+    def clear_plugins
+      @plugins.clear
+    end
+
+    # Find and return a registered plugin of the given name and version. If no version
+    # attribute is specified the latest version of the plugin is returned.
+    #
+    # @param [String] name
+    # @param [#to_s] version (nil)
+    #
+    # @return [Plugin, nil]
+    def find(name, version = nil)
+      plugins.sort.reverse.find do |plugin|
+        if version.nil?
+          plugin.name == name
+        else
+          plugin.name == name && plugin.version.to_s == version.to_s
+        end
+      end
     end
 
     # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
@@ -74,14 +116,18 @@ module MotherBrain
       add Plugin.from_file(path.to_s)
     end
 
-    # @return [Set<Pathname>]
-    def paths
-      @paths ||= Set.new
-    end
-
-    # @param [String, Pathname] path
-    def add_path(path)
-      self.paths.add(Pathname.new(File.expand_path(path)))
+    # Return all of the registered plugins. If the optional name parameter is provided the
+    # results will be filtered and only plugin versions of that given name will be returned
+    #
+    # @param [String, nil] name (nil)
+    #
+    # @return [Set<Plugin>]
+    def plugins(name = nil)
+      if name.nil?
+        @plugins
+      else
+        @plugins.select { |plugin| plugin.name == name }
+      end
     end
 
     # @param [Pathname] path
@@ -89,28 +135,8 @@ module MotherBrain
       self.paths.delete(path)
     end
 
-    # Clear all previously set paths
-    #
-    # @return [Set]
-    def clear_paths
-      @paths = Set.new
-    end
-
     def finalize
       log.info { "Plugin Manager stopping..." }
     end
-
-    private
-
-      # @param [MotherBrain::Plugin] plugin
-      #
-      # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
-      def add(plugin)
-        if @plugins.has_key?(plugin.id)
-          raise AlreadyLoaded, "A plugin with the name: '#{plugin.name}' and version: '#{plugin.version}' is already loaded"
-        end
-
-        @plugins[plugin.id] = plugin
-      end
   end
 end

@@ -43,6 +43,7 @@ module MotherBrain
     end
 
     # @param [Hash] options
+    #   a set of options to pass to MultiJson.encode
     #
     # @return [String]
     def to_json(options = {})
