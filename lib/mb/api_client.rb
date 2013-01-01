@@ -8,14 +8,12 @@ module MotherBrain
     require 'mb/api_client/resources'
 
     class << self
-      def resource(klass, method_name)
-        actor_name = "api_client_#{method_name}"
-
-        define_method(method_name) do
-          if Celluloid::Actor[actor_name].nil?
-            supervise_as(actor_name, klass, Celluloid::Actor.current)
+      def resource(klass, name)
+        define_method(name) do
+          if registry[name].nil?
+            supervise_as(name, klass, Celluloid::Actor.current)
           end
-          Celluloid::Actor[actor_name]
+          registry[name]
         end
       end
     end
@@ -53,19 +51,25 @@ module MotherBrain
     # @option options [Class] parallel_manager
     #   the parallel http manager to use
     def initialize(options = {})
-      super(nil)
       options = options.reverse_merge(
         url: DEFAULT_URL,
         builder: Faraday::Builder.new { |b| b.adapter :net_http_persistent }
       )
 
+      @registry = Celluloid::Registry.new
       @options = { size: 4, args: [options] }
       @pool    = ApiClient::Connection.pool_link(@options)
+
+      super(@registry)
     end
 
     def finalize
       pool.terminate if pool.alive?
     end
+
+    protected
+
+      attr_reader :registry
 
     private
 

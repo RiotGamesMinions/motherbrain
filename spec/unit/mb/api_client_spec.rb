@@ -49,16 +49,28 @@ describe MB::ApiClient do
   end
 
   describe "#plugin" do
-    before(:each) do
-      stub_request(:get, "http://0.0.0.0:1984/plugins.json").
-        to_return(status: 200, body: MultiJson.encode(MB::PluginManager.instance.plugins))
-    end
-
     it "returns an instance of MB::ApiClient::PluginResource" do
       subject.plugin.should be_a(MB::ApiClient::PluginResource)
     end
 
+    describe "#find" do
+      let(:plugin_id) { "rspec-test" }
+      before(:each) do
+        stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}.json").
+          to_return(status: 200, body: MultiJson.encode({}))
+      end
+
+      it "returns a Hash" do
+        subject.plugin.find(plugin_id).should be_a(Hash)
+      end
+    end
+
     describe "#list" do
+      before(:each) do
+        stub_request(:get, "http://0.0.0.0:1984/plugins.json").
+          to_return(status: 200, body: MultiJson.encode(MB::PluginManager.instance.plugins))
+      end
+
       it "returns an Array" do
         subject.plugin.list.should be_a(Array)
       end
