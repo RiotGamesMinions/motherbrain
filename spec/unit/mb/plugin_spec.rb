@@ -114,4 +114,58 @@ describe MB::Plugin do
       subject.to_s.should eql("pvpnet (1.2.3)")
     end
   end
+
+  describe "comparing plugins" do
+    let(:one) do
+      described_class.new do
+        name 'apple'
+        version '1.0.0'
+      end
+    end
+    let(:two) do
+      described_class.new do
+        name 'apple'
+        version '2.0.0'
+      end
+    end
+    let(:three) do
+      described_class.new do
+        name 'cherry'
+        version '1.0.0'
+      end
+    end
+    let(:four) do
+      described_class.new do
+        name 'cherry'
+        version '2.0.0'
+      end
+    end
+    let(:five) do
+      described_class.new do
+        name 'orange'
+        version '1.0.0'
+      end
+    end
+    let(:six) do
+      described_class.new do
+        name 'orange'
+        version '2.0.0'
+      end
+    end
+
+    let(:list) do
+      [
+        one,
+        two,
+        three,
+        four,
+        five,
+        six
+      ]
+    end
+
+    it "returns the list in the proper order" do
+      list.shuffle.sort.should eql(list)
+    end
+  end
 end

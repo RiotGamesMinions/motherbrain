@@ -33,6 +33,146 @@ describe MB::REST::Gateway do
         JSON.parse(last_response.body).should have(MB::Application.plugin_manager.plugins.length).items
       end
     end
+
+    describe "GET /plugins/:name" do
+      context "when a matching plugin is found" do
+        let(:one) do
+          MB::Plugin.new do
+            name 'apple'
+            version '1.0.0'
+          end
+        end
+
+        let(:two) do
+          MB::Plugin.new do
+            name 'apple'
+            version '2.0.0'
+          end
+        end
+
+        before(:each) do
+          MB::PluginManager.instance.add(one)
+          MB::PluginManager.instance.add(two)
+          get '/plugins/apple'
+        end
+
+        after(:each) do
+          MB::PluginManager.instance.clear_plugins
+        end
+
+        it "returns 200" do
+          last_response.status.should == 200
+        end
+
+        it "has an item for each plugin version" do
+          JSON.parse(last_response.body).should have(2).items
+        end
+      end
+
+      context "when plugin not found" do
+        before(:each) { get '/plugins/test' }
+
+        it "returns 404" do
+          last_response.status.should == 404
+        end
+
+        it "has the error code for PluginNotFound" do
+          result = JSON.parse(last_response.body)
+          result.should have_key("code")
+          result["code"].should be_error_code(MB::PluginNotFound)
+        end
+      end
+    end
+
+    describe "GET /plugins/:name/latest" do
+      let(:one) do
+        MB::Plugin.new do
+          name 'apple'
+          version '1.0.0'
+        end
+      end
+
+      let(:two) do
+        MB::Plugin.new do
+          name 'apple'
+          version '2.0.0'
+        end
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        MB::PluginManager.instance.add(two)
+        get '/plugins/apple/latest'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns 200" do
+        last_response.status.should == 200
+      end
+
+      it "returns the latest plugin version" do
+        response = JSON.parse(last_response.body)
+        response["name"].should eql("apple")
+        response["version"]["major"].should eql(2)
+        response["version"]["minor"].should eql(0)
+        response["version"]["patch"].should eql(0)
+      end
+    end
+
+    describe "GET /plugins/:name/:version" do
+      context "when the a matching plugin is found" do
+        let(:one) do
+          MB::Plugin.new do
+            name 'apple'
+            version '1.0.0'
+          end
+        end
+
+        before(:each) do
+          MB::PluginManager.instance.add(one)
+        end
+
+        after(:each) do
+          MB::PluginManager.instance.clear_plugins
+        end
+
+        it "returns a 200 response" do
+          get '/plugins/apple/1_0_0'
+          last_response.status.should == 200
+        end
+
+        it "returns a plugin for the given name and version" do
+          get '/plugins/apple/1_0_0'
+          response = JSON.parse(last_response.body)
+          response["name"].should eql("apple")
+        end
+      end
+
+      context "when plugin not found" do
+        before(:each) { get '/plugins/test/1_0_0' }
+
+        it "returns a 404 response" do
+          last_response.status.should == 404
+        end
+
+        it "has the error code for PluginNotFound" do
+          result = JSON.parse(last_response.body)
+          result.should have_key("code")
+          result["code"].should be_error_code(MB::PluginNotFound)
+        end
+      end
+
+      context "when an invalid version string is given" do
+        before(:each) { get '/plugins/test/fake_version' }
+
+        it "returns a 400 response" do
+          last_response.status.should == 400
+        end
+      end
+    end
   end
 
   describe "API Error handling" do

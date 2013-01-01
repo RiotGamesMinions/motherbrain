@@ -5,6 +5,9 @@ require 'bundler'
 require 'bundler/setup'
 require 'thor/rake_compat'
 
+require 'motherbrain'
+MB::Logging.setup(location: '/dev/null')
+
 class Default < Thor
   include Thor::Actions
   include Thor::RakeCompat
@@ -30,6 +33,11 @@ class Default < Thor
     ENV['CI'] = 'true' # Travis-CI also sets this, but set it here for local testing
     run "rspec --tag ~focus --color --format=documentation spec"
     run "cucumber --format pretty"
+  end
+
+  desc "routes", "Print all registered REST API routes"
+  def routes
+    puts MB::REST::API.routes
   end
 
   class Cucumber < Thor

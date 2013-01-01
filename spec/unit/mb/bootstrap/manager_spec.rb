@@ -1,45 +1,6 @@
 require 'spec_helper'
 
 describe MB::Bootstrap::Manager do
-  describe "ClassMethods" do
-    subject { described_class }
-
-    describe "::validate_options" do
-      let(:valid_options) do
-        {
-          server_url: "test",
-          client_name: "test",
-          client_key: "test",
-          validator_client: "test",
-          validator_path: "test",
-          ssh: {
-            user: "test",
-            keys: "test",
-            password: "test"
-          }
-        }
-      end
-
-      it "raises an ArgumentError if any of the required options is not provided" do
-        valid_options.keys.each do |opt|
-          options = valid_options.dup
-          options.delete(opt)
-
-          expect { subject.validate_options(options) }.to raise_error(MB::ArgumentError)
-        end
-      end
-
-      it "raises an ArgumentError if any of the required options have a nil value" do
-        valid_options.keys.each do |opt|
-          options = valid_options.dup
-          options[opt] = nil
-
-          expect { subject.validate_options(options) }.to raise_error(MB::ArgumentError)
-        end
-      end
-    end
-  end
-
   let(:plugin) do
     MB::Plugin.new do
       name "pvpnet"
@@ -52,6 +13,15 @@ describe MB::Bootstrap::Manager do
 
       component "nginx" do
         group "master"
+      end
+
+      cluster_bootstrap do
+        async do
+          bootstrap("activemq::master")
+          bootstrap("activemq::slave")
+        end
+
+        bootstrap("nginx::master")
       end
     end
   end
@@ -73,39 +43,15 @@ describe MB::Bootstrap::Manager do
     )
   end
 
-  let(:routine) do
-    MB::Bootstrap::Routine.new(plugin) do
-      async do
-        bootstrap("activemq::master")
-        bootstrap("activemq::slave")
-      end
-
-      bootstrap("nginx::master")
-    end
-  end
-
-  let(:bootstrap_options) do
-    {
-      server_url: "https://api.opscode.com/organizations/vialstudios",
-      client_name: "reset",
-      client_key: fixtures_path.join("fake_key.pem").to_s,
-      validator_client: "fake-validator",
-      validator_path: fixtures_path.join("fake_key.pem").to_s,
-      ssh: {
-        user: "reset",
-        keys: fixtures_path.join("fake_id_rsa").to_s
-      }
-    }
-  end
-
   let(:environment) { "test" }
+  let(:server_url) { MB::Application.config.chef.api_url }
 
   subject { described_class.new }
 
   before(:each) do
-    stub_request(:get, "https://api.opscode.com/organizations/vialstudios/nodes").
+    stub_request(:get, File.join(server_url, "nodes")).
       to_return(status: 200, body: {})
-    stub_request(:get, "https://api.opscode.com/organizations/vialstudios/environments/test").
+    stub_request(:get, File.join(server_url, "environments/test")).
       to_return(status: 200, body: {})
   end
 end

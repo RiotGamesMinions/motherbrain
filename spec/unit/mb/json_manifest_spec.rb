@@ -45,6 +45,10 @@ JSON
     describe "::from_file" do
       pending
     end
+
+    describe "::from_json" do
+      pending
+    end
   end
 
   describe "#path" do

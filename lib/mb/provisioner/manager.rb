@@ -35,10 +35,13 @@ module MotherBrain
         #
         # @return [~Provisioner]
         def new_provisioner(options)
-          id = options.delete(:with)
-          choose_provisioner(id).new(options)
+          choose_provisioner(options[:with]).new(options.except(:with))
         end
       end
+
+      WORKER_OPTS = [
+        :skip_bootstrap
+      ]
 
       include Celluloid
       include MB::Logging
@@ -68,18 +71,21 @@ module MotherBrain
       #   manifest of nodes to create
       # @param [MotherBrain::Plugin] plugin
       #   the plugin we are creating these nodes for
+      #
+      # @option options [Boolean] :skip_bootstrap
       # @option options [#to_sym] :with
       #   id of provisioner to use
       #
       # @return [JobTicket]
       def provision(environment, manifest, plugin, options = {})
-        job         = Job.new(:provision)
+        job_type    = options[:skip_bootstrap] ? :provision : :provision_and_bootstrap
+        job         = Job.new(job_type)
         ticket      = job.ticket
         provisioner = self.class.new_provisioner(options)
-        Provisioner::Manifest.validate(manifest, plugin)
+        Provisioner::Manifest.validate!(manifest, plugin)
 
         log.debug "manager delegating creation of #{environment}..."
-        provisioner.async.up(job.freeze, environment.to_s, manifest)
+        provisioner.async.up(job, environment, manifest, plugin, options.slice(*WORKER_OPTS))
 
         ticket
       rescue InvalidProvisionManifest => e

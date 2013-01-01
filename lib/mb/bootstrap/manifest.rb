@@ -38,33 +38,45 @@ module MotherBrain
             end
           end
         end
+
+        # Validates that the instance of manifest describes a layout for the given routine
+        #
+        # @param [Bootstrap::Manifest] manifest
+        # @param [Plugin] plugin
+        #
+        # @raise [InvalidBootstrapManifest]
+        # @raise [NoBootstrapRoutine]
+        def validate!(manifest, plugin)
+          if plugin.bootstrap_routine.nil?
+            raise NoBootstrapRoutine, "Plugin '#{plugin.name}' (#{plugin.version}) does not contain a bootstrap routine"
+          end
+
+          manifest.keys.each do |node_group|
+            match = node_group.match(Plugin::NODE_GROUP_ID_REGX)
+
+            unless match
+              msg = "Manifest contained the entry: '#{node_group}' which is not"
+              msg << " in the proper node group format: 'component::group'"
+              raise InvalidBootstrapManifest, msg
+            end
+
+            unless plugin.bootstrap_routine.has_task?(node_group)
+              msg = "Manifest describes the node group '#{node_group}' which is not found"
+              msg << " in the given routine for '#{plugin}'"
+              raise InvalidBootstrapManifest, msg
+            end
+          end
+        end
       end
 
       # Validates that the instance of manifest describes a layout for the given routine
       #
-      # @param [Bootstrap::Routine] routine
+      # @param [Plugin] plugin
       #
       # @raise [InvalidBootstrapManifest]
-      #
-      # @return [self]
-      def validate!(routine)
-        self.keys.each do |node_group|
-          match = node_group.match(Plugin::NODE_GROUP_ID_REGX)
-
-          unless match
-            msg = "Manifest contained the entry: '#{node_group}' which is not"
-            msg << " in the proper node group format: 'component::group'"
-            raise InvalidBootstrapManifest, msg
-          end
-
-          unless routine.has_task?(node_group)
-            msg = "Manifest describes the node group '#{node_group}' which is not found"
-            msg << " in the given routine for '#{routine.plugin}'"
-            raise InvalidBootstrapManifest, msg
-          end
-        end
-
-        self
+      # @raise [NoBootstrapRoutine]
+      def validate!(plugin)
+        self.class.validate!(self, plugin)
       end
     end
   end

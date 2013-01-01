@@ -3,6 +3,7 @@ module MotherBrain
     autoload :API, 'mb/rest/api'
     autoload :Client, 'mb/rest/client'
     autoload :Gateway, 'mb/rest/gateway'
+    autoload :Validators, 'mb/rest/validators'
 
     class << self
       # @raise [Celluloid::DeadActorError] if REST Gateway has not been started

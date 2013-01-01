@@ -33,16 +33,16 @@ describe MB::Provisioner::Manifest do
 
     describe "::validate" do
       it "returns true if the manifest is valid" do
-        subject.validate(valid_manifest, plugin).should be_true
+        subject.validate!(valid_manifest, plugin).should be_true
       end
 
       it "accepts a Provisioner::Manifest" do
-        subject.validate(described_class.new, plugin).should be_true
+        subject.validate!(described_class.new, plugin).should be_true
       end
 
       it "raises InvalidProvisionManifest if given a non-hash value" do
         expect {
-          subject.validate(1, plugin)
+          subject.validate!(1, plugin)
         }.to raise_error(MB::InvalidProvisionManifest)
       end
 
@@ -54,7 +54,7 @@ describe MB::Provisioner::Manifest do
 
         it "raises an InvalidProvisionManifest error" do
           lambda {
-            subject.validate(valid_manifest, plugin)
+            subject.validate!(valid_manifest, plugin)
           }.should raise_error(MB::InvalidProvisionManifest)
         end
       end
@@ -66,7 +66,7 @@ describe MB::Provisioner::Manifest do
 
         it "raises an InvalidProvisionManifest error" do
           lambda {
-            subject.validate(valid_manifest, plugin)
+            subject.validate!(valid_manifest, plugin)
           }.should raise_error(MB::InvalidProvisionManifest)
         end
       end
@@ -86,7 +86,7 @@ describe MB::Provisioner::Manifest do
 
         it "raises an InvalidProvisionManifest error" do
           lambda {
-            subject.validate(invalid_manifest, plugin)
+            subject.validate!(invalid_manifest, plugin)
           }.should raise_error(MB::InvalidProvisionManifest)
         end
       end
@@ -100,7 +100,7 @@ describe MB::Provisioner::Manifest do
 
         it "raises an InvalidProvisionManifest error" do
           expect {
-            subject.validate(invalid_manifest, plugin)
+            subject.validate!(invalid_manifest, plugin)
           }.to raise_error(MB::InvalidProvisionManifest)
         end
       end

@@ -9,33 +9,6 @@ module MotherBrain
         def instance
           Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
         end
-
-        # @param [Hash] options (Hash.new)
-        #
-        # @raise [ArgumentError] if any required option or value is missing or invalid
-        def validate_options(options = {})
-          missing = (REQUIRED_OPTS - options.keys)
-
-          unless missing.empty?
-            missing.collect! { |opt| "'#{opt}'" }
-            raise ArgumentError, "Missing required option(s): #{missing.join(', ')}"
-          end
-
-          missing_values = options.slice(*REQUIRED_OPTS).select { |key, value| !value.present? }
-
-          unless missing_values.empty?
-            values = missing_values.keys.collect { |opt| "'#{opt}'" }
-            raise ArgumentError, "Missing value for required option(s): '#{values.join(', ')}'"
-          end
-
-          unless File.exists?(options[:client_key])
-            raise ArgumentError, "Chef Client key required for bootstrap and not found at: '#{options[:client_key]}'"
-          end
-
-          unless File.exists?(File.expand_path(options[:validator_path]))
-            raise ArgumentError, "Chef Validator required for Bootstrap and not found at: '#{options[:validator_path]}'"
-          end
-        end
       end
 
       include Celluloid
@@ -59,64 +32,80 @@ module MotherBrain
       # Bootstrap a collection of nodes described in the given manifest by performing
       # each {BootTask} in the proper order
       #
+      # @param [String] environment
       # @param [Bootstrap::Manifest] manifest
       #   manifest of nodes and what they should become
-      # @param [Bootstrap::Routine] routine
-      #   routine to follow for the bootstrap process
+      # @param [Plugin] plugin
+      #   a MotherBrain plugin with a bootstrap routine to follow
+      #
+      # @option options [MB::Job] :job
+      # @option options [Boolean] :force
+      #   ignore and bypass any existing locks on an environment
       # @option options [Hash] :ssh
-      #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
+      #   * :user (String) a shell user that will login to each node and perform the bootstrap command on
       #   * :password (String) the password for the shell user that will perform the bootstrap
       #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
-      #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
+      #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
       #   * :sudo (Boolean) [True] bootstrap with sudo
       # @option options [String] :server_url
-      #   URL to the Chef API to bootstrap the target node(s) to (required)
+      #   URL to the Chef API to bootstrap the target node(s) to
       # @option options [String] :client_name
-      #   name of the client used to authenticate with the Chef API (required)
+      #   name of the client used to authenticate with the Chef API
       # @option options [String] :client_key
-      #   filepath to the client's private key used to authenticate with the Chef API (requirec)
+      #   filepath to the client's private key used to authenticate with the Chef API
       # @option options [String] :organization
       #   the Organization to connect to. This is only used if you are connecting to
       #   private Chef or hosted Chef
       # @option options [String] :validator_client
-      #   the name of the Chef validator client to use in bootstrapping (requirec)
+      #   the name of the Chef validator client to use in bootstrapping
       # @option options [String] :validator_path
-      #   filepath to the validator used to bootstrap the node (required)
-      # @option options [String] :encrypted_data_bag_secret_path (nil)
+      #   filepath to the validator used to bootstrap the node
+      # @option options [String] :encrypted_data_bag_secret_path
       #   filepath on your host machine to your organizations encrypted data bag secret
-      # @option options [String] :environment ('_default')
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
       # @option options [String] :template ("omnibus")
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      def bootstrap(environment, manifest, routine, options = {})
-        job = Job.new(:bootstrap)
+      def bootstrap(environment, manifest, plugin, options = {})
+        options = options.reverse_merge(
+          hints: Hash.new,
+          bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
+          force: false,
+          job: Job.new(:bootstrap)
+        )
+        options[:environment] = environment
+        job = options[:job]
 
-        async.start(environment, manifest, routine, job, options)
+        async.start(environment, manifest, plugin, job, options)
 
         job.ticket
       end
 
-      # @see #bootstrap
-      #
+      # @param [String] environment
+      # @param [Bootstrap::Manifest] manifest
+      #   manifest of nodes and what they should become
+      # @param [Plugin] plugin
+      #   a MotherBrain plugin with a bootstrap routine to follow
       # @param [MotherBrain::Job] job
-      def start(environment, manifest, routine, job, options = {})
+      #
+      # @see #bootstrap for options
+      def start(environment, manifest, plugin, job, options = {})
         job.report_running
 
-        self.class.validate_options(options)
-        manifest.validate!(routine)
+        manifest.validate!(plugin)
 
-        task_queue = routine.task_queue.dup
+        task_queue = plugin.bootstrap_routine.task_queue.dup
 
         unless Application.ridley.environment.find(environment)
           raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
         end
 
         log.info { "Starting bootstrap of nodes on: #{environment}" }
-        async.sequential_bootstrap environment, manifest, task_queue, job, options
+        sequential_bootstrap(environment, manifest, task_queue, job, options)
       rescue => error
+        log.fatal { "unknown error occured: #{error}"}
         job.report_failure(error)
       end
 
@@ -124,13 +113,18 @@ module MotherBrain
         log.info { "Bootstrap Manager stopping..." }
       end
 
-      # @see #bootstrap
-      #
+      # @param [String] environment
+      # @param [Bootstrap::Manifest] manifest
+      #   manifest of nodes and what they should become
+      # @param [Array<Bootstrap::BootTask>] task_queue
+      #   a MotherBrain plugin with a bootstrap routine to follow
       # @param [MotherBrain::Job] job
+      #
+      # @see #bootstrap for options
       def sequential_bootstrap(environment, manifest, task_queue, job, options = {})
         chef_synchronize(chef_environment: environment, force: options[:force], job: job) do
           while tasks = task_queue.shift
-            job.status = "Bootstrapping #{tasks.collect(&:id).join(', ')}"
+            job.status = "Bootstrapping #{Array(tasks).collect(&:id).join(', ')}"
 
             concurrent_bootstrap(manifest, tasks, options)
           end
@@ -138,6 +132,7 @@ module MotherBrain
 
         job.report_success
       rescue => error
+        log.fatal { "unknown error occured: #{error}"}
         job.report_failure(error)
       end
 
@@ -149,13 +144,8 @@ module MotherBrain
       #   a hash where the keys are node group names and the values are arrays of hostnames
       # @param [BootTask, Array<BootTask>] boot_tasks
       #   a hash where the keys are node group names and the values are arrays of hostnames
-      # @option options [String] :environment ('_default')
-      # @option options [Hash] :hints (Hash.new)
-      #   a hash of Ohai hints to place on the bootstrapped node
-      # @option options [String] :template ("omnibus")
-      #   bootstrap template to use
-      # @option options [String] :bootstrap_proxy (nil)
-      #   URL to a proxy server to bootstrap through
+      #
+      # @see #bootstrap for options
       #
       # @return [Hash]
       #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet

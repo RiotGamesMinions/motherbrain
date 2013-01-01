@@ -4,7 +4,7 @@ module MotherBrain
     # @api private
     class Worker
       include Celluloid
-      include Celluloid::Logger
+      include MB::Logging
 
       # @return [String]
       attr_reader :group_id
@@ -19,11 +19,34 @@ module MotherBrain
       # @param [Array<String>] hosts
       #   an array of hostnames or ipaddresses to bootstrap
       #     [ '33.33.33.10', 'reset.riotgames.com' ]
-      # @option options [String] :environment ('_default')
+      #
       # @option options [Hash] :attributes (Hash.new)
       #   a hash of attributes to use in the first Chef run
       # @option options [Array] :run_list (Array.new)
       #   an initial run list to bootstrap with
+      # @option options [Boolean] :force
+      #   ignore and bypass any existing locks on an environment
+      # @option options [Hash] :ssh
+      #   * :user (String) a shell user that will login to each node and perform the bootstrap command on
+      #   * :password (String) the password for the shell user that will perform the bootstrap
+      #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
+      #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
+      #   * :sudo (Boolean) [True] bootstrap with sudo
+      # @option options [String] :server_url
+      #   URL to the Chef API to bootstrap the target node(s) to
+      # @option options [String] :client_name
+      #   name of the client used to authenticate with the Chef API
+      # @option options [String] :client_key
+      #   filepath to the client's private key used to authenticate with the Chef API
+      # @option options [String] :organization
+      #   the Organization to connect to. This is only used if you are connecting to
+      #   private Chef or hosted Chef
+      # @option options [String] :validator_client
+      #   the name of the Chef validator client to use in bootstrapping
+      # @option options [String] :validator_path
+      #   filepath to the validator used to bootstrap the node
+      # @option options [String] :encrypted_data_bag_secret_path
+      #   filepath on your host machine to your organizations encrypted data bag secret
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
       # @option options [String] :template ("omnibus")
@@ -31,9 +54,9 @@ module MotherBrain
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
       def initialize(group_id, hosts, options = {})
-        @group_id     = group_id
-        @hosts        = Array(hosts)
-        @options      = options
+        @group_id = group_id
+        @hosts    = Array(hosts)
+        @options  = options
       end
 
       # @example
@@ -44,9 +67,9 @@ module MotherBrain
       #
       # @return [Array<Ridley::SSH::ResponseSet]
       def run
-        MB.log.info "Bootstrapping group: '#{group_id}' [ #{hosts.join(', ')} ] with options: '#{options}'"
+        log.info { "Bootstrapping group: '#{group_id}' [ #{hosts.join(', ')} ] with options: '#{options}'" }
         unless hosts && hosts.any?
-          MB.log.info "No hosts in group: '#{group_id}'. Skipping..."
+          log.info { "No hosts in group: '#{group_id}'. Skipping..." }
           return [ :ok, [] ]
         end
 
@@ -63,7 +86,7 @@ module MotherBrain
 
           unless partial_nodes.empty?
             futures << Celluloid::Future.new {
-              partial_bootstrap(partial_nodes, options.slice(:ssh, :attributes, :run_list))
+              partial_bootstrap(partial_nodes, options.slice(:attributes, :run_list))
             }
           end
         end.map(&:value).flatten.inject(:merge)
@@ -140,7 +163,7 @@ module MotherBrain
         @nodes ||= hosts.collect do |host|
           {
             hostname: host,
-            node_name: Application.node_querier.future.node_name(host, options[:ssh])
+            node_name: Application.node_querier.future.node_name(host)
           }
         end.collect! do |node|
           node[:node_name] = node[:node_name].value
@@ -166,11 +189,11 @@ module MotherBrain
           Ridley::SSH::ResponseSet.new.tap do |response_set|
             target_nodes.collect do |node|
               Celluloid::Future.new {
-                MB.log.info "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap"
+                log.info { "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap" }
 
                 chef_conn.node.merge_data(node[:node_name], options)
-                Application.node_querier.put_secret(node[:hostname], options.slice(:ssh))
-                Application.node_querier.chef_run(node[:hostname], options[:ssh])
+                Application.node_querier.put_secret(node[:hostname])
+                Application.node_querier.chef_run(node[:hostname])
               }
             end.map do |future|
               response_set.add_response(future.value)

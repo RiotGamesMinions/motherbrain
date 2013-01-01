@@ -90,23 +90,21 @@ describe MB::Bootstrap::Manifest do
         component "nginx" do
           group "master"
         end
+
+        cluster_bootstrap do
+          bootstrap("activemq::master")
+          bootstrap("nginx::master")
+        end
       end
     end
 
-    let(:routine) do
-      MB::Bootstrap::Routine.new(plugin) do
-        bootstrap("activemq::master")
-        bootstrap("nginx::master")
-      end
-    end
-
-    it "does not raise if the manifest is well formed and contains only node groups from the given routine" do
+    it "does not raise if the manifest is well formed and contains only node groups from the given plugin" do
       expect {
-        subject.validate!(routine)
+        subject.validate!(plugin)
       }.to_not raise_error
     end
 
-    context "when manifest contains a node group that is not part of the routine" do
+    context "when manifest contains a node group that is not part of the plugin" do
       subject do
         described_class.new(
           nil,
@@ -118,7 +116,7 @@ describe MB::Bootstrap::Manifest do
 
       it "raises an InvalidBootstrapManifest error" do
         lambda {
-          subject.validate!(routine)
+          subject.validate!(plugin)
         }.should raise_error(
           MB::InvalidBootstrapManifest,
           "Manifest describes the node group 'not::defined' which is not found in the given routine for 'pvpnet (1.2.3)'"

@@ -294,7 +294,7 @@ describe MB::Config do
   end
 
   describe "#to_ridley" do
-    subject do
+    let(:config) do
       MB::Config.new.tap do |o|
         o.chef.api_url = "https://api.opscode.com"
         o.chef.api_client = "reset"
@@ -304,46 +304,43 @@ describe MB::Config do
       end
     end
 
-    it "returns a hash with a 'server_url' key mapping to chef.api_url" do
-      obj = subject.to_ridley
+    subject do
+      config.to_ridley
+    end
 
-      obj.should have_key(:server_url)
-      obj[:server_url].should eql(subject.chef.api_url)
+    it "returns a hash with a 'server_url' key mapping to chef.api_url" do
+      subject.should have_key(:server_url)
+      subject[:server_url].should eql(config.chef.api_url)
     end
 
     it "returns a hash with a 'client_name' key mapping to chef.api_client" do
-      obj = subject.to_ridley
-
-      obj.should have_key(:client_name)
-      obj[:client_name].should eql(subject.chef.api_client)
+      subject.should have_key(:client_name)
+      subject[:client_name].should eql(config.chef.api_client)
     end
 
     it "returns a hash with a 'client_key' key mapping to chef.api_key" do
-      obj = subject.to_ridley
-
-      obj.should have_key(:client_key)
-      obj[:client_key].should eql(subject.chef.api_key)
+      subject.should have_key(:client_key)
+      subject[:client_key].should eql(config.chef.api_key)
     end
 
     it "returns a hash with a 'encrypted_data_bag_secret_path' key mapping to chef.encrypted_data_bag_secret_path" do
-      obj = subject.to_ridley
-
-      obj.should have_key(:encrypted_data_bag_secret_path)
-      obj[:encrypted_data_bag_secret_path].should eql(subject.chef.encrypted_data_bag_secret_path)
+      subject.should have_key(:encrypted_data_bag_secret_path)
+      subject[:encrypted_data_bag_secret_path].should eql(config.chef.encrypted_data_bag_secret_path)
     end
 
     it "returns a hash with an 'organization' key mapping to chef.organization" do
-      obj = subject.to_ridley
-
-      obj.should have_key(:organization)
-      obj[:organization].should eql(subject.chef.organization)
+      subject.should have_key(:organization)
+      subject[:organization].should eql(config.chef.organization)
     end
 
     it "returns a hash with a 'ssl.verify' key" do
-      obj = subject.to_ridley
+      subject.should have_key(:ssl)
+      subject[:ssl][:verify].should_not be_nil
+    end
 
-      obj.should have_key(:ssl)
-      obj[:ssl][:verify].should_not be_nil
+    it "returns a hash with a 'validator_client' key mapping to chef.validator_client" do
+      subject.should have_key(:validator_client)
+      subject[:validator_client].should eql(config.chef.validator_client)
     end
 
     context "given the config has no value for organization" do
@@ -352,11 +349,11 @@ describe MB::Config do
           o.chef.api_url = "https://api.opscode.com"
           o.chef.api_client = "reset"
           o.chef.api_key = "/Users/reset/.chef/reset.pem"
-        end
+        end.to_ridley
       end
 
       it "returns a hash without an 'organization' key" do
-        subject.to_ridley.should_not have_key(:organization)
+        subject.should_not have_key(:organization)
       end
     end
   end
