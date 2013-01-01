@@ -29,6 +29,7 @@ module MotherBrain
     def_delegator :connection, :head
 
     resource ApiClient::ConfigResource, :config
+    resource ApiClient::EnvironmentResource, :environment
     resource ApiClient::JobResource, :job
     resource ApiClient::PluginResource, :plugin
 
