@@ -2,16 +2,31 @@ require 'faraday'
 
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class ApiClient
+  class ApiClient < Celluloid::SupervisionGroup
+    autoload :Resource, 'mb/api_client/resource'
+    require 'mb/api_client/resources'
+
     # @api private
     class Connection < Faraday::Connection
       include Celluloid
     end
 
+    class << self
+      def resource(klass, method_name)
+        actor_name = "api_client_#{method_name}"
+        
+        define_method(method_name) do
+          if Celluloid::Actor[actor_name].nil?
+            supervise_as(actor_name, klass, Celluloid::Actor.current)
+          end
+          Celluloid::Actor[actor_name]
+        end
+      end
+    end
+
     DEFAULT_URL = "http://#{REST::Gateway::DEFAULT_OPTIONS[:host]}:#{REST::Gateway::DEFAULT_OPTIONS[:port]}"
 
     extend Forwardable
-    include Celluloid
 
     trap_exit :restart_connection
 
@@ -23,6 +38,9 @@ module MotherBrain
     def_delegator :pool, :post
     def_delegator :pool, :delete
     def_delegator :pool, :head
+
+    resource ApiClient::ConfigResource, :config
+    resource ApiClient::PluginResource, :plugin
 
     # @option options [String] :url
     #   URL to REST Gateway
@@ -39,6 +57,7 @@ module MotherBrain
     # @option options [Class] parallel_manager
     #   the parallel http manager to use
     def initialize(options = {})
+      super(nil)
       options = options.reverse_merge(
         url: DEFAULT_URL,
         builder: Faraday::Builder.new { |b| b.adapter :net_http_persistent }
@@ -46,10 +65,6 @@ module MotherBrain
 
       @options = { size: 4, args: [options] }
       @pool    = ApiClient::Connection.pool_link(@options)
-    end
-
-    def config
-      MB::Config.from_json(get('/config.json').body)
     end
 
     def finalize

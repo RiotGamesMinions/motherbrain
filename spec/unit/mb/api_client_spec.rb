@@ -31,8 +31,37 @@ describe MB::ApiClient do
         to_return(status: 200, body: MB::Application.config.to_json)
     end
 
-    it "returns an instance of MB::Config" do
-      subject.config.should be_a(MB::Config)
+    it "returns an instance of MB::ApiClient::ConfigResource" do
+      subject.config.should be_a(MB::ApiClient::ConfigResource)
+    end
+
+    describe "#show" do
+      it "returns an instance of MB::Config" do
+        subject.config.show.should be_a(MB::Config)
+      end
+
+      it "allows future values" do
+        future = subject.config.future.show
+        future.should be_a(Celluloid::Future)
+        future.value.should be_a(MB::Config)
+      end
+    end
+  end
+
+  describe "#plugin" do
+    before(:each) do
+      stub_request(:get, "http://0.0.0.0:1984/plugins.json").
+        to_return(status: 200, body: MultiJson.encode(MB::PluginManager.instance.plugins))
+    end
+
+    it "returns an instance of MB::ApiClient::PluginResource" do
+      subject.plugin.should be_a(MB::ApiClient::PluginResource)
+    end
+
+    describe "#list" do
+      it "returns an Array" do
+        subject.plugin.list.should be_a(Array)
+      end
     end
   end
 end
