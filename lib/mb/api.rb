@@ -38,6 +38,16 @@ module MotherBrain
 
         plugin
       end
+
+      def find_job!(id)
+        job = JobManager.instance.find(id)
+
+        if job.nil?
+          raise JobNotFound.new(id)
+        end
+
+        job
+      end
     end
 
     format :json
@@ -51,7 +61,7 @@ module MotherBrain
       rack_response(body, e.status, "Content-type" => "application/json")
     end
 
-    rescue_from PluginNotFound do |ex|
+    rescue_from PluginNotFound, JobNotFound do |ex|
       rack_response(ex.to_json, 404, "Content-type" => "application/json")
     end
 
@@ -95,7 +105,7 @@ module MotherBrain
         requires :id, type: String, desc: "job id"
       end
       get ':id' do
-        JobManager.instance.find(params[:id])
+        find_job!(params[:id])
       end
     end
 
