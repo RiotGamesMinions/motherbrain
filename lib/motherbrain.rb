@@ -26,6 +26,7 @@ module MotherBrain
   autoload :AbstractGear, 'mb/abstract_gear'
   autoload :Api, 'mb/api'
   autoload :ApiClient, 'mb/api_client'
+  autoload :ApiValidators, 'mb/api_validators'
   autoload :Application, 'mb/application'
   autoload :Bootstrap, 'mb/bootstrap'
   autoload :ChefMutex, 'mb/chef_mutex'
