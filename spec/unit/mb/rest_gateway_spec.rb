@@ -26,6 +26,21 @@ describe MB::RestGateway do
       end
     end
 
+    describe "GET /jobs" do
+      it "returns all jobs" do
+        get '/jobs'
+        last_response.status.should == 200
+        JSON.parse(last_response.body).should have(0).items
+      end
+    end
+
+    describe "GET /jobs/:id" do
+      it "returns 404 if missing" do
+        get '/jobs/456'
+        last_response.status.should == 404
+      end
+    end
+
     describe "GET /plugins" do
       it "returns all loaded plugins as JSON" do
         get '/plugins'

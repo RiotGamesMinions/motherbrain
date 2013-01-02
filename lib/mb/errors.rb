@@ -78,7 +78,7 @@ module MotherBrain
     end
 
     def to_s
-      "No job with ID: '#{id}' found"
+      "No job with ID: '#{job_id}' found"
     end
   end
 
