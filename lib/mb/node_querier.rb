@@ -8,7 +8,7 @@ module MotherBrain
       #
       # @return [Celluloid::Actor(NodeQuerier)]
       def instance
-        Celluloid::Actor[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
+        MB::Application[:node_querier] or raise Celluloid::DeadActorError, "node querier not running"
       end
     end
 

@@ -6,7 +6,7 @@ module MotherBrain
       #
       # @return [Celluloid::Actor(PluginManager)]
       def instance
-        Celluloid::Actor[:plugin_manager] or raise Celluloid::DeadActorError, "plugin manager not running"
+        MB::Application[:plugin_manager] or raise Celluloid::DeadActorError, "plugin manager not running"
       end
 
       # Returns a Set of expanded file paths that are directories that may contain
