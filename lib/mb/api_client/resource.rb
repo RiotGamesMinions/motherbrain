@@ -5,9 +5,9 @@ module MotherBrain
       extend Forwardable
       include Celluloid
 
-      # @param [ApiClient::Connection] connection
-      def initialize(connection)
-        @connection = connection
+      # @param [ApiClient] client
+      def initialize(client)
+        @connection = client.connection
       end
 
       private
