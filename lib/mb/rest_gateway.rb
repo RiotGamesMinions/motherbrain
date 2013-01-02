@@ -8,7 +8,7 @@ module MotherBrain
       #
       # @return [Celluloid::Actor(Gateway)]
       def instance
-        Celluloid::Actor[:rest_gateway] or raise Celluloid::DeadActorError, "REST Gateway not running"
+        MB::Application[:rest_gateway] or raise Celluloid::DeadActorError, "REST Gateway not running"
       end
     end
 

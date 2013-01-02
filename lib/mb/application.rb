@@ -28,23 +28,34 @@ module MotherBrain
     class << self
       extend Forwardable
 
+      # The Actor registry for MotherBrain.
+      #
+      # @note MotherBrain uses it's own registry instead of Celluloid::Registry.root to
+      #   avoid conflicts in the larger namespace. Use MB::Application[] to access MotherBrain
+      #   actors instead of Celluloid::Actor[].
+      #
+      # @return [Celluloid::Registry]
+      attr_reader :registry
+
       def_delegator :bootstrap_manager, :bootstrap
       def_delegator :provisioner_manager, :provision
       def_delegator :upgrade_manager, :upgrade
       def_delegator "MB::ConfigManager.instance", :config
 
+      def_delegators :registry, :[], :[]=
+
       # @raise [Celluloid::DeadActorError] if Application has not been started
       #
       # @return [Celluloid::SupervisionGroup(Application)]
       def instance
-        Celluloid::Actor[:motherbrain] or raise Celluloid::DeadActorError, "application not running"
+        MB::Application[:motherbrain] or raise Celluloid::DeadActorError, "application not running"
       end
 
       # Run the application asynchronously (terminate after execution)
       #
       # @param [MB::Config] app_config
       def run!(app_config)
-        Celluloid::Actor[:motherbrain] = group = super()
+        MB::Application[:motherbrain] = group = super()
 
         group.supervise_as :config_manager, ConfigManager, app_config
         group.supervise_as :job_manager, JobManager
@@ -117,7 +128,7 @@ module MotherBrain
       #
       # @return [Celluloid::Actor(Ridley::Connection)]
       def ridley
-        Celluloid::Actor[:ridley] or raise Celluloid::DeadActorError, "Ridley not running"
+        MB::Application[:ridley] or raise Celluloid::DeadActorError, "Ridley not running"
       end
       alias_method :chef_connection, :ridley
 
@@ -125,15 +136,17 @@ module MotherBrain
       #
       # @return [Celluloid::Actor(Ridley::Connection)]
       def upgrade_manager
-        Celluloid::Actor[:upgrade_manager] or raise Celluloid::DeadActorError, "upgrade manager not running"
+        MB::Application[:upgrade_manager] or raise Celluloid::DeadActorError, "upgrade manager not running"
       end
     end
+
+    @registry = Celluloid::Registry.new
 
     include Celluloid::Notifications
     include MB::Logging
 
     def initialize(*args)
-      super
+      super(self.class.registry)
       log.info { "MotherBrain starting..." }
       @interrupt_mutex = Mutex.new
       @interrupted     = false

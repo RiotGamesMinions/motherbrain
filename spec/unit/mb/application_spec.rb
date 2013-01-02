@@ -4,6 +4,12 @@ describe MB::Application do
   describe "ClassMethods" do
     subject { described_class }
 
+    describe "::registry" do
+      it "returns an instance of Celluloid::Registry" do
+        subject.registry.should be_a(Celluloid::Registry)
+      end
+    end
+
     describe "::provisioner_manager" do
       it "returns an instance of MB::Provisioner::Manager" do
         subject.provisioner_manager.should be_a(MB::Provisioner::Manager)
