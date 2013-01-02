@@ -31,6 +31,12 @@ describe MB::ApiClient do
     end
   end
 
+  describe "#environment" do
+    it "returns an instance of MB::ApiClient::EnvironmentResource" do
+      subject.environment.should be_a(MB::ApiClient::EnvironmentResource)
+    end
+  end  
+
   describe "#job" do
     it "returns an instance of MB::ApiClient::JobResource" do
       subject.job.should be_a(MB::ApiClient::JobResource)
