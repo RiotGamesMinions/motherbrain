@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe MB::REST::Gateway do
+describe MB::RestGateway do
   include Rack::Test::Methods
 
-  before(:all) { @gateway = MB::REST::Gateway.new }
+  before(:all) { @gateway = MB::RestGateway.new }
   after(:all) { @gateway.terminate }
 
   let(:app) { @gateway.rack_app }
