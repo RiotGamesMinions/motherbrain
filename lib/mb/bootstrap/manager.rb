@@ -7,7 +7,7 @@ module MotherBrain
         #
         # @return [Celluloid::Actor(Bootstrap::Manager)]
         def instance
-          Celluloid::Actor[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
+          MB::Application[:bootstrap_manager] or raise Celluloid::DeadActorError, "bootstrap manager not running"
         end
       end
 

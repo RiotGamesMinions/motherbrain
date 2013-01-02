@@ -6,7 +6,7 @@ module MotherBrain
     class << self
       # @return [Locks::Manager]
       def manager
-        Celluloid::Actor[:lock_manager] or raise Celluloid::DeadActorError, "lock manager actor not running"
+        MB::Application[:lock_manager] or raise Celluloid::DeadActorError, "lock manager actor not running"
       end
     end
 
