@@ -1,5 +1,5 @@
 require 'grape'
-require 'mb/rest/validators'
+require 'mb/api_validators'
 
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
