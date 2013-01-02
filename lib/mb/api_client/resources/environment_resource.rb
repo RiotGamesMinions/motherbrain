@@ -3,25 +3,27 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     class EnvironmentResource < ApiClient::Resource
       # @param [String] id
+      #   name of the environment to update
       # @param [String] plugin
+      #   name of the plugin to use
       # @param [Bootstrap::Manifest] manifest
       #
       # @option options [String] :version
+      #   version of the plugin to use
       # @option options [Boolean] :force
       # @option options [Array] :hints
       def bootstrap(id, plugin, manifest, options = {})
         body = {
           manifest: manifest,
-          environment: id
+          plugin: {
+            name: plugin,
+            version: options[:version]
+          },
+          force: options[:force],
+          hints: options[:hints]
         }
 
-        if options[:version].nil?
-          json_post("/plugins/#{plugin}/bootstrap.json", MultiJson.encode(body))
-        else
-          version = options[:version].gsub('.', '_')
-          body = body.merge(options.slice(:force, :hints))
-          json_post("/plugins/#{plugin}/#{version}/bootstrap.json", MultiJson.encode(body))
-        end
+        json_put("/environments/#{id}.json", MultiJson.encode(body))
       end
 
       # @param [String] id
@@ -30,22 +32,23 @@ module MotherBrain
       end
 
       # @param [String] id
+      #   name of the environment to create
       # @param [String] plugin
+      #   name of the plugin to use
       # @param [Provisioner::Manifest] manifest
       #
       # @option options [String] :version
+      #   version of the plugin to use
       def provision(id, plugin, manifest, options = {})
         body = {
           manifest: manifest,
-          environment: id
+          plugin: {
+            name: plugin,
+            version: options[:version]
+          }
         }
-
-        if options[:version].nil?
-          json_post("/plugins/#{plugin}/provision.json", MultiJson.encode(body))
-        else
-          version = options[:version].gsub('.', '_')
-          json_post("/plugins/#{plugin}/#{version}/provision.json", MultiJson.encode(body))
-        end
+        
+        json_post("/environments/#{id}.json", MultiJson.encode(body))
       end
     end
   end

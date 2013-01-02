@@ -112,10 +112,55 @@ module MotherBrain
     resource :environments do
       desc "destroy a provisioned environment"
       params do
-        requires :name, type: String, desc: "environment name"
+        requires :id, type: String, desc: "environment name"
       end
-      delete ':name' do
-        provisioner.destroy(params[:name])
+      delete ':id' do
+        provisioner.destroy(params[:id])
+      end
+
+      desc "create (provision) a new cluster of nodes"
+      params do
+        requires :id, type: String, desc: "environment name"
+        requires :manifest, desc: "a Hash representation of the node group to create"
+        group :plugin do
+          requires :name, type: String, desc: "name of the plugin to use"
+          optional :version, sem_ver: true, desc: "version of the plugin to use"
+        end
+      end
+      post ':id' do
+        plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
+        manifest = Provisioner::Manifest.from_hash(params[:manifest].to_hash)
+        manifest.validate!(plugin)
+
+        provisioner.provision(
+          params[:id].freeze,
+          manifest.freeze,
+          plugin.freeze
+        )
+      end
+
+      desc "update (bootstrap) an existing cluster of nodes"
+      params do
+        requires :id, type: String, desc: "environment name"
+        requires :manifest, desc: "a Hash representation of the node group to update"
+        group :plugin do
+          requires :name, type: String, desc: "name of the plugin to use"
+          optional :version, sem_ver: true, desc: "version of the plugin to use"
+        end
+        optional :force, type: Boolean
+        optional :hints
+      end
+      put ':id' do
+        plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
+        manifest = Bootstrap::Manifest.from_hash(params[:manifest].to_hash)
+        manifest.validate!(plugin)
+
+        bootstrapper.bootstrap(
+          params[:id].freeze,
+          manifest.freeze,
+          plugin.freeze,
+          params.slice(:force, :bootstrap_proxy, :hints).freeze
+        )
       end
     end
 
@@ -141,45 +186,6 @@ module MotherBrain
         find_plugin!(params[:name])
       end
 
-      desc "provision a cluster of nodes using the latest version of the given plugin"
-      params do
-        requires :name, type: String, desc: "plugin name"
-        requires :environment, type: String, desc: "name of the environment to create"
-        requires :manifest, desc: "description of the node group to create"
-      end
-      post ':name/provision' do
-        plugin   = find_plugin!(params[:name])
-        manifest = Provisioner::Manifest.from_hash(params[:manifest].to_hash)
-        manifest.validate!(plugin)
-
-        provisioner.provision(
-          params[:environment].freeze,
-          manifest.freeze,
-          plugin.freeze
-        )
-      end
-
-      desc "bootstrap a cluster of nodes using the latest version of the given plugin"
-      params do
-        requires :name, type: String, desc: "plugin name"
-        requires :environment, type: String, desc: "name of the environment to bootstrap"
-        requires :manifest, desc: "description of the node group to bootstrap"
-        optional :force, type: Boolean
-        optional :hints
-      end
-      post ':name/bootstrap' do
-        plugin   = find_plugin!(params[:name])
-        manifest = Bootstrap::Manifest.from_hash(params[:manifest].to_hash)
-        manifest.validate!(plugin)
-
-        bootstrapper.bootstrap(
-          params[:environment].freeze,
-          manifest.freeze,
-          plugin.freeze,
-          params.slice(:force, :bootstrap_proxy, :hints).freeze
-        )
-      end
-
       desc "display the plugin of the given name and version"
       params do
         requires :name, type: String, desc: "plugin name"
@@ -187,48 +193,6 @@ module MotherBrain
       end
       get ':name/:version' do
         find_plugin!(params[:name], params[:version])
-      end
-
-      desc "provision a cluster of nodes using the given version of the given plugin"
-      params do
-        requires :name, type: String, desc: "plugin name"
-        requires :version, sem_ver: true
-        requires :environment, type: String, desc: "name of the environment to create"
-        requires :manifest, desc: "description of the node group to create"
-      end
-      desc "provision a cluster of nodes using the given version of the given plugin"
-      post ':name/:version/provision' do
-        plugin   = find_plugin!(params[:name], params[:version])
-        manifest = Provisioner::Manifest.from_hash(params[:manifest].to_hash)
-        manifest.validate!(plugin)
-
-        provisioner.provision(
-          params[:environment].freeze,
-          manifest.freeze,
-          plugin.freeze
-        )
-      end
-
-      desc "bootstrap a cluster of nodes using the given version of the given plugin"
-      params do
-        requires :name, type: String, desc: "plugin name"
-        requires :version, sem_ver: true
-        requires :manifest, desc: "description of the node group to bootstrap"
-        optional :force, type: Boolean
-        optional :hints
-      end
-      desc "bootstrap a cluster of nodes using the given version of the given plugin"
-      post ':name/:version/bootstrap' do
-        plugin   = find_plugin!(params[:name], params[:version])
-        manifest = Bootstrap::Manifest.from_hash(params[:manifest].to_hash)
-        manifest.validate!(plugin)
-
-        bootstrapper.bootstrap(
-          params[:environment].freeze,
-          manifest.freeze,
-          plugin.freeze,
-          params.slice(:force, :bootstrap_proxy, :hints).freeze
-        )
       end
     end
 
