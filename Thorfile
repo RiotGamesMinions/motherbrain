@@ -37,7 +37,7 @@ class Default < Thor
 
   desc "routes", "Print all registered REST API routes"
   def routes
-    puts MB::REST::API.routes
+    puts MB::Api.routes
   end
 
   class Cucumber < Thor
