@@ -143,10 +143,6 @@ module MotherBrain
     attribute 'ef.api_key',
       type: String
 
-    attribute 'rest_client.url',
-      default: ApiClient::DEFAULT_URL,
-      type: String
-
     # Validate the instantiated config
     #
     # @raise [MB::InvalidConfig] if the given configuration is invalid
@@ -197,12 +193,6 @@ module MotherBrain
       {}.tap do |rest_opts|
         rest_opts[:host] = self.rest_gateway.host
         rest_opts[:port] = self.rest_gateway.port
-      end
-    end
-
-    def to_rest_client
-      {}.tap do |opts|
-        opts[:url] = self.rest_client.url
       end
     end
 
