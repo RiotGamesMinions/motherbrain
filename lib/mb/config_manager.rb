@@ -6,7 +6,7 @@ module MotherBrain
       #
       # @return [Celluloid::Actor(ConfigManager)]
       def instance
-        Celluloid::Actor[:config_manager] or raise Celluloid::DeadActorError, "config manager not running"
+        MB::Application[:config_manager] or raise Celluloid::DeadActorError, "config manager not running"
       end
     end
 

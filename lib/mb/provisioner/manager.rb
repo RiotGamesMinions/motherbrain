@@ -12,7 +12,7 @@ module MotherBrain
         #
         # @return [Celluloid::Actor(Provisioner::Manager)]
         def instance
-          Celluloid::Actor[:provisioner_manager] or raise Celluloid::DeadActorError, "provisioner manager not running"
+          MB::Application[:provisioner_manager] or raise Celluloid::DeadActorError, "provisioner manager not running"
         end
 
         # Returns a provisioner for the given ID. The default provisioner will be returned

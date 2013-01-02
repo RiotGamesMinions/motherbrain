@@ -6,7 +6,7 @@ module MotherBrain
       #
       # @return [Celluloid::Actor(JobManager)]
       def instance
-        Celluloid::Actor[:job_manager] or raise Celluloid::DeadActorError, "job manager not running"
+        MB::Application[:job_manager] or raise Celluloid::DeadActorError, "job manager not running"
       end
     end
 
