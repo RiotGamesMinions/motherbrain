@@ -35,7 +35,7 @@ module MotherBrain
       # @option options [Integer] :workers (10)
       def initialize(options = {})
         @options       = DEFAULT_OPTIONS.merge(options)
-        @options[:app] = REST::API.new
+        @options[:app] = MB::Api.new
 
         @handler = ::Rack::Handler::Reel.new(@options)
         @pool = ::Reel::RackWorker.pool_link(size: @options[:workers], args: [@handler])

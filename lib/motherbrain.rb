@@ -24,6 +24,7 @@ require 'mb/errors'
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
   autoload :AbstractGear, 'mb/abstract_gear'
+  autoload :Api, 'mb/api'
   autoload :ApiClient, 'mb/api_client'
   autoload :Application, 'mb/application'
   autoload :Bootstrap, 'mb/bootstrap'
