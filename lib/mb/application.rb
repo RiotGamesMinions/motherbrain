@@ -57,7 +57,7 @@ module MotherBrain
         group.supervise_as :upgrade_manager, Upgrade::Manager
 
         if config.rest_gateway.enable
-          group.supervise_as :rest_gateway, REST::Gateway, config.to_rest_gateway
+          group.supervise_as :rest_gateway, RestGateway, config.to_rest_gateway
         end
 
         group

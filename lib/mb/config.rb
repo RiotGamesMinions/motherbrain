@@ -130,11 +130,11 @@ module MotherBrain
       type: Boolean
 
     attribute 'rest_gateway.host',
-      default: REST::Gateway::DEFAULT_OPTIONS[:host],
+      default: RestGateway::DEFAULT_OPTIONS[:host],
       type: String
 
     attribute 'rest_gateway.port',
-      default: REST::Gateway::DEFAULT_OPTIONS[:port],
+      default: RestGateway::DEFAULT_OPTIONS[:port],
       type: Integer
 
     attribute 'ef.api_url',
