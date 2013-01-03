@@ -36,6 +36,7 @@ module MotherBrain
         id: id,
         type: type,
         state: state,
+        status: status,
         result: result,
         time_start: time_start,
         time_end: time_end
@@ -52,6 +53,7 @@ module MotherBrain
 
     private
 
+      # @param [Job] job
       def mass_assign(job)
         @result     = job.result
         @state      = job.state
