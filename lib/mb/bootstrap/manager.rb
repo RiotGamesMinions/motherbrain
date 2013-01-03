@@ -72,11 +72,10 @@ module MotherBrain
         options = options.reverse_merge(
           hints: Hash.new,
           bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
-          force: false,
-          job: Job.new(:bootstrap)
+          force: false
         )
         options[:environment] = environment
-        job = options[:job]
+        job = options[:job] || Job.new(:bootstrap)
 
         async.start(environment, manifest, plugin, job, options)
 
@@ -131,9 +130,6 @@ module MotherBrain
         end
 
         job.report_success
-      rescue => error
-        log.fatal { "unknown error occured: #{error}"}
-        job.report_failure(error)
       end
 
       # Concurrently bootstrap a grouped collection of nodes from a manifest and return
