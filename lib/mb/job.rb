@@ -143,6 +143,11 @@ module MotherBrain
       JobManager.instance.complete_job(Actor.current)
     end
 
+    def to_s
+      "#<Job @type=#{type.inspect} @machine.state=#{state.inspect}>"
+    end
+    alias_method :inspect, :to_s
+
     private
 
       attr_reader :machine
