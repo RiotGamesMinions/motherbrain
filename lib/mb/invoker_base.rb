@@ -17,6 +17,11 @@ module MotherBrain
         level = Logger::WARN
         level = Logger::INFO if options[:verbose]
         level = Logger::DEBUG if options[:debug]
+
+        if (options[:verbose] || options[:debug]) && options[:logfile].nil?
+          options[:logfile] = STDOUT
+        end
+
         MB::Logging.setup(level: level, location: options[:logfile])
 
         config.rest_gateway.enable = false
@@ -37,7 +42,7 @@ module MotherBrain
     def initialize(args = [], options = {}, config = {})
       super
       unless NOCONFIG_TASKS.include? config[:current_task].try(:name)
-        @config = self.class.configure(self.options)
+        @config = self.class.configure(self.options.dup)
       end
     end
 

@@ -6,7 +6,7 @@ module MotherBrain
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
         if args.any? and (args & InvokerBase::NOCONFIG_TASKS).empty?
-          app_config = configure(opts)
+          app_config = configure(opts.dup)
           app_config.validate!
           MB::Application.run!(app_config)
 
