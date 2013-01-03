@@ -7,7 +7,6 @@ describe MB::Bootstrap::Manifest do
     describe "::from_provisioner" do
       let(:provisioner_manifest) do
         MB::Provisioner::Manifest.new(
-          '/tmp/manifest',
           "m1.large" => {
             "activemq::master" => 2
           },
@@ -68,7 +67,6 @@ describe MB::Bootstrap::Manifest do
   describe "::validate!" do
     subject do
       described_class.new(
-        nil,
         "activemq::master" => [
           "amq1.riotgames.com"
         ],
@@ -107,7 +105,6 @@ describe MB::Bootstrap::Manifest do
     context "when manifest contains a node group that is not part of the plugin" do
       subject do
         described_class.new(
-          nil,
           "not::defined" => [
             "one.riotgames.com"
           ]
@@ -127,7 +124,6 @@ describe MB::Bootstrap::Manifest do
     context "when a key is not in proper node group format: '{component}::{group}'" do
       subject do
         described_class.new(
-          nil,
           "activemq" => [
             "amq1.riotgames.com"
           ],

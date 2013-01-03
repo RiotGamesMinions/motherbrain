@@ -86,7 +86,7 @@ module MotherBrain
       end
       post ':id' do
         plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
-        manifest = Provisioner::Manifest.from_hash(params[:manifest].to_hash)
+        manifest = Provisioner::Manifest.new(params[:manifest])
         manifest.validate!(plugin)
 
         provisioner.provision(
@@ -109,7 +109,7 @@ module MotherBrain
       end
       put ':id' do
         plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
-        manifest = Bootstrap::Manifest.from_hash(params[:manifest].to_hash)
+        manifest = Bootstrap::Manifest.new(params[:manifest])
         manifest.validate!(plugin)
 
         bootstrapper.bootstrap(

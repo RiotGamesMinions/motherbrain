@@ -24,7 +24,7 @@ module MotherBrain
         def from_provisioner(nodes, manifest, path = nil)
           nodes, manifest = nodes.dup, manifest.dup
 
-          new(path).tap do |boot_manifest|
+          obj = new.tap do |boot_manifest|
             manifest.each_pair do |instance_type, groups|
               groups.each_pair do |name, count|
                 boot_manifest[name] = Array.new
@@ -37,6 +37,8 @@ module MotherBrain
               end
             end
           end
+          obj.path = path
+          obj
         end
 
         # Validates that the instance of manifest describes a layout for the given routine
