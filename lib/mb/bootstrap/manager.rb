@@ -15,16 +15,6 @@ module MotherBrain
       include MB::Logging
       include MB::Locks
 
-      # Required options for {#bootstrap}
-      REQUIRED_OPTS = [
-        :server_url,
-        :client_name,
-        :client_key,
-        :validator_client,
-        :validator_path,
-        :ssh
-      ].freeze
-
       def initialize
         log.info { "Bootstrap Manager starting..." }
       end
