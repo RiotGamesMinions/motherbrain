@@ -107,7 +107,7 @@ describe MB::Provisioner::Manifest do
     end
   end
 
-  subject { described_class.new(nil, valid_manifest) }
+  subject { described_class.new(valid_manifest) }
 
   describe "#node_count" do
     it "returns the number of nodes expected to be created" do

@@ -10,7 +10,9 @@ module MotherBrain
       def from_file(path)
         path = File.expand_path(path.to_s)
         data = File.read(path)
-        new(path).from_json(data)
+        obj = new().from_json(data)
+        obj.path = path
+        obj
       rescue Errno::ENOENT
         raise ManifestNotFound, "No manifest found at: '#{path}'"
       end
@@ -34,9 +36,7 @@ module MotherBrain
     attr_accessor :path
 
     # @param [#to_s] path
-    def initialize(path = nil, attributes = Hash.new)
-      @path = path.to_s
-
+    def initialize(attributes = Hash.new)
       unless attributes.nil? || attributes.empty?
         from_hash(attributes)
       end
@@ -64,10 +64,14 @@ module MotherBrain
       self
     end
 
+    # @param [String] path
+    #
     # @raise [MB::InternalError] if the path attribute is nil or an empty string
     #
     # @return [Provisioner::Manifest]
-    def save
+    def save(path = nil)
+      self.path = path || self.path
+
       unless self.path.present?
         raise InternalError, "Cannot save manifest without a destination. Set the 'path' attribute on your object."
       end
