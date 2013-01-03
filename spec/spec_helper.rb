@@ -41,6 +41,9 @@ def setup_rspec
             api_key: "asdf",
             api_url: "https://ef.riotgames.com"
           },
+          rest_gateway: {
+            port: 1985
+          },
           plugin_paths: Set.new
         }
       )
