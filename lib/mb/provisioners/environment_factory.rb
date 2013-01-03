@@ -128,7 +128,7 @@ module MotherBrain
             sleep 0.1
           end
         end
-      rescue EF::REST::Error => e
+      rescue UnexpectedProvisionCount, EF::REST::Error => e
         log.fatal { "an error occured: #{e}" }
         job.report_failure(e)
       rescue => e
