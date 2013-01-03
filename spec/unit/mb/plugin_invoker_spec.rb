@@ -8,7 +8,7 @@ describe MotherBrain::PluginInvoker do
 
     let(:commands) do
       [
-        double('command_one', name: "start", description: "start stuff")
+        double('command_one', name: "start", description: "start stuff", execute: -> {})
       ]
     end
 
