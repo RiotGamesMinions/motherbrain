@@ -28,7 +28,6 @@ describe MB::Bootstrap::Manager do
 
   let(:manifest) do
     MB::Bootstrap::Manifest.new(
-      nil,
       "activemq::master" => [
         "amq1.riotgames.com",
         "amq2.riotgames.com"

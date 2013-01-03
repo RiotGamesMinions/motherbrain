@@ -31,14 +31,24 @@ JSON
     subject { described_class }
 
     describe "::new" do
-      it "assigns the given path to the path attribute" do
-        subject.new('/tmp/path').path.should eql('/tmp/path')
-      end
-
       it "assigns the given attributes to self" do
         attributes = { "m1.large" => { "activemq::master" => 1 } }
 
-        subject.new(nil, attributes).should eql(attributes)
+        subject.new(attributes).should eql(attributes)
+      end
+
+      it "has a key for each key in the json" do
+        parsed = subject.new(valid_hash)
+
+        parsed.should have(2).items
+        parsed.should have_key("m1.large")
+        parsed.should have_key("m1.small")
+      end
+
+      context "given an empty hash" do
+        it "returns an empty Manifest" do
+          subject.new(Hash.new).should be_empty
+        end
       end
     end
 
@@ -49,10 +59,6 @@ JSON
     describe "::from_json" do
       pending
     end
-  end
-
-  describe "#path" do
-    it { subject.path.should be_a(String) }
   end
 
   describe "#from_json" do
@@ -79,26 +85,6 @@ JSON
         expect {
           subject.from_json("sdf")
         }.to raise_error(MB::InvalidJSONManifest)
-      end
-    end
-  end
-
-  describe "#from_hash" do
-    it "returns self" do
-      subject.from_hash(valid_hash).should eql(subject)
-    end
-
-    it "has a key for each key in the json" do
-      parsed = subject.from_hash(valid_hash)
-
-      parsed.should have(2).items
-      parsed.should have_key("m1.large")
-      parsed.should have_key("m1.small")
-    end
-
-    context "given an empty hash" do
-      it "returns an empty Manifest" do
-        subject.from_hash(Hash.new).should be_empty
       end
     end
   end
