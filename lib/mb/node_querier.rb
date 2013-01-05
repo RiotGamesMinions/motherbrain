@@ -68,10 +68,19 @@ module MotherBrain
     def copy_file(local_file, remote_file, host, options = {})
       options                  = options.reverse_merge(Application.config.slice(:ssh))
       options[:ssh][:paranoid] = false
-      options[:ssh].slice!(*Net::SSH::VALID_OPTIONS)
+
+      scp_options = options.dup
+      scp_options[:ssh] = scp_options[:ssh].slice(*Net::SSH::VALID_OPTIONS)
 
       MB.log.debug "Copying file '#{local_file}' to '#{host}:#{remote_file}'"
-      Net::SCP.upload!(host, nil, local_file, remote_file, options)
+
+      if options[:ssh][:sudo]
+        tmp_location = "/home/#{options[:ssh][:user]}/#{File.basename(remote_file)}"
+        Net::SCP.upload!(host, nil, local_file, tmp_location, scp_options)
+        ssh_command(host, "mv #{tmp_location} #{remote_file}", options)
+      else
+        Net::SCP.upload!(host, nil, local_file, remote_file, scp_options)
+      end
     end
 
     # Write the given data to the filepath on the target host
