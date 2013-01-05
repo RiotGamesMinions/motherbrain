@@ -57,7 +57,9 @@ module MotherBrain
       def final_status(job)
         clear_line
 
-        puts "\r#{SPACE * spinner.next.length} [#{job.type}] #{job.state.to_s.capitalize}"
+        msg = "\r#{SPACE * spinner.next.length} [#{job.type}] #{job.state.to_s.capitalize}"
+        msg << ": #{job.result}" unless job.result.nil?
+        puts msg
       end
 
       # @return [Enumerator]

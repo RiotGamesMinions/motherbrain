@@ -73,6 +73,7 @@ module MotherBrain
     #
     # @return [Job]
     def report_failure(result = nil, options = {})
+      log.fatal { "Job (#{id}) failure: #{result}" }
       transition(:failure, result, options)
     end
 
@@ -83,6 +84,7 @@ module MotherBrain
     #
     # @return [Job]
     def report_pending(result = nil, options = {})
+      log.debug { "Job (#{id}) pending: #{result}" }
       transition(:pending, result, options)
     end
 
@@ -93,6 +95,7 @@ module MotherBrain
     #
     # @return [Job]
     def report_running(result = nil, options = {})
+      log.debug { "Job (#{id}) running: #{result}" }
       transition(:running, result, options)
     end
 
@@ -103,6 +106,7 @@ module MotherBrain
     #
     # @return [Job]
     def report_success(result = nil, options = {})
+      log.debug { "Job (#{id}) success: #{result}" }
       transition(:success, result, options)
     end
 
