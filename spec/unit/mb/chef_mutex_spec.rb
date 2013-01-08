@@ -6,7 +6,6 @@ describe MB::ChefMutex do
   let(:chef_mutex) { klass.new(options.merge lockset) }
 
   let(:client_name) { "johndoe" }
-  let(:process_id) { 12345 }
   let(:lockset) { { chef_environment: "my_environment" } }
   let(:options) { Hash.new }
 
@@ -186,6 +185,41 @@ describe MB::ChefMutex do
         )
 
         unlock
+      end
+    end
+  end
+
+  describe "#our_lock?" do
+    before do
+      chef_mutex.stub(:client_name).and_return("johndoe")
+    end
+
+    subject(:our_lock?) { chef_mutex.our_lock?(current_lock) }
+    let(:current_lock) { { id: "_chef_environment_:my_environment"} }
+
+    context "when current_lock is not from our client" do
+      before { current_lock['client_name'] = "janedoe" }
+
+      it { should be_false }
+    end
+
+    context "when current_lock is from our client" do
+      before { current_lock['client_name'] = "johndoe" }
+
+      context "when process_id is our process" do
+        before do
+          Process.stub(:pid).and_return(12345)
+          current_lock['process_id'] = 12345
+        end
+        it { should be_true }
+      end
+
+      context "when process_id is not our process" do
+        before do
+          Process.stub(:pid).and_return(12345)
+          current_lock['process_id'] = 23456
+        end
+        it { should be_false }
       end
     end
   end
