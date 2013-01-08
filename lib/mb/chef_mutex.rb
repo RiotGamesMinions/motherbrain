@@ -111,7 +111,7 @@ module MotherBrain
         current_lock = read
 
         raise ResourceLocked,
-          "Resource #{current_lock['id']} locked by #{current_lock['client_name']} since #{current_lock['time']}\n"
+          "Resource #{current_lock['id']} locked by #{current_lock['client_name']} since #{current_lock['time']} (PID #{current_lock['process_id']})\n"
       end
 
       yield
@@ -139,12 +139,22 @@ module MotherBrain
 
     private
 
+      # Check to see if the passed in lock was created by us
+      #
+      # @param [Hash] current_lock the lock data obtained from #read
+      # @return [Boolean]
+      def our_lock?(current_lock)
+        return nil unless current_lock
+        return false unless current_lock["client_name"] == client_name
+        return false unless current_lock["process_id"] == Process.pid
+        true
+      end
+
       # @return [Boolean]
       def attempt_lock
         unless self.force
           current_lock = read
-
-          return current_lock["client_name"] == client_name if current_lock
+          return our_lock?(current_lock) if current_lock
         end
 
         write
@@ -155,8 +165,7 @@ module MotherBrain
         unless self.force
           current_lock = read
 
-          return unless current_lock
-          return unless current_lock["client_name"] == client_name
+          return unless current_lock && our_lock?(current_lock)
         end
 
         delete
@@ -235,6 +244,7 @@ module MotherBrain
           type: type,
           name: name,
           client_name: client_name,
+          process_id: Process.pid,
           time: Time.now
         ).save
 
