@@ -6,6 +6,7 @@ describe MB::ChefMutex do
   let(:chef_mutex) { klass.new(options.merge lockset) }
 
   let(:client_name) { "johndoe" }
+  let(:process_id) { 12345 }
   let(:lockset) { { chef_environment: "my_environment" } }
   let(:options) { Hash.new }
 

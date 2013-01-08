@@ -111,7 +111,7 @@ module MotherBrain
         current_lock = read
 
         raise ResourceLocked,
-          "Resource #{current_lock['id']} locked by #{current_lock['client_name']} since #{current_lock['time']}\n"
+          "Resource #{current_lock['id']} locked by #{current_lock['client_name']} since #{current_lock['time']} (PID #{current_lock['process_id']})\n"
       end
 
       yield
@@ -143,8 +143,10 @@ module MotherBrain
       def attempt_lock
         unless self.force
           current_lock = read
-
-          return current_lock["client_name"] == client_name if current_lock
+          if current_lock
+            return (current_lock["client_name"] == client_name) &&
+              (current_lock["process_id"] == Process.pid)
+          end
         end
 
         write
@@ -157,6 +159,7 @@ module MotherBrain
 
           return unless current_lock
           return unless current_lock["client_name"] == client_name
+          return unless current_lock["process_id"] == Process.pid
         end
 
         delete
@@ -235,6 +238,7 @@ module MotherBrain
           type: type,
           name: name,
           client_name: client_name,
+          process_id: Process.pid,
           time: Time.now
         ).save
 
