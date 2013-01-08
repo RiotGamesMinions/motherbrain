@@ -137,18 +137,18 @@ module MotherBrain
       attempt_unlock
     end
 
-    # Check to see if the passed in lock was created by us
-    #
-    # @param [Hash] current_lock the lock data obtained from #read
-    # @return [Boolean]
-    def our_lock?(current_lock)
-      return nil unless current_lock
-      return false unless current_lock["client_name"] == client_name
-      return false unless current_lock["process_id"] == Process.pid
-      true
-    end
-
     private
+
+      # Check to see if the passed in lock was created by us
+      #
+      # @param [Hash] current_lock the lock data obtained from #read
+      # @return [Boolean]
+      def our_lock?(current_lock)
+        return nil unless current_lock
+        return false unless current_lock["client_name"] == client_name
+        return false unless current_lock["process_id"] == Process.pid
+        true
+      end
 
       # @return [Boolean]
       def attempt_lock

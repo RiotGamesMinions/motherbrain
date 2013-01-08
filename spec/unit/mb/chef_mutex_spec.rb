@@ -191,7 +191,12 @@ describe MB::ChefMutex do
 
   describe "#our_lock?" do
     before do
+      chef_mutex.class.class_eval { public :our_lock? }
       chef_mutex.stub(:client_name).and_return("johndoe")
+    end
+
+    after do
+      chef_mutex.class.class_eval { private :our_lock? }
     end
 
     subject(:our_lock?) { chef_mutex.our_lock?(current_lock) }
