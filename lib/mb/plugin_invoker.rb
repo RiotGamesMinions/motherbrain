@@ -20,7 +20,7 @@ module MotherBrain
         end
 
         plugin.components.each do |component|
-          register_component MB::ComponentInvoker.fabricate(klass, component)
+          klass.register_component MB::ComponentInvoker.fabricate(klass, component)
         end
 
         klass.class_eval do
