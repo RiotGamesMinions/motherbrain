@@ -1,9 +1,24 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class CommandRunner
+    class InvokableComponent
+      def initialize(environment, component)
+        @environment = environment
+        @component   = component
+      end
+
+      def invoke(command, *args)
+        @component.command(command).invoke(@environment, args)
+      end
+    end
+
+    def component(component_name)
+      InvokableComponent.new(environment, @scope.component(component_name))
+    end
+    
     attr_reader :environment
     attr_reader :scope
-
+    
     # @param [String] environment
     #   the environment to run this command on
     # @param [Object] scope
