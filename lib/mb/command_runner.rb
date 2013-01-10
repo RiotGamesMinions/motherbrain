@@ -1,21 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class CommandRunner
-    class InvokableComponent
-      def initialize(environment, component)
-        @environment = environment
-        @component   = component
-      end
 
-      def invoke(command, *args)
-        @component.command(command).invoke(@environment, args)
-      end
-    end
-
-    def component(component_name)
-      InvokableComponent.new(environment, @scope.component(component_name))
-    end
-    
     attr_reader :environment
     attr_reader :scope
     
@@ -122,6 +108,17 @@ module MotherBrain
       end
     end
 
+    # Select a component for the purposes of invoking a command.
+    # NB: returns a proxy object
+    #
+    # @param component_name the name of the component you want to
+    #    invoke
+    # @return [InvokableComponent] proxy for the actual component,
+    #    only useful if you call #invoke on it
+    def component(component_name)
+      InvokableComponent.new(environment, @scope.component(component_name))
+    end
+
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
@@ -150,6 +147,29 @@ module MotherBrain
       protected
 
         attr_reader :actions
+    end
+
+    # Proxy for invoking components in the DSL
+    #
+    # @author Michael Ivey <michael.ivey@riotgames.com>
+    # @api private
+    class InvokableComponent
+      attr_reader :environment
+      attr_reader :component
+
+      # @param [String] environment the environment on which to
+      #   eventually invoke a command
+      # @param [Component] component the component we'll be invoking
+      def initialize(environment, component)
+        @environment = environment
+        @component   = component
+      end
+
+      # @param [String] command the command to invoke in the component
+      # @param [Array] args additional arguments for the command
+      def invoke(command, *args)
+        component.command(command).invoke(environment, args)
+      end
     end
   end
 end
