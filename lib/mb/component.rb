@@ -68,9 +68,11 @@ module MotherBrain
 
     # Run a command of the given name on the component.
     #
+    # @param [String] environment
     # @param [String, Symbol] name
-    def invoke(name)
-      self.command(name).invoke
+    # @param [Array] args
+    def invoke(environment, name, *args)
+      self.command(name).invoke(environment, args)
     end
 
     # Finds the nodes for the given environment for each {Group} and groups them

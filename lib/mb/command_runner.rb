@@ -167,7 +167,7 @@ module MotherBrain
       # @param [String] command the command to invoke in the component
       # @param [Array] args additional arguments for the command
       def invoke(command, *args)
-        component.command(command).invoke(environment, args)
+        component.invoke(environment, command, args)
       end
     end
   end
