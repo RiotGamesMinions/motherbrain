@@ -1,10 +1,9 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class CommandRunner
-
     attr_reader :environment
     attr_reader :scope
-    
+
     # @param [String] environment
     #   the environment to run this command on
     # @param [Object] scope
