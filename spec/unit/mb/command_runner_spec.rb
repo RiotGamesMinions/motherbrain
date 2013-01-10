@@ -198,9 +198,7 @@ describe MB::CommandRunner do
     end
 
     it "invokes the real component" do
-      command = double('command')
-      component.should_receive(:command).with("bar").and_return(command)
-      command.should_receive(:invoke).with(environment, [])
+      component.should_receive(:invoke).with(environment, "bar", [])
       proxy.invoke("bar")
     end
   end
