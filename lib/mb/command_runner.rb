@@ -110,8 +110,8 @@ module MotherBrain
     # Select a component for the purposes of invoking a command.
     # NB: returns a proxy object
     #
-    # @param component_name the name of the component you want to
-    #    invoke
+    # @param [String] component_name the name of the component you want to
+    #    invoke a command on
     # @return [InvokableComponent] proxy for the actual component,
     #    only useful if you call #invoke on it
     def component(component_name)
