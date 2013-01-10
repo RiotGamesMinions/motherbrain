@@ -180,4 +180,28 @@ describe MB::CommandRunner do
       end
     end
   end
+
+  describe "#component" do
+    let(:component) { double('component', name: "foo") }
+    let(:proxy) { subject.new(environment, scope, Proc.new {}).component("foo") }
+
+    before do
+      scope.should_receive(:component).with("foo").and_return(component)
+    end
+
+    it "returns a proxy" do
+      proxy.should be_an_instance_of(MB::CommandRunner::InvokableComponent)
+    end
+
+    it "sets the component on the proxy" do
+      proxy.component.should eq(component)
+    end
+
+    it "invokes the real component" do
+      command = double('command')
+      component.should_receive(:command).with("bar").and_return(command)
+      command.should_receive(:invoke).with(environment, [])
+      proxy.invoke("bar")
+    end
+  end
 end
