@@ -31,6 +31,7 @@ module MotherBrain
   autoload :ApiValidators, 'mb/api_validators'
   autoload :Application, 'mb/application'
   autoload :AuthManager, 'mb/auth_manager'
+  autoload :AuthSecret, 'mb/auth_secret'
   autoload :Bootstrap, 'mb/bootstrap'
   autoload :ChefMutex, 'mb/chef_mutex'
   autoload :CleanRoomBase, 'mb/clean_room_base'
