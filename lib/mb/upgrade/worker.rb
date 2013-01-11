@@ -83,6 +83,7 @@ module MotherBrain
       private
 
         def_delegator :plugin, :component!
+        def_delegator :plugin, :components
 
         # @raise [EnvironmentNotFound]
         def assert_environment_exists
@@ -104,11 +105,6 @@ module MotherBrain
         # @return [Hash]
         def component_versions
           options[:component_versions] || {}
-        end
-
-        # @return [Array<MotherBrain::Component>]
-        def components
-          plugin.components
         end
 
         # @return [Hash]
