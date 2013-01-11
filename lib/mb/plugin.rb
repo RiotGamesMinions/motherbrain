@@ -84,14 +84,14 @@ module MotherBrain
       self.class.key_for(self.name, self.version)
     end
 
-    # @param [String] name
+    # @param [#to_s] name
     #
     # @return [MB::Component, nil]
     def component(name)
-      components.find { |component| component.name == name }
+      components.find { |component| component.name == name.to_s }
     end
 
-    # @param [String] name
+    # @param [#to_s] name
     #
     # @raise [ComponentNotFound] if a component of the given name is not a part of this plugin
     #
@@ -110,14 +110,14 @@ module MotherBrain
     #
     # @return [Boolean]
     def has_component?(name)
-      component(name.to_s).present?
+      component(name).present?
     end
 
-    # @param [String] name
+    # @param [#to_s] name
     #
     # @return [MB::Command]
     def command(name)
-      command = commands.find { |command| command.name == name }
+      command = commands.find { |command| command.name == name.to_s }
 
       if command.nil?
         raise CommandNotFound, "Command '#{name}' not found on component '#{self.name}'"
