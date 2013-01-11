@@ -36,6 +36,14 @@ module MotherBrain
           end
 
           if plugin.bootstrap_routine.present?
+            method_option :component_versions,
+              type: :hash,
+              desc: "The component versions to set with override attributes",
+              aliases: "--components"
+            method_option :cookbook_versions,
+              type: :hash,
+              desc: "The cookbook versions to set on the environment",
+              aliases: "--cookbooks"
             method_option :force,
               type: :boolean,
               default: false,
@@ -55,6 +63,14 @@ module MotherBrain
               CliClient.new(job).display
             end
 
+            method_option :component_versions,
+              type: :hash,
+              desc: "The component versions to set with override attributes",
+              aliases: "--components"
+            method_option :cookbook_versions,
+              type: :hash,
+              desc: "The cookbook versions to set on the environment",
+              aliases: "--cookbooks"
             method_option :skip_bootstrap,
               type: :boolean,
               desc: "Nodes will be created and added to the Chef environment but not bootstrapped",
