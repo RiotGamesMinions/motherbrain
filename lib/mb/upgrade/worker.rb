@@ -82,6 +82,8 @@ module MotherBrain
 
       private
 
+        def_delegator :plugin, :component!
+
         # @raise [EnvironmentNotFound]
         def assert_environment_exists
           unless environment
@@ -97,22 +99,6 @@ module MotherBrain
         # @return [Ridley::Environment]
         def environment
           @environment ||= chef_connection.environment.find(environment_name)
-        end
-
-        # @param [String] component_name
-        #
-        # @return [MotherBrain::Component]
-        #
-        # @raise [ComponentNotFound]
-        def component(component_name)
-          result = components.find { |component| component.name == component_name }
-
-          unless result
-            raise ComponentNotFound,
-              "Component '#{component_name}' not found for plugin '#{plugin.name}'"
-          end
-
-          result
         end
 
         # @return [Hash]
@@ -213,7 +199,7 @@ module MotherBrain
         #
         # @raise [ComponentNotVersioned]
         def version_attribute(component_name)
-          result = component(component_name).version_attribute
+          result = component!(component_name).version_attribute
 
           unless result
             raise ComponentNotVersioned.new component_name

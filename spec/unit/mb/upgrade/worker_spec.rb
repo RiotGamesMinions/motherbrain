@@ -27,6 +27,7 @@ describe MB::Upgrade::Worker do
       save_environment: true,
       run_chef: true
     )
+    plugin.stub(:component!).with(component_name).and_return(component1)
   end
 
   its(:environment_name) { should == environment_name }
@@ -160,22 +161,6 @@ describe MB::Upgrade::Worker do
           assert_environment_exists
         }.should raise_error MB::EnvironmentNotFound
       end
-    end
-  end
-
-  describe "#component" do
-    subject(:component) { worker.send :component, component_name }
-
-    before do
-      worker.stub components: components
-    end
-
-    it { should == component1 }
-
-    context "with no components" do
-      let(:components) { [] }
-
-      it { -> { component }.should raise_error MB::ComponentNotFound }
     end
   end
 
