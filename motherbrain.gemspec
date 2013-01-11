@@ -29,4 +29,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'thor', '>= 0.16.0'
   s.add_runtime_dependency 'faraday'
   s.add_runtime_dependency 'ef-rest'
+  s.add_runtime_dependency 'bcrypt-ruby'
 end

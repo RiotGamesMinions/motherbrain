@@ -7,6 +7,8 @@ module MotherBrain
     helpers MB::Logging
     helpers MB::ApiHelpers
 
+    use ApiMiddleware::Auth
+
     format :json
 
     rescue_from Grape::Exceptions::ValidationError do |e|
