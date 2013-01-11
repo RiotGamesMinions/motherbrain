@@ -29,6 +29,10 @@ module MotherBrain
       #   a MotherBrain plugin with a bootstrap routine to follow
       #
       # @option options [MB::Job] :job
+      # @option options [Hash] :component_versions (Hash.new)
+      #   Hash of components and the versions to set them to
+      # @option options [Hash] :cookbook_versions (Hash.new)
+      #   Hash of cookbooks and the versions to set them to
       # @option options [Boolean] :force
       #   ignore and bypass any existing locks on an environment
       # @option options [Hash] :ssh
@@ -60,6 +64,8 @@ module MotherBrain
       #   URL to a proxy server to bootstrap through
       def bootstrap(environment, manifest, plugin, options = {})
         options = options.reverse_merge(
+          cookbook_versions: Hash.new,
+          component_versions: Hash.new,
           hints: Hash.new,
           bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
           force: false
