@@ -94,7 +94,7 @@ module MotherBrain
 
         # @return [Ridley::Connection]
         def chef_connection
-          @chef_connection ||= Application.ridley
+          Application.ridley
         end
 
         # @return [Ridley::Environment]
