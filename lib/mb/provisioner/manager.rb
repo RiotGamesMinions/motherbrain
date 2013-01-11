@@ -40,6 +40,8 @@ module MotherBrain
       end
 
       WORKER_OPTS = [
+        :component_versions,
+        :cookbook_versions,
         :skip_bootstrap
       ]
 
@@ -72,6 +74,10 @@ module MotherBrain
       # @param [MotherBrain::Plugin] plugin
       #   the plugin we are creating these nodes for
       #
+      # @option options [Hash] :component_versions
+      #   Hash of components and the versions to set them to
+      # @option options [Hash] :cookbook_versions
+      #   Hash of cookbooks and the versions to set them to
       # @option options [Boolean] :skip_bootstrap
       # @option options [#to_sym] :with
       #   id of provisioner to use
