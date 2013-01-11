@@ -118,6 +118,10 @@ module MotherBrain
       InvokableComponent.new(environment, scope.component(component_name))
     end
 
+    def command(command_name)
+      scope.command(command_name).invoke(environment, [])
+    end
+
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
