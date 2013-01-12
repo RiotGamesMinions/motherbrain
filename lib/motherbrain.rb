@@ -53,6 +53,7 @@ module MotherBrain
   autoload :JSONManifest, 'mb/json_manifest'
   autoload :Locks, 'mb/locks'
   autoload :Logging, 'mb/logging'
+  autoload :Mixin, 'mb/mixin'
   autoload :NodeQuerier, 'mb/node_querier'
   autoload :Plugin, 'mb/plugin'
   autoload :PluginInvoker, 'mb/plugin_invoker'

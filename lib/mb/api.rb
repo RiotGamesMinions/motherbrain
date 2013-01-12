@@ -83,6 +83,8 @@ module MotherBrain
           requires :name, type: String, desc: "name of the plugin to use"
           optional :version, sem_ver: true, desc: "version of the plugin to use"
         end
+        optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
+        optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
       end
       post ':id' do
         plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
@@ -92,7 +94,8 @@ module MotherBrain
         provisioner.provision(
           params[:id].freeze,
           manifest.freeze,
-          plugin.freeze
+          plugin.freeze,
+          params.slice(:component_versions, :cookbook_versions).freeze
         )
       end
 
@@ -104,6 +107,8 @@ module MotherBrain
           requires :name, type: String, desc: "name of the plugin to use"
           optional :version, sem_ver: true, desc: "version of the plugin to use"
         end
+        optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
+        optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
         optional :force, type: Boolean
         optional :hints
       end
@@ -116,7 +121,7 @@ module MotherBrain
           params[:id].freeze,
           manifest.freeze,
           plugin.freeze,
-          params.slice(:force, :bootstrap_proxy, :hints).freeze
+          params.slice(:component_versions, :cookbook_versions, :force, :bootstrap_proxy, :hints).freeze
         )
       end
     end
