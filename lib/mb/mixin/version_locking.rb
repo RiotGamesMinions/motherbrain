@@ -25,10 +25,11 @@ module MotherBrain
       def set_component_versions(env_id, plugin, component_versions)
         log.info "Setting component versions #{component_versions}"
 
-        override_attributes = {}.tap do |override_attributes|
-          component_versions.each do |component_name, version|
-            override_attributes[version_attribute(plugin, component_name)] = version
-          end
+        override_attributes = Hash.new
+
+        component_versions.each do |component_name, version|
+          version_hash = Hash.from_dotted_path(version_attribute(plugin, component_name), version)
+          override_attributes.deep_merge!(version_hash)
         end
 
         Application.ridley.sync do
