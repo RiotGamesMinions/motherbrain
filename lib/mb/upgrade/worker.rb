@@ -11,6 +11,7 @@ module MotherBrain
       include Celluloid
       include MB::Locks
       include MB::Logging
+      include MB::Mixin::VersionLocking
 
       # @return [String]
       attr_reader :environment_name
@@ -62,8 +63,15 @@ module MotherBrain
         assert_environment_exists
 
         chef_synchronize(chef_environment: environment_name, force: options[:force], job: job) do
-          set_component_versions if component_versions.any?
-          set_cookbook_versions if cookbook_versions.any?
+          if component_versions.any?
+            job.status = "Setting component versions"
+            set_component_versions(environment_name, plugin, component_versions)
+          end
+
+          if cookbook_versions.any?
+            job.status = "Setting cookbook versions"
+            set_cookbook_versions(environment_name, cookbook_versions)
+          end
 
           if component_versions.any? or cookbook_versions.any?
             run_chef if nodes.any?
@@ -82,12 +90,9 @@ module MotherBrain
 
       private
 
-        def_delegator :plugin, :component!
-        def_delegator :plugin, :components
-
         # @raise [EnvironmentNotFound]
         def assert_environment_exists
-          unless environment
+          unless chef_connection.environment.find(environment_name)
             raise EnvironmentNotFound, "Environment '#{environment_name}' not found"
           end
         end
@@ -95,11 +100,6 @@ module MotherBrain
         # @return [Ridley::Connection]
         def chef_connection
           Application.ridley
-        end
-
-        # @return [Ridley::Environment]
-        def environment
-          @environment ||= chef_connection.environment.find(environment_name)
         end
 
         # @return [Hash]
@@ -110,19 +110,6 @@ module MotherBrain
         # @return [Hash]
         def cookbook_versions
           options[:cookbook_versions] || {}
-        end
-
-        # @return [Hash]
-        def override_attributes
-          return @override_attributes if @override_attributes
-
-          @override_attributes = {}
-
-          component_versions.each do |component_name, version|
-            @override_attributes[version_attribute(component_name)] = version
-          end
-
-          @override_attributes
         end
 
         # @return [Array<String>]
@@ -151,59 +138,6 @@ module MotherBrain
           nodes.map { |node|
             Application.node_querier.future.chef_run(node)
           }.map(&:value)
-        end
-
-        def save_environment
-          environment.save
-
-          if cookbook_versions.any?
-            log.info "Cookbook versions are now #{environment.cookbook_versions}"
-          end
-
-          if component_versions.any?
-            log.info "Override attributes are now #{environment.override_attributes}"
-          end
-
-          @environment = nil
-        end
-
-        def set_component_versions
-          log.info "Setting component versions #{component_versions}"
-
-          set_override_attributes
-        end
-
-        def set_cookbook_versions
-          log.info "Setting cookbook versions #{cookbook_versions}"
-          job.status = "Setting cookbook versions"
-
-          environment.cookbook_versions.merge! cookbook_versions
-          save_environment
-        end
-
-        def set_override_attributes
-          log.info "Setting override attributes #{override_attributes}"
-          job.status = "Setting override attributes"
-
-          environment.override_attributes.merge! override_attributes
-          save_environment
-        end
-
-        # @param [String] component_name
-        #
-        # @return [String] the version attribute
-        #
-        # @raise [ComponentNotVersioned]
-        def version_attribute(component_name)
-          result = component!(component_name).version_attribute
-
-          unless result
-            raise ComponentNotVersioned.new component_name
-          end
-
-          log.info "Component '#{component_name}' versioned with '#{result}'"
-
-          result
         end
     end
   end

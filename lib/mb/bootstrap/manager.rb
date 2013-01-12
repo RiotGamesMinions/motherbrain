@@ -14,6 +14,7 @@ module MotherBrain
       include Celluloid
       include MB::Logging
       include MB::Locks
+      include MB::Mixin::VersionLocking
 
       def initialize
         log.info { "Bootstrap Manager starting..." }
@@ -29,6 +30,10 @@ module MotherBrain
       #   a MotherBrain plugin with a bootstrap routine to follow
       #
       # @option options [MB::Job] :job
+      # @option options [Hash] :component_versions (Hash.new)
+      #   Hash of components and the versions to set them to
+      # @option options [Hash] :cookbook_versions (Hash.new)
+      #   Hash of cookbooks and the versions to set them to
       # @option options [Boolean] :force
       #   ignore and bypass any existing locks on an environment
       # @option options [Hash] :ssh
@@ -60,6 +65,8 @@ module MotherBrain
       #   URL to a proxy server to bootstrap through
       def bootstrap(environment, manifest, plugin, options = {})
         options = options.reverse_merge(
+          cookbook_versions: Hash.new,
+          component_versions: Hash.new,
           hints: Hash.new,
           bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
           force: false
@@ -85,14 +92,12 @@ module MotherBrain
 
         manifest.validate!(plugin)
 
-        task_queue = plugin.bootstrap_routine.task_queue.dup
-
         unless Application.ridley.environment.find(environment)
           raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
         end
 
         log.info { "Starting bootstrap of nodes on: #{environment}" }
-        sequential_bootstrap(environment, manifest, task_queue, job, options)
+        sequential_bootstrap(environment, manifest, plugin, job, options)
       rescue => error
         log.fatal { "unknown error occured: #{error}"}
         job.report_failure(error)
@@ -105,13 +110,25 @@ module MotherBrain
       # @param [String] environment
       # @param [Bootstrap::Manifest] manifest
       #   manifest of nodes and what they should become
-      # @param [Array<Bootstrap::BootTask>] task_queue
+      # @param [MotherBrain::Plugin] plugin
       #   a MotherBrain plugin with a bootstrap routine to follow
       # @param [MotherBrain::Job] job
       #
       # @see #bootstrap for options
-      def sequential_bootstrap(environment, manifest, task_queue, job, options = {})
+      def sequential_bootstrap(environment, manifest, plugin, job, options = {})
+        task_queue = plugin.bootstrap_routine.task_queue.dup
+        
         chef_synchronize(chef_environment: environment, force: options[:force], job: job) do
+          if options[:component_versions].any?
+            job.status = "Setting component versions"
+            set_component_versions(environment, plugin, options[:component_versions])
+          end
+
+          if options[:cookbook_versions].any?
+            job.status = "Setting cookbook versions"
+            set_cookbook_versions(environment, options[:cookbook_versions])
+          end
+
           while tasks = task_queue.shift
             job.status = "Bootstrapping #{Array(tasks).collect(&:id).join(', ')}"
 
