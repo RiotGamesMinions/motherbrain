@@ -115,7 +115,11 @@ module MotherBrain
     # @return [InvokableComponent] proxy for the actual component,
     #    only useful if you call #invoke on it
     def component(component_name)
-      InvokableComponent.new(environment, @scope.component(component_name))
+      InvokableComponent.new(environment, scope.component(component_name))
+    end
+
+    def command(command_name)
+      scope.command(command_name).invoke(environment, [])
     end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
