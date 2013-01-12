@@ -20,7 +20,7 @@ describe MB::Upgrade::Worker do
 
   before do
     worker.stub(
-      environment: environment,
+      assert_environment_exists: true,
       nodes: nodes,
       set_component_versions: nil,
       set_cookbook_versions: nil,
@@ -57,7 +57,9 @@ describe MB::Upgrade::Worker do
     end
 
     context "when an environment does not exist" do
-      before { worker.stub(environment: nil) }
+      before do
+        worker.stub(:assert_environment_exists).and_raise(MB::EnvironmentNotFound)
+      end
 
       it "should set the job state to :failure" do
         run
@@ -144,48 +146,6 @@ describe MB::Upgrade::Worker do
     end
   end
 
-  describe "#assert_environment_exists" do
-    subject(:assert_environment_exists) {
-      worker.send :assert_environment_exists
-    }
-
-    it { should be_nil }
-
-    context "when the environment does not exist" do
-      before do
-        worker.stub environment: nil
-      end
-
-      it "raises an error" do
-        -> {
-          assert_environment_exists
-        }.should raise_error MB::EnvironmentNotFound
-      end
-    end
-  end
-
-  describe "#override_attributes" do
-    subject(:override_attributes) { worker.send :override_attributes }
-
-    let(:version_attribute) { "my.custom.version" }
-
-    before do
-      worker.stub component_versions: component_versions
-
-      worker.stub(
-        :version_attribute
-      ).with(
-        component_name
-      ).and_return(
-        version_attribute
-      )
-    end
-
-    it "returns a hash of version attributes and versions" do
-      should == { "my.custom.version" => component_versions[component_name]  }
-    end
-  end
-
   describe "#nodes" do
     pending "This should not be the responsibility of MB::Upgrade"
   end
@@ -207,84 +167,6 @@ describe MB::Upgrade::Worker do
       end
 
       run_chef
-    end
-  end
-
-  describe "#save_environment" do
-    subject(:save_environment) { worker.send :save_environment }
-
-    before do
-      worker.unstub :save_environment
-    end
-
-    it "saves the environment" do
-      environment.should_receive :save
-
-      save_environment
-    end
-  end
-
-  describe "#set_component_versions" do
-    subject(:set_component_versions) { worker.send :set_component_versions }
-
-    before do
-      worker.unstub :set_component_versions
-    end
-
-    it "sets the override attributes" do
-      worker.should_receive :set_override_attributes
-
-      set_component_versions
-    end
-  end
-
-  describe "#set_override_attributes" do
-    subject(:set_override_attributes) { worker.send :set_override_attributes }
-
-    before do
-      environment.stub override_attributes: {}
-    end
-
-    it "merges our override attributes" do
-      environment.override_attributes.should_receive(:merge!).with({})
-
-      set_override_attributes
-    end
-  end
-
-  describe "#set_cookbook_versions" do
-    subject(:set_cookbook_versions) { worker.send :set_cookbook_versions }
-
-    before do
-      worker.unstub :set_cookbook_versions
-
-      environment.stub cookbook_versions: {}
-    end
-
-    it "merges our cookbook versions" do
-      environment.cookbook_versions.should_receive(:merge!).with({})
-
-      set_cookbook_versions
-    end
-  end
-
-  describe "#version_attribute" do
-    subject(:version_attribute) { worker.send :version_attribute, component_name }
-
-    before do
-      plugin.stub components: components
-    end
-
-    it "raises an error" do
-      -> { version_attribute }.should raise_error MB::ComponentNotVersioned
-    end
-
-    context "with a component version" do
-      before do
-        component1.stub version_attribute: "my.custom.version"
-      end
-
-      it { should == "my.custom.version" }
     end
   end
 end
