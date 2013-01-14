@@ -32,7 +32,9 @@ class Default < Thor
   def ci
     ENV['CI'] = 'true' # Travis-CI also sets this, but set it here for local testing
     run "rspec --tag ~focus --color --format=progress spec"
+    exit $?.exitstatus unless $?.success?
     run "cucumber --format progress"
+    exit $?.exitstatus unless $?.success?
   end
 
   desc "routes", "Print all registered REST API routes"
