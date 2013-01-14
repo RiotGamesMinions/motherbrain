@@ -31,8 +31,8 @@ class Default < Thor
   desc "ci", "Run all tests"
   def ci
     ENV['CI'] = 'true' # Travis-CI also sets this, but set it here for local testing
-    run "rspec --tag ~focus --color --format=documentation spec"
-    run "cucumber --format pretty"
+    run "rspec --tag ~focus --color --format=progress spec"
+    run "cucumber --format progress"
   end
 
   desc "routes", "Print all registered REST API routes"
