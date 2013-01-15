@@ -296,10 +296,9 @@ describe MB::Config do
   describe "#to_ridley" do
     let(:config) do
       MB::Config.new.tap do |o|
-        o.chef.api_url = "https://api.opscode.com"
+        o.chef.api_url = "https://api.opscode.com/organizations/vialstudios"
         o.chef.api_client = "reset"
         o.chef.api_key = "/Users/reset/.chef/reset.pem"
-        o.chef.organization = "vialstudios"
         o.chef.encrypted_data_bag_secret_path = File.join(fixtures_path, "fake_key.pem")
       end
     end
@@ -326,11 +325,6 @@ describe MB::Config do
     it "returns a hash with a 'encrypted_data_bag_secret_path' key mapping to chef.encrypted_data_bag_secret_path" do
       subject.should have_key(:encrypted_data_bag_secret_path)
       subject[:encrypted_data_bag_secret_path].should eql(config.chef.encrypted_data_bag_secret_path)
-    end
-
-    it "returns a hash with an 'organization' key mapping to chef.organization" do
-      subject.should have_key(:organization)
-      subject[:organization].should eql(config.chef.organization)
     end
 
     it "returns a hash with a 'ssl.verify' key" do
