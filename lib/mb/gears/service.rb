@@ -237,7 +237,7 @@ module MotherBrain
                   resets.unshift(lambda { set_node_attribute(l_node, key, original_value) })
                 end
 
-                obj.set_attribute(key, value)
+                obj.set_chef_attribute(key, value)
                 obj.save
               end
             end
