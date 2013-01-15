@@ -58,7 +58,7 @@ describe MB::Gear::Mysql::Action do
     subject { described_class.new(sql, base_options) }
 
     before(:each) do
-      Ridley::DataBag.stub_chain(:find!, :encrypted_item, :find!).and_return(data_bag_item)
+      Ridley::DataBagResource.stub_chain(:find!, :encrypted_item, :find!).and_return(data_bag_item)
     end
 
     context "the data bag is empty" do

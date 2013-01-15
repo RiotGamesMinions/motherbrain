@@ -10,6 +10,24 @@ GIT
       websocket_parser (>= 0.1.0)
 
 GIT
+  remote: git://github.com/reset/ridley.git
+  revision: dd630e064854a5a8a523e7854916b42b2e255d3a
+  specs:
+    ridley (0.7.0.beta)
+      activesupport (>= 3.2.0)
+      addressable
+      celluloid
+      chozo (>= 0.4.1)
+      erubis
+      faraday
+      json (>= 1.5.0)
+      mixlib-authentication
+      mixlib-log
+      multi_json (>= 1.0.4)
+      net-http-persistent (>= 2.8)
+      net-ssh
+
+GIT
   remote: git@github.com:RiotGames/ef-rest.git
   revision: 30b18a36c59c5f9a0015f0eeb173607a5dad3268
   specs:
@@ -159,19 +177,6 @@ GEM
     rake (10.0.3)
     rb-fsevent (0.9.3)
     redcarpet (2.2.2)
-    ridley (0.7.0.beta)
-      activesupport (>= 3.2.0)
-      addressable
-      celluloid
-      chozo (>= 0.4.1)
-      erubis
-      faraday
-      json (>= 1.5.0)
-      mixlib-authentication
-      mixlib-log
-      multi_json (>= 1.0.4)
-      net-http-persistent (>= 2.8)
-      net-ssh
     rspec (2.12.0)
       rspec-core (~> 2.12.0)
       rspec-expectations (~> 2.12.0)
@@ -227,6 +232,7 @@ DEPENDENCIES
   rb-fsevent
   redcarpet
   reel!
+  ridley!
   rspec
   spork
   terminal-notifier-guard (~> 1.5.3)

@@ -29,8 +29,8 @@ describe MB::Application do
     end
 
     describe "::ridley" do
-      it "returns an instance of Ridley::Connection" do
-        subject.ridley.should be_a(Ridley::Connection)
+      it "returns an instance of Ridley::Client" do
+        subject.ridley.should be_a(Ridley::Client)
       end
     end
 

@@ -44,9 +44,6 @@ module MotherBrain
       type: String,
       required: true
 
-    attribute 'chef.organization',
-      type: String
-
     attribute 'chef.validator_client',
       type: String
 
@@ -179,13 +176,10 @@ module MotherBrain
         ridley_opts[:encrypted_data_bag_secret_path] = self.chef.encrypted_data_bag_secret_path
         ridley_opts[:validator_path] = self.chef.validator_path
         ridley_opts[:validator_client] = self.chef.validator_client
+        ridley_opts[:ssh] = self.ssh
         ridley_opts[:ssl] = {
           verify: self.ssl.verify
         }
-
-        unless self.chef.organization.nil?
-          ridley_opts[:organization] = self.chef.organization
-        end
       end
     end
 
