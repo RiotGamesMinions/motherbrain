@@ -2,6 +2,7 @@ source :rubygems
 
 gemspec
 
+gem 'ridley', github: 'reset/ridley'
 gem 'ef-rest', git: 'git@github.com:RiotGames/ef-rest.git'
 gem 'reel', github: 'celluloid/reel'
 

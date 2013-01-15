@@ -64,7 +64,7 @@ module MotherBrain
         group.supervise_as :bootstrap_manager, Bootstrap::Manager
         group.supervise_as :node_querier, NodeQuerier
         group.supervise_as :lock_manager, Locks::Manager
-        group.supervise_as :ridley, Ridley::Connection, config.to_ridley
+        group.supervise_as :ridley, Ridley::Client, config.to_ridley
         group.supervise_as :upgrade_manager, Upgrade::Manager
 
         if config.rest_gateway.enable
