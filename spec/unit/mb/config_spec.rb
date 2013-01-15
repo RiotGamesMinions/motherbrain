@@ -338,6 +338,14 @@ describe MB::Config do
       subject[:ssl][:verify].should_not be_nil
     end
 
+    it "returns a hash with a 'ssh' key" do
+      subject.should have_key(:ssh)
+    end
+
+    describe "'ssh' key" do
+      it { subject[:ssh].should eql(config.ssh) }
+    end
+
     it "returns a hash with a 'validator_client' key mapping to chef.validator_client" do
       subject.should have_key(:validator_client)
       subject[:validator_client].should eql(config.chef.validator_client)
