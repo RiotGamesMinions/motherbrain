@@ -11,7 +11,7 @@ GIT
 
 GIT
   remote: git://github.com/reset/ridley.git
-  revision: 0993bcd91056c1c0db4e8230c7aaf1af0d782881
+  revision: dd630e064854a5a8a523e7854916b42b2e255d3a
   specs:
     ridley (0.7.0.beta)
       activesupport (>= 3.2.0)
