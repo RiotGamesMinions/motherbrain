@@ -14,7 +14,7 @@ module MotherBrain
       include Celluloid
       include MB::Logging
       include MB::Locks
-      include MB::Mixin::VersionLocking
+      include MB::Mixin::AttributeSetting
 
       def initialize
         log.info { "Bootstrap Manager starting..." }

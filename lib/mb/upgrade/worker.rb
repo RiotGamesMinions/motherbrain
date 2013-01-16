@@ -11,7 +11,7 @@ module MotherBrain
       include Celluloid
       include MB::Locks
       include MB::Logging
-      include MB::Mixin::VersionLocking
+      include MB::Mixin::AttributeSetting
 
       # @return [String]
       attr_reader :environment_name

@@ -2,13 +2,13 @@ module MotherBrain
   module Mixin
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @author Justin Campbell <justin@justincampbell.me>
-    module VersionLocking
+    module AttributeSetting
       extend Forwardable
       include MB::Logging
 
       # Set the appropriate attributes at the environment level to the desired version
       # for each component given
-      # 
+      #
       # @param [String] :env_id
       #   the name identifier of the environment to modify
       # @param [MB::Plugin] plugin
