@@ -124,7 +124,7 @@ module MotherBrain
 
     # @param [Fixnum] seconds
     def wait(seconds)
-      Kernel.sleep(seconds)
+      Celluloid.sleep(seconds)
     end
 
     # @author Jamie Winsor <jamie@vialstudios.com>

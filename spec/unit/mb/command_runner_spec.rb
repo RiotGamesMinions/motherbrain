@@ -182,7 +182,7 @@ describe MB::CommandRunner do
 
     context "with a wait command" do
       it "sleeps" do
-        Kernel.should_receive(:sleep).with(1)
+        Celluloid.should_receive(:sleep).with(1)
 
         command_block = Proc.new do
           wait 1
