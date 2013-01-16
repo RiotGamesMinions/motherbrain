@@ -46,6 +46,10 @@ module MotherBrain
           setup_logdir(location)
         end
 
+        if jruby? && location.is_a?(Pathname)
+          location = location.to_s
+        end
+
         @logger = Logger.new(location).tap do |log|
           log.level = level
           log.formatter = BasicFormat.new
