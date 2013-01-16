@@ -122,11 +122,6 @@ module MotherBrain
       scope.command(command_name).invoke(environment, [])
     end
 
-    # @param [Fixnum] seconds
-    def wait(seconds)
-      Celluloid.sleep(seconds)
-    end
-
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
@@ -155,6 +150,11 @@ module MotherBrain
       protected
 
         attr_reader :actions
+
+        # @param [Fixnum] seconds
+        def wait(seconds)
+          Celluloid.sleep(seconds)
+        end
     end
 
     # Proxy for invoking components in the DSL
