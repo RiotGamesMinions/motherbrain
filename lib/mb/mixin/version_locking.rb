@@ -63,6 +63,37 @@ module MotherBrain
         end
       end
 
+      # Set arbitrary attributes at the environment level
+      #
+      # @param [String] :env_id
+      #   the name identifier of the environment to modify
+      # @param [Hash] :environment_attributes
+      #   Hash of attributes and values
+      #
+      # @example setting multiple attributes on an environment
+      #
+      #   set_environment_attributes("test-environment",
+      #     "foo"      => "bar",
+      #     "baz.quux" => 42
+      #   )
+      def set_environment_attributes(env_id, environment_attributes)
+        log.info "Setting environment attributes #{environment_attributes}"
+
+        override_attributes = Hash.new
+
+        environment_attributes.each do |attribute, value|
+          attribute_hash = Hash.from_dotted_path(attribute, value)
+          override_attributes.deep_merge!(attribute_hash)
+        end
+
+        Application.ridley.sync do
+          env = environment.find!(env_id)
+          env.override_attributes.deep_merge!(override_attributes)
+          env.save
+        end
+      end
+
+
       private
 
         # retrieve the version attribute of a given component and raise if the

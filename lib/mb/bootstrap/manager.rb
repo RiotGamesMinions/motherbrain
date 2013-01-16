@@ -34,6 +34,8 @@ module MotherBrain
       #   Hash of components and the versions to set them to
       # @option options [Hash] :cookbook_versions (Hash.new)
       #   Hash of cookbooks and the versions to set them to
+      # @option options [Hash] :environment_attributes (Hash.new)
+      #   Hash of additional attributes to set on the environment
       # @option options [Boolean] :force
       #   ignore and bypass any existing locks on an environment
       # @option options [Hash] :ssh
@@ -67,6 +69,7 @@ module MotherBrain
         options = options.reverse_merge(
           cookbook_versions: Hash.new,
           component_versions: Hash.new,
+          environment_attributes: Hash.new,
           hints: Hash.new,
           bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
           force: false
@@ -127,6 +130,11 @@ module MotherBrain
           if options[:cookbook_versions].any?
             job.status = "Setting cookbook versions"
             set_cookbook_versions(environment, options[:cookbook_versions])
+          end
+
+          if options[:environment_attributes].any?
+            job.status = "Setting environment attributes"
+            set_environment_attributes(environment, options[:environment_attributes])
           end
 
           while tasks = task_queue.shift
