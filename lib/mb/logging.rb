@@ -46,7 +46,7 @@ module MotherBrain
           setup_logdir(location)
         end
 
-        @logger = Logger.new(location.to_s).tap do |log|
+        @logger = Logger.new(location).tap do |log|
           log.level = level
           log.formatter = BasicFormat.new
         end
