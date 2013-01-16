@@ -1,5 +1,5 @@
 module MotherBrain
   module Mixin
-    autoload :VersionLocking, 'mb/mixin/version_locking'
+    autoload :AttributeSetting, 'mb/mixin/attribute_setting'
   end
 end

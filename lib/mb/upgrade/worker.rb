@@ -11,7 +11,7 @@ module MotherBrain
       include Celluloid
       include MB::Locks
       include MB::Logging
-      include MB::Mixin::VersionLocking
+      include MB::Mixin::AttributeSetting
 
       # @return [String]
       attr_reader :environment_name
@@ -73,6 +73,11 @@ module MotherBrain
             set_cookbook_versions(environment_name, cookbook_versions)
           end
 
+          if environment_attributes.any?
+            job.status = "Setting environment attributes"
+            set_environment_attributes(environment_name, environment_attributes)
+          end
+
           if component_versions.any? or cookbook_versions.any?
             run_chef if nodes.any?
           end
@@ -110,6 +115,11 @@ module MotherBrain
         # @return [Hash]
         def cookbook_versions
           options[:cookbook_versions] || {}
+        end
+
+        # @return [Hash]
+        def environment_attributes
+          options[:environment_attributes] || {}
         end
 
         # @return [Array<String>]

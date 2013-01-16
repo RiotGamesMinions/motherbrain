@@ -85,6 +85,7 @@ module MotherBrain
         end
         optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
         optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
+        optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
       end
       post ':id' do
         plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
@@ -95,7 +96,7 @@ module MotherBrain
           params[:id].freeze,
           manifest.freeze,
           plugin.freeze,
-          params.slice(:component_versions, :cookbook_versions).freeze
+          params.slice(:component_versions, :cookbook_versions, :environment_attributes).freeze
         )
       end
 
@@ -109,6 +110,7 @@ module MotherBrain
         end
         optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
         optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
+        optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
         optional :force, type: Boolean
         optional :hints
       end
@@ -121,7 +123,7 @@ module MotherBrain
           params[:id].freeze,
           manifest.freeze,
           plugin.freeze,
-          params.slice(:component_versions, :cookbook_versions, :force, :bootstrap_proxy, :hints).freeze
+          params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force, :bootstrap_proxy, :hints).freeze
         )
       end
     end

@@ -44,6 +44,10 @@ module MotherBrain
               type: :hash,
               desc: "The cookbook versions to set on the environment",
               aliases: "--cookbooks"
+            method_option :environment_attributes,
+              type: :hash,
+              desc: "Any additional attributes to set on the environment",
+              aliases: "--attributes"
             method_option :force,
               type: :boolean,
               default: false,
@@ -71,6 +75,10 @@ module MotherBrain
               type: :hash,
               desc: "The cookbook versions to set on the environment",
               aliases: "--cookbooks"
+            method_option :environment_attributes,
+              type: :hash,
+              desc: "Any additional attributes to set on the environment",
+              aliases: "--attributes"
             method_option :skip_bootstrap,
               type: :boolean,
               desc: "Nodes will be created and added to the Chef environment but not bootstrapped",
@@ -102,6 +110,10 @@ module MotherBrain
               type: :hash,
               desc: "The cookbook versions to set on the environment",
               aliases: "--cookbooks"
+            method_option :environment_attributes,
+              type: :hash,
+              desc: "Any additional attributes to set on the environment",
+              aliases: "--attributes"
             method_option :force,
               type: :boolean,
               default: false,

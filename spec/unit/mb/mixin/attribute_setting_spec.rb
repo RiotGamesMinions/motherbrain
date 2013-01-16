@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe MB::Mixin::VersionLocking do
+describe MB::Mixin::AttributeSetting do
   subject do
     Class.new do
-      include MB::Mixin::VersionLocking
+      include MB::Mixin::AttributeSetting
     end.new
   end
 

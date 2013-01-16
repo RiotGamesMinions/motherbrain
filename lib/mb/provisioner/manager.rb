@@ -42,6 +42,7 @@ module MotherBrain
       WORKER_OPTS = [
         :component_versions,
         :cookbook_versions,
+        :environment_attributes,
         :skip_bootstrap
       ]
 
@@ -78,6 +79,8 @@ module MotherBrain
       #   Hash of components and the versions to set them to
       # @option options [Hash] :cookbook_versions (Hash.new)
       #   Hash of cookbooks and the versions to set them to
+      # @option options [Hash] :environment_attributes (Hash.new)
+      #   Hash of additional attributes to set on the environment
       # @option options [Boolean] :skip_bootstrap (false)
       # @option options [#to_sym] :with
       #   id of provisioner to use
@@ -87,6 +90,7 @@ module MotherBrain
         options = options.reverse_merge(
           component_versions: Hash.new,
           cookbook_versions: Hash.new,
+          environment_attributes: Hash.new,
           skip_bootstrap: false
         )
 
