@@ -122,6 +122,11 @@ module MotherBrain
       scope.command(command_name).invoke(environment, [])
     end
 
+    # @param [Fixnum] seconds
+    def wait(seconds)
+      Kernel.sleep(seconds)
+    end
+
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
