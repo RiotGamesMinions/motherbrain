@@ -30,5 +30,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'faraday'
   s.add_runtime_dependency 'ef-rest'
   s.add_runtime_dependency 'activesupport'
-  s.add_runtime_dependency 'yajl-ruby'
+  s.add_runtime_dependency 'multi_json'
 end

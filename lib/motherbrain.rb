@@ -11,12 +11,7 @@ require 'pathname'
 require 'forwardable'
 require 'set'
 require 'ostruct'
-
-if jruby?
-  require 'json'
-else
-  require 'yajl'
-end
+require 'multi_json'
 
 require 'mb/version'
 require 'mb/errors'
