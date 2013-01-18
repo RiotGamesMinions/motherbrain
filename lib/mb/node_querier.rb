@@ -185,8 +185,7 @@ module MotherBrain
     #
     # @return [Ridley::SSH::Response]
     def chef_run(host, options = {})
-      options          = options.dup
-      options[:sudo]   = true
+      options = options.dup
 
       MB.log.info "Running Chef client on: #{host}"
       status, response = ssh_command(host, "chef-client", options)
