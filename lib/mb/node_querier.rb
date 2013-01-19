@@ -178,7 +178,7 @@ module MotherBrain
     #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
     # @option options [Float] :timeout (10.0)
     #   timeout value for SSH bootstrap
-    # @option options [Boolean] :sudo (true)
+    # @option options [Boolean] :sudo
     #   bootstrap with sudo
     #
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
