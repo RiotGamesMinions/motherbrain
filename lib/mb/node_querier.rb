@@ -178,15 +178,14 @@ module MotherBrain
     #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
     # @option options [Float] :timeout (10.0)
     #   timeout value for SSH bootstrap
-    # @option options [Boolean] :sudo (true)
+    # @option options [Boolean] :sudo
     #   bootstrap with sudo
     #
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
     #
     # @return [Ridley::SSH::Response]
     def chef_run(host, options = {})
-      options          = options.dup
-      options[:sudo]   = true
+      options = options.dup
 
       MB.log.info "Running Chef client on: #{host}"
       status, response = ssh_command(host, "chef-client", options)
