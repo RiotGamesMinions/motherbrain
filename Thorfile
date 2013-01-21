@@ -31,7 +31,7 @@ class Default < Thor
     end
 
     gem_host = "http://gems.riotgames.com/"
-    gem_location = File.join("pkg", "motherbrain-#{MotherBrain::VERSION}.gem")
+    gem_location = File.join(source_root, "pkg", "motherbrain-#{MotherBrain::VERSION}.gem")
 
     tag_version do
       build
