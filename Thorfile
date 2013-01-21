@@ -23,7 +23,7 @@ class Default < Thor
     Rake::Task["install"].execute
   end
 
-  desc "release", "Create tag v#{MotherBrain::VERSION} and build and push MotherBrain-#{MotherBrain::VERSION}.gem to Rubygems"
+  desc "release", "Create tag v#{MotherBrain::VERSION} and build and push MotherBrain-#{MotherBrain::VERSION}.gem to gem in a box"
   def release
     unless clean?
       say "There are files that need to be committed first.", :red
