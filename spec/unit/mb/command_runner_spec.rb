@@ -181,11 +181,17 @@ describe MB::CommandRunner do
     end
 
     context "with a wait command" do
+      let(:empty_group) { double('empty_group', nodes: Array.new) }
+
       it "sleeps" do
+        pending "Unsure which mock is receiving #wait"
+
         Celluloid.should_receive(:sleep).with(1)
 
         command_block = Proc.new do
-          wait 1
+          on("empty_group") do
+            wait 1
+          end
         end
 
         subject.new(environment, scope, command_block)
