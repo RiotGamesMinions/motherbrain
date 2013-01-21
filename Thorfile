@@ -23,9 +23,21 @@ class Default < Thor
     Rake::Task["install"].execute
   end
 
-  desc "release", "Create tag v#{MotherBrain::VERSION} and build and push MotherBrain-#{MotherBrain::VERSION}.gem to Rubygems"
+  desc "release", "Create tag v#{MotherBrain::VERSION} and build and push MotherBrain-#{MotherBrain::VERSION}.gem to gem in a box"
   def release
-    Rake::Task["release"].execute
+    unless clean?
+      say "There are files that need to be committed first.", :red
+      exit 1
+    end
+
+    gem_host = "http://gems.riotgames.com/"
+    gem_location = File.join(source_root, "pkg", "motherbrain-#{MotherBrain::VERSION}.gem")
+
+    tag_version do
+      build
+      run "bundle exec gem sources -a #{gem_host}"
+      run "bundle exec gem inabox #{gem_location} -g #{gem_host}"
+    end
   end
 
   desc "ci", "Run all tests"
@@ -71,4 +83,45 @@ class Default < Thor
       exec "rspec --color --format=documentation spec --tag type:acceptance"
     end
   end
+
+  private
+
+    def clean?
+      sh_with_excode("git diff --exit-code")[1] == 0
+    end
+    
+    def tag_version
+      sh "git tag -a -m \"Version #{MotherBrain::VERSION}\" #{MotherBrain::VERSION}"
+      say "Tagged: #{MotherBrain::VERSION}", :green
+      yield if block_given?
+      sh "git push --tags"
+    rescue => e
+      say "Untagging: #{MotherBrain::VERSION} due to error", :red
+      sh_with_excode "git tag -d #{MotherBrain::VERSION}"
+      say e, :red
+      exit 1
+    end
+
+    def source_root
+      Pathname.new File.dirname(File.expand_path(__FILE__))
+    end
+
+    def sh(cmd, dir = source_root, &block)
+      out, code = sh_with_excode(cmd, dir, &block)
+      code == 0 ? out : raise(out.empty? ? "Running `#{cmd}` failed. Run this command directly for more detailed output." : out)
+    end
+
+    def sh_with_excode(cmd, dir = source_root, &block)
+      cmd << " 2>&1"
+      outbuf = ''
+
+      Dir.chdir(dir) {
+        outbuf = `#{cmd}`
+        if $? == 0
+          block.call(outbuf) if block
+        end
+      }
+
+      [ outbuf, $? ]
+    end
 end
