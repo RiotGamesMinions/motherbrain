@@ -30,7 +30,10 @@ module MotherBrain
       end
     end
 
+    POLL_INTERVAL = 300
+
     include Celluloid
+    include Celluloid::Notifications
     include MB::Logging
 
     # @return [Set<Pathname>]
@@ -41,8 +44,10 @@ module MotherBrain
       @paths   = Set.new
       @plugins = Set.new
 
-      Application.config.plugin_paths.each { |path| self.add_path(path) }
+      configure(ConfigManager.instance.config)
       load_all
+
+      subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
     end
 
     # @param [MotherBrain::Plugin] plugin
@@ -77,6 +82,11 @@ module MotherBrain
     # @return [Set]
     def clear_plugins
       @plugins.clear
+    end
+
+    # @param [MB::Config] config
+    def configure(config)
+      config.plugin_paths.each { |path| self.add_path(path) }
     end
 
     # Find and return a registered plugin of the given name and version. If no version
@@ -137,6 +147,11 @@ module MotherBrain
 
     def finalize
       log.info { "Plugin Manager stopping..." }
+    end
+
+    def reconfigure(_msg, config)
+      log.debug { "[PluginManager] ConfigManager has changed: re-configuring components..." }
+      configure(config)
     end
   end
 end
