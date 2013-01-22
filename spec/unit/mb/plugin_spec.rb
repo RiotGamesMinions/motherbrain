@@ -39,7 +39,7 @@ describe MB::Plugin do
         subject do
           described_class.load(metadata) do
             cluster_bootstrap do
-              # block
+              # empty routine
             end
           end
         end
@@ -47,6 +47,36 @@ describe MB::Plugin do
         it "has a Bootstrap::Routine for the value of bootstrap_routine" do
           subject.bootstrap_routine.should be_a(MB::Bootstrap::Routine)
         end
+      end
+
+      context "when a command keyword is present" do
+        subject do
+          described_class.load(metadata) do
+            command "start" do
+              description "Start all services"
+
+              execute do
+                component("activemq").invoke("start")
+              end
+            end
+          end
+        end
+
+        it { subject.commands.should have(1).item }
+        it { subject.command("start").should_not be_nil }
+      end
+
+      context "when a component keyword is present" do
+        subject do
+          described_class.load(metadata) do
+            component "activemq" do
+              description "do stuff to AMQ"
+            end
+          end
+        end
+
+        it { subject.components.should have(1).item }
+        it { subject.component("activemq").should_not be_nil }
       end
 
       context "when the metadata contains invalid values for attributes" do
