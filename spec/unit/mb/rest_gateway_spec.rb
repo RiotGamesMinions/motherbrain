@@ -52,17 +52,19 @@ describe MB::RestGateway do
     describe "GET /plugins/:name" do
       context "when a matching plugin is found" do
         let(:one) do
-          MB::Plugin.new do
+          metadata = MB::CookbookMetadata.new do
             name 'apple'
             version '1.0.0'
           end
+          MB::Plugin.new(metadata)
         end
 
         let(:two) do
-          MB::Plugin.new do
+          metadata = MB::CookbookMetadata.new do
             name 'apple'
             version '2.0.0'
           end
+          MB::Plugin.new(metadata)
         end
 
         before(:each) do
@@ -101,17 +103,19 @@ describe MB::RestGateway do
 
     describe "GET /plugins/:name/latest" do
       let(:one) do
-        MB::Plugin.new do
+        metadata = MB::CookbookMetadata.new do
           name 'apple'
           version '1.0.0'
         end
+        MB::Plugin.new(metadata)
       end
 
       let(:two) do
-        MB::Plugin.new do
+        metadata = MB::CookbookMetadata.new do
           name 'apple'
           version '2.0.0'
         end
+        MB::Plugin.new(metadata)
       end
 
       before(:each) do
@@ -140,10 +144,11 @@ describe MB::RestGateway do
     describe "GET /plugins/:name/:version" do
       context "when the a matching plugin is found" do
         let(:one) do
-          MB::Plugin.new do
+          metadata = MB::CookbookMetadata.new do
             name 'apple'
             version '1.0.0'
           end
+          MB::Plugin.new(metadata)
         end
 
         before(:each) do

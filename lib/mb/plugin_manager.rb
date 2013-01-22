@@ -123,7 +123,7 @@ module MotherBrain
     #
     # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
     def load(path)
-      add Plugin.from_file(path.to_s)
+      add Plugin.from_path(path)
     end
 
     # Return all of the registered plugins. If the optional name parameter is provided the

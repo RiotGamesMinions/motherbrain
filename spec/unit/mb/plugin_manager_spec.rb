@@ -80,16 +80,17 @@ describe MotherBrain::PluginManager do
 
   describe "#load" do
     let(:plugin) do
-      MB::Plugin.new do
+      metadata = MB::CookbookMetadata.new do
         name 'apple'
         version '1.0.0'
       end
+      MB::Plugin.new(metadata)
     end
 
-    let(:path) { '/tmp/one/plugin.rb' }
+    let(:path) { '/tmp/one/apple-1.0.0' }
 
     before(:each) do
-      MB::Plugin.stub(:from_file).with(path).and_return(plugin)
+      MB::Plugin.stub(:from_path).with(path).and_return(plugin)
     end
 
     it "adds an instantiated plugin to the hash of plugins" do
@@ -101,10 +102,11 @@ describe MotherBrain::PluginManager do
 
   describe "#add" do
     let(:plugin) do
-      MB::Plugin.new do
+      metadata = MB::CookbookMetadata.new do
         name 'apple'
         version '1.0.0'
       end
+      MB::Plugin.new(metadata)
     end
 
     context "when the plugin is already added" do
@@ -166,22 +168,25 @@ describe MotherBrain::PluginManager do
 
   describe "#find" do
     let(:one) do
-      MB::Plugin.new do
+      metadata = MB::CookbookMetadata.new do
         name 'apple'
         version '1.0.0'
       end
+      MB::Plugin.new(metadata)
     end
     let(:two) do
-      MB::Plugin.new do
+      metadata = MB::CookbookMetadata.new do
         name 'apple'
         version '2.0.0'
       end
+      MB::Plugin.new(metadata)
     end
     let(:three) do
-      MB::Plugin.new do
+      metadata = MB::CookbookMetadata.new do
         name 'orange'
         version '2.0.0'
       end
+      MB::Plugin.new(metadata)
     end
 
     before(:each) do
@@ -222,10 +227,11 @@ describe MotherBrain::PluginManager do
 
   describe "#clear_plugins" do
     let(:plugin) do
-      MB::Plugin.new do
+      metadata = MB::CookbookMetadata.new do
         name 'apple'
         version '1.0.0'
       end
+      MB::Plugin.new(metadata)
     end
 
     it "clears any loaded plugins" do
