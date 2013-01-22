@@ -170,9 +170,19 @@ module MotherBrain
       interrupt_mutex.synchronize do
         unless interrupted
           @interrupted = true
-          Thread.main.raise Interrupt
+
+          reverse_terminate
         end
       end
+    end
+
+    # Terminate our child processes in reverse order
+    #
+    # @see https://github.com/celluloid/celluloid/pull/152
+    def reverse_terminate
+      @members.reverse_each(&:terminate)
+
+      terminate
     end
 
     def finalize
