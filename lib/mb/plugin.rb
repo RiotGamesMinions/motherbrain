@@ -4,31 +4,35 @@ module MotherBrain
     class << self
       # Create a new plugin instance from the given content
       #
+      # @param [MB::CookbookMetadata] metadata
+      #
       # @raise [PluginLoadError]
       #
       # @yieldreturn [MotherBrain::Plugin]
-      def load(&block)
-        new(&block).validate!
-      rescue Errno::ENOENT => error
-        ErrorHandler.wrap PluginLoadError.new
-      rescue => error
-        ErrorHandler.wrap error
+      def load(metadata, &block)
+        new(metadata, &block).validate!
+      rescue PluginSyntaxError => ex
+        ErrorHandler.wrap(ex)
       end
 
-      # Load a plugin from the given file
+      # Load the contents of a directory into an instance of MB::Plugin
       #
-      # @param [String] path
+      # @param [#to_s] path
+      #   a path to a directory containing a motherbrain plugin file and cookbook
+      #   metadata file
       #
       # @raise [PluginLoadError]
       #
       # @return [MotherBrain::Plugin]
-      def from_file(path)
-        block = proc {
-          eval(File.read(path))
-        }
-        load(&block)
-      rescue => error
-        ErrorHandler.wrap error, file_path: path
+      def from_path(path)
+        pluginfile = File.join(path, PLUGIN_FILENAME)
+        metadata   = CookbookMetadata.from_file(File.join(path, METADATA_FILENAME))
+
+        load(metadata) { eval(File.read(pluginfile), binding, pluginfile, 1) }
+      rescue Errno::ENOENT => error
+        ErrorHandler.wrap PluginLoadError.new
+      rescue PluginSyntaxError => ex
+        ErrorHandler.wrap(ex, file_path: pluginfile)
       end
 
       def key_for(name, version)
@@ -37,39 +41,36 @@ module MotherBrain
     end
 
     NODE_GROUP_ID_REGX = /^(.+)::(.+)$/.freeze
+    PLUGIN_FILENAME    = 'motherbrain.rb'.freeze
+    METADATA_FILENAME  = 'metadata.rb'.freeze
 
+    extend Forwardable
     include Comparable
     include Chozo::VariaModel
-
-    attribute :name,
-      type: String,
-      required: true
-
-    attribute :version,
-      type: Solve::Version,
-      required: true,
-      coerce: lambda { |m|
-        Solve::Version.new(m)
-      }
-
-    attribute :description,
-      type: String,
-      required: true
-
-    attribute :author,
-      type: [String, Array]
-
-    attribute :email,
-      type: [String, Array]
 
     attribute :bootstrap_routine,
       type: MB::Bootstrap::Routine
 
+    attr_reader :metadata
     attr_reader :components
     attr_reader :commands
     attr_reader :dependencies
 
-    def initialize(&block)
+    def_delegator :metadata, :name
+    def_delegator :metadata, :maintainer
+    def_delegator :metadata, :maintainer_email
+    def_delegator :metadata, :license
+    def_delegator :metadata, :description
+    def_delegator :metadata, :long_description
+    def_delegator :metadata, :version
+
+    # @param [MB::CookbookMetadata] metadata
+    def initialize(metadata, &block)
+      unless metadata.valid?
+        raise InvalidCookbookMetadata.new(metadata.errors)
+      end
+
+      @metadata     = metadata
       @components   = Set.new
       @commands     = Set.new
       @dependencies = HashWithIndifferentAccess.new
@@ -264,12 +265,6 @@ module MotherBrain
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
-      dsl_attr_writer :name
-      dsl_attr_writer :version
-      dsl_attr_writer :description
-      dsl_attr_writer :author
-      dsl_attr_writer :email
-
       # @param [#to_s] name
       # @param [#to_s] constraint
       def depends(name, constraint)

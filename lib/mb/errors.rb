@@ -50,6 +50,13 @@ module MotherBrain
   class GroupNotFound < PluginSyntaxError; end
 
   class PluginLoadError < MBError; status_code(101); end
+  class InvalidCookbookMetadata < PluginLoadError
+    attr_reader :errors
+    
+    def initialize(errors)
+      @errors = errors
+    end
+  end
   class AlreadyLoaded < PluginLoadError; end
 
   class ChefRunnerError < MBError; status_code(102); end
