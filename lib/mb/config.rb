@@ -25,10 +25,11 @@ module MotherBrain
       end
     end
 
-    attribute 'berkshelf',
-      default: Berkshelf.berkshelf_path,
-      type: [ Array ],
-      required: true
+    attribute :plugin_paths,
+      default: PluginManager.default_paths,
+      type: [ Set, Array ],
+      required: true,
+      coerce: lambda { |m| m.to_set }
 
     attribute 'chef.api_url',
       default: "http://localhost:8080",
@@ -150,16 +151,18 @@ module MotherBrain
     #
     # @example
     #   config = MB::Config.new.tap do |o|
-    #     o.chef_api_url = "https://api.opscode.com/organizations/vialstudios"
+    #     o.chef_api_url = "https://api.opscode.com"
     #     o.chef_api_client = "reset"
     #     o.chef_api_key = "/Users/reset/.chef/reset.pem"
+    #     o.chef_organization = "vialstudios"
     #   end
     #
     #   config.to_ridley =>
     #   {
-    #     server_url: "https://api.opscode.com/organizations/vialstudios",
+    #     server_url: "https://api.opscode.com",
     #     client_name: "reset",
     #     client_key: "/Users/reset/.chef/reset.pem",
+    #     organization: "vialstudios",
     #     validator_client: nil,
     #     validator_path: nil
     #   }
