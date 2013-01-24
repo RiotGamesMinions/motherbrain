@@ -25,14 +25,24 @@ module MotherBrain
       #
       # @return [MotherBrain::Plugin]
       def from_path(path)
-        pluginfile = File.join(path, PLUGIN_FILENAME)
-        metadata   = CookbookMetadata.from_file(File.join(path, METADATA_FILENAME))
+        plugin_filename   = File.join(path, PLUGIN_FILENAME)
+        metadata_filename = File.join(path, METADATA_FILENAME)
 
-        load(metadata) { eval(File.read(pluginfile), binding, pluginfile, 1) }
-      rescue Errno::ENOENT => error
-        ErrorHandler.wrap PluginLoadError.new
+        begin
+          metadata = CookbookMetadata.from_file(metadata_filename)
+        rescue Errno::ENOENT => ex
+          raise PluginLoadError, "Expected metadata file at: #{metadata_filename}"
+        end
+
+        begin
+          plugin_contents = File.read(plugin_filename)
+        rescue Errno::ENOENT => ex
+          raise PluginLoadError, "Expected motherbrain plugin file at: #{plugin_filename}"
+        end
+
+        load(metadata) { eval(plugin_contents, binding, plugin_filename, 1) }
       rescue PluginSyntaxError => ex
-        ErrorHandler.wrap(ex, file_path: pluginfile)
+        ErrorHandler.wrap(ex, file_path: plugin_filename)
       end
 
       def key_for(name, version)

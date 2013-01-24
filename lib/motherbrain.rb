@@ -29,6 +29,7 @@ module MotherBrain
   autoload :ApiHelpers, 'mb/api_helpers'
   autoload :ApiValidators, 'mb/api_validators'
   autoload :Application, 'mb/application'
+  autoload :Berkshelf, 'mb/berkshelf'
   autoload :Bootstrap, 'mb/bootstrap'
   autoload :ChefMutex, 'mb/chef_mutex'
   autoload :CleanRoomBase, 'mb/clean_room_base'

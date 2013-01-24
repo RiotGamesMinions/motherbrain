@@ -28,11 +28,10 @@ module MotherBrain
       end
     end
 
-    attribute :plugin_paths,
-      default: PluginManager.default_paths,
-      type: [ Set, Array ],
-      required: true,
-      coerce: lambda { |m| m.to_set }
+    attribute 'berkshelf.path',
+      default: MB::Berkshelf.default_path,
+      type: String,
+      required: true
 
     attribute 'chef.api_url',
       default: "http://localhost:8080",

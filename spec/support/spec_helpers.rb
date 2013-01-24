@@ -33,6 +33,36 @@ module MotherBrain
       app_root_path.join("spec", "tmp", ".mb", "plugins")
     end
 
+    def generate_cookbook(name, path, options = {})
+      options = options.reverse_merge(
+        version: "0.1.0",
+        with_plugin: true
+      )
+
+      FileUtils.mkdir_p(path)
+      File.open(File.join(path, MB::Plugin::METADATA_FILENAME), 'w+') do |f|
+        f.write <<-EOH
+          name             "#{name}"
+          maintainer       "Jamie Winsor"
+          maintainer_email "jamie@vialstudios.com"
+          license          "Apache 2.0"
+          description      "Installs/Configures #{name}"
+          long_description "Installs/Configures #{name}"
+          version          "#{options[:version]}"
+
+          %w{ ubuntu centos }.each do |os|
+            supports os
+          end
+        EOH
+      end
+
+      if options[:with_plugin]
+        File.open(File.join(path, MB::Plugin::PLUGIN_FILENAME), 'w+') do |f|
+          f.write "# blank plugin"
+        end
+      end
+    end
+
     def generate_valid_config(path)
       FileUtils.rm_rf(path)
       MB::Config.new.tap do |mb|

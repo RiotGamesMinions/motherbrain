@@ -8,26 +8,6 @@ module MotherBrain
       def instance
         MB::Application[:plugin_manager] or raise Celluloid::DeadActorError, "plugin manager not running"
       end
-
-      # Returns a Set of expanded file paths that are directories that may contain
-      # MotherBrain plugins.
-      #
-      # If the MB_PLUGIN_PATH environment variable is set the value of the variable
-      # will be used as the default plugin path.
-      #
-      # @return [Set<String>]
-      def default_paths
-        if ENV["MB_PLUGIN_PATH"].nil?
-          defaults = [
-            FileSystem.plugins.to_s,
-            File.expand_path(File.join(".", ".mb", "plugins"))
-          ]
-
-          Set.new(defaults)
-        else
-          Set.new.add(File.expand_path(ENV["MB_PLUGIN_PATH"]))
-        end
-      end
     end
 
     POLL_INTERVAL = 300
@@ -36,15 +16,14 @@ module MotherBrain
     include Celluloid::Notifications
     include MB::Logging
 
-    # @return [Set<Pathname>]
-    attr_reader :paths
+    # @return [Pathname]
+    attr_reader :berkshelf_path
 
     def initialize
       log.info { "Plugin Manager starting..." }
-      @paths   = Set.new
-      @plugins = Set.new
+      @berkshelf_path = MB::Berkshelf.path
+      @plugins        = Set.new
 
-      configure(ConfigManager.instance.config)
       load_all
 
       subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
@@ -61,32 +40,15 @@ module MotherBrain
       @plugins.add(plugin)
     end
 
-    # @param [String, Pathname] path
-    def add_path(path)
-      self.paths.add(Pathname.new(File.expand_path(path)))
-    end
-
-    # Clear all previously set paths
-    #
-    # @note this is for testing; you probably don't want to use this
-    #
-    # @return [Set]
-    def clear_paths
-      @paths.clear
-    end
-
     # Clear list of known plugins
-    #
-    # @note this is for testing; you probably don't want to use this
     #
     # @return [Set]
     def clear_plugins
       @plugins.clear
     end
 
-    # @param [MB::Config] config
-    def configure(config)
-      config.plugin_paths.each { |path| self.add_path(path) }
+    def finalize
+      log.info { "Plugin Manager stopping..." }
     end
 
     # Find and return a registered plugin of the given name and version. If no version
@@ -110,10 +72,8 @@ module MotherBrain
     #
     # @return [Array<MotherBrain::Plugin>]
     def load_all
-      self.paths.each do |path|
-        Pathname.glob(path.join('*.rb')).collect do |plugin|
-          self.load(plugin)
-        end
+      Berkshelf.cookbooks(with_plugin: true).each do |path|
+        self.load(path)
       end
 
       self.plugins
@@ -123,7 +83,7 @@ module MotherBrain
     #
     # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
     def load(path)
-      add Plugin.from_path(path)
+      add Plugin.from_path(path.to_s)
     end
 
     # Return all of the registered plugins. If the optional name parameter is provided the
@@ -140,18 +100,25 @@ module MotherBrain
       end
     end
 
-    # @param [Pathname] path
-    def remove_path(path)
-      self.paths.delete(path)
+    # Reload plugins from the Berkshelf
+    #
+    # @return [Array<MotherBrain::Plugin>]
+    def reload_plugins
+      clear_plugins
+      load_all
     end
 
-    def finalize
-      log.info { "Plugin Manager stopping..." }
-    end
+    protected
 
-    def reconfigure(_msg, config)
-      log.debug { "[PluginManager] ConfigManager has changed: re-configuring components..." }
-      configure(config)
-    end
+      def reconfigure(_msg, config)
+        log.debug { "[Plugin Manager] received new configuration" }
+
+        unless Berkshelf.path == self.berkshelf_path
+          log.debug { "[Plugin Manager] Berkshelf location has changed; reloading plugins" }
+
+          @berkshelf_path = Berkshelf.path
+          reload_plugins
+        end
+      end
   end
 end

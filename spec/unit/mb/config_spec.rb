@@ -13,8 +13,8 @@ describe MB::Config do
         @config.chef.api_url.should eql("http://localhost:8080")
       end
 
-      it "has a default value for plugin_paths equal to PluginManager.default_paths" do
-        @config.plugin_paths.should eql(MB::PluginManager.default_paths)
+      it "has a default value for 'berkshelf.path'" do
+        @config.berkshelf.path.should_not be_nil
       end
     end
 
@@ -114,6 +114,12 @@ describe MB::Config do
       it "should be valid" do
         subject.should be_valid
       end
+    end
+
+    it "is invalid if berkshelf.path is blank" do
+      subject.berkshelf.path = nil
+
+      subject.should_not be_valid
     end
 
     it "is invalid if chef.api_url is blank" do
