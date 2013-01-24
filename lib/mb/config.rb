@@ -2,8 +2,11 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Config < Chozo::Config::JSON
     class << self
+      # The default location for MotherBrain's config file
+      #
+      # @return [String]
       def default_path
-        File.expand_path(ENV["MB_CONFIG"] || "~/.mb/config.json")
+        FileSystem.root.join("config.json").to_s
       end
 
       # @raise [Celluloid::DeadActorError] if ConfigManager has not been started

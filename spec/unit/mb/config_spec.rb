@@ -220,14 +220,14 @@ describe MB::Config do
         ENV['MB_CONFIG'] = nil
       end
 
-      it "returns the value of ENV['MB_CONFIG'] if the environment variable is set" do
-        ENV['MB_CONFIG'] = "/tmp/config.json"
+      subject { described_class.default_path }
 
-        subject.default_path.should eql("/tmp/config.json")
+      it "returns a string" do
+        subject.should be_a(String)
       end
 
-      it "returns expanded ~/.mb/config.json if ENV['MB_CONFIG'] is not set" do
-        subject.default_path.should eql(File.expand_path("~/.mb/config.json"))
+      it "is located within the motherbrain file system" do
+        subject.should include(MB::FileSystem.root.to_s)
       end
     end
   end
