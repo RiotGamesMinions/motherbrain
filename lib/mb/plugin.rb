@@ -120,7 +120,7 @@ module MotherBrain
       command = commands.find { |command| command.name == name.to_s }
 
       if command.nil?
-        raise CommandNotFound, "Command '#{name}' not found on component '#{self.name}'"
+        raise CommandNotFound, "Command '#{name}' not found on plugin '#{self.name}'"
       end
 
       command
