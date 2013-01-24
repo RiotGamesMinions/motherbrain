@@ -48,6 +48,10 @@ module MotherBrain
               type: :hash,
               desc: "Any additional attributes to set on the environment",
               aliases: "--attributes"
+            method_option :environment_attributes_file,
+              type: :string,
+              desc: "Any additional attributes to set on the environment via a json file.",
+              aliases: "--attributes-file"
             method_option :force,
               type: :boolean,
               default: false,
@@ -79,6 +83,10 @@ module MotherBrain
               type: :hash,
               desc: "Any additional attributes to set on the environment",
               aliases: "--attributes"
+            method_option :environment_attributes_file,
+              type: :string,
+              desc: "Any additional attributes to set on the environment via a json file.",
+              aliases: "--attributes-file"
             method_option :skip_bootstrap,
               type: :boolean,
               desc: "Nodes will be created and added to the Chef environment but not bootstrapped",
@@ -114,6 +122,10 @@ module MotherBrain
               type: :hash,
               desc: "Any additional attributes to set on the environment",
               aliases: "--attributes"
+            method_option :environment_attributes_file,
+              type: :string,
+              desc: "Any additional attributes to set on the environment via a json file.",
+              aliases: "--attributes-file"
             method_option :force,
               type: :boolean,
               default: false,
