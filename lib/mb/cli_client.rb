@@ -91,7 +91,7 @@ module MotherBrain
       end
 
       def wait_for_jobs
-        sleep TICK until jobs.all?(&:completed?)
+        sleep TICK until jobs.all?(&:completed?) || JobManager.stopped?
       end
   end
 end
