@@ -71,9 +71,7 @@ module MotherBrain
       end
 
       def final_terminated_status
-        clear_line
-
-        puts "\rMotherBrain terminated"
+        puts "\nMotherBrain terminated"
       end
 
       # @return [Enumerator]
