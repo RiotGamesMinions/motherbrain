@@ -8,6 +8,14 @@ module MotherBrain
       def instance
         MB::Application[:job_manager] or raise Celluloid::DeadActorError, "job manager not running"
       end
+
+      def running?
+        MB::Application[:job_manager] && instance.alive?
+      end
+
+      def stopped?
+        !running?
+      end
     end
 
     include Celluloid

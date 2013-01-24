@@ -57,16 +57,24 @@ module MotherBrain
       def run!(app_config)
         MB::Application[:motherbrain] = group = super()
 
+        # Config and I/O
         group.supervise_as :config_manager, ConfigManager, app_config
-        group.supervise_as :job_manager, JobManager
-        group.supervise_as :plugin_manager, PluginManager
-        group.supervise_as :provisioner_manager, Provisioner::Manager
-        group.supervise_as :bootstrap_manager, Bootstrap::Manager
-        group.supervise_as :node_querier, NodeQuerier
-        group.supervise_as :lock_manager, Locks::Manager
         group.supervise_as :ridley, Ridley::Client, config.to_ridley
+
+        # Abstraction around the above
+        group.supervise_as :node_querier, NodeQuerier
+
+        # Services required for orchestration
+        group.supervise_as :job_manager, JobManager
+        group.supervise_as :lock_manager, Locks::Manager
+        group.supervise_as :plugin_manager, PluginManager
+
+        # Userland workers
+        group.supervise_as :bootstrap_manager, Bootstrap::Manager
+        group.supervise_as :provisioner_manager, Provisioner::Manager
         group.supervise_as :upgrade_manager, Upgrade::Manager
 
+        # Clients
         if config.rest_gateway.enable
           group.supervise_as :rest_gateway, RestGateway, config.to_rest_gateway
         end
@@ -162,9 +170,19 @@ module MotherBrain
       interrupt_mutex.synchronize do
         unless interrupted
           @interrupted = true
-          Thread.main.raise Interrupt
+
+          reverse_terminate
         end
       end
+    end
+
+    # Terminate our child processes in reverse order
+    #
+    # @see https://github.com/celluloid/celluloid/pull/152
+    def reverse_terminate
+      @members.reverse_each(&:terminate)
+
+      terminate
     end
 
     def finalize
