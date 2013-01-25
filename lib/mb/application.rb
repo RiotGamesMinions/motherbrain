@@ -75,7 +75,6 @@ module MotherBrain
         group.supervise_as :provisioner_manager, Provisioner::Manager
         group.supervise_as :upgrade_manager, Upgrade::Manager
 
-        # Clients
         if config.rest_gateway.enable
           group.supervise_as :rest_gateway, RestGateway, config.to_rest_gateway
         end
