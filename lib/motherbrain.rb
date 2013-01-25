@@ -20,6 +20,7 @@ end
 
 require 'mb/version'
 require 'mb/errors'
+require 'mb/ridley_ext'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain

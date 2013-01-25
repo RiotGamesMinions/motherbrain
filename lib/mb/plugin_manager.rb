@@ -83,23 +83,54 @@ module MotherBrain
     #
     # @return [Array<MotherBrain::Plugin>]
     def load_all
-      Berkshelf.cookbooks(with_plugin: true).each do |path|
-        self.load(path)
-      end
-
-      self.plugins
+      load_all_local
     end
 
+    # Load a plugin from a file
+    #
     # @param [#to_s] path
     #
-    # @option options [Boolean] :force
+    # @option options [Boolean] :force (true)
     #   load a plugin even if a plugin of the same name and version is already loaded
     #
     # @raise [AlreadyLoaded]
     #   if a plugin of the same name and version has already been loaded. This can be overridden
     #   by providing 'true' for the :force option.
-    def load(path, options = {})
+    def load_file(path, options = {})
+      options = options.reverse_merge(force: true)
+
       add(Plugin.from_path(path.to_s), options)
+    end
+
+    # Load a plugin from a cookbook resource
+    #
+    # @param [Ridley::CookbookResource] resource
+    #
+    # @option options [Boolean] :force (false)
+    #   load a plugin even if a plugin of the same name and version is already loaded
+    #
+    # @raise [AlreadyLoaded]
+    #   if a plugin of the same name and version has already been loaded. This can be overridden
+    #   by providing 'true' for the :force option.
+    def load_resource(resource, options = {})
+      options = options.reverse_merge(force: false)
+
+      unless resource.has_motherbrain_plugin?
+        return nil
+      end
+
+      begin
+        scratch_dir   = FileSystem.tmpdir("cbplugin")
+        metadata_path = File.join(scratch_dir, Plugin::METADATA_FILENAME)
+        plugin_path   = File.join(scratch_dir, Plugin::PLUGIN_FILENAME)
+
+        cookbook_resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, metadata_path)
+        cookbook_resource.download_file(:root_file, Plugin::METADATA_FILENAME, plugin_path)
+
+        load_file(scratch_dir, options)
+      ensure
+        FileUtils.rm_rf(scratch_dir)
+      end
     end
 
     # Return all of the registered plugins. If the optional name parameter is provided the
@@ -149,6 +180,20 @@ module MotherBrain
 
           @berkshelf_path = Berkshelf.path
           reload_all
+        end
+      end
+
+      def load_all_local
+        Berkshelf.cookbooks(with_plugin: true).each do |path|
+          load_file(path)
+        end
+      end
+
+      def load_all_remote
+        Application.ridley.cookbook.all.collect do |name, versions|
+          versions.each do |version|
+            load_resource(Application.ridley.cookbook.find(name, version))
+          end
         end
       end
   end
