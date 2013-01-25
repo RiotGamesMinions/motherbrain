@@ -29,10 +29,21 @@ module MotherBrain
       subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
     end
 
+    # Add a plugin to the set of plugins
+    #
     # @param [MotherBrain::Plugin] plugin
     #
-    # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
-    def add(plugin)
+    # @option options [Boolean] :force
+    #   load a plugin even if a plugin of the same name and version is already loaded
+    #
+    # @raise [AlreadyLoaded]
+    #   if a plugin of the same name and version has already been loaded. This can be overridden
+    #   by providing 'true' for the :force option.
+    def add(plugin, options = {})
+      if options[:force]
+        return reload(plugin)
+      end
+
       unless find(plugin.name, plugin.version).nil?
         raise AlreadyLoaded, "A plugin with the name: '#{plugin.name}' and version: '#{plugin.version}' is already loaded"
       end
@@ -81,9 +92,14 @@ module MotherBrain
 
     # @param [#to_s] path
     #
-    # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
-    def load(path)
-      add Plugin.from_path(path.to_s)
+    # @option options [Boolean] :force
+    #   load a plugin even if a plugin of the same name and version is already loaded
+    #
+    # @raise [AlreadyLoaded]
+    #   if a plugin of the same name and version has already been loaded. This can be overridden
+    #   by providing 'true' for the :force option.
+    def load(path, options = {})
+      add(Plugin.from_path(path.to_s), options)
     end
 
     # Return all of the registered plugins. If the optional name parameter is provided the
@@ -100,12 +116,27 @@ module MotherBrain
       end
     end
 
+    # Remove and Add the given plugin from the set of plugins
+    #
+    # @param [MotherBrain::Plugin] plugin
+    def reload(plugin)
+      remove(plugin)
+      add(plugin)
+    end
+
     # Reload plugins from the Berkshelf
     #
     # @return [Array<MotherBrain::Plugin>]
-    def reload_plugins
+    def reload_all
       clear_plugins
       load_all
+    end
+
+    # Remove the given plugin from the set of plugins
+    #
+    # @param [MotherBrain::Plugin] plugin
+    def remove(plugin)
+      @plugins.delete(plugin)
     end
 
     protected
@@ -117,7 +148,7 @@ module MotherBrain
           log.debug { "[Plugin Manager] Berkshelf location has changed; reloading plugins" }
 
           @berkshelf_path = Berkshelf.path
-          reload_plugins
+          reload_all
         end
       end
   end

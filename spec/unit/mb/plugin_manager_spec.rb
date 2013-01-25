@@ -74,6 +74,16 @@ describe MotherBrain::PluginManager do
           subject.add(plugin)
         }.should raise_error(MB::AlreadyLoaded)
       end
+
+      context "when given 'true' for the ':force' option" do
+        it "does not raise an AlreadyLoaded error" do
+          subject.add(plugin)
+
+          lambda {
+            subject.add(plugin, force: true)
+          }.should_not raise_error(MB::AlreadyLoaded)
+        end
+      end
     end
   end
 
