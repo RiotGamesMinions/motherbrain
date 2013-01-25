@@ -136,6 +136,12 @@ module MotherBrain
       default: RestGateway::DEFAULT_OPTIONS[:port],
       type: Integer
 
+    # Enables the plugin manager to populate it's set of plugins from cookbooks
+    # present on the remote Chef server.
+    attribute 'plugin_manager.remote_loading',
+      default: true,
+      type: Boolean
+
     attribute 'ef.api_url',
       type: String
 

@@ -81,6 +81,7 @@ module MotherBrain
     # @return [Array<MotherBrain::Plugin>]
     def load_all
       load_all_local
+      load_all_remote if Application.config.plugin_manager.remote_loading
     end
 
     # Load a plugin from a file

@@ -33,6 +33,22 @@ describe MotherBrain::PluginManager do
       subject.plugins.should have(3).items
       subject.plugins.should each be_a(MB::Plugin)
     end
+
+    context "when 'remote_loading' is enabled" do
+      before(:each) do
+        @original = MB::Application.config.plugin_manager.remote_loading
+        MB::Application.config.plugin_manager.remote_loading = true
+      end
+
+      after(:each) do
+        MB::Application.config.plugin_manager.remote_loading = @original
+      end
+
+      it "calls #load_all_remote" do
+        subject.should_receive(:load_all_remote)
+        subject.load_all
+      end
+    end
   end
 
   describe "#load_file" do

@@ -44,7 +44,9 @@ def setup_rspec
           rest_gateway: {
             port: 1985
           },
-          plugin_paths: Set.new
+          plugin_manager: {
+            remote_loading: false
+          }
         }
       )
       @app = MB::Application.run!(@config)
