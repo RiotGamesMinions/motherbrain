@@ -78,11 +78,7 @@ module MotherBrain
     desc "plugins", "Display all installed plugins and versions"
     def plugins
       if Application.plugin_manager.plugins.empty?
-        paths = Application.plugin_manager.paths.to_a.collect { |path| "'#{path}'" }
-
-        MB.ui.say "No MotherBrain plugins found in any of your configured plugin paths!"
-        MB.ui.say "\n"
-        MB.ui.say "Paths: #{paths.join(', ')}"
+        MB.ui.say "No MotherBrain plugins found in your Berkshelf: #{Application.plugin_manager.berkshelf_path}"
         exit(0)
       end
 

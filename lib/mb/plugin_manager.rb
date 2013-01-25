@@ -207,6 +207,8 @@ module MotherBrain
         Berkshelf.cookbooks(with_plugin: true).each do |path|
           load_file(path, force: force)
         end
+      rescue PluginSyntaxError, PluginLoadError => ex
+        log.warn { "error loading local plugin: #{ex}" }
       end
 
       # Load all of the plugins from the remote Chef Server
@@ -216,6 +218,8 @@ module MotherBrain
             load_resource(Application.ridley.cookbook.find(name, version))
           end
         end
+      rescue PluginSyntaxError, PluginLoadError, PluginDownloadError => ex
+        log.warn { "error loading remote plugin: #{ex}" }
       end
   end
 end
