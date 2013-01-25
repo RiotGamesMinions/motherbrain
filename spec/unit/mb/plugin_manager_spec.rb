@@ -22,7 +22,7 @@ describe MotherBrain::PluginManager do
     end
 
     it "sends a load message to self with each plugin found in the berkshelf" do
-      subject.should_receive(:load_file).with(anything).exactly(3).times
+      subject.should_receive(:load_file).with(anything, force: false).exactly(3).times
 
       subject.load_all
     end
@@ -66,22 +66,33 @@ describe MotherBrain::PluginManager do
       MB::Plugin.new(metadata)
     end
 
-    context "when the plugin is already added" do
-      it "raises an AlreadyLoaded error" do
-        subject.add(plugin)
+    it "returns a Set of plugins" do
+      result = subject.add(plugin)
 
-        lambda {
-          subject.add(plugin)
-        }.should raise_error(MB::AlreadyLoaded)
+      result.should be_a(Set)
+      result.should each be_a(MB::Plugin)
+    end
+
+    it "adds the plugin to the Set of plugins" do
+      subject.add(plugin)
+
+      subject.plugins.should include(plugin)
+    end
+
+    context "when the plugin is already added" do
+      it "returns nil" do
+        subject.add(plugin)
+        
+        subject.add(plugin).should be_nil
       end
 
       context "when given 'true' for the ':force' option" do
-        it "does not raise an AlreadyLoaded error" do
+        it "adds the plugin anyway" do
           subject.add(plugin)
+          result = subject.add(plugin, force: true)
 
-          lambda {
-            subject.add(plugin, force: true)
-          }.should_not raise_error(MB::AlreadyLoaded)
+          result.should be_a(Set)
+          result.should include(plugin)
         end
       end
     end

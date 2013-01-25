@@ -57,7 +57,6 @@ module MotherBrain
       @errors = errors
     end
   end
-  class AlreadyLoaded < PluginLoadError; end
 
   class ChefRunnerError < MBError; status_code(102); end
   class NoValueForAddressAttribute < ChefRunnerError; end

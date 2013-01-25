@@ -36,16 +36,15 @@ module MotherBrain
     # @option options [Boolean] :force
     #   load a plugin even if a plugin of the same name and version is already loaded
     #
-    # @raise [AlreadyLoaded]
-    #   if a plugin of the same name and version has already been loaded. This can be overridden
-    #   by providing 'true' for the :force option.
+    # @return [Set<MB::Plugin>, nil]
+    #   returns the set of plugins on success or nil if the plugin was not added
     def add(plugin, options = {})
       if options[:force]
         return reload(plugin)
       end
 
       unless find(plugin.name, plugin.version).nil?
-        raise AlreadyLoaded, "A plugin with the name: '#{plugin.name}' and version: '#{plugin.version}' is already loaded"
+        return nil
       end
 
       @plugins.add(plugin)
@@ -79,8 +78,6 @@ module MotherBrain
       end
     end
 
-    # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
-    #
     # @return [Array<MotherBrain::Plugin>]
     def load_all
       load_all_local
@@ -93,9 +90,7 @@ module MotherBrain
     # @option options [Boolean] :force (true)
     #   load a plugin even if a plugin of the same name and version is already loaded
     #
-    # @raise [AlreadyLoaded]
-    #   if a plugin of the same name and version has already been loaded. This can be overridden
-    #   by providing 'true' for the :force option.
+    # @return [Set<MB::Plugin>, nil]
     def load_file(path, options = {})
       options = options.reverse_merge(force: true)
 
@@ -109,9 +104,7 @@ module MotherBrain
     # @option options [Boolean] :force (false)
     #   load a plugin even if a plugin of the same name and version is already loaded
     #
-    # @raise [AlreadyLoaded]
-    #   if a plugin of the same name and version has already been loaded. This can be overridden
-    #   by providing 'true' for the :force option.
+    # @return [Set<MB::Plugin>, nil]
     def load_resource(resource, options = {})
       options = options.reverse_merge(force: false)
 
@@ -133,10 +126,11 @@ module MotherBrain
       end
     end
 
-    # Return all of the registered plugins. If the optional name parameter is provided the
-    # results will be filtered and only plugin versions of that given name will be returned
+    # A set of all the registered plugins
     #
     # @param [String, nil] name (nil)
+    #   an optional parameter which if provided will filter the results to include only
+    #   plugins which match the given name
     #
     # @return [Set<Plugin>]
     def plugins(name = nil)
@@ -155,12 +149,19 @@ module MotherBrain
       add(plugin)
     end
 
-    # Reload plugins from the Berkshelf
+    # Reload plugins from Chef Server and from the Berkshelf
     #
     # @return [Array<MotherBrain::Plugin>]
     def reload_all
       clear_plugins
       load_all
+    end
+
+    # Reload plugins from the Berkshelf
+    #
+    # @return [Array<MotherBrain::Plugin>]
+    def reload_local
+      load_all_local(true)
     end
 
     # Remove the given plugin from the set of plugins
@@ -183,12 +184,16 @@ module MotherBrain
         end
       end
 
-      def load_all_local
+      # Load all of the plugins from the Berkshelf
+      #
+      # @param [Boolean] force (false)
+      def load_all_local(force = false)
         Berkshelf.cookbooks(with_plugin: true).each do |path|
-          load_file(path)
+          load_file(path, force: force)
         end
       end
 
+      # Load all of the plugins from the remote Chef Server
       def load_all_remote
         Application.ridley.cookbook.all.collect do |name, versions|
           versions.each do |version|
