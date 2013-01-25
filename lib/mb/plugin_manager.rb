@@ -117,8 +117,11 @@ module MotherBrain
         metadata_path = File.join(scratch_dir, Plugin::METADATA_FILENAME)
         plugin_path   = File.join(scratch_dir, Plugin::PLUGIN_FILENAME)
 
-        cookbook_resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, metadata_path)
-        cookbook_resource.download_file(:root_file, Plugin::METADATA_FILENAME, plugin_path)
+        unless resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, metadata_path) &&
+          resource.download_file(:root_file, Plugin::METADATA_FILENAME, plugin_path)
+
+          raise PluginDownloadError, "failure downloading plugin files for #{resource}"
+        end
 
         load_file(scratch_dir, options)
       ensure

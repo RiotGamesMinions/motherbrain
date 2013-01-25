@@ -57,6 +57,59 @@ describe MotherBrain::PluginManager do
     end
   end
 
+  describe "#load_resource" do
+    let(:client) { double('client') }
+    let(:resource) do
+      Ridley::CookbookResource.new(client)
+    end
+
+    context "when the resource doesn't contain a motherbrain plugin" do
+      before(:each) { resource.stub(has_motherbrain_plugin?: false) }
+
+      it "returns nil if resource doesn't contain a motherbrain plugin" do
+        subject.load_resource(resource).should be_nil
+      end
+    end
+
+    context "when resource contains a motherbrain plugin" do
+      before(:each) { resource.stub(has_motherbrain_plugin?: true) }
+      let(:temp_dir) { MB::FileSystem.tmpdir }
+
+      context "and the files are transferred successfully" do
+        before(:each) do
+          generate_cookbook('whatever', temp_dir, with_plugin: true)
+          MB::FileSystem.stub(:tmpdir) { temp_dir }
+          metadata = File.join(temp_dir, MB::Plugin::PLUGIN_FILENAME)
+          plugin = File.join(temp_dir, MB::Plugin::METADATA_FILENAME)
+
+          resource.stub(:download_file).and_return(true)
+        end
+
+        it "adds the plugin to the set of plugins" do
+          subject.load_resource(resource)
+
+          subject.plugins.should have(1).item
+        end
+
+        it "cleans up the generated temporary files" do
+          subject.load_resource(resource)
+
+          File.exist?(temp_dir).should be_false
+        end
+      end
+
+      context "and one or more of the files is not transferred successfully" do
+        before(:each) { resource.stub(:download_file).and_return(nil) }
+
+        it "raises a PluginDownloadError" do
+          expect {
+            subject.load_resource(resource)
+          }.to raise_error(MB::PluginDownloadError)
+        end
+      end
+    end
+  end
+
   describe "#add" do
     let(:plugin) do
       metadata = MB::CookbookMetadata.new do
