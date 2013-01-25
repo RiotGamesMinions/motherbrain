@@ -145,7 +145,7 @@ module MotherBrain
         log.debug { "[Plugin Manager] received new configuration" }
 
         unless Berkshelf.path == self.berkshelf_path
-          log.debug { "[Plugin Manager] Berkshelf location has changed; reloading plugins" }
+          log.debug { "[Plugin Manager] The location of the Berkshelf has changed; reloading plugins" }
 
           @berkshelf_path = Berkshelf.path
           reload_all
