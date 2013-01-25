@@ -8,9 +8,11 @@ module MotherBrain
       def instance
         MB::Application[:plugin_manager] or raise Celluloid::DeadActorError, "plugin manager not running"
       end
-    end
 
-    POLL_INTERVAL = 300
+      def remote_poll_interval
+        Application.config.plugin_man
+      end
+    end
 
     include Celluloid
     include Celluloid::Notifications
@@ -18,6 +20,12 @@ module MotherBrain
 
     # @return [Pathname]
     attr_reader :berkshelf_path
+    
+    # Tracks when the plugin manager will attempt to load remote plugins from the Chef Server. If
+    # remote loading is disabled this will return nil.
+    #
+    # @return [Timers::Timer, nil]
+    attr_reader :remote_load_timer
 
     def initialize
       log.info { "Plugin Manager starting..." }
@@ -25,6 +33,10 @@ module MotherBrain
       @plugins        = Set.new
 
       load_all
+
+      if Application.config.plugin_manager.remote_loading
+        @remote_load_timer = every(Application.config.plugin_manager.remote_poll_interval, &method(:load_all_remote))
+      end
 
       subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
     end

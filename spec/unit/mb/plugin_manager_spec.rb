@@ -1,6 +1,44 @@
 require 'spec_helper'
 
 describe MotherBrain::PluginManager do
+  describe "ClassMethods" do
+    subject { described_class }
+
+    describe "::new" do
+      context "when 'remote_loading' is disabled" do
+        before(:each) do
+          @original = MB::Application.config.plugin_manager.remote_loading
+          MB::Application.config.plugin_manager.remote_loading = false
+        end
+
+        after(:each) do
+          MB::Application.config.plugin_manager.remote_loading = @original
+        end
+
+        it "has a nil value for remote_load_timer" do
+          subject.new.remote_load_timer.should be_nil
+        end
+      end
+
+      context "when 'remote_loading' is enabled" do
+        before(:each) do
+          @original = MB::Application.config.plugin_manager.remote_loading
+          MB::Application.config.plugin_manager.remote_loading = true
+        end
+
+        after(:each) do
+          MB::Application.config.plugin_manager.remote_loading = @original
+        end
+
+        it "sets a Timer for remote_load_timer" do
+          subject.any_instance.should_receive(:load_all_remote)
+
+          subject.new.remote_load_timer.should be_a(Timers::Timer)
+        end
+      end
+    end
+  end
+
   subject { described_class.new }
 
   describe "#load_all" do

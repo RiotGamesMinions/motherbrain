@@ -142,6 +142,12 @@ module MotherBrain
       default: true,
       type: Boolean
 
+    # How long the plugin manager will wait before polling the Chef Server to see
+    # if any new plugins exist to be loaded
+    attribute 'plugin_manager.remote_poll_interval',
+      default: 300, # 5 minutes
+      type: Integer
+
     attribute 'ef.api_url',
       type: String
 
