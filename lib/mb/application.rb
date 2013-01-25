@@ -55,6 +55,7 @@ module MotherBrain
       #
       # @param [MB::Config] app_config
       def run!(app_config)
+        MB::FileSystem.init
         MB::Application[:motherbrain] = group = super()
 
         # Config and I/O
