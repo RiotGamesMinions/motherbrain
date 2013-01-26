@@ -136,15 +136,15 @@ module MotherBrain
       default: RestGateway::DEFAULT_OPTIONS[:port],
       type: Integer
 
-    # Enables the plugin manager to populate it's set of plugins from cookbooks
-    # present on the remote Chef server.
-    attribute 'plugin_manager.remote_loading',
+    # Enables the plugin manager to automatically populate it's set of plugins
+    # from cookbooks present on the remote Chef server that contain plugins
+    attribute 'plugin_manager.eager_loading',
       default: true,
       type: Boolean
 
-    # How long the plugin manager will wait before polling the Chef Server to see
-    # if any new plugins exist to be loaded
-    attribute 'plugin_manager.remote_poll_interval',
+    # How long the plugin manager will wait before polling the Chef Server to eagerly
+    # load any new plugins
+    attribute 'plugin_manager.eager_load_interval',
       default: 300, # 5 minutes
       type: Integer
 

@@ -45,7 +45,7 @@ def setup_rspec
             port: 1985
           },
           plugin_manager: {
-            remote_loading: false
+            eager_loading: false
           }
         }
       )

@@ -8,10 +8,6 @@ module MotherBrain
       def instance
         MB::Application[:plugin_manager] or raise Celluloid::DeadActorError, "plugin manager not running"
       end
-
-      def remote_poll_interval
-        Application.config.plugin_man
-      end
     end
 
     include Celluloid
@@ -25,7 +21,7 @@ module MotherBrain
     # remote loading is disabled this will return nil.
     #
     # @return [Timers::Timer, nil]
-    attr_reader :remote_load_timer
+    attr_reader :eager_load_timer
 
     def initialize
       log.info { "Plugin Manager starting..." }
@@ -34,8 +30,8 @@ module MotherBrain
 
       load_all
 
-      if Application.config.plugin_manager.remote_loading
-        @remote_load_timer = every(Application.config.plugin_manager.remote_poll_interval, &method(:load_all_remote))
+      if eager_loading?
+        @eager_load_timer = every(eager_load_interval, &method(:load_all_remote))
       end
 
       subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
@@ -69,6 +65,25 @@ module MotherBrain
       @plugins.clear
     end
 
+    # If enabled the plugin manager will automatically discover plugins on the remote Chef Server
+    # and load them into the plugin set.
+    #
+    # @note to change this option set it in the {Config} of {ConfigManager}
+    #
+    # @return [Boolean]
+    def eager_loading?
+      Application.config.plugin_manager.eager_loading
+    end
+
+    # The time between each poll of the remote Chef server to eagerly load discovered plugins
+    #
+    # @note to change this option set it in the {Config} of {ConfigManager}
+    #
+    # @return [Integer]
+    def eager_load_interval
+      Application.config.plugin_manager.eager_load_interval
+    end
+
     def finalize
       log.info { "Plugin Manager stopping..." }
     end
@@ -93,7 +108,7 @@ module MotherBrain
     # @return [Array<MotherBrain::Plugin>]
     def load_all
       load_all_local
-      load_all_remote if Application.config.plugin_manager.remote_loading
+      load_all_remote if eager_loading?
     end
 
     # Load a plugin from a file
