@@ -28,6 +28,7 @@ module MotherBrain
       @berkshelf_path = MB::Berkshelf.path
       @plugins        = Set.new
 
+      MB::Berkshelf.init
       load_all
 
       if eager_loading?
@@ -211,6 +212,7 @@ module MotherBrain
           log.debug { "[Plugin Manager] The location of the Berkshelf has changed; reloading plugins" }
 
           @berkshelf_path = Berkshelf.path
+          MB::Berkshelf.init
           reload_all
         end
       end

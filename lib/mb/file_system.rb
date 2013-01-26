@@ -6,6 +6,7 @@ module MotherBrain
     autoload :Tempfile, 'mb/file_system/tempfile'
 
     class << self
+      # Create the directory structure for motherbrain
       def init
         FileUtils.mkdir_p(root)
         FileUtils.mkdir_p(logs)

@@ -79,21 +79,6 @@ module MotherBrain
       MB::Config.new.save(path)
     end
 
-    def generate_plugin(name, version, path)
-      FileUtils.mkdir_p(path)
-      file = "#{name}-#{version}.rb"
-
-      File.open(File.join(path, file), 'w+') do |f|
-        f.write <<-EOH
-        name '#{name}'
-        version '#{version}'
-        description "whatever"
-        author "Jamie Winsor"
-        email "jamie@vialstudios.com"
-        EOH
-      end
-    end
-
     def klass
       described_class
     end

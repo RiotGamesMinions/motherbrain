@@ -78,7 +78,7 @@ module MotherBrain
     desc "plugins", "Display all installed plugins and versions"
     def plugins
       if Application.plugin_manager.plugins.empty?
-        MB.ui.say "No MotherBrain plugins found in your Berkshelf: #{Application.plugin_manager.berkshelf_path}"
+        MB.ui.say "No plugins found in your Berkshelf: '#{Application.plugin_manager.berkshelf_path}'"
         exit(0)
       end
 

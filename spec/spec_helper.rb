@@ -25,6 +25,9 @@ def setup_rspec
 
       @config = MB::Config.new(nil,
         {
+          berkshelf: {
+            path: tmp_path.join('berkshelf').to_s
+          },
           chef: {
             api_url: "http://chef.riotgames.com",
             api_client: "fake",

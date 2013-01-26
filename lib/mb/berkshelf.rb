@@ -38,6 +38,12 @@ module MotherBrain
         ENV["BERKSHELF_PATH"] || File.expand_path("~/.berkshelf")
       end
 
+      # Create the directory structure for the Berkshelf
+      def init
+        FileUtils.mkdir_p(path)
+        FileUtils.mkdir_p(cookbooks_path)
+      end
+
       # The location of the Berkshelf
       #
       # @return [Pathname]
