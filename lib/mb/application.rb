@@ -41,7 +41,7 @@ module MotherBrain
       def_delegator :bootstrap_manager, :bootstrap
       def_delegator :provisioner_manager, :provision
       def_delegator :upgrade_manager, :upgrade
-      def_delegator "MB::ConfigManager.instance", :config
+      def_delegator :config_manager, :config
 
       def_delegators :registry, :[], :[]=
 

@@ -13,6 +13,13 @@ module MotherBrain
       end
       alias_method :bootstrapper, :bootstrap_manager
 
+      # @raise [Celluloid::DeadActorError] if Config Manager has not been started
+      #
+      # @return [Celluloid::Actor(ConfigManager)]
+      def config_manager
+        ConfigManager.instance
+      end
+
       # @raise [Celluloid::DeadActorError] if job manager has not been started
       #
       # @return [Celluloid::Actor(JobManager)]
