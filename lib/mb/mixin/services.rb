@@ -1,5 +1,9 @@
 module MotherBrain
   module Mixin
+    # @author Jamie Winsor <jamie@vialstudios.com>
+    #
+    # A mixin to provide easy access to the various services (actors) running in the
+    # motherbrain stack.
     module Services
       # @raise [Celluloid::DeadActorError] if Bootstrap Manager has not been started
       #
@@ -48,9 +52,9 @@ module MotherBrain
 
       # @raise [Celluloid::DeadActorError] if Upgrade Manager has not been started
       #
-      # @return [Celluloid::Actor(Ridley::Connection)]
+      # @return [Celluloid::Actor(Upgrade::Manager)]
       def upgrade_manager
-        MB::Application[:upgrade_manager] or raise Celluloid::DeadActorError, "upgrade manager not running"
+        Upgrade::Manager.instance
       end
     end
   end
