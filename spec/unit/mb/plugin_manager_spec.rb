@@ -107,7 +107,7 @@ describe MotherBrain::PluginManager do
       subject.ridley.stub_chain(:cookbook, :find).and_return(resource)
     end
 
-    context "when the resource doesn't contain a motherbrain plugin" do
+    context "when the cookbook doesn't contain a motherbrain plugin" do
       before(:each) { resource.stub(has_motherbrain_plugin?: false) }
 
       it "returns nil if resource doesn't contain a motherbrain plugin" do
@@ -115,7 +115,7 @@ describe MotherBrain::PluginManager do
       end
     end
 
-    context "when resource contains a motherbrain plugin" do
+    context "when the cookbook contains a motherbrain plugin" do
       before(:each) { resource.stub(has_motherbrain_plugin?: true) }
       let(:temp_dir) { MB::FileSystem.tmpdir }
 
@@ -150,6 +150,14 @@ describe MotherBrain::PluginManager do
             subject.load_remote(name, version)
           }.to raise_error(MB::PluginDownloadError)
         end
+      end
+    end
+
+    context "when the remote does not have a cookbook of the given name/version" do
+      before(:each) { subject.ridley.stub_chain(:cookbook, :find).and_return(nil) }
+
+      it "returns nil" do
+        subject.load_remote(name, version).should be_nil
       end
     end
   end

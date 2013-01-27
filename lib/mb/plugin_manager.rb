@@ -163,7 +163,7 @@ module MotherBrain
       options  = options.reverse_merge(force: false)
       resource = ridley.cookbook.find(name, version)
 
-      unless resource.has_motherbrain_plugin?
+      unless resource && resource.has_motherbrain_plugin?
         return nil
       end
 
