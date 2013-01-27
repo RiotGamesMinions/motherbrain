@@ -228,6 +228,18 @@ module MotherBrain
       @plugins.delete(plugin)
     end
 
+    # List all of the versions of the plugin of the given name
+    #
+    # @param [#to_s] name
+    #   name of the plugin to list versions of
+    # @param [Boolean] remote (false)
+    #   search for plugins on the remote Chef server and include them in the returned list
+    #
+    # @return [Array<MB::Plugin>, nil]
+    def versions(name, remote = false)
+      list(remote).select { |plugin| plugin.name == name.to_s }
+    end
+
     protected
 
       def reconfigure(_msg, config)

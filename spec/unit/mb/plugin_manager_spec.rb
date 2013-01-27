@@ -283,9 +283,30 @@ describe MotherBrain::PluginManager do
     context "given 'true' for the remote parameter" do
       it "loads the remote plugins before returning" do
         subject.should_receive(:load_all_remote)
-        
+
         subject.list(true)
       end
+    end
+  end
+
+  describe "#versions" do
+    let(:name) { "nginx" }
+
+    before(:each) do
+      subject.stub(:list) do
+        [
+          double('pone', name: 'nginx'),
+          double('ptwo', name: 'other')
+        ]
+      end
+    end
+
+    it "returns an Array" do
+      subject.versions(name).should be_a(Array)
+    end
+
+    it "contains only plugins of the given name" do
+      subject.versions(name).should have(1).item
     end
   end
 end
