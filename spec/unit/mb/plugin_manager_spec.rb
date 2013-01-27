@@ -96,17 +96,22 @@ describe MotherBrain::PluginManager do
     end
   end
 
-  describe "#load_resource" do
-    let(:client) { double('client') }
+  describe "#load_remote" do
+    let(:name) { "nginx" }
+    let(:version) { "1.2.0" }
     let(:resource) do
-      Ridley::CookbookResource.new(client)
+      Ridley::CookbookResource.new(double('client'))
+    end
+
+    before(:each) do
+      subject.ridley.stub_chain(:cookbook, :find).and_return(resource)
     end
 
     context "when the resource doesn't contain a motherbrain plugin" do
       before(:each) { resource.stub(has_motherbrain_plugin?: false) }
 
       it "returns nil if resource doesn't contain a motherbrain plugin" do
-        subject.load_resource(resource).should be_nil
+        subject.load_remote(name, version).should be_nil
       end
     end
 
@@ -125,13 +130,13 @@ describe MotherBrain::PluginManager do
         end
 
         it "adds the plugin to the set of plugins" do
-          subject.load_resource(resource)
+          subject.load_remote(name, version)
 
           subject.plugins.should have(1).item
         end
 
         it "cleans up the generated temporary files" do
-          subject.load_resource(resource)
+          subject.load_remote(name, version)
 
           File.exist?(temp_dir).should be_false
         end
@@ -142,7 +147,7 @@ describe MotherBrain::PluginManager do
 
         it "raises a PluginDownloadError" do
           expect {
-            subject.load_resource(resource)
+            subject.load_remote(name, version)
           }.to raise_error(MB::PluginDownloadError)
         end
       end
@@ -158,11 +163,8 @@ describe MotherBrain::PluginManager do
       MB::Plugin.new(metadata)
     end
 
-    it "returns a Set of plugins" do
-      result = subject.add(plugin)
-
-      result.should be_a(Set)
-      result.should each be_a(MB::Plugin)
+    it "returns the added plugin" do
+      subject.add(plugin).should eql(plugin)
     end
 
     it "adds the plugin to the Set of plugins" do
@@ -181,10 +183,15 @@ describe MotherBrain::PluginManager do
       context "when given 'true' for the ':force' option" do
         it "adds the plugin anyway" do
           subject.add(plugin)
-          result = subject.add(plugin, force: true)
 
-          result.should be_a(Set)
-          result.should include(plugin)
+          subject.add(plugin, force: true).should eql(plugin)
+        end
+
+        it "doesn't add a duplicate plugin" do
+          subject.add(plugin)
+          subject.add(plugin)
+
+          subject.plugins.should have(1).item
         end
       end
     end

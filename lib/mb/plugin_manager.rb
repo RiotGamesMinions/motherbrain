@@ -13,6 +13,7 @@ module MotherBrain
     include Celluloid
     include Celluloid::Notifications
     include MB::Logging
+    include MB::Mixin::Services
 
     # @return [Pathname]
     attr_reader :berkshelf_path
@@ -57,6 +58,7 @@ module MotherBrain
       end
 
       @plugins.add(plugin)
+      plugin
     end
 
     # Clear list of known plugins
@@ -95,15 +97,30 @@ module MotherBrain
     # @param [String] name
     # @param [#to_s] version (nil)
     #
+    # @option options [Boolean] :remote
+    #   search for the plugin on the remote Chef Server if it isn't found locally
+    #
     # @return [Plugin, nil]
-    def find(name, version = nil)
-      plugins.sort.reverse.find do |plugin|
+    def find(name, version = nil, options = {})
+      options = options.reverse_merge(remote: false)
+
+      plugin = plugins.sort.reverse.find do |plugin|
         if version.nil?
           plugin.name == name
         else
           plugin.name == name && plugin.version.to_s == version.to_s
         end
       end
+
+      if plugin.nil? && options[:remote]
+        if version.nil?
+          version = ridley.cookbook.versions(name).last
+        end
+
+        load_remote(name, version)
+      end
+
+      plugin
     end
 
     # @return [Array<MotherBrain::Plugin>]
@@ -119,23 +136,32 @@ module MotherBrain
     # @option options [Boolean] :force (true)
     #   load a plugin even if a plugin of the same name and version is already loaded
     #
-    # @return [Set<MB::Plugin>, nil]
+    # @return [MB::Plugin, nil]
+    #   returns the loaded plugin or nil if the plugin was not loaded successfully or was
+    #   already loaded
     def load_file(path, options = {})
       options = options.reverse_merge(force: true)
+      plugin  = Plugin.from_path(path.to_s)
 
       add(Plugin.from_path(path.to_s), options)
     end
 
-    # Load a plugin from a cookbook resource
+    # Load a plugin of the given name and version from the remote Chef server
     #
-    # @param [Ridley::CookbookResource] resource
+    # @param [String] name
+    #   name of the plugin to load
+    # @param [String] version
+    #   version of the plugin to load
     #
     # @option options [Boolean] :force (false)
     #   load a plugin even if a plugin of the same name and version is already loaded
     #
-    # @return [Set<MB::Plugin>, nil]
-    def load_resource(resource, options = {})
-      options = options.reverse_merge(force: false)
+    # @return [MB::Plugin, nil]
+    #   returns the loaded plugin or nil if the remote does not contain a plugin of the given
+    #   name and version
+    def load_remote(name, version, options = {})
+      options  = options.reverse_merge(force: false)
+      resource = ridley.cookbook.find(name, version)
 
       unless resource.has_motherbrain_plugin?
         return nil
@@ -230,9 +256,11 @@ module MotherBrain
 
       # Load all of the plugins from the remote Chef Server
       def load_all_remote
-        Application.ridley.cookbook.all.collect do |name, versions|
+        ridley.cookbook.all.collect do |name, versions|
           versions.each do |version|
-            load_resource(Application.ridley.cookbook.find(name, version))
+            next if find(name, version)
+
+            load_remote(name, version)
           end
         end
       rescue PluginSyntaxError, PluginLoadError, PluginDownloadError => ex
