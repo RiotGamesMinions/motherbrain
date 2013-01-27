@@ -104,7 +104,7 @@ module MotherBrain
     def find(name, version = nil, options = {})
       options = options.reverse_merge(remote: false)
 
-      plugin = plugins.sort.reverse.find do |plugin|
+      plugin = list.sort.reverse.find do |plugin|
         if version.nil?
           plugin.name == name
         else
@@ -186,17 +186,16 @@ module MotherBrain
 
     # A set of all the registered plugins
     #
-    # @param [String, nil] name (nil)
-    #   an optional parameter which if provided will filter the results to include only
-    #   plugins which match the given name
+    # @param [Boolean] remote (false)
+    #   search for plugins on the remote Chef server and include them in the returned list
     #
     # @return [Set<Plugin>]
-    def plugins(name = nil)
-      if name.nil?
-        @plugins
-      else
-        @plugins.select { |plugin| plugin.name == name }
+    def list(remote = false)
+      if remote
+        load_all_remote
       end
+
+      @plugins
     end
 
     # Remove and Add the given plugin from the set of plugins

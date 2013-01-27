@@ -58,8 +58,8 @@ describe MotherBrain::PluginManager do
     it "has a plugin for each plugin in the paths" do
       subject.load_all
 
-      subject.plugins.should have(3).items
-      subject.plugins.should each be_a(MB::Plugin)
+      subject.list.should have(3).items
+      subject.list.should each be_a(MB::Plugin)
     end
 
     context "when 'remote_loading' is enabled" do
@@ -92,7 +92,7 @@ describe MotherBrain::PluginManager do
     it "adds an instantiated plugin to the hash of plugins" do
       subject.load_file(path)
 
-      subject.plugins.should include(plugin)
+      subject.list.should include(plugin)
     end
   end
 
@@ -132,7 +132,7 @@ describe MotherBrain::PluginManager do
         it "adds the plugin to the set of plugins" do
           subject.load_remote(name, version)
 
-          subject.plugins.should have(1).item
+          subject.list.should have(1).item
         end
 
         it "cleans up the generated temporary files" do
@@ -178,7 +178,7 @@ describe MotherBrain::PluginManager do
     it "adds the plugin to the Set of plugins" do
       subject.add(plugin)
 
-      subject.plugins.should include(plugin)
+      subject.list.should include(plugin)
     end
 
     context "when the plugin is already added" do
@@ -199,7 +199,7 @@ describe MotherBrain::PluginManager do
           subject.add(plugin)
           subject.add(plugin)
 
-          subject.plugins.should have(1).item
+          subject.list.should have(1).item
         end
       end
     end
@@ -268,7 +268,24 @@ describe MotherBrain::PluginManager do
       subject.add(plugin)
       subject.clear_plugins
 
-      subject.plugins.should be_empty
+      subject.list.should be_empty
+    end
+  end
+
+  describe "#list" do
+    it "returns a Set of plugins" do
+      result = subject.list
+
+      result.should be_a(Set)
+      result.should each be_a(MB::Plugin)
+    end
+
+    context "given 'true' for the remote parameter" do
+      it "loads the remote plugins before returning" do
+        subject.should_receive(:load_all_remote)
+        
+        subject.list(true)
+      end
     end
   end
 end
