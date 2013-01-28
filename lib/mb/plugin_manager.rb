@@ -104,23 +104,13 @@ module MotherBrain
     def find(name, version = nil, options = {})
       options = options.reverse_merge(remote: false)
 
-      plugin = list.sort.reverse.find do |plugin|
+      list(options[:remote]).sort.reverse.find do |plugin|
         if version.nil?
           plugin.name == name
         else
           plugin.name == name && plugin.version.to_s == version.to_s
         end
       end
-
-      if plugin.nil? && options[:remote]
-        if version.nil?
-          version = ridley.cookbook.versions(name).last
-        end
-
-        load_remote(name, version)
-      end
-
-      plugin
     end
 
     # @return [Array<MotherBrain::Plugin>]
@@ -187,7 +177,7 @@ module MotherBrain
     # A set of all the registered plugins
     #
     # @param [Boolean] remote (false)
-    #   search for plugins on the remote Chef server and include them in the returned list
+    #   eargly search for plugins on the remote Chef server and include them in the returned list
     #
     # @return [Set<Plugin>]
     def list(remote = false)
@@ -233,11 +223,19 @@ module MotherBrain
     # @param [#to_s] name
     #   name of the plugin to list versions of
     # @param [Boolean] remote (false)
-    #   search for plugins on the remote Chef server and include them in the returned list
+    #   eagerly search for plugins on the remote Chef server and include them in the returned list
     #
-    # @return [Array<MB::Plugin>, nil]
+    # @raise [PluginNotFound] if a plugin of the given name has no versions loaded
+    #
+    # @return [Array<MB::Plugin]
     def versions(name, remote = false)
-      list(remote).select { |plugin| plugin.name == name.to_s }
+      plugins = list(remote).select { |plugin| plugin.name == name.to_s }
+      
+      if plugins.empty?
+        abort PluginNotFound.new(name)
+      end
+
+      plugins
     end
 
     protected

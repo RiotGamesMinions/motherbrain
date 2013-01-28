@@ -45,7 +45,7 @@ describe MB::RestGateway do
       it "returns all loaded plugins as JSON" do
         get '/plugins'
         last_response.status.should == 200
-        JSON.parse(last_response.body).should have(MB::Application.plugin_manager.plugins.length).items
+        JSON.parse(last_response.body).should have(MB::Application.plugin_manager.list.length).items
       end
     end
 
