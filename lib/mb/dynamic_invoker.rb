@@ -23,10 +23,21 @@ module MotherBrain
           arguments_string = arguments.join ", "
           description_string = arguments.map(&:upcase).join " "
 
+          method_option :force,
+            type: :boolean,
+            default: false,
+            desc: "Run command even if the environment is locked",
+            aliases: "-f"
           desc("#{command.name} #{description_string}", command.description.to_s)
           instance_eval <<-RUBY
             define_method(:#{command.name}) do |#{arguments_string}|
-              command.invoke(#{arguments_string})
+              command.invoke(
+                {
+                  chef_environment: environment,
+                  force: options[:force]
+                },
+                #{arguments_string}
+              )
             end
           RUBY
         end
