@@ -255,7 +255,14 @@ module MotherBrain
     end
 
     def to_hash
-      self.attributes.slice(:name, :version, :description, :author, :email)
+      {
+        name: name,
+        version: version,
+        maintainer: maintainer,
+        maintainer_email: maintainer_email,
+        description: description,
+        long_description: long_description
+      }
     end
 
     # @param [Hash] options

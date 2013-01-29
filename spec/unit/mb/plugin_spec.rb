@@ -180,4 +180,34 @@ describe MB::Plugin do
       list.shuffle.sort.should eql(list)
     end
   end
+
+  describe "#to_hash" do
+    subject do
+      described_class.new(metadata).to_hash
+    end
+
+    it "includes a 'name' field and value" do
+      subject[:name].should_not be_nil
+    end
+
+    it "includes a 'version' field and value" do
+      subject[:version].should_not be_nil
+    end
+
+    it "includes a 'description' field and value" do
+      subject[:description].should_not be_nil
+    end
+
+    it "includes a 'long_description' field and value" do
+      subject[:long_description].should_not be_nil
+    end
+
+    it "includes a 'maintainer' field and value" do
+      subject[:maintainer].should_not be_nil
+    end
+
+    it "includes a 'maintainer_email' field and value" do
+      subject[:maintainer_email].should_not be_nil
+    end
+  end
 end
