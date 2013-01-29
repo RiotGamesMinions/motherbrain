@@ -4,6 +4,14 @@ module MotherBrain
       Pathname.new(File.expand_path('../../../', __FILE__))
     end
 
+    def app_tmp_path
+      app_root_path.join('spec/.mb')
+    end
+
+    def berkshelf_path
+      MB::Berkshelf.default_path
+    end
+
     def tmp_path
       app_root_path.join('spec/tmp')
     end
@@ -15,32 +23,64 @@ module MotherBrain
     def clean_tmp_path
       FileUtils.rm_rf(tmp_path)
       FileUtils.mkdir_p(tmp_path)
+      FileUtils.rm_rf("#{app_tmp_path}/*")
     end
 
-    def set_mb_config_path(path = mb_config_path)
-      ENV["MB_CONFIG"] = path.to_s
-    end
-
-    def set_plugin_path(path = plugin_path)
-      ENV["MB_PLUGIN_PATH"] = path.to_s
+    def mb_config
+      @mb_config ||= MB::Config.new(nil,
+        {
+          chef: {
+            api_url: "http://chef.riotgames.com",
+            api_client: "fake",
+            api_key: File.join(fixtures_path, "fake_key.pem"),
+            validator_client: "fake",
+            validator_path: File.join(fixtures_path, "fake_key.pem")
+          },
+          ssh: {
+            user: 'reset',
+            password: 'whatever',
+            keys: []
+          },
+          ef: {
+            api_key: "asdf",
+            api_url: "https://ef.riotgames.com"
+          },
+          rest_gateway: {
+            port: 1985
+          },
+          plugin_manager: {
+            eager_loading: false
+          }
+        }
+      )
     end
 
     def mb_config_path
-      app_root_path.join("spec", "tmp", ".mb", "config.json")
+      MB::Config.default_path
     end
 
-    def plugin_path
-      app_root_path.join("spec", "tmp", ".mb", "plugins")
-    end
-
-    def generate_cookbook(name, path, options = {})
+    # @param [String] name
+    #   name of the cookbook to generate
+    #
+    # @option options [String] :path
+    #   path to the directory to place the cookbook in
+    # @option options [String] :version
+    #   version of the cookbook to generate
+    # @option options [Boolean] :with_plugin
+    #   should this cookbook include a motherbrain plugin?
+    #
+    # @return [String]
+    #   path to the generated cookbook
+    def generate_cookbook(name, options = {})
       options = options.reverse_merge(
         version: "0.1.0",
         with_plugin: true
       )
 
-      FileUtils.mkdir_p(path)
-      File.open(File.join(path, MB::Plugin::METADATA_FILENAME), 'w+') do |f|
+      cookbook_path = options[:path] || File.join(berkshelf_path, 'cookbooks', "#{name}-#{options[:version]}")
+
+      FileUtils.mkdir_p(cookbook_path)
+      File.open(File.join(cookbook_path, MB::Plugin::METADATA_FILENAME), 'w+') do |f|
         f.write <<-EOH
           name             "#{name}"
           maintainer       "Jamie Winsor"
@@ -57,21 +97,22 @@ module MotherBrain
       end
 
       if options[:with_plugin]
-        File.open(File.join(path, MB::Plugin::PLUGIN_FILENAME), 'w+') do |f|
+        File.open(File.join(cookbook_path, MB::Plugin::PLUGIN_FILENAME), 'w+') do |f|
           f.write "# blank plugin"
         end
       end
+
+      cookbook_path
     end
 
-    def generate_valid_config(path)
+    # @param [String] path
+    #
+    # @return [MB::Config]
+    def generate_valid_config(path = MB::Config.default_path)
       FileUtils.rm_rf(path)
-      MB::Config.new.tap do |mb|
-        mb.chef.api_url = "https://api.opscode.com/organizations/vialstudio"
-        mb.chef.api_client = "reset"
-        mb.chef.api_key = "/Users/reset/.chef/reset.pem"
-        mb.ssh.user = "root"
-        mb.ssh.password = "secretpass"
-      end.save(path)
+      mb_config.save(path)
+
+      mb_config
     end
 
     def generate_invalid_config(path)

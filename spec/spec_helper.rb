@@ -1,4 +1,6 @@
 ENV['RUBY_ENV'] ||= 'test'
+ENV['MOTHERBRAIN_PATH'] ||= File.join(File.expand_path(File.dirname(__FILE__)), ".mb")
+ENV['BERKSHELF_PATH'] ||= File.join(File.expand_path(File.dirname(__FILE__)), "tmp/.berkshelf")
 
 require 'rubygems'
 require 'bundler'
@@ -23,36 +25,8 @@ def setup_rspec
     config.before(:all) do
       MB::Logging.setup(location: '/dev/null')
 
-      @config = MB::Config.new(nil,
-        {
-          berkshelf: {
-            path: tmp_path.join('berkshelf').to_s
-          },
-          chef: {
-            api_url: "http://chef.riotgames.com",
-            api_client: "fake",
-            api_key: File.join(fixtures_path, "fake_key.pem"),
-            validator_client: "fake",
-            validator_path: File.join(fixtures_path, "fake_key.pem")
-          },
-          ssh: {
-            user: 'reset',
-            password: 'whatever',
-            keys: []
-          },
-          ef: {
-            api_key: "asdf",
-            api_url: "https://ef.riotgames.com"
-          },
-          rest_gateway: {
-            port: 1985
-          },
-          plugin_manager: {
-            eager_loading: false
-          }
-        }
-      )
-      @app = MB::Application.run!(@config)
+      @config = generate_valid_config
+      @app    = MB::Application.run!(@config)
     end
 
     config.before(:each) do

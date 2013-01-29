@@ -32,11 +32,10 @@ describe MB::InvokerBase do
   end
 
   before(:each) do
-    set_mb_config_path(mb_config_path)
-    generate_valid_config(ENV['MB_CONFIG'])
+    generate_valid_config
   end
 
-  subject { MB::InvokerBase.new([], config: ENV['MB_CONFIG']) }
+  subject { MB::InvokerBase.new([]) }
 
   describe "#config" do
     it "returns an instance of MB::Config" do

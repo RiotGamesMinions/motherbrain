@@ -32,25 +32,21 @@ describe MotherBrain::PluginManager do
   subject { described_class.new }
 
   describe "#load_all" do
-    let(:paths) do
-      [
-        tmp_path.join('plugin_one'),
-        tmp_path.join('plugin_two'),
-        tmp_path.join('plugin_three')
-      ]
-    end
+    let(:count) { 3 }
 
     before(:each) do
       subject.clear_plugins
-      paths.each do |path|
-        generate_cookbook(SecureRandom.hex(16), path, with_plugin: true)
+      paths = Array.new
+      
+      count.times do
+        paths << generate_cookbook(SecureRandom.hex(16), with_plugin: true)
       end
 
       MB::Berkshelf.stub(:cookbooks).and_return(paths)
     end
 
     it "sends a load message to self with each plugin found in the berkshelf" do
-      subject.should_receive(:load_file).with(anything, force: false).exactly(3).times
+      subject.should_receive(:load_file).with(anything, force: false).exactly(count).times
 
       subject.load_all
     end
@@ -58,7 +54,7 @@ describe MotherBrain::PluginManager do
     it "has a plugin for each plugin in the paths" do
       subject.load_all
 
-      subject.list.should have(3).items
+      subject.list.should have(count).items
       subject.list.should each be_a(MB::Plugin)
     end
 
@@ -121,7 +117,7 @@ describe MotherBrain::PluginManager do
 
       context "and the files are transferred successfully" do
         before(:each) do
-          generate_cookbook('whatever', temp_dir, with_plugin: true)
+          generate_cookbook('whatever', path: temp_dir, with_plugin: true)
           MB::FileSystem.stub(:tmpdir) { temp_dir }
           metadata = File.join(temp_dir, MB::Plugin::PLUGIN_FILENAME)
           plugin = File.join(temp_dir, MB::Plugin::METADATA_FILENAME)
