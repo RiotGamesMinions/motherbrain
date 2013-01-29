@@ -1,9 +1,23 @@
+require 'tmpdir'
+
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   module FileSystem
     autoload :Tempfile, 'mb/file_system/tempfile'
 
     class << self
+      # Create the directory structure for motherbrain
+      def init
+        FileUtils.mkdir_p(root)
+        FileUtils.mkdir_p(logs)
+        FileUtils.mkdir_p(tmp)
+      end
+
+      # @return [Pathname]
+      def logs
+        root.join("logs")
+      end
+
       # @return [Pathname]
       def root
         Pathname.new(default_root_path)
@@ -14,20 +28,15 @@ module MotherBrain
         root.join("tmp")
       end
 
-      # @return [Pathname]
-      def plugins
-        root.join("plugins")
-      end
-
-      # @return [Pathname]
-      def logs
-        root.join("logs")
-      end
-
+      # Create a temporary directory in the tmp directory of the motherbrain
+      # file system
+      #
+      # @param [String] prefix (nil)
+      #   a prefix suffix to attach to name of the generated directory
+      #
       # @return [String]
-      def tmpdir
-        FileUtils.mkdir_p(tmp)
-        Dir.mktmpdir(nil, tmp)
+      def tmpdir(prefix = nil)
+        Dir.mktmpdir(prefix, tmp)
       end
 
       private

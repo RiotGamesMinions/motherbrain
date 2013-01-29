@@ -77,10 +77,12 @@ describe MB::Bootstrap::Manifest do
     end
 
     let(:plugin) do
-      MB::Plugin.new do
+      metadata = MB::CookbookMetadata.new do
         name "pvpnet"
         version "1.2.3"
+      end
 
+      MB::Plugin.new(metadata) do
         component "activemq" do
           group "master"
         end

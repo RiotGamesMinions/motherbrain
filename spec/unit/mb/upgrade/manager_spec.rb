@@ -2,7 +2,13 @@ require 'spec_helper'
 
 describe MB::Upgrade::Manager do
   let(:environment) { "environment" }
-  let(:plugin) { MB::Plugin.new }
+  let(:plugin) do
+    metadata = MB::CookbookMetadata.new do
+      name "motherbrain"
+      version "0.1.0"
+    end
+    MB::Plugin.new(metadata)
+  end
   let(:options) { Hash.new }
 
   let(:worker_stub) { stub MB::Upgrade::Worker }

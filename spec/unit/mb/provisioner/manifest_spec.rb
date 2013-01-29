@@ -1,7 +1,14 @@
 require 'spec_helper'
 
 describe MB::Provisioner::Manifest do
-  let(:plugin) { MB::Plugin.new }
+  let(:plugin) do
+    metadata = MB::CookbookMetadata.new do
+      name "motherbrain"
+      version "0.1.0"
+    end
+
+    MB::Plugin.new(metadata)
+  end
 
   let(:activemq) { MB::Component.new('activemq') }
   let(:nginx) { MB::Component.new('nginx') }

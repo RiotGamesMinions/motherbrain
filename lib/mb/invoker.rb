@@ -17,7 +17,7 @@ module MotherBrain
       end
 
       def setup
-        Application.plugin_manager.plugins.each do |plugin|
+        Application.plugin_manager.list.each do |plugin|
           self.register_plugin MB::PluginInvoker.fabricate(plugin)
         end
       end
@@ -75,18 +75,20 @@ module MotherBrain
       MB.ui.say "Config written to: '#{path}'"
     end
 
+    method_option :remote,
+      type: :boolean,
+      default: false,
+      desc: "search the remote Chef server and include plugins from the results"
     desc "plugins", "Display all installed plugins and versions"
     def plugins
-      if Application.plugin_manager.plugins.empty?
-        paths = Application.plugin_manager.paths.to_a.collect { |path| "'#{path}'" }
+      plugins = Application.plugin_manager.list(options[:remote])
 
-        MB.ui.say "No MotherBrain plugins found in any of your configured plugin paths!"
-        MB.ui.say "\n"
-        MB.ui.say "Paths: #{paths.join(', ')}"
+      if plugins.empty?
+        MB.ui.say "No plugins found in your Berkshelf: '#{Application.plugin_manager.berkshelf_path}'"
         exit(0)
       end
 
-      Application.plugin_manager.plugins.group_by(&:name).each do |name, plugins|
+      plugins.group_by(&:name).each do |name, plugins|
         versions = plugins.collect(&:version).reverse!
         MB.ui.say "#{name}: #{versions.join(', ')}"
       end

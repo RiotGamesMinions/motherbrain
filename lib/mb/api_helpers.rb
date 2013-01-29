@@ -1,30 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   module ApiHelpers
-    def bootstrapper
-      Bootstrap::Manager.instance
-    end
-
-    def plugin_manager
-      PluginManager.instance
-    end
-
-    def provisioner
-      Provisioner::Manager.instance
-    end
-
-    # @param [String] name (nil)
-    #
-    # @return [Array<Plugin>]
-    def list_plugins!(name = nil)
-      plugins = plugin_manager.plugins(name)
-
-      if plugins.empty?
-        raise PluginNotFound.new(name)
-      end
-
-      plugins
-    end
+    include MB::Mixin::Services
 
     # @param [String] name
     # @param [String] version (nil)
@@ -44,7 +21,7 @@ module MotherBrain
     #
     # @return [JobRecord]
     def find_job!(id)
-      job = JobManager.instance.find(id)
+      job = job_manager.find(id)
 
       if job.nil?
         raise JobNotFound.new(id)
