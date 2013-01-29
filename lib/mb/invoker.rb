@@ -2,9 +2,14 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Invoker < InvokerBase
     class << self
+      def invoked_opts
+        @invoked_opts ||= {}
+      end
+
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
+        invoked_opts.merge!(opts)
         if args.any? and (args & InvokerBase::NOCONFIG_TASKS).empty?
           app_config = configure(opts.dup)
           app_config.validate!
@@ -36,7 +41,7 @@ module MotherBrain
         # @return [Array]
         def parse_args(given_args)
           args, opts = Thor::Options.split(given_args)
-          thor_opts = Thor::Options.new(InvokerBase.class_options)
+          thor_opts = Thor::Options.new(Invoker.class_options)
           parsed_opts = thor_opts.parse(opts)
 
           [ args, parsed_opts ]
@@ -50,6 +55,28 @@ module MotherBrain
         self.class.setup
       end
     end
+
+    class_option :config,
+      type: :string,
+      desc: "Path to a MotherBrain JSON configuration file.",
+      aliases: "-c",
+      banner: "PATH"
+    class_option :verbose,
+      type: :boolean,
+      desc: "Increase verbosity of output.",
+      default: false,
+      aliases: "-v"
+    class_option :debug,
+      type: :boolean,
+      desc: "Output all log messages.",
+      default: false,
+      aliases: "-d"
+    class_option :logfile,
+      type: :string,
+      desc: "Set the log file location.",
+      aliases: "-L",
+      banner: "PATH"
+
 
     method_option :force,
       type: :boolean,

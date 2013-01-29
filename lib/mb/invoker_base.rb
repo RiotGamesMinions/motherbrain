@@ -41,30 +41,10 @@ module MotherBrain
 
     def initialize(args = [], options = {}, config = {})
       super
+      opts = self.is_a?(Invoker) ? self.options.dup : self.options.merge(Invoker.invoked_opts)
       unless NOCONFIG_TASKS.include? config[:current_task].try(:name)
-        @config = self.class.configure(self.options.dup)
+        @config = self.class.configure(opts)
       end
     end
-
-    class_option :config,
-      type: :string,
-      desc: "Path to a MotherBrain JSON configuration file.",
-      aliases: "-c",
-      banner: "PATH"
-    class_option :verbose,
-      type: :boolean,
-      desc: "Increase verbosity of output.",
-      default: false,
-      aliases: "-v"
-    class_option :debug,
-      type: :boolean,
-      desc: "Output all log messages.",
-      default: false,
-      aliases: "-d"
-    class_option :logfile,
-      type: :string,
-      desc: "Set the log file location.",
-      aliases: "-L",
-      banner: "PATH"
   end
 end
