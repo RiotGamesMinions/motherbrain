@@ -43,6 +43,7 @@ module MotherBrain
         :component_versions,
         :cookbook_versions,
         :environment_attributes,
+        :environment_attributes_file,
         :skip_bootstrap
       ]
 
