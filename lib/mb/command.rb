@@ -37,7 +37,8 @@ module MotherBrain
     # @raise [MB::EnvironmentNotFound] if the target environment does not exist
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
     #
-    # @param [String] environment
+    # @param [Hash] options passed to {ChefMutex}
+    # @param [Array] args passed to {CommandRunner}
     def invoke(options = {}, *args)
       environment = options[:chef_environment]
 
