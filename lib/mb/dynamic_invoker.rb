@@ -20,8 +20,8 @@ module MotherBrain
             arguments << parameter.to_s
           end
 
-          arguments_string = arguments.join ", "
-          description_string = arguments.map(&:upcase).join " "
+          arguments_string = arguments.join(", ")
+          description_string = arguments.map(&:upcase).join(" ")
 
           method_option :force,
             type: :boolean,
