@@ -23,8 +23,6 @@ Feature: listing the plugins available to MotherBrain
     When I run the "plugins" command
     Then the output should contain:
       """
-      No MotherBrain plugins found in any of your configured plugin paths!
-
-      Paths:
+      No plugins found in your Berkshelf:
       """
     And the exit status should be 0
