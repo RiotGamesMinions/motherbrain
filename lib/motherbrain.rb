@@ -20,6 +20,7 @@ end
 
 require 'mb/version'
 require 'mb/errors'
+require 'mb/ridley_ext'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain
@@ -29,6 +30,7 @@ module MotherBrain
   autoload :ApiHelpers, 'mb/api_helpers'
   autoload :ApiValidators, 'mb/api_validators'
   autoload :Application, 'mb/application'
+  autoload :Berkshelf, 'mb/berkshelf'
   autoload :Bootstrap, 'mb/bootstrap'
   autoload :ChefMutex, 'mb/chef_mutex'
   autoload :CleanRoomBase, 'mb/clean_room_base'
@@ -39,6 +41,7 @@ module MotherBrain
   autoload :ComponentInvoker, 'mb/component_invoker'
   autoload :Config, 'mb/config'
   autoload :ConfigManager, 'mb/config_manager'
+  autoload :CookbookMetadata, 'mb/cookbook_metadata'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
   autoload :ErrorHandler, 'mb/error_handler'
   autoload :FileSystem, 'mb/file_system'

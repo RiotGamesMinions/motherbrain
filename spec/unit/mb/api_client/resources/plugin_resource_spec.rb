@@ -39,7 +39,7 @@ describe MB::ApiClient::PluginResource do
   describe "#list" do
     before(:each) do
       stub_request(:get, "http://0.0.0.0:1984/plugins.json").
-        to_return(status: 200, body: MultiJson.encode(MB::PluginManager.instance.plugins))
+        to_return(status: 200, body: MultiJson.encode(MB::PluginManager.instance.list))
     end
 
     it "returns an Array" do

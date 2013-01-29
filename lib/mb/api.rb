@@ -6,6 +6,7 @@ module MotherBrain
   class Api < Grape::API
     helpers MB::Logging
     helpers MB::ApiHelpers
+    helpers MB::Mixin::Services
 
     format :json
 
@@ -131,7 +132,7 @@ module MotherBrain
     resource :plugins do
       desc "list all loaded plugins and their versions"
       get do
-        plugin_manager.plugins
+        plugin_manager.list
       end
 
       desc "display all the versions of the given plugin"
@@ -139,7 +140,7 @@ module MotherBrain
         requires :name, type: String, desc: "plugin name"
       end
       get ':name' do
-        list_plugins!(params[:name])
+        plugin_manager.versions(params[:name])
       end
 
       desc "display the latest version of the plugin of the given name"

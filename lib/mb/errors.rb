@@ -50,7 +50,13 @@ module MotherBrain
   class GroupNotFound < PluginSyntaxError; end
 
   class PluginLoadError < MBError; status_code(101); end
-  class AlreadyLoaded < PluginLoadError; end
+  class InvalidCookbookMetadata < PluginLoadError
+    attr_reader :errors
+    
+    def initialize(errors)
+      @errors = errors
+    end
+  end
 
   class ChefRunnerError < MBError; status_code(102); end
   class NoValueForAddressAttribute < ChefRunnerError; end
@@ -101,6 +107,7 @@ module MotherBrain
   end
 
   class NoBootstrapRoutine < MBError; status_code(108); end
+  class PluginDownloadError < MBError; status_code(109); end
 
   class ClusterBusy < MBError; status_code(10); end
   class ClusterNotFound < MBError; status_code(11); end
