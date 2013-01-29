@@ -20,14 +20,16 @@ describe MB::InvokerBase do
         end
       end
 
-      context "when a config.json is not found in the directory contained in ENV['MB_CONFIG']" do
+      context "when a config file is not found at the given location" do
+        let(:location) { tmp_path.join('config.json').to_s }
+
         before(:each) do
-          FileUtils.rm(ENV['MB_CONFIG'])
+          FileUtils.rm_f(location)
         end
 
         it "raises a Chozo::Errors::ConfigNotFound error configuration" do
           lambda {
-            subject.new([])
+            subject.new([], config: location)
           }.should raise_error(Chozo::Errors::ConfigNotFound)
         end
       end
