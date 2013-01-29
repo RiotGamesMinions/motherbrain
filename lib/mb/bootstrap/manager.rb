@@ -137,6 +137,17 @@ module MotherBrain
             set_environment_attributes(environment, options[:environment_attributes])
           end
 
+          unless options[:environment_attributes_file].nil?
+            job.status = "Setting environment attributes from file"
+            begin
+              attribute_hash = MultiJson.decode(File.open(options[:environment_attributes_file]).read)
+              set_environment_attributes_from_hash(environment, attribute_hash)
+            rescue MultiJson::DecodeError => error
+              log.fatal { "Failed to parse json supplied in environment attributes file."}
+              return job.report_failure(error)
+            end
+          end
+
           while tasks = task_queue.shift
             job.status = "Bootstrapping #{Array(tasks).collect(&:id).join(', ')}"
 

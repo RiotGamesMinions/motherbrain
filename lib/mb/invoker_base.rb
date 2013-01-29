@@ -25,6 +25,7 @@ module MotherBrain
         MB::Logging.setup(level: level, location: options[:logfile])
 
         config.rest_gateway.enable = false
+        config.plugin_manager.eager_loading = false
         config
       end
     end

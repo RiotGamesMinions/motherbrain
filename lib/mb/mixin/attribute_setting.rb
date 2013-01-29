@@ -82,7 +82,7 @@ module MotherBrain
         override_attributes = Hash.new
 
         environment_attributes.each do |attribute, value|
-          attribute_hash = Hash.from_dotted_path(attribute, value)
+          attribute_hash = Hash.from_dotted_path(attribute.to_s, value.to_s)
           override_attributes.deep_merge!(attribute_hash)
         end
 
@@ -93,6 +93,28 @@ module MotherBrain
         end
       end
 
+      # Set arbitrary attributes at the environment level
+      #
+      # @param [String] :env_id
+      #   the name identifier of the environment to modify
+      # @param [Hash] :environment_attributes_hash
+      #   Hash of attributes and values
+      #
+      # @example setting multiple attributes on an environment
+      #
+      #   set_environment_attributes_from_hash("test-environment",
+      #     {"foo"      => "bar",
+      #     "baz.quux" => 42}
+      #   )
+      def set_environment_attributes_from_hash(env_id, environment_attributes_hash)
+        log.info "Setting environment attributes from hash #{environment_attributes_hash}"
+
+        Application.ridley.sync do
+          env = environment.find!(env_id)
+          env.override_attributes.deep_merge!(environment_attributes_hash)
+          env.save
+        end
+      end
 
       private
 

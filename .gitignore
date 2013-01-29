@@ -12,8 +12,10 @@ lib/bundler/man
 pkg
 rdoc
 spec/reports
+spec/.mb
 test/tmp
 test/version_tmp
 features/support/ef.token
 tmp
 *.sw[op]
+rerun.txt

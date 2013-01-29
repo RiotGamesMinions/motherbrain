@@ -44,7 +44,7 @@ module MotherBrain
       options[:paranoid] = false
 
       if options[:sudo]
-        command = "sudo #{command}"
+        command = "sudo -i #{command}"
       end
 
       worker   = Ridley::SSH::Worker.new(options)
