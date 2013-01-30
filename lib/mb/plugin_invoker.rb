@@ -55,7 +55,8 @@ module MotherBrain
             method_option :force,
               type: :boolean,
               default: false,
-              desc: "Perform bootstrap even if the environment is locked"
+              desc: "Perform bootstrap even if the environment is locked",
+              aliases: "-f"
             desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
             define_method(:bootstrap) do |environment, manifest_file|
               boot_options = Hash.new.merge(options).deep_symbolize_keys

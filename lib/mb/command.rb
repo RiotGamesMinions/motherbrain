@@ -37,13 +37,17 @@ module MotherBrain
     # @raise [MB::EnvironmentNotFound] if the target environment does not exist
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
     #
-    # @param [String] environment
-    def invoke(environment, *args)
+    # @param [Array] args
+    def invoke(*args)
+      options = args.last.is_a?(Hash) ? args.pop : Hash.new
+
+      environment = options[:chef_environment]
+
       unless Application.ridley.environment.find(environment)
         raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
       end
 
-      chef_synchronize(chef_environment: environment) do
+      chef_synchronize(options) do
         CommandRunner.new(environment, scope, execute, *args)
       end
     rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
