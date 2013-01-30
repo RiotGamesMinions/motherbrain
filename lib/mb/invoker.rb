@@ -108,6 +108,16 @@ module MotherBrain
       desc: "search the remote Chef server and include plugins from the results"
     desc "plugins", "Display all installed plugins and versions"
     def plugins
+      if options[:remote]
+        MB.ui.say "\n"
+        MB.ui.say "** listing local and remote plugins..."
+        MB.ui.say "\n"
+      else
+        MB.ui.say "\n"
+        MB.ui.say "** listing local plugins...\n"
+        MB.ui.say "\n"
+      end
+
       plugins = Application.plugin_manager.list(options[:remote])
 
       if plugins.empty?
