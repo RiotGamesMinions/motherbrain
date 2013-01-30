@@ -13,6 +13,9 @@ Feature: listing the plugins available to MotherBrain
     When I run the "plugins" command
     Then the output should contain:
       """
+      
+      ** listing local plugins...
+
       league: 1.0.0
       pvpnet: 2.3.4, 1.2.3
       """
