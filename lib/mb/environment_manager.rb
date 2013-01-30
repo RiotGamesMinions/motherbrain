@@ -59,7 +59,7 @@ module MotherBrain
     #
     # @return [Ridley::EnvironmentResource]
     def find(id)
-      environment = ridley.environment.find!(id)
+      ridley.environment.find!(id)
     rescue Ridley::Errors::ResourceNotFound => ex
       abort EnvironmentNotFound.new("no environment '#{id}' was found")
     end
@@ -80,11 +80,18 @@ module MotherBrain
       def _configure_(id, job, options = {})
         chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
           environment.default_attributes.deep_merge!(options[:attributes])
+          job.status = "saving updated environment"
           environment.save
 
-          ridley.search(:node, "environment: #{environment.name}").collect do |node|
+          job.status = "searching for nodes in the environment"
+          nodes = ridley.search(:node, "environment: #{environment.name}")
+
+          job.status = "performing chef_run on #{nodes.length} nodes"
+          nodes.collect do |node|
             node_querier.future(:chef_run, node.public_hostname)
           end.map(&:value)
+
+          job.status = "finished chef_run on #{nodes.lenght} nodes"
         end
       end
   end
