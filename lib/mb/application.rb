@@ -65,6 +65,7 @@ module MotherBrain
 
         # Abstraction around the above
         group.supervise_as :node_querier, NodeQuerier
+        group.supervise_as :environment_manager, EnvironmentManager
 
         # Services required for orchestration
         group.supervise_as :job_manager, JobManager

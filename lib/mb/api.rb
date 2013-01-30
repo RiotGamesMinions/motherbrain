@@ -127,6 +127,15 @@ module MotherBrain
           params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force, :bootstrap_proxy, :hints).freeze
         )
       end
+
+      desc "configure an existing environment cluster"
+      params do
+        requires :id, type: String, desc: "environment name"
+        requires :attributes, type: Hash, desc: "a hash of attributes to set on the environment"
+      end
+      post ':id/configure' do
+        environment_manager.configure(params[:id], params[:attributes])
+      end
     end
 
     resource :plugins do
