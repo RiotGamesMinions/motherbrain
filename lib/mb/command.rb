@@ -37,9 +37,10 @@ module MotherBrain
     # @raise [MB::EnvironmentNotFound] if the target environment does not exist
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
     #
-    # @param [Hash] options passed to {ChefMutex}
-    # @param [Array] args passed to {CommandRunner}
-    def invoke(options = {}, *args)
+    # @param [Array] args
+    def invoke(*args)
+      options = args.last.is_a?(Hash) ? args.pop : Hash.new
+
       environment = options[:chef_environment]
 
       unless Application.ridley.environment.find(environment)

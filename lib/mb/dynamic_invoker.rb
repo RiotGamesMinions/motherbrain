@@ -32,11 +32,9 @@ module MotherBrain
           instance_eval <<-RUBY
             define_method(:#{command.name}) do |#{arguments_string}|
               command.invoke(
-                {
-                  chef_environment: environment,
-                  force: options[:force]
-                },
-                #{arguments_string}
+                #{arguments_string},
+                chef_environment: environment,
+                force: options[:force]
               )
             end
           RUBY
