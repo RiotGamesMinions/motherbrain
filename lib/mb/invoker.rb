@@ -121,7 +121,13 @@ module MotherBrain
       plugins = Application.plugin_manager.list(options[:remote])
 
       if plugins.empty?
-        MB.ui.say "No plugins found in your Berkshelf: '#{Application.plugin_manager.berkshelf_path}'"
+        errmsg = "No plugins found in your Berkshelf: '#{Application.plugin_manager.berkshelf_path}'"
+        
+        if options[:remote]
+          errmsg << " or on remote: '#{Application.config.chef.api_url}'"
+        end
+        
+        MB.ui.say errmsg
         exit(0)
       end
 
