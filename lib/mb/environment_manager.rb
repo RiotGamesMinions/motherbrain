@@ -27,6 +27,7 @@ module MotherBrain
     # @option options [Hash] :attributes (Hash.new)
     #   a hash of attributes to merge with the existing attributes of an environment
     # @option options [Boolean] :force (false)
+    #   force configure even if the environment is locked
     #
     # @note attributes will be set at the 'default' level and will be merged into the
     #   existing attributes of the environment
@@ -41,7 +42,7 @@ module MotherBrain
       job         = Job.new(:configure_environment)
       environment = find(id)
 
-      async(:_configure_, id, job, options)
+      async(:_configure_, environment, job, options)
 
       job.ticket      
     end
@@ -71,28 +72,35 @@ module MotherBrain
       ridley.environment.all
     end
 
-    private
+    # Performs the heavy lifting for {#configure}
+    #
+    # @param [Ridley::EnvironmentResource] environment
+    #   the environment to lock and configure
+    # @param [MB::Job] job
+    #   a job to update with progress
+    # @param [Hash] options
+    #   see {#configure} for deatils
+    #
+    # @note making this a separate function allows us to run the heavy lifting of {#configure} in
+    #   an asynchronous manner
+    #
+    # @api private
+    def _configure_(environment, job, options = {})
+      chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
+        environment.default_attributes.deep_merge!(options[:attributes])
+        job.status = "saving updated environment"
+        environment.save
 
-      # Performs the heavy lifting for {#configure}
-      #
-      # @note making this a separate function allows us to run the heavy lifting of {#configure} in
-      #   an asynchronous manner
-      def _configure_(id, job, options = {})
-        chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
-          environment.default_attributes.deep_merge!(options[:attributes])
-          job.status = "saving updated environment"
-          environment.save
+        job.status = "searching for nodes in the environment"
+        nodes = ridley.search(:node, "chef_environment:#{environment.name}")
 
-          job.status = "searching for nodes in the environment"
-          nodes = ridley.search(:node, "environment: #{environment.name}")
+        job.status = "performing chef_run on #{nodes.length} nodes"
+        nodes.collect do |node|
+          node_querier.future(:chef_run, node.public_hostname)
+        end.map(&:value)
 
-          job.status = "performing chef_run on #{nodes.length} nodes"
-          nodes.collect do |node|
-            node_querier.future(:chef_run, node.public_hostname)
-          end.map(&:value)
-
-          job.status = "finished chef_run on #{nodes.lenght} nodes"
-        end
+        job.status = "finished chef_run on #{nodes.length} nodes"
       end
+    end
   end
 end
