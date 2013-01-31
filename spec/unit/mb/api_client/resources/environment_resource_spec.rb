@@ -27,6 +27,29 @@ describe MB::ApiClient::EnvironmentResource do
     end
   end
 
+  describe "#configure" do
+    let(:env_id) { "rspec-environment" }
+    let(:attributes) do
+      {
+        key_one: "value_one"
+      }
+    end
+    let(:force) { false }
+
+    it "sends a POST to /environments/{id}/configure.json" do
+      req_body = MultiJson.encode(
+        attributes: attributes,
+        force: force
+      )
+
+      stub_request(:post, "http://0.0.0.0:1984/environments/#{env_id}/configure.json").
+        with(body: req_body).
+        to_return(status: 200, body: MultiJson.encode({}))
+
+      subject.configure(env_id, attributes: attributes, force: false)
+    end
+  end
+
   describe "#destroy" do
     let(:env_id) { "rspec-environment" }
 
