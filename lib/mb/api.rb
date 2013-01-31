@@ -132,9 +132,10 @@ module MotherBrain
       params do
         requires :id, type: String, desc: "environment name"
         requires :attributes, type: Hash, desc: "a hash of attributes to set on the environment"
+        optional :force, type: Boolean, desc: "force configure even if the environment is locked"
       end
       post ':id/configure' do
-        environment_manager.configure(params[:id], params[:attributes])
+        environment_manager.configure(params[:id], params.slice(:attributes, :force))
       end
     end
 
