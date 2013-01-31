@@ -44,7 +44,7 @@ module MotherBrain
 
       async(:_configure_, environment, job, options)
 
-      job.ticket      
+      job.ticket
     end
 
     def finalize
@@ -98,7 +98,7 @@ module MotherBrain
 
         job.status = "performing chef_run on #{nodes.length} nodes"
         failures = 0
-        
+
         nodes.collect do |node|
           node_querier.future(:chef_run, node.public_hostname)
         end.each do |future|
@@ -114,7 +114,7 @@ module MotherBrain
           job.report_success("finished chef_run on #{nodes.length} nodes")
         else
           job.report_failure("chef_run failed on #{failures} nodes")
-        end        
+        end
       end
     end
   end
