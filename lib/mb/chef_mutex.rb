@@ -90,7 +90,7 @@ module MotherBrain
       return true if externally_testing?
 
       unless type
-        raise InvalidLockType "Must pass a valid lock type (#{LOCK_TYPES})"
+        raise InvalidLockType, "Must pass a valid lock type (#{LOCK_TYPES})"
       end
 
       log.info { "Locking #{to_s}" }
