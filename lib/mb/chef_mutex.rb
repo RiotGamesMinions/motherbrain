@@ -90,7 +90,7 @@ module MotherBrain
       return true if externally_testing?
 
       unless type
-        abort InvalidLockType.new("Must pass a valid lock type (#{LOCK_TYPES})")
+        raise InvalidLockType "Must pass a valid lock type (#{LOCK_TYPES})"
       end
 
       log.info { "Locking #{to_s}" }
@@ -123,6 +123,7 @@ module MotherBrain
     rescue => ex
       ex = ex.cause if ex.respond_to?(:cause)
 
+      log.fatal { "error in lock sync: #{ex}" }
       job.report_failure(ex.to_s) if job
 
       if ex.is_a?(ResourceLocked)
