@@ -36,4 +36,18 @@ describe MB::NodeQuerier do
       subject.write_file('asdf', '/tmp/file', host, options)
     end
   end
+
+  describe "#chef_run" do
+    it "raises a RemoteCommandError if given a nil hostname" do
+      expect {
+        subject.chef_run(nil)
+      }.to raise_error(MB::RemoteCommandError)
+    end
+
+    it "raises a RemoteCommandError if given a blank hostname" do
+      expect {
+        subject.chef_run("")
+      }.to raise_error(MB::RemoteCommandError)
+    end
+  end
 end

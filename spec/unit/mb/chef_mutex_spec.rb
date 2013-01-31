@@ -119,11 +119,7 @@ describe MB::ChefMutex do
       it "does not attempt to release the lock" do
         chef_mutex.should_not_receive :unlock
 
-        -> { synchronize }.should raise_error MB::ResourceLocked
-      end
-
-      it "raises a ResourceLocked error" do
-        -> { synchronize }.should raise_error MB::ResourceLocked
+        synchronize
       end
 
       context "and force enabled" do
