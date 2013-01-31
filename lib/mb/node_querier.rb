@@ -140,7 +140,7 @@ module MotherBrain
       when :ok
         response.stdout.chomp
       when :error
-        raise RemoteScriptError, response.stderr.chomp
+        abort RemoteScriptError.new(response.stderr.chomp)
       end
     end
 
@@ -195,7 +195,7 @@ module MotherBrain
       when :ok
         response
       when :error
-        raise RemoteCommandError, response.stderr.chomp
+        abort RemoteCommandError.new(response.stderr.chomp)
       end
     end
 
