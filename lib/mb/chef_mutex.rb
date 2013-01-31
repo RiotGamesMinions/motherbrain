@@ -108,21 +108,29 @@ module MotherBrain
     #
     # @return [Boolean]
     def synchronize
-      if lock
-        yield
-        unlock
-      else
+      unless lock
         current_lock = read
 
         err = "Resource #{current_lock['id']} locked by #{current_lock['client_name']}"
         err << " since #{current_lock['time']} (PID #{current_lock['process_id']})"
 
-        log.fatal { err }
         abort ResourceLocked.new(err)
       end
+
+      yield
+
+      unlock
     rescue => ex
-      unlock if self.unlock_on_failure
-      abort(ex)
+      ex = ex.cause if ex.respond_to?(:cause)
+
+      job.report_failure(ex.to_s) if job
+
+      if ex.is_a?(ResourceLocked)
+        return false
+      else
+        unlock if self.unlock_on_failure
+        abort(ex)
+      end
     end
 
     # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
