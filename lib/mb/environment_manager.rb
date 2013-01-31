@@ -105,6 +105,7 @@ module MotherBrain
           begin
             future.value
           rescue RemoteCommandError => ex
+            log.fatal { "error configuring node: #{ex}" }
             failures += 1
           end
         end
