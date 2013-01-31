@@ -140,7 +140,7 @@ module MotherBrain
       when :ok
         response.stdout.chomp
       when :error
-        raise RemoteScriptError, response.stderr.chomp
+        abort RemoteScriptError.new(response.stderr.chomp)
       end
     end
 
@@ -182,20 +182,26 @@ module MotherBrain
     #   bootstrap with sudo
     #
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
+    # @raise [RemoteCommandError] if given a blank or nil hostname
     #
     # @return [Ridley::SSH::Response]
     def chef_run(host, options = {})
       options = options.dup
 
-      MB.log.info "Running Chef client on: #{host}"
+      unless host.present?
+        abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
+      end
+
+      log.info { "Running Chef client on: #{host}" }
       status, response = ssh_command(host, "chef-client", options)
-      MB.log.info "Completed Chef client run on: #{host}"
 
       case status
       when :ok
+        log.info { "Completed Chef client run on: #{host}" }
         response
       when :error
-        raise RemoteCommandError, response.stderr.chomp
+        log.info { "Failed Chef client run on: #{host}" }
+        abort RemoteCommandError.new(response.stderr.chomp)
       end
     end
 
