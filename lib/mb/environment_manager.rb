@@ -86,6 +86,8 @@ module MotherBrain
     #
     # @api private
     def _configure_(environment, job, options = {})
+      job.report_running("configuring environment: #{environment.name}")
+
       chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
         environment.default_attributes.deep_merge!(options[:attributes])
         job.status = "saving updated environment"
@@ -95,11 +97,23 @@ module MotherBrain
         nodes = ridley.search(:node, "chef_environment:#{environment.name}")
 
         job.status = "performing chef_run on #{nodes.length} nodes"
+        failures = 0
+        
         nodes.collect do |node|
           node_querier.future(:chef_run, node.public_hostname)
-        end.map(&:value)
+        end.each do |future|
+          begin
+            future.value
+          rescue RemoteCommandError => ex
+            failures += 1
+          end
+        end
 
-        job.status = "finished chef_run on #{nodes.length} nodes"
+        if failures == 0
+          job.report_success("finished chef_run on #{nodes.length} nodes")
+        else
+          job.report_failure("chef_run failed on #{failures} nodes")
+        end        
       end
     end
   end
