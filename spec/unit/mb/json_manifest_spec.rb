@@ -1,89 +1,97 @@
 require 'spec_helper'
 
 describe MB::JSONManifest do
+  subject { json_manifest }
+  let(:json_manifest) { described_class.new(attributes) }
+
   let(:valid_json) do
     <<-JSON
-{
-  "m1.large": {
-    "activemq::master": 1,
-    "activemq::slave": 2
-  },
-  "m1.small": {
-    "nginx::master": 1
-  }
-}
-JSON
-  end
-
-  let(:valid_hash) do
-    {
-      "m1.large" => {
-        "activemq::master" => 1,
-        "activemq::slave" => 2
-      },
-      "m1.small" => {
-        "nginx::master" => 1
+      {
+        "nodes": [
+          {
+            "type": "m1.large",
+            "components": ["activemq::master"]
+          },
+          {
+            "type": "m1.large",
+            "count": 2,
+            "components": ["activemq::slave"]
+          },
+          {
+            "type": "m1.small",
+            "components": ["nginx::master"]
+          }
+        ]
       }
-    }
+    JSON
   end
 
-  describe "ClassMethods" do
-    subject { described_class }
+  let(:valid_hash) {
+    {
+      nodes: [
+        {
+          type: "m1.large",
+          components: ["activemq::master"]
+        },
+        {
+          type: "m1.large",
+          count: 2,
+          components: ["activemq::slave"]
+        },
+        {
+          type: "m1.small",
+          components: ["nginx::master"]
+        }
+      ]
+    }
+  }
 
-    describe "::new" do
-      it "assigns the given attributes to self" do
-        attributes = { "m1.large" => { "activemq::master" => 1 } }
+  let(:attributes) { valid_hash }
 
-        subject.new(attributes).should eql(attributes)
-      end
+  it { should == valid_hash }
+  it { should have_key(:nodes) }
 
-      it "has a key for each key in the json" do
-        parsed = subject.new(valid_hash)
+  context "with an empty hash" do
+    let(:attributes) { Hash.new }
 
-        parsed.should have(2).items
-        parsed.should have_key("m1.large")
-        parsed.should have_key("m1.small")
-      end
+    it { should be_empty }
+  end
 
-      context "given an empty hash" do
-        it "returns an empty Manifest" do
-          subject.new(Hash.new).should be_empty
-        end
-      end
-    end
+  describe "#[:nodes]" do
+    subject { json_manifest[:nodes] }
 
-    describe "::from_file" do
-      pending
-    end
+    it { should have(3).items }
+    it { should =~ valid_hash[:nodes] }
+  end
 
-    describe "::from_json" do
-      pending
-    end
+  describe ".from_file" do
+    pending
+  end
+
+  describe ".from_json" do
+    pending
   end
 
   describe "#from_json" do
-    it "returns self" do
-      subject.from_json(valid_json).should eql(subject)
-    end
+    subject { from_json }
+    let(:from_json) { described_class.new.from_json(json) }
 
-    it "has a key for each key in the json" do
-      parsed = subject.from_json(valid_json)
+    let(:json) { valid_json }
 
-      parsed.should have(2).items
-      parsed.should have_key("m1.large")
-      parsed.should have_key("m1.small")
-    end
+    it { should == valid_hash }
 
     context "given an empty json string" do
-      it "returns an empty Manifest" do
-        subject.from_json("{}").should be_empty
-      end
+      let(:json) { "{}" }
+
+      it { should be_empty }
     end
 
     context "given an invalid JSON string" do
+      let(:json) { "sdf" }
+
       it "raises" do
         expect {
-          subject.from_json("sdf")
+          from_json
         }.to raise_error(MB::InvalidJSONManifest)
       end
     end

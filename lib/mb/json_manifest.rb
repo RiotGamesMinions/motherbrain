@@ -21,14 +21,14 @@ module MotherBrain
       #
       # @return [JSONManifest]
       def from_json(data)
-        new().from_json(data)
+        new.from_json(data)
       end
 
       # @param [Hash] data
       #
       # @return [JSONManifest]
       def from_hash(data)
-        new().from_hash(data)
+        new.from_hash(data)
       end
     end
 
@@ -92,6 +92,18 @@ module MotherBrain
       def mass_assign(hash)
         hash.each_pair do |key, value|
           self[key] = value
+        end
+
+        deep_symbolize_keys!
+
+        each do |key, value|
+          if value.is_a?(Array)
+            value.each do |object|
+              if object.respond_to?(:deep_symbolize_keys!)
+                object.deep_symbolize_keys!
+              end
+            end
+          end
         end
       end
   end

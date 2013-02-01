@@ -1,14 +1,16 @@
 require 'spec_helper'
 
 describe MB::Provisioner::Manifest do
-  let(:plugin) do
-    metadata = MB::CookbookMetadata.new do
+  subject { described_class.new(valid_manifest) }
+
+  let(:plugin) {
+    metadata = MB::CookbookMetadata.new {
       name "motherbrain"
       version "0.1.0"
-    end
+    }
 
     MB::Plugin.new(metadata)
-  end
+  }
 
   let(:activemq) { MB::Component.new('activemq') }
   let(:nginx) { MB::Component.new('nginx') }
@@ -17,23 +19,33 @@ describe MB::Provisioner::Manifest do
   let(:amq_slave) { MB::Group.new('slave') }
   let(:nginx_master) { MB::Group.new('master') }
 
+  let(:valid_manifest) {
+    {
+      nodes: [
+        {
+          type: "m1.large",
+          components: ["activemq::master"]
+        },
+        {
+          type: "m1.large",
+          count: 2,
+          components: ["activemq::slave"]
+        },
+        {
+          type: "m1.small",
+          components: ["nginx::master"]
+        }
+      ]
+    }
+  }
+
   before(:each) do
     plugin.stub(:components).and_return([activemq, nginx])
     activemq.stub(:groups).and_return([amq_master, amq_slave])
     nginx.stub(:groups).and_return([nginx_master])
   end
 
-  let(:valid_manifest) do
-    {
-      "m1.large" => {
-        "activemq::master" => 1,
-        "activemq::slave" => 2
-      },
-      "m1.small" => {
-        "nginx::master" => 1
-      }
-    }
-  end
+  its(:node_count) { should == 4 }
 
   describe "ClassMethods" do
     subject { described_class }
@@ -44,7 +56,7 @@ describe MB::Provisioner::Manifest do
       end
 
       it "accepts a Provisioner::Manifest" do
-        subject.validate!(described_class.new, plugin).should be_true
+        subject.validate!(described_class.new({ nodes: [] }), plugin).should be_true
       end
 
       it "raises InvalidProvisionManifest if given a non-hash value" do
@@ -78,18 +90,21 @@ describe MB::Provisioner::Manifest do
         end
       end
 
-      context "when a node group is not in {component}::{group} format" do
-        let(:invalid_manifest) do
-          {
-            "m1.large" => {
-              "activemq" => 1,
-              "activemq::slave" => 2
-            },
-            "m1.small" => {
-              "nginx::master" => 1
-            }
+      context "when components is not in {component}::{group} format" do
+        let(:invalid_manifest) {
+          { 
+            nodes: [
+              {
+                type: "m1.large",
+                count: 1,
+                components: [
+                  "activemq",
+                  "activemq::slave"
+                ]
+              }
+            ]
           }
-        end
+        }
 
         it "raises an InvalidProvisionManifest error" do
           lambda {
@@ -98,27 +113,25 @@ describe MB::Provisioner::Manifest do
         end
       end
 
-      context "when value for instance_type is not a hash" do
-        let(:invalid_manifest) do
+      context "when components is not an array" do
+        let(:invalid_manifest) {
           {
-            "m1.large" => "SOME STRING"
+            nodes: [
+              {
+                type: "m1.large",
+                count: 1,
+                components: "activemq::slave"
+              }
+            ]
           }
-        end
+        }
 
         it "raises an InvalidProvisionManifest error" do
-          expect {
+          lambda {
             subject.validate!(invalid_manifest, plugin)
-          }.to raise_error(MB::InvalidProvisionManifest)
+          }.should raise_error(MB::InvalidProvisionManifest)
         end
       end
-    end
-  end
-
-  subject { described_class.new(valid_manifest) }
-
-  describe "#node_count" do
-    it "returns the number of nodes expected to be created" do
-      subject.node_count.should eql(4)
     end
   end
 end

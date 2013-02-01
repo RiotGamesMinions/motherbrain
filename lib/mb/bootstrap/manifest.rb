@@ -18,26 +18,37 @@ module MotherBrain
     class Manifest < JSONManifest
       class << self
         # @param [Hash] nodes
-        # @param [Provisioner::Manifest] manifest
+        # @param [Provisioner::Manifest] provisioner_manifest
         #
         # @return [Bootstrap::Manifest]
-        def from_provisioner(nodes, manifest, path = nil)
-          nodes, manifest = nodes.dup, manifest.dup
+        def from_provisioner(nodes, provisioner_manifest, path = nil)
+          nodes = nodes.dup
+          provisioner_manifest = provisioner_manifest.dup
 
-          obj = new.tap do |boot_manifest|
-            manifest.each_pair do |instance_type, groups|
-              groups.each_pair do |name, count|
-                boot_manifest[name] = Array.new
+          obj = new.tap do |bootstrap_manifest|
+            provisioner_manifest[:nodes].each do |node_group|
+              instance_type = node_group[:type]
+              count = node_group[:count] || 1
+              components = node_group[:components]
+
+              components.each do |component|
+                bootstrap_manifest[component] = Array.new
 
                 count.times do
-                  instance = nodes.find { |obj| obj[:instance_type] == instance_type }
+                  instance = nodes.find { |node|
+                    node[:instance_type] == instance_type
+                  }
+
+                  bootstrap_manifest[component] << instance[:public_hostname]
+
                   nodes.delete(instance)
-                  boot_manifest[name] << instance[:public_hostname]
                 end
               end
             end
           end
+
           obj.path = path
+
           obj
         end
 
@@ -49,11 +60,14 @@ module MotherBrain
         # @raise [InvalidBootstrapManifest]
         # @raise [NoBootstrapRoutine]
         def validate!(manifest, plugin)
-          if plugin.bootstrap_routine.nil?
-            raise NoBootstrapRoutine, "Plugin '#{plugin.name}' (#{plugin.version}) does not contain a bootstrap routine"
+          unless plugin.bootstrap_routine
+            raise NoBootstrapRoutine,
+              "Plugin '#{plugin.name}' (#{plugin.version}) does not contain a bootstrap routine"
           end
 
           manifest.keys.each do |node_group|
+            node_group = node_group.to_s
+
             match = node_group.match(Plugin::NODE_GROUP_ID_REGX)
 
             unless match
