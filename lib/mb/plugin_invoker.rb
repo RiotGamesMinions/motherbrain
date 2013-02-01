@@ -48,10 +48,15 @@ module MotherBrain
               type: :hash,
               desc: "Any additional attributes to set on the environment",
               aliases: "--attributes"
+            method_option :environment_attributes_file,
+              type: :string,
+              desc: "Any additional attributes to set on the environment via a json file.",
+              aliases: "--attributes-file"
             method_option :force,
               type: :boolean,
               default: false,
-              desc: "Perform bootstrap even if the environment is locked"
+              desc: "Perform bootstrap even if the environment is locked",
+              aliases: "-f"
             desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
             define_method(:bootstrap) do |environment, manifest_file|
               boot_options = Hash.new.merge(options).deep_symbolize_keys
@@ -79,6 +84,10 @@ module MotherBrain
               type: :hash,
               desc: "Any additional attributes to set on the environment",
               aliases: "--attributes"
+            method_option :environment_attributes_file,
+              type: :string,
+              desc: "Any additional attributes to set on the environment via a json file.",
+              aliases: "--attributes-file"
             method_option :skip_bootstrap,
               type: :boolean,
               desc: "Nodes will be created and added to the Chef environment but not bootstrapped",
@@ -114,6 +123,10 @@ module MotherBrain
               type: :hash,
               desc: "Any additional attributes to set on the environment",
               aliases: "--attributes"
+            method_option :environment_attributes_file,
+              type: :string,
+              desc: "Any additional attributes to set on the environment via a json file.",
+              aliases: "--attributes-file"
             method_option :force,
               type: :boolean,
               default: false,

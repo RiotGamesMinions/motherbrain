@@ -2,9 +2,14 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Invoker < InvokerBase
     class << self
+      def invoked_opts
+        @invoked_opts ||= {}
+      end
+
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
+        invoked_opts.merge!(opts)
         if args.any? and (args & InvokerBase::NOCONFIG_TASKS).empty?
           app_config = configure(opts.dup)
           app_config.validate!
@@ -17,7 +22,7 @@ module MotherBrain
       end
 
       def setup
-        Application.plugin_manager.plugins.each do |plugin|
+        Application.plugin_manager.list.each do |plugin|
           self.register_plugin MB::PluginInvoker.fabricate(plugin)
         end
       end
@@ -36,12 +41,14 @@ module MotherBrain
         # @return [Array]
         def parse_args(given_args)
           args, opts = Thor::Options.split(given_args)
-          thor_opts = Thor::Options.new(InvokerBase.class_options)
+          thor_opts = Thor::Options.new(Invoker.class_options)
           parsed_opts = thor_opts.parse(opts)
 
           [ args, parsed_opts ]
         end
     end
+
+    include MB::Mixin::Services
 
     # @see {InvokerBase}
     def initialize(args = [], options = {}, config = {})
@@ -50,6 +57,27 @@ module MotherBrain
         self.class.setup
       end
     end
+
+    class_option :config,
+      type: :string,
+      desc: "Path to a MotherBrain JSON configuration file.",
+      aliases: "-c",
+      banner: "PATH"
+    class_option :verbose,
+      type: :boolean,
+      desc: "Increase verbosity of output.",
+      default: false,
+      aliases: "-v"
+    class_option :debug,
+      type: :boolean,
+      desc: "Output all log messages.",
+      default: false,
+      aliases: "-d"
+    class_option :logfile,
+      type: :string,
+      desc: "Set the log file location.",
+      aliases: "-L",
+      banner: "PATH"
 
     method_option :force,
       type: :boolean,
@@ -75,18 +103,64 @@ module MotherBrain
       MB.ui.say "Config written to: '#{path}'"
     end
 
+    method_option :force,
+      type: :boolean,
+      default: false,
+      desc: "perform the configuration even if the environment is locked"
+    desc "configure_environment ENVIRONMENT MANIFEST", "configure a Chef environment"
+    def configure_environment(environment, attributes_file)
+      attributes_file = File.expand_path(attributes_file)
+
+      begin
+        content = File.read(attributes_file)
+      rescue Errno::ENOENT
+        MB.ui.say "No attributes file found at: '#{attributes_file}'"
+        exit(1)
+      end
+
+      begin
+        attributes = MultiJson.decode(content)
+      rescue MultiJson::DecodeError => ex
+        MB.ui.say "Error decoding JSON from: '#{attributes_file}'"
+        MB.ui.say ex
+        exit(1)
+      end
+
+      job = environment_manager.configure(environment, attributes: attributes, force: options[:force])
+
+      CliClient.new(job).display
+    end
+
+    method_option :remote,
+      type: :boolean,
+      default: false,
+      desc: "search the remote Chef server and include plugins from the results"
     desc "plugins", "Display all installed plugins and versions"
     def plugins
-      if Application.plugin_manager.plugins.empty?
-        paths = Application.plugin_manager.paths.to_a.collect { |path| "'#{path}'" }
-
-        MB.ui.say "No MotherBrain plugins found in any of your configured plugin paths!"
+      if options[:remote]
         MB.ui.say "\n"
-        MB.ui.say "Paths: #{paths.join(', ')}"
+        MB.ui.say "** listing local and remote plugins..."
+        MB.ui.say "\n"
+      else
+        MB.ui.say "\n"
+        MB.ui.say "** listing local plugins...\n"
+        MB.ui.say "\n"
+      end
+
+      plugins = Application.plugin_manager.list(options[:remote])
+
+      if plugins.empty?
+        errmsg = "No plugins found in your Berkshelf: '#{Application.plugin_manager.berkshelf_path}'"
+        
+        if options[:remote]
+          errmsg << " or on remote: '#{Application.config.chef.api_url}'"
+        end
+        
+        MB.ui.say errmsg
         exit(0)
       end
 
-      Application.plugin_manager.plugins.group_by(&:name).each do |name, plugins|
+      plugins.group_by(&:name).each do |name, plugins|
         versions = plugins.collect(&:version).reverse!
         MB.ui.say "#{name}: #{versions.join(', ')}"
       end

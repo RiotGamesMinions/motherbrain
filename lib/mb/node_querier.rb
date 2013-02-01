@@ -44,7 +44,7 @@ module MotherBrain
       options[:paranoid] = false
 
       if options[:sudo]
-        command = "sudo #{command}"
+        command = "sudo -i #{command}"
       end
 
       worker   = Ridley::SSH::Worker.new(options)
@@ -140,7 +140,7 @@ module MotherBrain
       when :ok
         response.stdout.chomp
       when :error
-        raise RemoteScriptError, response.stderr.chomp
+        abort RemoteScriptError.new(response.stderr.chomp)
       end
     end
 
@@ -178,25 +178,30 @@ module MotherBrain
     #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
     # @option options [Float] :timeout (10.0)
     #   timeout value for SSH bootstrap
-    # @option options [Boolean] :sudo (true)
+    # @option options [Boolean] :sudo
     #   bootstrap with sudo
     #
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
+    # @raise [RemoteCommandError] if given a blank or nil hostname
     #
     # @return [Ridley::SSH::Response]
     def chef_run(host, options = {})
-      options          = options.dup
-      options[:sudo]   = true
+      options = options.dup
 
-      MB.log.info "Running Chef client on: #{host}"
+      unless host.present?
+        abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
+      end
+
+      log.info { "Running Chef client on: #{host}" }
       status, response = ssh_command(host, "chef-client", options)
-      MB.log.info "Completed Chef client run on: #{host}"
 
       case status
       when :ok
+        log.info { "Completed Chef client run on: #{host}" }
         response
       when :error
-        raise RemoteCommandError, response.stderr.chomp
+        log.info { "Failed Chef client run on: #{host}" }
+        abort RemoteCommandError.new(response.stderr.chomp)
       end
     end
 

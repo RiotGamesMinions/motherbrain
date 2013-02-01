@@ -2,8 +2,11 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Config < Chozo::Config::JSON
     class << self
+      # The default location for MotherBrain's config file
+      #
+      # @return [String]
       def default_path
-        File.expand_path(ENV["MB_CONFIG"] || "~/.mb/config.json")
+        FileSystem.root.join("config.json").to_s
       end
 
       # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
@@ -25,11 +28,10 @@ module MotherBrain
       end
     end
 
-    attribute :plugin_paths,
-      default: PluginManager.default_paths,
-      type: [ Set, Array ],
-      required: true,
-      coerce: lambda { |m| m.to_set }
+    attribute 'berkshelf.path',
+      default: MB::Berkshelf.default_path,
+      type: String,
+      required: true
 
     attribute 'chef.api_url',
       default: "http://localhost:8080",
@@ -134,6 +136,18 @@ module MotherBrain
       default: RestGateway::DEFAULT_OPTIONS[:port],
       type: Integer
 
+    # Enables the plugin manager to automatically populate its set of plugins
+    # from cookbooks present on the remote Chef server that contain plugins
+    attribute 'plugin_manager.eager_loading',
+      default: true,
+      type: Boolean
+
+    # How long the plugin manager will wait before polling the Chef Server to eagerly
+    # load any new plugins
+    attribute 'plugin_manager.eager_load_interval',
+      default: 300, # 5 minutes
+      type: Integer
+
     attribute 'ef.api_url',
       type: String
 
@@ -151,18 +165,16 @@ module MotherBrain
     #
     # @example
     #   config = MB::Config.new.tap do |o|
-    #     o.chef_api_url = "https://api.opscode.com"
+    #     o.chef_api_url = "https://api.opscode.com/organizations/vialstudios"
     #     o.chef_api_client = "reset"
     #     o.chef_api_key = "/Users/reset/.chef/reset.pem"
-    #     o.chef_organization = "vialstudios"
     #   end
     #
     #   config.to_ridley =>
     #   {
-    #     server_url: "https://api.opscode.com",
+    #     server_url: "https://api.opscode.com/organizations/vialstudios",
     #     client_name: "reset",
     #     client_key: "/Users/reset/.chef/reset.pem",
-    #     organization: "vialstudios",
     #     validator_client: nil,
     #     validator_path: nil
     #   }

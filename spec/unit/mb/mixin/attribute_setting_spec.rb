@@ -41,4 +41,22 @@ describe MB::Mixin::AttributeSetting do
   describe "#set_cookbook_versions" do
     pending
   end
+
+  describe "#set_environment_attributes" do
+    context "successful" do
+      let(:hash) { Hash.new }
+      before(:each) do
+        env = double('environment', name: "foo")
+        Ridley::EnvironmentResource.stub(:find!).and_return(env)
+        env.should_receive(:override_attributes).and_return(hash)
+        env.stub(:save)
+      end
+
+      it "should save the attributes to the environment" do
+        subject.set_environment_attributes "foo", {"bar.baz" => "quux"}
+        hash["bar"].should_not be_nil
+        hash["bar"]["baz"].should eq("quux")
+      end
+    end
+  end
 end

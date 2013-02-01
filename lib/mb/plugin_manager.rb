@@ -8,75 +8,87 @@ module MotherBrain
       def instance
         MB::Application[:plugin_manager] or raise Celluloid::DeadActorError, "plugin manager not running"
       end
-
-      # Returns a Set of expanded file paths that are directories that may contain
-      # MotherBrain plugins.
-      #
-      # If the MB_PLUGIN_PATH environment variable is set the value of the variable
-      # will be used as the default plugin path.
-      #
-      # @return [Set<String>]
-      def default_paths
-        if ENV["MB_PLUGIN_PATH"].nil?
-          defaults = [
-            FileSystem.plugins.to_s,
-            File.expand_path(File.join(".", ".mb", "plugins"))
-          ]
-
-          Set.new(defaults)
-        else
-          Set.new.add(File.expand_path(ENV["MB_PLUGIN_PATH"]))
-        end
-      end
     end
 
     include Celluloid
+    include Celluloid::Notifications
     include MB::Logging
+    include MB::Mixin::Services
 
-    # @return [Set<Pathname>]
-    attr_reader :paths
+    # @return [Pathname]
+    attr_reader :berkshelf_path
+    
+    # Tracks when the plugin manager will attempt to load remote plugins from the Chef Server. If
+    # remote loading is disabled this will return nil.
+    #
+    # @return [Timers::Timer, nil]
+    attr_reader :eager_load_timer
 
     def initialize
       log.info { "Plugin Manager starting..." }
-      @paths   = Set.new
-      @plugins = Set.new
+      @berkshelf_path = MB::Berkshelf.path
+      @plugins        = Set.new
 
-      Application.config.plugin_paths.each { |path| self.add_path(path) }
+      MB::Berkshelf.init
       load_all
+
+      if eager_loading?
+        @eager_load_timer = every(eager_load_interval, &method(:load_all_remote))
+      end
+
+      subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
     end
 
+    # Add a plugin to the set of plugins
+    #
     # @param [MotherBrain::Plugin] plugin
     #
-    # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
-    def add(plugin)
+    # @option options [Boolean] :force
+    #   load a plugin even if a plugin of the same name and version is already loaded
+    #
+    # @return [Set<MB::Plugin>, nil]
+    #   returns the set of plugins on success or nil if the plugin was not added
+    def add(plugin, options = {})
+      if options[:force]
+        return reload(plugin)
+      end
+
       unless find(plugin.name, plugin.version).nil?
-        raise AlreadyLoaded, "A plugin with the name: '#{plugin.name}' and version: '#{plugin.version}' is already loaded"
+        return nil
       end
 
       @plugins.add(plugin)
-    end
-
-    # @param [String, Pathname] path
-    def add_path(path)
-      self.paths.add(Pathname.new(File.expand_path(path)))
-    end
-
-    # Clear all previously set paths
-    #
-    # @note this is for testing; you probably don't want to use this
-    #
-    # @return [Set]
-    def clear_paths
-      @paths.clear
+      plugin
     end
 
     # Clear list of known plugins
     #
-    # @note this is for testing; you probably don't want to use this
-    #
     # @return [Set]
     def clear_plugins
       @plugins.clear
+    end
+
+    # If enabled the plugin manager will automatically discover plugins on the remote Chef Server
+    # and load them into the plugin set.
+    #
+    # @note to change this option set it in the {Config} of {ConfigManager}
+    #
+    # @return [Boolean]
+    def eager_loading?
+      Application.config.plugin_manager.eager_loading
+    end
+
+    # The time between each poll of the remote Chef server to eagerly load discovered plugins
+    #
+    # @note to change this option set it in the {Config} of {ConfigManager}
+    #
+    # @return [Integer]
+    def eager_load_interval
+      Application.config.plugin_manager.eager_load_interval
+    end
+
+    def finalize
+      log.info { "Plugin Manager stopping..." }
     end
 
     # Find and return a registered plugin of the given name and version. If no version
@@ -85,9 +97,14 @@ module MotherBrain
     # @param [String] name
     # @param [#to_s] version (nil)
     #
+    # @option options [Boolean] :remote
+    #   search for the plugin on the remote Chef Server if it isn't found locally
+    #
     # @return [Plugin, nil]
-    def find(name, version = nil)
-      plugins.sort.reverse.find do |plugin|
+    def find(name, version = nil, options = {})
+      options = options.reverse_merge(remote: false)
+
+      list(options[:remote]).sort.reverse.find do |plugin|
         if version.nil?
           plugin.name == name
         else
@@ -96,47 +113,167 @@ module MotherBrain
       end
     end
 
-    # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
-    #
     # @return [Array<MotherBrain::Plugin>]
     def load_all
-      self.paths.each do |path|
-        Pathname.glob(path.join('*.rb')).collect do |plugin|
-          self.load(plugin)
+      load_all_local
+      load_all_remote if eager_loading?
+    end
+
+    # Load a plugin from a file
+    #
+    # @param [#to_s] path
+    #
+    # @option options [Boolean] :force (true)
+    #   load a plugin even if a plugin of the same name and version is already loaded
+    #
+    # @return [MB::Plugin, nil]
+    #   returns the loaded plugin or nil if the plugin was not loaded successfully or was
+    #   already loaded
+    def load_file(path, options = {})
+      options = options.reverse_merge(force: true)
+      plugin  = Plugin.from_path(path.to_s)
+
+      add(Plugin.from_path(path.to_s), options)
+    end
+
+    # Load a plugin of the given name and version from the remote Chef server
+    #
+    # @param [String] name
+    #   name of the plugin to load
+    # @param [String] version
+    #   version of the plugin to load
+    #
+    # @option options [Boolean] :force (false)
+    #   load a plugin even if a plugin of the same name and version is already loaded
+    #
+    # @return [MB::Plugin, nil]
+    #   returns the loaded plugin or nil if the remote does not contain a plugin of the given
+    #   name and version
+    def load_remote(name, version, options = {})
+      options  = options.reverse_merge(force: false)
+      resource = ridley.cookbook.find(name, version)
+
+      unless resource && resource.has_motherbrain_plugin?
+        return nil
+      end
+
+      begin
+        scratch_dir   = FileSystem.tmpdir("cbplugin")
+        metadata_path = File.join(scratch_dir, Plugin::METADATA_FILENAME)
+        plugin_path   = File.join(scratch_dir, Plugin::PLUGIN_FILENAME)
+
+        unless resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, metadata_path) &&
+          resource.download_file(:root_file, Plugin::METADATA_FILENAME, plugin_path)
+
+          raise PluginDownloadError, "failure downloading plugin files for #{resource}"
+        end
+
+        load_file(scratch_dir, options)
+      ensure
+        FileUtils.rm_rf(scratch_dir)
+      end
+    end
+
+    # A set of all the registered plugins
+    #
+    # @param [Boolean] remote (false)
+    #   eargly search for plugins on the remote Chef server and include them in the returned list
+    #
+    # @return [Set<Plugin>]
+    def list(remote = false)
+      if remote
+        load_all_remote
+      end
+
+      @plugins
+    end
+
+    # Remove and Add the given plugin from the set of plugins
+    #
+    # @param [MotherBrain::Plugin] plugin
+    def reload(plugin)
+      remove(plugin)
+      add(plugin)
+    end
+
+    # Reload plugins from Chef Server and from the Berkshelf
+    #
+    # @return [Array<MotherBrain::Plugin>]
+    def reload_all
+      clear_plugins
+      load_all
+    end
+
+    # Reload plugins from the Berkshelf
+    #
+    # @return [Array<MotherBrain::Plugin>]
+    def reload_local
+      load_all_local(true)
+    end
+
+    # Remove the given plugin from the set of plugins
+    #
+    # @param [MotherBrain::Plugin] plugin
+    def remove(plugin)
+      @plugins.delete(plugin)
+    end
+
+    # List all of the versions of the plugin of the given name
+    #
+    # @param [#to_s] name
+    #   name of the plugin to list versions of
+    # @param [Boolean] remote (false)
+    #   eagerly search for plugins on the remote Chef server and include them in the returned list
+    #
+    # @raise [PluginNotFound] if a plugin of the given name has no versions loaded
+    #
+    # @return [Array<MB::Plugin]
+    def versions(name, remote = false)
+      plugins = list(remote).select { |plugin| plugin.name == name.to_s }
+      
+      if plugins.empty?
+        abort PluginNotFound.new(name)
+      end
+
+      plugins
+    end
+
+    protected
+
+      def reconfigure(_msg, config)
+        log.debug { "[Plugin Manager] received new configuration" }
+
+        unless Berkshelf.path == self.berkshelf_path
+          log.debug { "[Plugin Manager] The location of the Berkshelf has changed; reloading plugins" }
+
+          @berkshelf_path = Berkshelf.path
+          MB::Berkshelf.init
+          reload_all
         end
       end
 
-      self.plugins
-    end
-
-    # @param [#to_s] path
-    #
-    # @raise [AlreadyLoaded] if a plugin of the same name and version has already been loaded
-    def load(path)
-      add Plugin.from_file(path.to_s)
-    end
-
-    # Return all of the registered plugins. If the optional name parameter is provided the
-    # results will be filtered and only plugin versions of that given name will be returned
-    #
-    # @param [String, nil] name (nil)
-    #
-    # @return [Set<Plugin>]
-    def plugins(name = nil)
-      if name.nil?
-        @plugins
-      else
-        @plugins.select { |plugin| plugin.name == name }
+      # Load all of the plugins from the Berkshelf
+      #
+      # @param [Boolean] force (false)
+      def load_all_local(force = false)
+        Berkshelf.cookbooks(with_plugin: true).each do |path|
+          load_file(path, force: force)
+        end
+      rescue PluginSyntaxError, PluginLoadError => ex
+        log.warn { "error loading local plugin: #{ex}" }
       end
-    end
 
-    # @param [Pathname] path
-    def remove_path(path)
-      self.paths.delete(path)
-    end
+      # Load all of the plugins from the remote Chef Server
+      def load_all_remote
+        ridley.cookbook.all.collect do |name, versions|
+          versions.each do |version|
+            next if find(name, version)
 
-    def finalize
-      log.info { "Plugin Manager stopping..." }
-    end
+            load_remote(name, version)
+          end
+        end
+      rescue PluginSyntaxError, PluginLoadError, PluginDownloadError => ex
+        log.warn { "error loading remote plugin: #{ex}" }
+      end
   end
 end

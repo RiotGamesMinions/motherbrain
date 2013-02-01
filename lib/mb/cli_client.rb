@@ -32,6 +32,10 @@ module MotherBrain
 
     private
 
+      def application_terminated?
+        JobManager.stopped?
+      end
+
       def clear_line
         printf "\r#{SPACE * COLUMNS}"
       end
@@ -42,14 +46,18 @@ module MotherBrain
       end
 
       def display_jobs
-        until jobs.all?(&:completed?)
+        until jobs.all?(&:completed?) || application_terminated?
           jobs.each do |job|
             status job
           end
         end
 
-        jobs.each do |job|
-          final_status job
+        if application_terminated?
+          final_terminated_status
+        else
+          jobs.each do |job|
+            final_status job
+          end
         end
       end
 
@@ -60,6 +68,10 @@ module MotherBrain
         msg = "\r#{SPACE * spinner.next.length} [#{job.type}] #{job.state.to_s.capitalize}"
         msg << ": #{job.result}" unless job.result.nil?
         puts msg
+      end
+
+      def final_terminated_status
+        puts "\nMotherBrain terminated"
       end
 
       # @return [Enumerator]
@@ -91,7 +103,7 @@ module MotherBrain
       end
 
       def wait_for_jobs
-        sleep TICK until jobs.all?(&:completed?)
+        sleep TICK until jobs.all?(&:completed?) || application_terminated?
       end
   end
 end

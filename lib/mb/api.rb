@@ -6,6 +6,7 @@ module MotherBrain
   class Api < Grape::API
     helpers MB::Logging
     helpers MB::ApiHelpers
+    helpers MB::Mixin::Services
 
     format :json
 
@@ -126,12 +127,22 @@ module MotherBrain
           params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force, :bootstrap_proxy, :hints).freeze
         )
       end
+
+      desc "configure an existing environment cluster"
+      params do
+        requires :id, type: String, desc: "environment name"
+        requires :attributes, type: Hash, desc: "a hash of attributes to set on the environment"
+        optional :force, type: Boolean, desc: "force configure even if the environment is locked"
+      end
+      post ':id/configure' do
+        environment_manager.configure(params[:id], params.slice(:attributes, :force))
+      end
     end
 
     resource :plugins do
       desc "list all loaded plugins and their versions"
       get do
-        plugin_manager.plugins
+        plugin_manager.list
       end
 
       desc "display all the versions of the given plugin"
@@ -139,7 +150,7 @@ module MotherBrain
         requires :name, type: String, desc: "plugin name"
       end
       get ':name' do
-        list_plugins!(params[:name])
+        plugin_manager.versions(params[:name])
       end
 
       desc "display the latest version of the plugin of the given name"

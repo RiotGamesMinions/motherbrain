@@ -1,4 +1,6 @@
 ENV['RUBY_ENV'] ||= 'test'
+ENV['MOTHERBRAIN_PATH'] ||= File.join(File.expand_path("../../", File.dirname(__FILE__)), "spec/.mb")
+ENV['BERKSHELF_PATH'] ||= File.join(File.expand_path("../../", File.dirname(__FILE__)), "spec/tmp/.berkshelf")
 
 require 'rubygems'
 require 'bundler'
@@ -22,8 +24,7 @@ def setup_env
   World(MotherBrain::SpecHelpers)
 
   Before do
-    set_mb_config_path
-    set_plugin_path
+    @config = generate_valid_config
   end
 end
 

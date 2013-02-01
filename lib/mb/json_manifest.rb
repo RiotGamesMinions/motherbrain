@@ -35,7 +35,7 @@ module MotherBrain
     # return [String]
     attr_accessor :path
 
-    # @param [#to_s] path
+    # @param [Hash] attributes (Hash.new)
     def initialize(attributes = Hash.new)
       unless attributes.nil? || attributes.empty?
         from_hash(attributes)

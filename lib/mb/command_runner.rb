@@ -1,14 +1,29 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class CommandRunner
+    # @return [String]
     attr_reader :environment
+    # @return [MB::Plugin, MB::Component]
     attr_reader :scope
 
     # @param [String] environment
-    #   the environment to run this command on
-    # @param [Object] scope
+    #   environment to run this command on
+    # @param [MB::Plugin, MB::Component] scope
+    #   scope to execute this command in.
+    #
+    #   * executing the command in the scope of an entire plugin will give you easy access to
+    #     component commands and other plugin level commands
+    #   * executing the command in the scope of a component will give you easy access to the
+    #     other commands available in that component
     # @param [Proc] execute
+    #   the code to execute when the command runner is run
+    #
+    #   @example
+    #     proc {
+    #       on("some_nodes") { service("nginx").run("stop") }
+    #     }
     # @param [Array] args
+    #   any additional arguments to pass to the execution block
     def initialize(environment, scope, execute, *args)
       @environment = environment
       @scope       = scope
@@ -16,7 +31,7 @@ module MotherBrain
       @async       = false
 
       if args.any?
-        curried_execute = proc { execute.call *args }
+        curried_execute = proc { execute.call(*args) }
         instance_eval(&curried_execute)
       else
         instance_eval(&execute)
@@ -39,6 +54,8 @@ module MotherBrain
     end
 
     # Are we inside an async block?
+    #
+    # @return [Boolean]
     def async?
       @async
     end
@@ -122,11 +139,6 @@ module MotherBrain
       scope.command(command_name).invoke(environment, [])
     end
 
-    # @param [Fixnum] seconds
-    def wait(seconds)
-      Celluloid.sleep(seconds)
-    end
-
     # @author Jamie Winsor <jamie@vialstudios.com>
     # @api private
     class CleanRoom < CleanRoomBase
@@ -155,6 +167,11 @@ module MotherBrain
       protected
 
         attr_reader :actions
+
+        # @param [Fixnum] seconds
+        def wait(seconds)
+          Celluloid.sleep(seconds)
+        end
     end
 
     # Proxy for invoking components in the DSL

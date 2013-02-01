@@ -28,6 +28,7 @@ group :development do
   gem 'rspec'
   gem 'webmock'
   gem 'yard'
+  gem 'geminabox'
 
   gem 'guard'
   gem 'guard-cucumber'

@@ -27,6 +27,7 @@ module MotherBrain
   class ChefMutex
     include Celluloid
     include Celluloid::Notifications
+    include MB::Logging
 
     extend Forwardable
 
@@ -92,7 +93,7 @@ module MotherBrain
         raise InvalidLockType, "Must pass a valid lock type (#{LOCK_TYPES})"
       end
 
-      MB.log.info "Locking #{to_s}"
+      log.info { "Locking #{to_s}" }
       job.status = "Locking #{to_s}" if job
 
       attempt_lock
@@ -110,18 +111,27 @@ module MotherBrain
       unless lock
         current_lock = read
 
-        raise ResourceLocked,
-          "Resource #{current_lock['id']} locked by #{current_lock['client_name']} since #{current_lock['time']} (PID #{current_lock['process_id']})\n"
+        err = "Resource #{current_lock['id']} locked by #{current_lock['client_name']}"
+        err << " since #{current_lock['time']} (PID #{current_lock['process_id']})"
+
+        abort ResourceLocked.new(err)
       end
 
       yield
 
       unlock
-    rescue ResourceLocked
-      raise
-    rescue
-      unlock if self.unlock_on_failure
-      raise
+    rescue => ex
+      ex = ex.cause if ex.respond_to?(:cause)
+
+      log.fatal { "error in lock sync: #{ex}" }
+      job.report_failure(ex.to_s) if job
+
+      if ex.is_a?(ResourceLocked)
+        return false
+      else
+        unlock if self.unlock_on_failure
+        abort(ex)
+      end
     end
 
     # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
@@ -131,7 +141,7 @@ module MotherBrain
     def unlock
       return true if externally_testing?
 
-      MB.log.info "Unlocking #{to_s}"
+      log.info { "Unlocking #{to_s}" }
       job.status = "Unlocking #{to_s}" if job
 
       attempt_unlock

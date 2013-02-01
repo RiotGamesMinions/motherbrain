@@ -13,8 +13,8 @@ describe MB::Config do
         @config.chef.api_url.should eql("http://localhost:8080")
       end
 
-      it "has a default value for plugin_paths equal to PluginManager.default_paths" do
-        @config.plugin_paths.should eql(MB::PluginManager.default_paths)
+      it "has a default value for 'berkshelf.path'" do
+        @config.berkshelf.path.should_not be_nil
       end
     end
 
@@ -114,6 +114,12 @@ describe MB::Config do
       it "should be valid" do
         subject.should be_valid
       end
+    end
+
+    it "is invalid if berkshelf.path is blank" do
+      subject.berkshelf.path = nil
+
+      subject.should_not be_valid
     end
 
     it "is invalid if chef.api_url is blank" do
@@ -220,14 +226,14 @@ describe MB::Config do
         ENV['MB_CONFIG'] = nil
       end
 
-      it "returns the value of ENV['MB_CONFIG'] if the environment variable is set" do
-        ENV['MB_CONFIG'] = "/tmp/config.json"
+      subject { described_class.default_path }
 
-        subject.default_path.should eql("/tmp/config.json")
+      it "returns a string" do
+        subject.should be_a(String)
       end
 
-      it "returns expanded ~/.mb/config.json if ENV['MB_CONFIG'] is not set" do
-        subject.default_path.should eql(File.expand_path("~/.mb/config.json"))
+      it "is located within the motherbrain file system" do
+        subject.should include(MB::FileSystem.root.to_s)
       end
     end
   end

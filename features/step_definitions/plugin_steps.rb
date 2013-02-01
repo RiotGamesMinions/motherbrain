@@ -1,12 +1,11 @@
-Given /^a plugin "(.*?)" at version "(.*?)"$/ do |name, version|
-  config = MB::Config.from_file(ENV['MB_CONFIG'])
-  generate_plugin(name, version, config.plugin_paths.first)
+Given /^a cookbook "(.*?)" at version "(.*?)"$/ do |name, version|
+  generate_cookbook(name, version: version, with_plugin: false)
 end
 
-Given /^I have no plugins$/ do
-  config = MB::Config.from_file(ENV['MB_CONFIG'])
+Given /^a cookbook "(.*?)" at version "(.*?)" with a plugin$/ do |name, version|
+  generate_cookbook(name, version: version, with_plugin: true)
+end
 
-  config.plugin_paths.each do |path|
-    FileUtils.rm_r(path, force: true)
-  end
+Given /^I have an empty Berkshelf$/ do
+  FileUtils.rm_r(berkshelf_path, force: true)
 end

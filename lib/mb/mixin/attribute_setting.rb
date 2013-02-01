@@ -9,11 +9,11 @@ module MotherBrain
       # Set the appropriate attributes at the environment level to the desired version
       # for each component given
       #
-      # @param [String] :env_id
+      # @param [String] env_id
       #   the name identifier of the environment to modify
       # @param [MB::Plugin] plugin
       #   the plugin to use for finding the appropriate version attributes
-      # @param [Hash] :component_versions
+      # @param [Hash] component_versions
       #   Hash of components and the versions to set them to
       #
       # @example setting the versions of multiple components on an environment
@@ -42,9 +42,9 @@ module MotherBrain
       # Lock the cookbook versions on the target environment from the given hash of
       # cookbooks and versions
       #
-      # @param [String] :env_id
+      # @param [String] env_id
       #   the name identifier of the environment to modify
-      # @param [Hash] :cookbook_versions
+      # @param [Hash] cookbook_versions
       #   Hash of cookbooks and the versions to set them to
       #
       # @example setting cookbook versions on an environment
@@ -65,9 +65,9 @@ module MotherBrain
 
       # Set arbitrary attributes at the environment level
       #
-      # @param [String] :env_id
+      # @param [String] env_id
       #   the name identifier of the environment to modify
-      # @param [Hash] :environment_attributes
+      # @param [Hash] environment_attributes
       #   Hash of attributes and values
       #
       # @example setting multiple attributes on an environment
@@ -82,7 +82,7 @@ module MotherBrain
         override_attributes = Hash.new
 
         environment_attributes.each do |attribute, value|
-          attribute_hash = Hash.from_dotted_path(attribute, value)
+          attribute_hash = Hash.from_dotted_path(attribute.to_s, value.to_s)
           override_attributes.deep_merge!(attribute_hash)
         end
 
@@ -93,12 +93,35 @@ module MotherBrain
         end
       end
 
+      # Set arbitrary attributes at the environment level
+      #
+      # @param [String] env_id
+      #   the name identifier of the environment to modify
+      # @param [Hash] environment_attributes_hash
+      #   Hash of attributes and values
+      #
+      # @example setting multiple attributes on an environment
+      #
+      #   set_environment_attributes_from_hash("test-environment",
+      #     {"foo"      => "bar",
+      #     "baz.quux" => 42}
+      #   )
+      def set_environment_attributes_from_hash(env_id, environment_attributes_hash)
+        log.info "Setting environment attributes from hash #{environment_attributes_hash}"
+
+        Application.ridley.sync do
+          env = environment.find!(env_id)
+          env.override_attributes.deep_merge!(environment_attributes_hash)
+          env.save
+        end
+      end
 
       private
 
         # retrieve the version attribute of a given component and raise if the
         # component is not versioned
         #
+        # @param [MB::Plugin] plugin
         # @param [#to_s] component_name
         #
         # @raise [ComponentNotVersioned]
