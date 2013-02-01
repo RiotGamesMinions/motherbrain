@@ -14,32 +14,26 @@ module MotherBrain
           app_config = configure(opts.dup)
           app_config.validate!
           MB::Application.run!(app_config)
-          load_plugin args[0], opts[:plugin_version]
+          register_plugin(args[0], opts[:plugin_version]) unless args[0] == "plugins"
         end
 
         super
       end
 
-      # Load a plugin. Will ignore a request for 'plugins' since that
-      # means the user is trying to get the plugin list.
+      # Load and register a plugin
       #
       # @param [String] name
       # @param [String] version
-      def load_plugin(name,version=nil)
-        return if name == "plugins"
-        if plugin = MB::Application.plugin_manager.find(name,version)
-          self.register_plugin MB::PluginInvoker.fabricate(plugin)
+      def register_plugin(name, version = nil)
+        if plugin = MB::Application.plugin_manager.find(name, version)
+          klass = MB::PluginInvoker.fabricate(plugin)
+          self.register klass, klass.plugin.name, "#{klass.plugin.name} [COMMAND]", klass.plugin.description
           MB.ui.say "#{plugin.name} (#{plugin.version})"
         else
           cookbook_identifier = "#{name}"
           cookbook_identifier += " (version #{version})" if version
-          MB.ui.say "Cookbook #{cookbook_identifier} not found. Install it with `berks install`"
+          MB.ui.say "No cookbook with #{cookbook_identifier} plugin was found in your Berkshelf."
         end
-      end
-
-      # @param [MotherBrain::PluginInvoker] klass
-      def register_plugin(klass)
-        self.register klass, klass.plugin.name, "#{klass.plugin.name} [COMMAND]", klass.plugin.description
       end
 
       private

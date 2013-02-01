@@ -4,22 +4,14 @@ describe MB::Invoker do
   describe "ClassMethods" do
     subject { MB::Invoker }
 
-    describe ".load_plugin" do
+    describe ".register_plugin" do
       let(:name) { "myface" }
       let(:version) { nil }
-      let(:plugin) { double(name: name, version: version) }
+      let(:plugin) { double(name: name, version: version, description: "Jamie should use Emacs") }
       let(:plugin_invoker) { double(name: "#{name} invoker", plugin: name, version: version) }
 
-      context "when user is listing plugins" do
-        it "doesn't talk to plugin manager" do
-          MB::Application.should_not_receive(:plugin_manager)
-          subject.load_plugin "plugins"
-        end
-
-        it "doesn't load any plugins" do
-          subject.load_plugin "plugins"
-          MB::Application.plugin_manager.list(false).should be_empty
-        end
+      before(:each) do
+        MB.ui.stub(:say)
       end
 
       context "with a version" do
@@ -31,8 +23,8 @@ describe MB::Invoker do
           end
 
           it "should notify the user" do
-            MB.ui.should_receive(:say).with("Cookbook myface (version 1.2.3) not found. Install it with `berks install`")
-            subject.load_plugin name, version
+            MB.ui.should_receive(:say).with("No cookbook with myface (version 1.2.3) plugin was found in your Berkshelf.")
+            subject.register_plugin name, version
           end
         end
 
@@ -40,11 +32,12 @@ describe MB::Invoker do
           before(:each) do
             MB::PluginInvoker.stub(:fabricate).and_return(plugin_invoker)
             MB::Application.stub_chain(:plugin_manager, :find).and_return(plugin)
+            plugin_invoker.stub(:plugin).and_return(plugin)
           end
 
           it "should register the plugin" do
-            subject.should_receive(:register_plugin)
-            subject.load_plugin name, version
+            subject.should_receive(:register)
+            subject.register_plugin name, version
           end
         end
       end
@@ -56,8 +49,8 @@ describe MB::Invoker do
           end
 
           it "should notify the user" do
-            MB.ui.should_receive(:say).with("Cookbook myface not found. Install it with `berks install`")
-            subject.load_plugin name, version
+            MB.ui.should_receive(:say).with("No cookbook with myface plugin was found in your Berkshelf.")
+            subject.register_plugin name, version
           end
         end
 
@@ -65,11 +58,12 @@ describe MB::Invoker do
           before(:each) do
             MB::PluginInvoker.stub(:fabricate).and_return(plugin_invoker)
             MB::Application.stub_chain(:plugin_manager, :find).and_return(plugin)
+            plugin_invoker.stub(:plugin).and_return(plugin)
           end
 
           it "should register the plugin" do
-            subject.should_receive(:register_plugin)
-            subject.load_plugin name, version
+            subject.should_receive(:register)
+            subject.register_plugin name, version
           end
         end
       end
