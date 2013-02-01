@@ -14,18 +14,26 @@ module MotherBrain
           app_config = configure(opts.dup)
           app_config.validate!
           MB::Application.run!(app_config)
-
-          setup
+          load_plugin args[0], opts[:plugin_version]
         end
 
         super
       end
 
-      def setup
-        Application.plugin_manager.list.each do |plugin|
-          self.register_plugin MB::PluginInvoker.fabricate(plugin)
+      def load_plugin(name,version=nil)
+        if name != "plugins"
+          if plugin = MB::Application.plugin_manager.find(name,version)
+            self.register_plugin MB::PluginInvoker.fabricate(plugin)
+            MB.ui.say "#{plugin.name} (#{plugin.version})"
+          else
+            cookbook_identifier = "#{name}"
+            cookbook_identifier += " (version #{version})" if version
+            MB.ui.say "Cookbook #{cookbook_identifier} not found. Install it with `berks install`"
+          end
         end
       end
+
+
 
       # @param [MotherBrain::PluginInvoker] klass
       def register_plugin(klass)
@@ -48,13 +56,13 @@ module MotherBrain
         end
     end
 
-    # @see {InvokerBase}
-    def initialize(args = [], options = {}, config = {})
-      super
-      unless InvokerBase::NOCONFIG_TASKS.include?(config[:current_task].try(:name))
-        self.class.setup
-      end
-    end
+    # # @see {InvokerBase}
+    # def initialize(args = [], options = {}, config = {})
+    #   super
+    #   unless InvokerBase::NOCONFIG_TASKS.include?(config[:current_task].try(:name))
+    #     self.class.load_plugin
+    #   end
+    # end
 
     class_option :config,
       type: :string,
@@ -76,7 +84,11 @@ module MotherBrain
       desc: "Set the log file location.",
       aliases: "-L",
       banner: "PATH"
-
+    class_option :plugin_version,
+      type: :string,
+      desc: "Plugin version to use",
+      default: nil,
+      aliases: "-p"
 
     method_option :force,
       type: :boolean,
