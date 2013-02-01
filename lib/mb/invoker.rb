@@ -15,7 +15,8 @@ module MotherBrain
           app_config.validate!
           MB::Application.run!(app_config)
 
-          unless args[0] == "plugins"
+          # Don't attempt to find a plugin if we're executing a top level task
+          unless tasks.keys.include?(args[0])
             plugin = register_plugin(args[0], opts[:plugin_version])
             MB.ui.say "using #{plugin}"
             MB.ui.say ""
