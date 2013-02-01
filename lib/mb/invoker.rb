@@ -26,19 +26,16 @@ module MotherBrain
       # @param [String] name
       # @param [String] version
       def load_plugin(name,version=nil)
-        if name != "plugins"
-          if plugin = MB::Application.plugin_manager.find(name,version)
-            self.register_plugin MB::PluginInvoker.fabricate(plugin)
-            MB.ui.say "#{plugin.name} (#{plugin.version})"
-          else
-            cookbook_identifier = "#{name}"
-            cookbook_identifier += " (version #{version})" if version
-            MB.ui.say "Cookbook #{cookbook_identifier} not found. Install it with `berks install`"
-          end
+        return if name == "plugins"
+        if plugin = MB::Application.plugin_manager.find(name,version)
+          self.register_plugin MB::PluginInvoker.fabricate(plugin)
+          MB.ui.say "#{plugin.name} (#{plugin.version})"
+        else
+          cookbook_identifier = "#{name}"
+          cookbook_identifier += " (version #{version})" if version
+          MB.ui.say "Cookbook #{cookbook_identifier} not found. Install it with `berks install`"
         end
       end
-
-
 
       # @param [MotherBrain::PluginInvoker] klass
       def register_plugin(klass)
