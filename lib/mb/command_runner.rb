@@ -1,7 +1,9 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class CommandRunner
+    # @return [String]
     attr_reader :environment
+    # @return [MB::Plugin, MB::Component]
     attr_reader :scope
 
     # @param [String] environment
@@ -52,6 +54,8 @@ module MotherBrain
     end
 
     # Are we inside an async block?
+    #
+    # @return [Boolean]
     def async?
       @async
     end
