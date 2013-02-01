@@ -87,6 +87,8 @@ module MotherBrain
         optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
         optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
         optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
+        optional :skip_bootstrap, type: Boolean, desc: "skip automatic bootstrapping of the created environment"
+        optional :force, type: Boolean, desc: "force provisioning nodes to the environment even if the environment is locked"
       end
       post ':id' do
         plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
@@ -97,7 +99,7 @@ module MotherBrain
           params[:id].freeze,
           manifest.freeze,
           plugin.freeze,
-          params.slice(:component_versions, :cookbook_versions, :environment_attributes).freeze
+          params.exclude(:id, :manifest, :plugin).freeze
         )
       end
 
