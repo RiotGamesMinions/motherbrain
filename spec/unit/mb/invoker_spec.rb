@@ -24,7 +24,9 @@ describe MB::Invoker do
 
           it "should notify the user" do
             MB.ui.should_receive(:say).with("No cookbook with myface (version 1.2.3) plugin was found in your Berkshelf.")
-            subject.register_plugin name, version
+            lambda {
+              subject.register_plugin name, version
+            }.should raise_error(SystemExit)
           end
         end
 
@@ -50,7 +52,9 @@ describe MB::Invoker do
 
           it "should notify the user" do
             MB.ui.should_receive(:say).with("No cookbook with myface plugin was found in your Berkshelf.")
-            subject.register_plugin name, version
+            lambda {
+              subject.register_plugin name, version
+            }.should raise_error(SystemExit)
           end
         end
 

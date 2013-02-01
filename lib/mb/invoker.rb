@@ -33,6 +33,7 @@ module MotherBrain
           cookbook_identifier = "#{name}"
           cookbook_identifier += " (version #{version})" if version
           MB.ui.say "No cookbook with #{cookbook_identifier} plugin was found in your Berkshelf."
+          exit 1
         end
       end
 
