@@ -60,14 +60,24 @@ module MotherBrain
       #
       # @option options [String] :version
       #   version of the plugin to use
+      # @option options [Hash] :component_versions (Hash.new)
+      #   Hash of components and the versions to set them to
+      # @option options [Hash] :cookbook_versions (Hash.new)
+      #   Hash of cookbooks and the versions to set them to
+      # @option options [Hash] :environment_attributes (Hash.new)
+      #   Hash of additional attributes to set on the environment
+      # @option options [Boolean] :skip_bootstrap (false)
+      #   skip automatic bootstrapping of the created environment
+      # @option options [Boolean] :force (false)
+      #   force provisioning nodes to the environment even if the environment is locked
       def provision(id, plugin, manifest, options = {})
-        body = {
+        body = options.merge(
           manifest: manifest,
           plugin: {
             name: plugin,
             version: options[:version]
           }
-        }
+        )
         
         json_post("/environments/#{id}.json", MultiJson.encode(body))
       end
