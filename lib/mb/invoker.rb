@@ -20,6 +20,11 @@ module MotherBrain
         super
       end
 
+      # Load a plugin. Will ignore a request for 'plugins' since that
+      # means the user is trying to get the plugin list.
+      #
+      # @param [String] name
+      # @param [String] version
       def load_plugin(name,version=nil)
         if name != "plugins"
           if plugin = MB::Application.plugin_manager.find(name,version)
