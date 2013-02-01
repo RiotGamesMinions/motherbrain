@@ -17,13 +17,13 @@ Gem::Specification.new do |s|
   s.version       = MotherBrain::VERSION
   s.required_ruby_version = ">= 1.9.1"
 
-  s.add_runtime_dependency 'celluloid'
-  s.add_runtime_dependency 'reel'
-  s.add_runtime_dependency 'grape', '>= 0.2.3'
+  s.add_runtime_dependency 'celluloid', '>= 0.12.4'
+  s.add_runtime_dependency 'reel', '>= 0.3.0.pre'
+  s.add_runtime_dependency 'grape', '>= 0.2.6'
   s.add_runtime_dependency 'net-ssh'
   s.add_runtime_dependency 'net-scp'
   s.add_runtime_dependency 'solve', '>= 0.4.1'
-  s.add_runtime_dependency 'ridley', '>= 0.7.0.rc1'
+  s.add_runtime_dependency 'ridley', '>= 0.7.0.rc2'
   s.add_runtime_dependency 'chozo', '>= 0.4.2'
   s.add_runtime_dependency 'activesupport'
   s.add_runtime_dependency 'thor', '>= 0.16.0'
