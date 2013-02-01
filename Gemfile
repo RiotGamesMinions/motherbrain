@@ -24,7 +24,7 @@ group :development do
   gem 'debugger'
   gem 'fuubar'
   gem 'json_spec'
-  gem 'redcarpet'
+  gem 'redcarpet', platforms: :ruby
   gem 'rspec'
   gem 'webmock'
   gem 'yard'
