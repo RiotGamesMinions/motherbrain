@@ -5,10 +5,23 @@ module MotherBrain
     attr_reader :scope
 
     # @param [String] environment
-    #   the environment to run this command on
-    # @param [Object] scope
+    #   environment to run this command on
+    # @param [MB::Plugin, MB::Component] scope
+    #   scope to execute this command in.
+    #
+    #   * executing the command in the scope of an entire plugin will give you easy access to
+    #     component commands and other plugin level commands
+    #   * executing the command in the scope of a component will give you easy access to the
+    #     other commands available in that component
     # @param [Proc] execute
+    #   the code to execute when the command runner is run
+    #
+    #   @example
+    #     proc {
+    #       on("some_nodes") { service("nginx").run("stop") }
+    #     }
     # @param [Array] args
+    #   any additional arguments to pass to the execution block
     def initialize(environment, scope, execute, *args)
       @environment = environment
       @scope       = scope
@@ -16,7 +29,7 @@ module MotherBrain
       @async       = false
 
       if args.any?
-        curried_execute = proc { execute.call *args }
+        curried_execute = proc { execute.call(*args) }
         instance_eval(&curried_execute)
       else
         instance_eval(&execute)

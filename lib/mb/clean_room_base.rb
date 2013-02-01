@@ -15,6 +15,8 @@ module MotherBrain
       end
     end
 
+    include MB::Logging
+
     # @param [Object] real_model
     def initialize(real_model, &block)
       @real_model = real_model
@@ -29,6 +31,9 @@ module MotherBrain
       end
 
       def method_missing(method_name, *args, &block)
+        log.fatal { "plugin parse error while evaluating: '#{method_name}'" }
+        log.fatal { caller.join("\n") }
+
         ErrorHandler.wrap PluginSyntaxError,
           backtrace: caller,
           method_name: method_name,
