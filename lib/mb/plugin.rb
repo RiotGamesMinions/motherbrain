@@ -283,12 +283,6 @@ module MotherBrain
     # @api private
     class CleanRoom < CleanRoomBase
       # @param [#to_s] name
-      # @param [#to_s] constraint
-      def depends(name, constraint)
-        real_model.add_dependency(name, constraint)
-      end
-
-      # @param [#to_s] name
       def command(name, &block)
         real_model.add_command Command.new(name, real_model, &block)
       end
