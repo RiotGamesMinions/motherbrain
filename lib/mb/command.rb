@@ -34,14 +34,16 @@ module MotherBrain
 
     # Run the command on the given environment
     #
+    # @param [String] environment
+    #   the environment to invoke the command on
+    #
     # @raise [MB::EnvironmentNotFound] if the target environment does not exist
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
     #
     # @param [Array] args
-    def invoke(*args)
+    def invoke(environment, *args)
       options = args.last.is_a?(Hash) ? args.pop : Hash.new
-
-      environment = options[:chef_environment]
+      options[:chef_environment] = environment
 
       unless Application.ridley.environment.find(environment)
         raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"

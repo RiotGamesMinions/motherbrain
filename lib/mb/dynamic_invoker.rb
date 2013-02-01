@@ -14,6 +14,7 @@ module MotherBrain
         #
         # @param [MotherBrain::Command] command
         def define_command(command)
+          # First argument is always 'environment'
           arguments = ["environment"]
 
           command.execute.parameters.each do |type, parameter|
@@ -33,7 +34,6 @@ module MotherBrain
             define_method(:#{command.name}) do |#{arguments_string}|
               command.invoke(
                 #{arguments_string},
-                chef_environment: environment,
                 force: options[:force]
               )
             end

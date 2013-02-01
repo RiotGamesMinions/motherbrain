@@ -17,7 +17,7 @@ describe MB::Command do
   its(:execute) { should be_a Proc }
 
   describe "#invoke" do
-    subject(:invoke) { command.invoke(chef_environment: environment) }
+    subject(:invoke) { command.invoke(environment) }
 
     let(:environment) { "production" }
 
