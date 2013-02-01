@@ -14,22 +14,27 @@ module MotherBrain
           app_config = configure(opts.dup)
           app_config.validate!
           MB::Application.run!(app_config)
-
-          setup
+          register_plugin(args[0], opts[:plugin_version]) unless args[0] == "plugins"
         end
 
         super
       end
 
-      def setup
-        Application.plugin_manager.list.each do |plugin|
-          self.register_plugin MB::PluginInvoker.fabricate(plugin)
+      # Load and register a plugin
+      #
+      # @param [String] name
+      # @param [String] version
+      def register_plugin(name, version = nil)
+        if plugin = MB::Application.plugin_manager.find(name, version)
+          klass = MB::PluginInvoker.fabricate(plugin)
+          self.register klass, klass.plugin.name, "#{klass.plugin.name} [COMMAND]", klass.plugin.description
+          MB.ui.say "#{plugin.name} (#{plugin.version})"
+        else
+          cookbook_identifier = "#{name}"
+          cookbook_identifier += " (version #{version})" if version
+          MB.ui.say "No cookbook with #{cookbook_identifier} plugin was found in your Berkshelf."
+          exit 1
         end
-      end
-
-      # @param [MotherBrain::PluginInvoker] klass
-      def register_plugin(klass)
-        self.register klass, klass.plugin.name, "#{klass.plugin.name} [COMMAND]", klass.plugin.description
       end
 
       private
@@ -49,14 +54,6 @@ module MotherBrain
     end
 
     include MB::Mixin::Services
-
-    # @see {InvokerBase}
-    def initialize(args = [], options = {}, config = {})
-      super
-      unless InvokerBase::NOCONFIG_TASKS.include?(config[:current_task].try(:name))
-        self.class.setup
-      end
-    end
 
     class_option :config,
       type: :string,
@@ -78,6 +75,11 @@ module MotherBrain
       desc: "Set the log file location.",
       aliases: "-L",
       banner: "PATH"
+    class_option :plugin_version,
+      type: :string,
+      desc: "Plugin version to use",
+      default: nil,
+      aliases: "-p"
 
     method_option :force,
       type: :boolean,
