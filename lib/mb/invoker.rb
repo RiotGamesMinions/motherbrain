@@ -58,16 +58,7 @@ module MotherBrain
         end
     end
 
-    # # @see {InvokerBase}
-    # def initialize(args = [], options = {}, config = {})
-    #   super
-    #   unless InvokerBase::NOCONFIG_TASKS.include?(config[:current_task].try(:name))
-    #     self.class.load_plugin
-    #   end
-    # end
-
     include MB::Mixin::Services
-
 
     class_option :config,
       type: :string,
