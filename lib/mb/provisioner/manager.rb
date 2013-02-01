@@ -44,7 +44,8 @@ module MotherBrain
         :cookbook_versions,
         :environment_attributes,
         :environment_attributes_file,
-        :skip_bootstrap
+        :skip_bootstrap,
+        :force
       ]
 
       include Celluloid
@@ -83,8 +84,11 @@ module MotherBrain
       # @option options [Hash] :environment_attributes (Hash.new)
       #   Hash of additional attributes to set on the environment
       # @option options [Boolean] :skip_bootstrap (false)
+      #   skip automatic bootstrapping of the created environment
       # @option options [#to_sym] :with
       #   id of provisioner to use
+      # @option options [Boolean] :force (false)
+      #   force provisioning nodes to the environment even if the environment is locked
       #
       # @return [JobTicket]
       def provision(environment, manifest, plugin, options = {})
@@ -92,7 +96,8 @@ module MotherBrain
           component_versions: Hash.new,
           cookbook_versions: Hash.new,
           environment_attributes: Hash.new,
-          skip_bootstrap: false
+          skip_bootstrap: false,
+          force: false
         )
 
         job_type    = options[:skip_bootstrap] ? :provision : :provision_and_bootstrap
