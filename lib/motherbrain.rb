@@ -43,6 +43,7 @@ module MotherBrain
   autoload :ConfigManager, 'mb/config_manager'
   autoload :CookbookMetadata, 'mb/cookbook_metadata'
   autoload :DynamicInvoker, 'mb/dynamic_invoker'
+  autoload :EnvironmentManager, 'mb/environment_manager'
   autoload :ErrorHandler, 'mb/error_handler'
   autoload :FileSystem, 'mb/file_system'
   autoload :Gear, 'mb/gear'

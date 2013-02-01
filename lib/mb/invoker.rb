@@ -64,6 +64,9 @@ module MotherBrain
     #   end
     # end
 
+    include MB::Mixin::Services
+
+
     class_option :config,
       type: :string,
       desc: "Path to a MotherBrain JSON configuration file.",
@@ -112,6 +115,34 @@ module MotherBrain
       @config.save
 
       MB.ui.say "Config written to: '#{path}'"
+    end
+
+    method_option :force,
+      type: :boolean,
+      default: false,
+      desc: "perform the configuration even if the environment is locked"
+    desc "configure_environment ENVIRONMENT MANIFEST", "configure a Chef environment"
+    def configure_environment(environment, attributes_file)
+      attributes_file = File.expand_path(attributes_file)
+
+      begin
+        content = File.read(attributes_file)
+      rescue Errno::ENOENT
+        MB.ui.say "No attributes file found at: '#{attributes_file}'"
+        exit(1)
+      end
+
+      begin
+        attributes = MultiJson.decode(content)
+      rescue MultiJson::DecodeError => ex
+        MB.ui.say "Error decoding JSON from: '#{attributes_file}'"
+        MB.ui.say ex
+        exit(1)
+      end
+
+      job = environment_manager.configure(environment, attributes: attributes, force: options[:force])
+
+      CliClient.new(job).display
     end
 
     method_option :remote,
