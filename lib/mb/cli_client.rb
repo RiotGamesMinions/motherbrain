@@ -100,7 +100,7 @@ module MotherBrain
 
       # @param [MotherBrain::Job] job
       def print_status(job)
-        if job.status != last_statuses[job]
+        if last_statuses[job] && job.status != last_statuses[job]
           print_last_status(job)
         end
 
