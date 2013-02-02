@@ -1,4 +1,5 @@
 source :rubygems
+source "http://gems.riotgames.com"
 
 gemspec
 
