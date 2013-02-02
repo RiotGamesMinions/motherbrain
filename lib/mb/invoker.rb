@@ -2,8 +2,15 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Invoker < InvokerBase
     class << self
+      include MB::Mixin::Services
+
       def invoked_opts
         @invoked_opts ||= {}
+      end
+
+      # @param [#to_s] name
+      def invoker_command?(name)
+        (tasks.keys + map.keys).include?(name.to_s)
       end
 
       # @see {#Thor}
@@ -15,8 +22,8 @@ module MotherBrain
           app_config.validate!
           MB::Application.run!(app_config)
 
-          # Don't attempt to find a plugin if we're executing a top level task
-          unless tasks.keys.include?(args[0])
+          # If the first argument is the name of a plugin, register that plugin and use it.
+          if plugin_manager.find(args[0]).present?
             plugin = register_plugin(args[0], opts[:plugin_version])
             MB.ui.say "using #{plugin}"
             MB.ui.say ""
@@ -63,6 +70,8 @@ module MotherBrain
     end
 
     include MB::Mixin::Services
+
+    map 'ver' => :version
 
     class_option :config,
       type: :string,
