@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MB::JSONManifest do
-  subject { json_manifest }
-  let(:json_manifest) { described_class.new(attributes) }
+describe MB::Manifest do
+  subject { manifest }
+  let(:manifest) { described_class.new(attributes) }
 
   let(:valid_json) do
     <<-JSON
@@ -58,7 +58,7 @@ describe MB::JSONManifest do
   end
 
   describe "#[:nodes]" do
-    subject { json_manifest[:nodes] }
+    subject { manifest[:nodes] }
 
     it { should have(3).items }
     it { should =~ valid_hash[:nodes] }

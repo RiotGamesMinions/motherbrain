@@ -12,7 +12,7 @@ module MotherBrain
     #     }
     #   }
     #
-    class Manifest < JSONManifest
+    class Manifest < MotherBrain::Manifest
       class << self
         # Validate the given parameter contains a Hash or Manifest with a valid structure
         #

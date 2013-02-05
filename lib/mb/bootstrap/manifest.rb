@@ -15,7 +15,7 @@ module MotherBrain
     #     ]
     #   }
     #
-    class Manifest < JSONManifest
+    class Manifest < MotherBrain::Manifest
       class << self
         # @param [Hash] nodes
         # @param [Provisioner::Manifest] provisioner_manifest

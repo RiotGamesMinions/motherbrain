@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class JSONManifest < Hash
+  class Manifest < Hash
     class << self
       # @param [#to_s] path
       #
