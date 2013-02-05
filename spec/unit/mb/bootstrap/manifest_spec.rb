@@ -72,8 +72,17 @@ describe MB::Bootstrap::Manifest do
 
     let(:attributes) {
       {
-        "activemq::master" => ["amq1.riotgames.com"],
-        "nginx::master" => ["nginx1.riotgames.com"]
+        nodes: [
+          {
+            group: "activemq::master",
+            hosts: ["amq1.riotgames.com"]
+          },
+
+          {
+            group: "nginx::master",
+            hosts: ["nginx1.riotgames.com"]
+          },
+        ]
       }
     }
 
@@ -106,8 +115,11 @@ describe MB::Bootstrap::Manifest do
     context "when manifest contains a node group that is not part of the plugin" do
       let(:attributes) {
         {
-          "not::defined" => [
-            "one.riotgames.com"
+          nodes: [
+            {
+              group: "not::defined",
+              hosts: ["one.riotgames.com"]
+            }
           ]
         }
       }
@@ -124,14 +136,19 @@ describe MB::Bootstrap::Manifest do
 
     context "when a key is not in proper node group format: '{component}::{group}'" do
       let(:attributes) {
-        {
-          "activemq" => [
-            "amq1.riotgames.com"
-          ],
-            "nginx::master" => [
-              "nginx1.riotgames.com"
-          ]
-        }
+      {
+        nodes: [
+          {
+            group: "activemq",
+            hosts: ["amq1.riotgames.com"]
+          },
+
+          {
+            group: "nginx::master",
+            hosts: ["nginx1.riotgames.com"]
+          },
+        ]
+      }
       }
 
       it "raises an InvalidBootstrapManifest error" do

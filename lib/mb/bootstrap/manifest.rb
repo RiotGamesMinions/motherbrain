@@ -65,19 +65,19 @@ module MotherBrain
               "Plugin '#{plugin.name}' (#{plugin.version}) does not contain a bootstrap routine"
           end
 
-          manifest.keys.each do |node_group|
-            node_group = node_group.to_s
+          manifest.node_groups.each do |node_group|
+            group = node_group[:group]
 
-            match = node_group.match(Plugin::NODE_GROUP_ID_REGX)
+            match = group.match(Plugin::NODE_GROUP_ID_REGX)
 
             unless match
-              msg = "Manifest contained the entry: '#{node_group}' which is not"
+              msg = "Manifest contained the entry: '#{group}' which is not"
               msg << " in the proper node group format: 'component::group'"
               raise InvalidBootstrapManifest, msg
             end
 
-            unless plugin.bootstrap_routine.has_task?(node_group)
-              msg = "Manifest describes the node group '#{node_group}' which is not found"
+            unless plugin.bootstrap_routine.has_task?(group)
+              msg = "Manifest describes the node group '#{group}' which is not found"
               msg << " in the given routine for '#{plugin}'"
               raise InvalidBootstrapManifest, msg
             end
