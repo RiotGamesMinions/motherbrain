@@ -26,7 +26,7 @@ module MotherBrain
           provisioner_manifest = provisioner_manifest.dup
 
           obj = new.tap do |bootstrap_manifest|
-            provisioner_manifest[:nodes].each do |node_group|
+            provisioner_manifest.node_groups.each do |node_group|
               instance_type = node_group[:type]
               count = node_group[:count] || 1
               components = node_group[:components]

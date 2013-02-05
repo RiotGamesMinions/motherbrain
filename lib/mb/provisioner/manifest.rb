@@ -90,20 +90,6 @@ module MotherBrain
         end
       end
 
-      # @return [Array]
-      def node_groups
-        self[:nodes] || []
-      end
-
-      # Returns the number of nodes expected to be created by this manifest regardless of type
-      #
-      # @return [Integer]
-      def node_count
-        node_groups.reduce(0) { |total, node|
-          total + (node[:count] || 1)
-        }
-      end
-
       # @param [Plugin] plugin
       #
       # @raise [InvalidProvisionManifest] if the given manifest is not well formed

@@ -51,6 +51,8 @@ describe MB::Manifest do
   it { should == valid_hash }
   it { should have_key(:nodes) }
 
+  its(:node_count) { should == 4 }
+
   context "with an empty hash" do
     let(:attributes) { Hash.new }
 
