@@ -48,30 +48,35 @@ module MotherBrain
       def display_jobs
         until jobs.all?(&:completed?) || application_terminated?
           jobs.each do |job|
-            status job
+            print_status job
           end
         end
 
         if application_terminated?
-          final_terminated_status
+          print_final_terminated_status
         else
           jobs.each do |job|
-            final_status job
+            print_final_status job
           end
         end
       end
 
       # @param [MotherBrain::Job] job
-      def final_status(job)
-        clear_line
+      def print_final_status(job)
+        print_last_status(job)
 
-        msg = "\r#{SPACE * spinner.next.length} [#{job.type}] #{job.state.to_s.capitalize}"
-        msg << ": #{job.result}" unless job.result.nil?
+        msg = "#{SPACE * spinner.next.length} [#{job.type}] #{job.state.to_s.capitalize}"
+        msg << ": #{job.result}" if job.result
+
         puts msg
       end
 
-      def final_terminated_status
+      def print_final_terminated_status
         puts "\nMotherBrain terminated"
+      end
+
+      def last_statuses
+        @last_statuses ||= Hash.new
       end
 
       # @return [Enumerator]
@@ -94,12 +99,24 @@ module MotherBrain
       end
 
       # @param [MotherBrain::Job] job
-      def status(job)
+      def print_status(job)
+        if last_statuses[job] && job.status != last_statuses[job]
+          print_last_status(job)
+        end
+
         clear_line
 
         printf "\r%s [#{job.type}] #{job.status}", spinner.next
 
+        last_statuses[job] = job.status
+
         sleep TICK
+      end
+
+      def print_last_status(job)
+        clear_line
+
+        printf "\r#{SPACE * spinner.next.length} [#{job.type}] #{last_statuses[job]}\n"
       end
 
       def wait_for_jobs

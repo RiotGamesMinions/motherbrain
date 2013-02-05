@@ -2,8 +2,15 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Invoker < InvokerBase
     class << self
+      include MB::Mixin::Services
+
       def invoked_opts
         @invoked_opts ||= {}
+      end
+
+      # @param [#to_s] name
+      def invoker_command?(name)
+        (tasks.keys + map.keys).include?(name.to_s)
       end
 
       # @see {#Thor}
@@ -14,7 +21,13 @@ module MotherBrain
           app_config = configure(opts.dup)
           app_config.validate!
           MB::Application.run!(app_config)
-          register_plugin(args[0], opts[:plugin_version]) unless args[0] == "plugins"
+
+          # If the first argument is the name of a plugin, register that plugin and use it.
+          if plugin_manager.find(args[0]).present?
+            plugin = register_plugin(args[0], opts[:plugin_version])
+            MB.ui.say "using #{plugin}"
+            MB.ui.say ""
+          end
         end
 
         super
@@ -24,17 +37,20 @@ module MotherBrain
       #
       # @param [String] name
       # @param [String] version
+      #
+      # @return [MB::Plugin]
       def register_plugin(name, version = nil)
         if plugin = MB::Application.plugin_manager.find(name, version)
           klass = MB::PluginInvoker.fabricate(plugin)
           self.register klass, klass.plugin.name, "#{klass.plugin.name} [COMMAND]", klass.plugin.description
-          MB.ui.say "#{plugin.name} (#{plugin.version})"
         else
           cookbook_identifier = "#{name}"
           cookbook_identifier += " (version #{version})" if version
           MB.ui.say "No cookbook with #{cookbook_identifier} plugin was found in your Berkshelf."
           exit 1
         end
+
+        plugin
       end
 
       private
@@ -54,6 +70,8 @@ module MotherBrain
     end
 
     include MB::Mixin::Services
+
+    map 'ver' => :version
 
     class_option :config,
       type: :string,
