@@ -3,10 +3,10 @@ require 'spec_helper'
 describe MB::Bootstrap::Manifest do
   describe ".from_provisioner" do
     subject(:manifest) {
-      described_class.from_provisioner(nodes, provisioner_manifest, path)
+      described_class.from_provisioner(provisioner_response, provisioner_manifest, path)
     }
 
-    let(:nodes) {
+    let(:provisioner_response) {
       [
         {
           instance_type: "m1.large",
@@ -29,12 +29,12 @@ describe MB::Bootstrap::Manifest do
           nodes: [
             {
               type: "m1.large",
-              components: ["activemq::master"]
+              groups: ["activemq::master"]
             },
             {
               type: "m1.small",
               count: 2,
-              components: ["activemq::slave"]
+              groups: ["activemq::slave"]
             }
           ]
         }
@@ -74,12 +74,12 @@ describe MB::Bootstrap::Manifest do
       {
         nodes: [
           {
-            group: "activemq::master",
+            groups: ["activemq::master"],
             hosts: ["amq1.riotgames.com"]
           },
 
           {
-            group: "nginx::master",
+            groups: ["nginx::master"],
             hosts: ["nginx1.riotgames.com"]
           },
         ]
@@ -117,7 +117,7 @@ describe MB::Bootstrap::Manifest do
         {
           nodes: [
             {
-              group: "not::defined",
+              groups: ["not::defined"],
               hosts: ["one.riotgames.com"]
             }
           ]
@@ -139,12 +139,12 @@ describe MB::Bootstrap::Manifest do
       {
         nodes: [
           {
-            group: "activemq",
+            groups: ["activemq"],
             hosts: ["amq1.riotgames.com"]
           },
 
           {
-            group: "nginx::master",
+            groups: ["nginx::master"],
             hosts: ["nginx1.riotgames.com"]
           },
         ]

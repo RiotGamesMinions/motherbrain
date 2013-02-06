@@ -46,7 +46,7 @@ module MotherBrain
 
             type = node[:type]
             count = node[:count]
-            components = node[:components]
+            groups = node[:groups]
 
             unless type.match(/\w+\.\w+/)
               raise InvalidProvisionManifest,
@@ -60,13 +60,13 @@ module MotherBrain
               end
             end
 
-            unless components.is_a?(Array)
+            unless groups.is_a?(Array)
               raise InvalidProvisionManifest,
-                "The provisioner manifest contains a node group without an array of components: #{node.inspect}"
+                "The provisioner manifest contains a node group without an array of groups: #{node.inspect}"
             end
 
-            components.each do |component_string|
-              match = component_string.match(Plugin::NODE_GROUP_ID_REGX)
+            groups.each do |group|
+              match = group.match(Plugin::NODE_GROUP_ID_REGX)
 
               unless match
                 raise InvalidProvisionManifest,

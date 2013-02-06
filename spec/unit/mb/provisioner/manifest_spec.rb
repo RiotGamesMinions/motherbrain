@@ -24,16 +24,16 @@ describe MB::Provisioner::Manifest do
       nodes: [
         {
           type: "m1.large",
-          components: ["activemq::master"]
+          groups: ["activemq::master"]
         },
         {
           type: "m1.large",
           count: 2,
-          components: ["activemq::slave"]
+          groups: ["activemq::slave"]
         },
         {
           type: "m1.small",
-          components: ["nginx::master"]
+          groups: ["nginx::master"]
         }
       ]
     }
@@ -65,7 +65,7 @@ describe MB::Provisioner::Manifest do
         }.to raise_error(MB::InvalidProvisionManifest)
       end
 
-      context "when manifest contains a component that is not part of the plugin" do
+      context "when manifest contains a group that is not part of the plugin" do
         before(:each) do
           plugin.stub(:has_component?).with("activemq").and_return(false)
           plugin.stub(:has_component?).with("nginx").and_return(false)
@@ -78,7 +78,7 @@ describe MB::Provisioner::Manifest do
         end
       end
 
-      context "when manifest contains a group that is not part of a component" do
+      context "when manifest contains a group that is not part of a group" do
         before(:each) do
           activemq.stub(:has_group?).with("master").and_return(false)
         end
@@ -90,14 +90,14 @@ describe MB::Provisioner::Manifest do
         end
       end
 
-      context "when components is not in {component}::{group} format" do
+      context "when groups is not in {group}::{group} format" do
         let(:invalid_manifest) {
           { 
             nodes: [
               {
                 type: "m1.large",
                 count: 1,
-                components: [
+                groups: [
                   "activemq",
                   "activemq::slave"
                 ]
@@ -113,14 +113,14 @@ describe MB::Provisioner::Manifest do
         end
       end
 
-      context "when components is not an array" do
+      context "when groups is not an array" do
         let(:invalid_manifest) {
           {
             nodes: [
               {
                 type: "m1.large",
                 count: 1,
-                components: "activemq::slave"
+                groups: "activemq::slave"
               }
             ]
           }

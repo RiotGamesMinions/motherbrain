@@ -29,17 +29,17 @@ module MotherBrain
             provisioner_manifest.node_groups.each do |node_group|
               instance_type = node_group[:type]
               count = node_group[:count] || 1
-              components = node_group[:components]
+              groups = node_group[:groups]
 
-              components.each do |component|
-                bootstrap_manifest[component] = Array.new
+              groups.each do |group|
+                bootstrap_manifest[group] = Array.new
 
                 count.times do
                   instance = nodes.find { |node|
                     node[:instance_type] == instance_type
                   }
 
-                  bootstrap_manifest[component] << instance[:public_hostname]
+                  bootstrap_manifest[group] << instance[:public_hostname]
 
                   nodes.delete(instance)
                 end
@@ -66,20 +66,22 @@ module MotherBrain
           end
 
           manifest.node_groups.each do |node_group|
-            group = node_group[:group]
+            groups = node_group[:groups]
 
-            match = group.match(Plugin::NODE_GROUP_ID_REGX)
+            groups.each do |group|
+              match = group.match(Plugin::NODE_GROUP_ID_REGX)
 
-            unless match
-              msg = "Manifest contained the entry: '#{group}' which is not"
-              msg << " in the proper node group format: 'component::group'"
-              raise InvalidBootstrapManifest, msg
-            end
+              unless match
+                msg = "Manifest contained the entry: '#{group}' which is not"
+                msg << " in the proper node group format: 'component::group'"
+                raise InvalidBootstrapManifest, msg
+              end
 
-            unless plugin.bootstrap_routine.has_task?(group)
-              msg = "Manifest describes the node group '#{group}' which is not found"
-              msg << " in the given routine for '#{plugin}'"
-              raise InvalidBootstrapManifest, msg
+              unless plugin.bootstrap_routine.has_task?(group)
+                msg = "Manifest describes the node group '#{group}' which is not found"
+                msg << " in the given routine for '#{plugin}'"
+                raise InvalidBootstrapManifest, msg
+              end
             end
           end
         end
