@@ -66,21 +66,24 @@ describe MB::Bootstrap::Routine do
     end
   end
 
-  let(:manifest) do
+  let(:manifest) {
     {
-      "activemq::master" => [
-        "amq1.riotgames.com",
-        "amq2.riotgames.com"
-      ],
-      "activemq::slave" => [
-        "amqs1.riotgames.com",
-        "amqs2.riotgames.com"
-      ],
-      "nginx::master" => [
-        "nginx1.riotgames.com"
+      nodes: [
+        {
+          groups: ["activemq::master"],
+          hosts: ["amq1.riotgames.com", "amq2.riotgames.com"]
+        },
+        {
+          groups: ["activemq::slave"],
+          hosts: ["amqs1.riotgames.com", "amqs2.riotgames.com"]
+        },
+        {
+          groups: ["nginx::master"],
+          hosts: ["nginx1.riotgames.com"]
+        }
       ]
     }
-  end
+  }
 
   subject { described_class.new(plugin) }
 
