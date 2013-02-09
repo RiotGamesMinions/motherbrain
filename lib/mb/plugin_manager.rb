@@ -165,7 +165,7 @@ module MotherBrain
         File.write(metadata_path, resource.metadata.to_json)
 
         unless resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, plugin_path)
-          raise PluginDownloadError, "failure downloading plugin files for #{resource}"
+          raise PluginDownloadError, "failure downloading plugin file for #{resource}"
         end
 
         load_file(scratch_dir, options)
