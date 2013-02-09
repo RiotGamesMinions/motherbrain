@@ -26,7 +26,10 @@ module MotherBrain
       # @return [MotherBrain::Plugin]
       def from_path(path)
         plugin_filename   = File.join(path, PLUGIN_FILENAME)
-        metadata_filename = File.join(path, METADATA_FILENAME)
+        ruby_metadata_filename = File.join(path, RUBY_METADATA_FILENAME)
+        json_metadata_filename = File.join(path, JSON_METADATA_FILENAME)
+
+        metadata_filename = File.exists?(json_metadata_filename) ? json_metadata_filename : ruby_metadata_filename
 
         begin
           metadata = CookbookMetadata.from_file(metadata_filename)
@@ -52,7 +55,8 @@ module MotherBrain
 
     NODE_GROUP_ID_REGX = /^(.+)::(.+)$/.freeze
     PLUGIN_FILENAME    = 'motherbrain.rb'.freeze
-    METADATA_FILENAME  = 'metadata.rb'.freeze
+    RUBY_METADATA_FILENAME  = 'metadata.rb'.freeze
+    JSON_METADATA_FILENAME  = 'metadata.json'.freeze
 
     extend Forwardable
     include Comparable

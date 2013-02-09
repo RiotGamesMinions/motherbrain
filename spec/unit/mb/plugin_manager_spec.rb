@@ -117,12 +117,14 @@ describe MotherBrain::PluginManager do
 
       context "and the files are transferred successfully" do
         before(:each) do
-          generate_cookbook('whatever', path: temp_dir, with_plugin: true)
+          File.write(File.join(temp_dir, MB::Plugin::PLUGIN_FILENAME), "# blank plugin")
+
           MB::FileSystem.stub(:tmpdir) { temp_dir }
-          metadata = File.join(temp_dir, MB::Plugin::PLUGIN_FILENAME)
-          plugin = File.join(temp_dir, MB::Plugin::METADATA_FILENAME)
 
           resource.stub(:download_file).and_return(true)
+
+          metadata_json = File.read(fixtures_path.join('cb_metadata.json'))
+          resource.stub_chain(:metadata, :to_json).and_return(metadata_json)
         end
 
         it "adds the plugin to the set of plugins" do
