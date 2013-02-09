@@ -123,8 +123,8 @@ describe MotherBrain::PluginManager do
 
           resource.stub(:download_file).and_return(true)
 
-          metadata_json = File.read(fixtures_path.join('cb_metadata.json'))
-          resource.stub_chain(:metadata, :to_json).and_return(metadata_json)
+          json_metadata = File.read(fixtures_path.join('cb_metadata.json'))
+          resource.stub_chain(:metadata, :to_json).and_return(json_metadata)
         end
 
         it "adds the plugin to the set of plugins" do
