@@ -12,10 +12,9 @@ module MotherBrain
       # @return [Hash]
       attr_reader :options
 
-      # @param [String] group_id
-      #   a string containing a group_id for the nodes being bootstrapped
-      #     'activemq::master'
-      #     'mysql::slave'
+      # @param [Array] group_ids
+      #   an array of groups for the nodes being bootstrapped
+      #     ['activemq::master']
       # @param [Array<String>] hosts
       #   an array of hostnames or ipaddresses to bootstrap
       #     [ '33.33.33.10', 'reset.riotgames.com' ]

@@ -94,7 +94,7 @@ describe MB::Manifest do
       it "raises" do
         expect {
           from_json
-        }.to raise_error(MB::InvalidJSONManifest)
+        }.to raise_error(MB::InvalidManifest)
       end
     end
   end
