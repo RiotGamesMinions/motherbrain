@@ -149,7 +149,7 @@ module MotherBrain
           end
 
           while tasks = task_queue.shift
-            job.status = "Bootstrapping #{Array(tasks).collect(&:id).join(', ')}"
+            job.status = "Bootstrapping #{Array(tasks).collect(&:groups).flatten.uniq.join(', ')}"
 
             concurrent_bootstrap(manifest, tasks, options)
           end
@@ -173,30 +173,30 @@ module MotherBrain
       #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
       def concurrent_bootstrap(manifest, boot_tasks, options = {})
         workers = Array(boot_tasks).collect do |boot_task|
-          nodes = manifest[boot_task.id]
+          nodes = manifest.hosts_for_groups(boot_task.groups)
 
           worker_options = options.merge(
-            run_list: boot_task.group.run_list,
-            attributes: boot_task.group.chef_attributes
+            run_list: boot_task.group_object.run_list,
+            attributes: boot_task.group_object.chef_attributes
           )
 
-          Worker.new(boot_task.id, nodes, worker_options)
+          Worker.new(boot_task.groups, nodes, worker_options)
         end
 
         futures = workers.collect do |worker|
           [
-            worker.group_id,
+            worker.group_ids,
             worker.future.run
           ]
         end
 
         {}.tap do |response|
-          futures.each do |group_id, future|
-            response[group_id] = future.value
+          futures.each do |group_ids, future|
+            response[group_ids] = future.value
           end
         end
       ensure
-        workers.map { |worker| worker.terminate if worker.alive? }
+        Array(workers).map { |worker| worker.terminate if worker.alive? }
       end
     end
   end

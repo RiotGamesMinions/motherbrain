@@ -10,16 +10,16 @@ describe MB::Manifest do
         "nodes": [
           {
             "type": "m1.large",
-            "components": ["activemq::master"]
+            "groups": ["activemq::master"]
           },
           {
             "type": "m1.large",
             "count": 2,
-            "components": ["activemq::slave"]
+            "groups": ["activemq::slave"]
           },
           {
             "type": "m1.small",
-            "components": ["nginx::master"]
+            "groups": ["nginx::master"]
           }
         ]
       }
@@ -31,16 +31,16 @@ describe MB::Manifest do
       nodes: [
         {
           type: "m1.large",
-          components: ["activemq::master"]
+          groups: ["activemq::master"]
         },
         {
           type: "m1.large",
           count: 2,
-          components: ["activemq::slave"]
+          groups: ["activemq::slave"]
         },
         {
           type: "m1.small",
-          components: ["nginx::master"]
+          groups: ["nginx::master"]
         }
       ]
     }

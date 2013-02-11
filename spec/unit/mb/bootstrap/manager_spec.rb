@@ -34,21 +34,21 @@ describe MB::Bootstrap::Manager do
     MB::Bootstrap::Manifest.new({
       nodes: [
         {
-          group: "activemq::master",
+          groups: ["activemq::master"],
           hosts: [
             "amq1.riotgames.com",
             "amq2.riotgames.com"
           ]
         },
         {
-          group: "activemq::slave",
+          groups: ["activemq::slave"],
           hosts: [
             "amqs1.riotgames.com",
             "amqs2.riotgames.com"
           ]
         },
         {
-          group: "nginx::master",
+          groups: ["nginx::master"],
           hosts: [
             "nginx1.riotgames.com"
           ]
