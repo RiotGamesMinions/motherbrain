@@ -16,7 +16,7 @@ module MotherBrain
         if options[:with_plugin]
           cookbooks.select! do |cb_path|
             File.exist?(cb_path.join(Plugin::PLUGIN_FILENAME)) &&
-              File.exist?(cb_path.join(Plugin::METADATA_FILENAME))
+              File.exist?(cb_path.join(Plugin::RUBY_METADATA_FILENAME))
           end
         end
 

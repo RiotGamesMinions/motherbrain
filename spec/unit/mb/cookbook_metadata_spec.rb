@@ -69,10 +69,20 @@ describe MotherBrain::CookbookMetadata do
     end
 
     describe "#from_file" do
-      let(:path) { fixtures_path.join('cb_metadata.rb') }
+      context "when the metadata is a ruby file" do
+        let(:path) { fixtures_path.join('cb_metadata.rb') }
 
-      it "returns an instance of CookbookMetadata" do
-        subject.from_file(path).should be_a(MB::CookbookMetadata)
+        it "returns an instance of CookbookMetadata" do
+          subject.from_file(path).should be_a(MB::CookbookMetadata)
+        end
+      end
+
+      context "when the metadata is a json file" do
+        let(:path) { fixtures_path.join('cb_metadata.json') }
+
+        it "returns an instance of CookbookMetadata" do
+          subject.from_file(path).should be_a(MB::CookbookMetadata)
+        end
       end
     end
   end

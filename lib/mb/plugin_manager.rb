@@ -159,13 +159,13 @@ module MotherBrain
 
       begin
         scratch_dir   = FileSystem.tmpdir("cbplugin")
-        metadata_path = File.join(scratch_dir, Plugin::METADATA_FILENAME)
+        metadata_path = File.join(scratch_dir, Plugin::JSON_METADATA_FILENAME)
         plugin_path   = File.join(scratch_dir, Plugin::PLUGIN_FILENAME)
 
-        unless resource.download_file(:root_file, Plugin::METADATA_FILENAME, metadata_path) &&
-          resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, plugin_path)
+        File.write(metadata_path, resource.metadata.to_json)
 
-          raise PluginDownloadError, "failure downloading plugin files for #{resource}"
+        unless resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, plugin_path)
+          raise PluginDownloadError, "failure downloading plugin file for #{resource}"
         end
 
         load_file(scratch_dir, options)
