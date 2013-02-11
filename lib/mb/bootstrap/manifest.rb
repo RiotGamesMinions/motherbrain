@@ -87,6 +87,17 @@ module MotherBrain
         end
       end
 
+      # Finds all hosts to be bootstrapped with a set of groups
+      #
+      # @return [Array] of hosts
+      def hosts_for_groups(groups)
+        node_groups.select { |node_group|
+          (node_group[:groups] & Array(groups)).any?
+        }.collect { |node_group|
+          node_group[:hosts]
+        }.flatten
+      end
+
       # Validates that the instance of manifest describes a layout for the given routine
       #
       # @param [Plugin] plugin
