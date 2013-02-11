@@ -12,8 +12,25 @@ module MotherBrain
       # @return [Cookbook::Metadata]
       def from_file(filepath)
         filepath = filepath.to_s
-        load { eval(File.read(filepath), binding, filepath, 1) }
+
+        if File.extname(filepath) =~ /\.json/
+          from_json_file(filepath)
+        else
+          from_ruby_file(filepath)
+        end
       end
+
+      private
+        def from_ruby_file(filepath)
+          load { eval(File.read(filepath), binding, filepath, 1) }
+        end
+
+        def from_json_file(filepath)
+          load {
+            json_metadata = JSON.parse(File.read(filepath))
+            json_metadata.each { |key, val| send(key.to_sym, val) }
+          }
+        end
     end
 
     include Chozo::VariaModel
