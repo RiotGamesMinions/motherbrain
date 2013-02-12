@@ -43,7 +43,6 @@ module MotherBrain
   autoload :FileSystem, 'mb/file_system'
   autoload :Gear, 'mb/gear'
   autoload :Group, 'mb/group'
-  autoload :InvokerBase, 'mb/invoker_base'
   autoload :Invoker, 'mb/invoker'
   autoload :Job, 'mb/job'
   autoload :JobManager, 'mb/job_manager'

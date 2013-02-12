@@ -1,8 +1,35 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
-  class Invoker < InvokerBase
+  # @author Jamie Winsor <reset@riotgames.com>
+  class Invoker < Thor
     class << self
       include MB::Mixin::Services
+
+      # @param [Hash] options
+      #
+      # @return [MB::Config]
+      def configure(options)
+        file = options[:config] || File.expand_path(MB::Config.default_path)
+
+        begin
+          config = MB::Config.from_file file
+        rescue Chozo::Errors::ConfigNotFound => e
+          raise e.class.new "#{e.message}\nCreate one with `mb configure`"
+        end
+
+        level = Logger::WARN
+        level = Logger::INFO if options[:verbose]
+        level = Logger::DEBUG if options[:debug]
+
+        if (options[:verbose] || options[:debug]) && options[:logfile].nil?
+          options[:logfile] = STDOUT
+        end
+
+        MB::Logging.setup(level: level, location: options[:logfile])
+
+        config.rest_gateway.enable = false
+        config.plugin_manager.eager_loading = false
+        config
+      end
 
       def invoked_opts
         @invoked_opts ||= {}
@@ -17,7 +44,7 @@ module MotherBrain
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
         invoked_opts.merge!(opts)
-        if args.any? and (args & InvokerBase::NOCONFIG_TASKS).empty?
+        if args.any? and (args & NOCONFIG_TASKS).empty?
           app_config = configure(opts.dup)
           app_config.validate!
           MB::Application.run!(app_config)
@@ -69,7 +96,24 @@ module MotherBrain
         end
     end
 
+    NOCONFIG_TASKS = [
+      "configure",
+      "help",
+      "version"
+    ].freeze
+
+    include MB::Locks
     include MB::Mixin::Services
+
+    attr_reader :config
+
+    def initialize(args = [], options = {}, config = {})
+      super
+      opts = self.is_a?(Invoker) ? self.options.dup : self.options.merge(Invoker.invoked_opts)
+      unless NOCONFIG_TASKS.include? config[:current_task].try(:name)
+        @config = self.class.configure(opts)
+      end
+    end
 
     map 'ver' => :version
 
