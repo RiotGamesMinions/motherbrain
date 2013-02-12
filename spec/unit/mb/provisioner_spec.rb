@@ -2,22 +2,30 @@ require 'spec_helper'
 
 describe MB::Provisioner do
   describe "ClassMethods" do
-    subject do
+    subject {
       Class.new do
         include MB::Provisioner
       end
-    end
+    }
 
     describe "::validate_create" do
       it "does not raise an error if the number of nodes in the response matches the expected in manifest" do
-        manifest = MB::Provisioner::Manifest.new.from_json({
-          "x1.large" => {
-            "activemq::master" => 2,
-          },
-          "x1.small" => {
-            "nginx::server" => 1
-          }
-        }.to_json)
+        manifest = MB::Provisioner::Manifest.new.from_json(
+          {
+            nodes: [
+              {
+                type: "x1.large",
+                count: 2,
+                components: ["activemq::master"]
+              },
+              {
+                type: "x1.small",
+                count: 1,
+                components: ["nginx::server"]
+              }
+            ]
+          }.to_json)
+
         response = [
           {
             name: "a1.riotgames.com",
@@ -40,13 +48,19 @@ describe MB::Provisioner do
 
       it "raises an error if there are less nodes than the manifest expects" do
         manifest = MB::Provisioner::Manifest.new.from_json({
-          "x1.large" => {
-            "activemq::master" => 2,
-          },
-          "x1.small" => {
-            "nginx::server" => 1
-          }
+          nodes: [
+            {
+              type: "x1.large",
+              count: 2,
+              components: ["activemq::master"]
+            },
+            {
+              type: "x1.small",
+              components: ["nginx::server"]
+            }
+          ]
         }.to_json)
+
         response = [
           {
             name: "a1.riotgames.com",
@@ -61,10 +75,14 @@ describe MB::Provisioner do
 
       it "raises an error if there are more nodes than the manifest expects" do
         manifest = MB::Provisioner::Manifest.new.from_json({
-          "x1.large" => {
-            "activemq::master" => 1
-          }
+          nodes: [
+            {
+              type: "x1.large",
+              components: ["activemq::master"]
+            }
+          ]
         }.to_json)
+
         response = [
           {
             name: "a1.riotgames.com",

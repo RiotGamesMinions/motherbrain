@@ -3,13 +3,23 @@ require 'spec_helper'
 describe MB::Provisioners::EnvironmentFactory do
   let(:manifest) do
     MB::Provisioner::Manifest.new.from_json({
-      "x1.large" => {
-        "activemq::master" => 4,
-        "activemq::slave" => 2
-      },
-      "x1.small" => {
-        "nginx::server" => 2
-      }
+      nodes: [
+        {
+          type: "m1.large",
+          count: 4,
+          components: ["activemq::master"]
+        },
+        {
+          type: "m1.large",
+          count: 2,
+          components: ["activemq::slave"]
+        },
+        {
+          type: "m1.small",
+          count: 2,
+          components: ["nginx::server"]
+        }
+      ]
     }.to_json)
   end
 
