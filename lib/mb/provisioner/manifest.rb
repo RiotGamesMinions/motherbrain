@@ -6,10 +6,18 @@ module MotherBrain
     #
     # @example valid manifest structure
     #   {
-    #     "m1.large": {
-    #       "activemq::master": 4,
-    #       "activemq::slave": 2
-    #     }
+    #     "nodes": [
+    #       {
+    #         "groups": ["activemq::master"],
+    #         "type": "m1.large",
+    #         "count": 4
+    #       },
+    #       {
+    #         "groups": ["activemq::slave"],
+    #         "type": "m1.large",
+    #         "count": 2
+    #       }
+    #     ]
     #   }
     #
     class Manifest < MotherBrain::Manifest
