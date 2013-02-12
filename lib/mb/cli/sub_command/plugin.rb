@@ -4,6 +4,10 @@ module MotherBrain
       # @author Jamie Winsor <reset@riotgames.com>
       class Plugin < SubCommand::Base
         class << self
+          extend Forwardable
+
+          def_delegator :plugin, :description
+
           # Return the plugin used to generate the anonymous CLI class
           #
           # @return [MotherBrain::Plugin]
@@ -22,7 +26,7 @@ module MotherBrain
             end
 
             plugin.components.each do |component|
-              klass.register_component MB::Cli::SubCommand.new(component)
+              klass.register_subcommand MB::Cli::SubCommand.new(component)
             end
 
             klass.class_eval do
@@ -150,11 +154,6 @@ module MotherBrain
             end
 
             klass
-          end
-
-          # @param [MotherBrain::ComponentInvoker] klass
-          def register_component(klass)
-            self.register klass, klass.component.name, "#{klass.component.name} [COMMAND]", klass.component.description
           end
 
           # Set the plugin used to generate the anonymous CLI class. Can be

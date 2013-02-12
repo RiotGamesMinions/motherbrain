@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
-  class CliGateway < Thor
+  class CliGateway < Cli::Base
     class << self
       include MB::Mixin::Services
 
@@ -63,8 +63,7 @@ module MotherBrain
       # @return [MB::Plugin]
       def register_plugin(name, version = nil)
         if plugin = MB::Application.plugin_manager.find(name, version)
-          klass = MB::Cli::SubCommand.new(plugin)
-          self.register klass, klass.plugin.name, "#{klass.plugin.name} [COMMAND]", klass.plugin.description
+          self.register_subcommand MB::Cli::SubCommand.new(plugin)
         else
           cookbook_identifier = "#{name}"
           cookbook_identifier += " (version #{version})" if version

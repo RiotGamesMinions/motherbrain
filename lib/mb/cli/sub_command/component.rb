@@ -4,6 +4,10 @@ module MotherBrain
       # @author Jamie Winsor <reset@riotgames.com>
       class Component < SubCommand::Base
         class << self
+          extend Forwardable
+
+          def_delegator :component, :description
+
           # Return the component used to generate the anonymous Invoker class
           #
           # @return [MB::Component]

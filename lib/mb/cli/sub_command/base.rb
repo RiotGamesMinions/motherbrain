@@ -4,11 +4,21 @@ module MotherBrain
       # @author Jamie Winsor <reset@riotgames.com>
       #
       # A base class that all dynamically generated SubCommands inherit from
-      class Base < Thor
+      class Base < Cli::Base
         class << self
+          alias_method :name, :namespace
+
           # @raise [AbstractFunction] if class is not implementing {#fabricate}
           def fabricate(*args)
             raise AbstractFunction, "Class '#{self}' must implement abstract function"
+          end
+
+          def usage
+            "#{name} [COMMAND]"
+          end
+
+          def description
+            raise AbstractFunction
           end
 
           protected
