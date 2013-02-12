@@ -44,7 +44,7 @@ describe MB::Invoker do
       end
 
       let(:plugin) { MB::Plugin.new(metadata) }
-      let(:plugin_invoker) { double(name: "#{name} invoker", plugin: name, version: version) }
+      let(:plugin_sub_command) { double(name: "#{name} sub command", plugin: name, version: version) }
 
       before(:each) do
         MB.ui.stub(:say)
@@ -68,9 +68,9 @@ describe MB::Invoker do
 
         context "that exists" do
           before(:each) do
-            MB::PluginInvoker.stub(:fabricate).and_return(plugin_invoker)
+            MB::Cli::SubCommand.stub(:fabricate).and_return(plugin_sub_command)
             MB::Application.stub_chain(:plugin_manager, :find).and_return(plugin)
-            plugin_invoker.stub(:plugin).and_return(plugin)
+            plugin_sub_command.stub(:plugin).and_return(plugin)
           end
 
           it "should register the plugin" do
@@ -96,9 +96,9 @@ describe MB::Invoker do
 
         context "that exists" do
           before(:each) do
-            MB::PluginInvoker.stub(:fabricate).and_return(plugin_invoker)
+            MB::Cli::SubCommand.stub(:fabricate).and_return(plugin_sub_command)
             MB::Application.stub_chain(:plugin_manager, :find).and_return(plugin)
-            plugin_invoker.stub(:plugin).and_return(plugin)
+            plugin_sub_command.stub(:plugin).and_return(plugin)
           end
 
           it "should register the plugin" do

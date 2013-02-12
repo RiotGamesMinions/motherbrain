@@ -4,6 +4,9 @@ module MotherBrain
     #
     # Generates SubCommands for Thor from motherbrain plugins or pieces of motherbrain plugins
     module SubCommand
+      autoload :Component, 'mb/cli/sub_command/component'
+      autoload :Plugin, 'mb/cli/sub_command/plugin'
+
       class << self
         # Generate a new SubCommand for Thor from a motherbrain plugin or component
         #
@@ -15,9 +18,9 @@ module MotherBrain
         def new(object)
           case object
           when MB::Plugin
-            PluginInvoker.fabricate(object)
+            SubCommand::Plugin.fabricate(object)
           when MB::Component
-            ComponentInvoker.fabricate(object)
+            SubCommand::Component.fabricate(object)
           else
             raise ::ArgumentError, "don't know how to fabricate a subcommand for a '#{object.class}'"
           end

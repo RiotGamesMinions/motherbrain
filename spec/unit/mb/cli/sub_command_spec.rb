@@ -14,10 +14,10 @@ describe MB::Cli::SubCommand do
 
       let(:plugin) { MB::Plugin.new(metadata) }
 
-      it "returns an anonymous class whose superclass is MB::PluginInvoker" do
+      it "returns an anonymous class whose superclass is MB::Cli::SubCommand::Plugin" do
         klass = subject.new(plugin)
         klass.should be_a(Class)
-        klass.superclass.should eql(MB::PluginInvoker)
+        klass.superclass.should eql(MB::Cli::SubCommand::Plugin)
       end
     end
 
@@ -25,11 +25,11 @@ describe MB::Cli::SubCommand do
       let(:plugin) { double('plugin') }
       let(:component) { MB::Component.new(plugin) }
 
-      it "returns an anonymous class whose superclass is MB::ComponentInvoker" do
+      it "returns an anonymous class whose superclass is MB::Cli::SubCommand::Component" do
         klass = subject.new(component)
 
         klass.should be_a(Class)
-        klass.superclass.should eql(MB::ComponentInvoker)
+        klass.superclass.should eql(MB::Cli::SubCommand::Component)
       end
     end
 
