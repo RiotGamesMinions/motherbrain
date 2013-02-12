@@ -34,6 +34,14 @@ module MotherBrain
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
+
+        if args.any? and (args & NO_ENVIRONMENT_TASKS).empty?
+          unless opts[:environment]
+            MB.ui.say "No value provided for required option '--environment'"
+            exit 1
+          end
+        end
+
         if args.any? and (args & SKIP_CONFIG_TASKS).empty?
           app_config = configure(opts.dup)
           app_config.validate!
@@ -41,7 +49,7 @@ module MotherBrain
 
           # If the first argument is the name of a plugin, register that plugin and use it.
           if plugin_manager.find(args[0]).present?
-            plugin = register_plugin(args[0], opts[:plugin_version])
+            plugin = register_plugin(args[0], opts[:environment], opts[:plugin_version])
             MB.ui.say "using #{plugin}"
             MB.ui.say ""
           end
@@ -56,9 +64,9 @@ module MotherBrain
       # @param [String] version
       #
       # @return [MB::Plugin]
-      def register_plugin(name, version = nil)
+      def register_plugin(name, environment, version = nil)
         if plugin = MB::Application.plugin_manager.find(name, version)
-          self.register_subcommand MB::Cli::SubCommand.new(plugin)
+          self.register_subcommand MB::Cli::SubCommand.new(plugin, environment)
         else
           cookbook_identifier = "#{name}"
           cookbook_identifier += " (version #{version})" if version
@@ -91,11 +99,14 @@ module MotherBrain
       "version"
     ].freeze
 
+    NO_ENVIRONMENT_TASKS = (SKIP_CONFIG_TASKS + ["plugins"]).freeze
+
     include MB::Mixin::Services
 
     def initialize(args = [], options = {}, config = {})
       super
       opts = self.options.dup
+
       unless SKIP_CONFIG_TASKS.include?(config[:current_task].try(:name))
         self.class.configure(opts)
       end
@@ -128,6 +139,12 @@ module MotherBrain
       desc: "Plugin version to use",
       default: nil,
       aliases: "-p"
+    class_option :environment,
+      type: :string,
+      default: nil,
+      required: false,
+      desc: "Chef environment",
+      aliases: "-e"
 
     method_option :force,
       type: :boolean,
@@ -157,8 +174,8 @@ module MotherBrain
       type: :boolean,
       default: false,
       desc: "perform the configuration even if the environment is locked"
-    desc "configure_environment ENVIRONMENT MANIFEST", "configure a Chef environment"
-    def configure_environment(environment, attributes_file)
+    desc "configure_environment MANIFEST", "configure a Chef environment"
+    def configure_environment(attributes_file)
       attributes_file = File.expand_path(attributes_file)
 
       begin
@@ -176,7 +193,7 @@ module MotherBrain
         exit(1)
       end
 
-      job = environment_manager.configure(environment, attributes: attributes, force: options[:force])
+      job = environment_manager.configure(options[:environment], attributes: attributes, force: options[:force])
 
       CliClient.new(job).display
     end
@@ -226,11 +243,11 @@ module MotherBrain
       type: :boolean,
       desc: "Should we verify SSL connections?",
       default: false
-    desc "destroy ENVIRONMENT", "Destroy a provisioned environment"
-    def destroy(environment)
+    desc "destroy", "Destroy a provisioned environment"
+    def destroy
       destroy_options = Hash.new.merge(options).deep_symbolize_keys
 
-      job = Provisioner::Manager.instance.destroy(environment, destroy_options)
+      job = Provisioner::Manager.instance.destroy(options[:environment], destroy_options)
 
       CliClient.new(job).display
     end

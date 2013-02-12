@@ -25,24 +25,26 @@ describe MB::Cli::SubCommand::Plugin do
     end
 
     describe "::fabricate" do
+      let(:environment) { "test_environment" }
+
       it "returns an anonymous class with a superclass of MB::Cli::SubCommand::Plugin" do
-        klass = subject.fabricate(plugin)
+        klass = subject.fabricate(plugin, environment)
         
         klass.superclass.should eql(MB::Cli::SubCommand::Plugin)
         klass.should be_a(Class)
       end
 
       it "sets the plugin class attribute of the fabricated class to the given plugin" do
-        subject.fabricate(plugin).plugin.should eql(plugin)
+        subject.fabricate(plugin, environment).plugin.should eql(plugin)
       end
 
       it "sets the namespace of the fabricated class to the name of the given plugin" do
-        subject.fabricate(plugin).namespace.should eql(plugin.name)
+        subject.fabricate(plugin, environment).namespace.should eql(plugin.name)
       end
 
       describe "fabricated class" do
         it "has a task for each of the fabricated class' plugin's commands" do
-          tasks = subject.fabricate(plugin).tasks
+          tasks = subject.fabricate(plugin, environment).tasks
 
           plugin.commands.each do |command|
             tasks.should have_key(command.name)
@@ -50,7 +52,7 @@ describe MB::Cli::SubCommand::Plugin do
         end
 
         it "has a new for every component of the fabricated class' plugin" do
-          subcommands = subject.fabricate(plugin).subcommands
+          subcommands = subject.fabricate(plugin, environment).subcommands
 
           subcommands.should have(plugin.components.length).items
           plugin.components.each do |component|
@@ -64,11 +66,11 @@ describe MB::Cli::SubCommand::Plugin do
           end
 
           it "has a bootstrap task" do
-            subject.fabricate(plugin).tasks.should have_key("bootstrap")
+            subject.fabricate(plugin, environment).tasks.should have_key("bootstrap")
           end
 
           it "has a 'provision' task" do
-            subject.fabricate(plugin).tasks.should have_key("provision")
+            subject.fabricate(plugin, environment).tasks.should have_key("provision")
           end
         end
 
@@ -78,11 +80,11 @@ describe MB::Cli::SubCommand::Plugin do
           end
 
           it "does not have a 'bootstrap' task" do
-            subject.fabricate(plugin).tasks.should_not have_key("bootstrap")
+            subject.fabricate(plugin, environment).tasks.should_not have_key("bootstrap")
           end
 
           it "does not have a 'provision' task" do
-            subject.fabricate(plugin).tasks.should_not have_key("provision")
+            subject.fabricate(plugin, environment).tasks.should_not have_key("provision")
           end
         end
       end

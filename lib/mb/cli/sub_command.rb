@@ -16,12 +16,12 @@ module MotherBrain
         # @raise [ArgumentError]
         #
         # @return [SubCommand::Plugin, SubCommand::Component]
-        def new(object)
+        def new(object, environment)
           case object
           when MB::Plugin
-            SubCommand::Plugin.fabricate(object)
+            SubCommand::Plugin.fabricate(object, environment)
           when MB::Component
-            SubCommand::Component.fabricate(object)
+            SubCommand::Component.fabricate(object, environment)
           else
             raise ::ArgumentError, "don't know how to fabricate a subcommand for a '#{object.class}'"
           end

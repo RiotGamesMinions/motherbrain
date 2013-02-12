@@ -14,7 +14,9 @@ describe MB::Cli::SubCommand::Base do
   end
 
   describe "::define_task" do
-    subject(:define_task) { thor_cli.send :define_task, command }
+    let(:environment) { "test_environment" }
+
+    subject(:define_task) { thor_cli.send :define_task, command, environment }
 
     let(:command) {
       MB::Command.new(:my_command, scope) do
@@ -33,7 +35,7 @@ describe MB::Cli::SubCommand::Base do
     end
 
     it "defines the command" do
-      my_command.parameters.should == [[:req, :environment]]
+      my_command.parameters.should == []
     end
 
     context "with arguments" do
@@ -47,7 +49,6 @@ describe MB::Cli::SubCommand::Base do
 
       it "has an extra argument" do
         my_command.parameters.should == [
-          [:req, :environment],
           [:req, :a]
         ]
       end

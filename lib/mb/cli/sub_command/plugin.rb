@@ -22,22 +22,22 @@ module MotherBrain
           # @param [MotherBrain::Plugin] plugin
           #
           # @return [SubCommand::Plugin]
-          def fabricate(plugin)
+          def fabricate(plugin, environment)
             klass = Class.new(self) do
               set_plugin(plugin)
             end
 
             plugin.commands.each do |command|
-              klass.define_task(command)
+              klass.define_task(command, environment)
             end
 
             plugin.components.each do |component|
-              klass.register_subcommand MB::Cli::SubCommand.new(component)
+              klass.register_subcommand MB::Cli::SubCommand.new(component, environment)
             end
 
             klass.class_eval do
-              desc("nodes ENVIRONMENT", "List all nodes grouped by Component and Group")
-              define_method(:nodes) do |environment|
+              desc("nodes", "List all nodes grouped by Component and Group")
+              define_method(:nodes) do
                 MB.ui.say "Listing nodes in '#{environment}':"
                 nodes = plugin.nodes(environment).each do |component, groups|
                   groups.each do |group, nodes|
@@ -69,8 +69,8 @@ module MotherBrain
                   default: false,
                   desc: "Perform bootstrap even if the environment is locked",
                   aliases: "-f"
-                desc("bootstrap ENVIRONMENT MANIFEST", "Bootstrap a manifest of node groups")
-                define_method(:bootstrap) do |environment, manifest_file|
+                desc("bootstrap MANIFEST", "Bootstrap a manifest of node groups")
+                define_method(:bootstrap) do |manifest_file|
                   boot_options = Hash.new.merge(options).deep_symbolize_keys
                   manifest     = MB::Bootstrap::Manifest.from_file(manifest_file)
 
@@ -108,8 +108,8 @@ module MotherBrain
                   type: :boolean,
                   default: false,
                   desc: "Perform bootstrap even if the environment is locked"
-                desc("provision ENVIRONMENT MANIFEST", "Create a cluster of nodes and add them to a Chef environment")
-                define_method(:provision) do |environment, manifest_file|
+                desc("provision MANIFEST", "Create a cluster of nodes and add them to a Chef environment")
+                define_method(:provision) do |manifest_file|
                   prov_options = Hash.new.merge(options).deep_symbolize_keys
                   manifest     = Provisioner::Manifest.from_file(manifest_file)
 
@@ -144,8 +144,8 @@ module MotherBrain
                   default: false,
                   desc: "Perform upgrade even if the environment is locked",
                   aliases: "-f"
-                desc("upgrade ENVIRONMENT", "Upgrade an environment to the specified versions")
-                define_method(:upgrade) do |environment|
+                desc("upgrade", "Upgrade an environment to the specified versions")
+                define_method(:upgrade) do
                   upgrade_options = Hash.new.merge(options).deep_symbolize_keys
 
                   job = Application.upgrade(
