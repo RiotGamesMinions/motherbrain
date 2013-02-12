@@ -12,10 +12,11 @@ describe MB::CliGateway do
           generate_valid_config(location)
         end
 
-        it "loads the specified config file when the specified file exists" do
+        it "loads the specified config file into the ConfigManager" do
+          config = MB::Config.from_file(location)
           invoker = subject.new([], config: location)
 
-          invoker.config.chef.api_url.should_not be_nil
+          MB::ConfigManager.instance.config.attributes.should eql(config.attributes)
         end
 
         it "raises a ConfigNotFound error when the specified path does not exist" do

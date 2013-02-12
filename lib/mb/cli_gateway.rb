@@ -104,13 +104,11 @@ module MotherBrain
 
     include MB::Mixin::Services
 
-    attr_reader :config
-
     def initialize(args = [], options = {}, config = {})
       super
       opts = self.options.dup
-      unless SKIP_CONFIG_TASKS.include? config[:current_task].try(:name)
-        @config = self.class.configure(opts)
+      unless SKIP_CONFIG_TASKS.include?(config[:current_task].try(:name))
+        self.class.configure(opts)
       end
     end
 
@@ -154,14 +152,14 @@ module MotherBrain
         raise MB::ConfigExists, "A configuration file already exists. Re-run with the --force flag if you wish to overwrite it."
       end
 
-      @config = MB::Config.new(path)
+      config = MB::Config.new(path)
 
-      @config.chef.api_url     = MB.ui.ask "Enter a Chef API URL: "
-      @config.chef.api_client  = MB.ui.ask "Enter a Chef API Client: "
-      @config.chef.api_key     = MB.ui.ask "Enter the path to the client's Chef API Key: "
-      @config.ssh.user         = MB.ui.ask "Enter a SSH user: "
-      @config.ssh.password     = MB.ui.ask "Enter a SSH password: "
-      @config.save
+      config.chef.api_url     = MB.ui.ask "Enter a Chef API URL: "
+      config.chef.api_client  = MB.ui.ask "Enter a Chef API Client: "
+      config.chef.api_key     = MB.ui.ask "Enter the path to the client's Chef API Key: "
+      config.ssh.user         = MB.ui.ask "Enter a SSH user: "
+      config.ssh.password     = MB.ui.ask "Enter a SSH password: "
+      config.save
 
       MB.ui.say "Config written to: '#{path}'"
     end
