@@ -8,7 +8,7 @@ module MotherBrain
         class << self
           alias_method :name, :namespace
 
-          # @raise [AbstractFunction] if class is not implementing {#fabricate}
+          # @raise [AbstractFunction] if the inheriting class does not implement this function
           def fabricate(*args)
             raise AbstractFunction, "Class '#{self}' must implement abstract function"
           end
