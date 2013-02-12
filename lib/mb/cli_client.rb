@@ -64,7 +64,7 @@ module MotherBrain
       end
 
       def jobs_failed?
-        jobs.any?(&:failure?)
+        jobs.any?(&:failed?)
       end
 
       # @param [MotherBrain::Job] job
