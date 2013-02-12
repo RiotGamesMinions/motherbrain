@@ -8,14 +8,14 @@ module MotherBrain
 
           def_delegator :component, :description
 
-          # Return the component used to generate the anonymous Invoker class
+          # Return the component associated with this instance of the class
           #
           # @return [MB::Component]
           attr_reader :component
 
           # @param [MB::Component] component
           #
-          # @return [MB::ComponentInvoker]
+          # @return [SubCommand::Component]
           def fabricate(component)
             klass = Class.new(self) do
               set_component(component)
@@ -39,8 +39,8 @@ module MotherBrain
             klass
           end
 
-          # Set the component used to generate the anonymous Invoker class. Can be
-          # retrieved later by calling MyClass::component.
+          # Set the component for this instance of the class and tailor the class for the
+          # given component.
           #
           # @param [MB::Component] component
           def set_component(component)

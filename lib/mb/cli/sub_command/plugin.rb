@@ -15,7 +15,7 @@ module MotherBrain
 
           # @param [MotherBrain::Plugin] plugin
           #
-          # @return [PluginInvoker]
+          # @return [SubCommand::Plugin]
           def fabricate(plugin)
             klass = Class.new(self) do
               set_plugin(plugin)
@@ -156,8 +156,8 @@ module MotherBrain
             klass
           end
 
-          # Set the plugin used to generate the anonymous CLI class. Can be
-          # retrieved later by calling MyClass::plugin.
+          # Set the plugin for this instance of the class and tailor the class for the
+          # given plugin.
           #
           # @param [MotherBrain::Plugin] plugin
           def set_plugin(plugin)

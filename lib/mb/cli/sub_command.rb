@@ -15,7 +15,7 @@ module MotherBrain
         #
         # @raise [ArgumentError]
         #
-        # @return [ComponentInvoker, PluginInvoker]
+        # @return [SubCommand::Plugin, SubCommand::Component]
         def new(object)
           case object
           when MB::Plugin
