@@ -21,6 +21,7 @@ module MotherBrain
       def failure?
         self.state == :failure
       end
+      alias_method :failed?, :failure?
 
       # If a job has not begun and is in the pending state it is considered pending
       #

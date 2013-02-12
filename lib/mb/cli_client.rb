@@ -28,6 +28,8 @@ module MotherBrain
       else
         display_jobs
       end
+
+      abort if jobs_failed?
     end
 
     private
@@ -59,6 +61,10 @@ module MotherBrain
             print_final_status job
           end
         end
+      end
+
+      def jobs_failed?
+        jobs.any?(&:failed?)
       end
 
       # @param [MotherBrain::Job] job
