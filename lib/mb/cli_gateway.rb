@@ -47,12 +47,12 @@ module MotherBrain
           end
         end
 
-        if args.any? and (args & SKIP_CONFIG_TASKS).empty?
+        if start_mb_application?(args)
           app_config = configure(opts.dup)
           app_config.validate!
           MB::Application.run!(app_config)
 
-          # If the first argument is the name of a plugin, register that plugin and use it.
+          # If the first argument is the name of a plugin, register that plugin and use it. 
           if plugin_manager.find(args[0]).present?
             plugin = register_plugin(args[0], opts[:environment], opts[:plugin_version])
             MB.ui.say "using #{plugin}"
@@ -81,6 +81,10 @@ module MotherBrain
         end
 
         plugin
+      end
+
+      def start_mb_application?(args)
+        args.any? && !SKIP_CONFIG_TASKS.include?(args[0])
       end
 
       private

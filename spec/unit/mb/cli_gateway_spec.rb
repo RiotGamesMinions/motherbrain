@@ -33,6 +33,25 @@ describe MB::CliGateway do
       end
     end
 
+    describe "::start_mb_application?" do
+      let(:args) {["myface"]}
+
+      context "not a config task" do
+        it "should be true" do
+          subject.start_mb_application?(args).should be_true
+        end
+      end
+
+      context "is a config task" do
+        it "should be false" do
+          subject::SKIP_CONFIG_TASKS.each do |config_task|
+            args = [config_task]
+            subject.start_mb_application?(args)
+          end
+        end
+      end
+    end
+
     describe "::register_plugin" do
       let(:name) { "myface" }
       let(:version) { nil }
