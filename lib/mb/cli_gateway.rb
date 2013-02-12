@@ -102,7 +102,6 @@ module MotherBrain
       "version"
     ].freeze
 
-    include MB::Locks
     include MB::Mixin::Services
 
     attr_reader :config
