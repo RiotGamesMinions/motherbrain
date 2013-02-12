@@ -1,23 +1,40 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
-  class Invoker < InvokerBase
+  # @author Jamie Winsor <reset@riotgames.com>
+  class CliGateway < Cli::Base
     class << self
       include MB::Mixin::Services
 
-      def invoked_opts
-        @invoked_opts ||= {}
-      end
+      # @param [Hash] options
+      #
+      # @return [MB::Config]
+      def configure(options)
+        file = options[:config] || File.expand_path(MB::Config.default_path)
 
-      # @param [#to_s] name
-      def invoker_command?(name)
-        (tasks.keys + map.keys).include?(name.to_s)
+        begin
+          config = MB::Config.from_file file
+        rescue Chozo::Errors::ConfigNotFound => e
+          raise e.class.new "#{e.message}\nCreate one with `mb configure`"
+        end
+
+        level = Logger::WARN
+        level = Logger::INFO if options[:verbose]
+        level = Logger::DEBUG if options[:debug]
+
+        if (options[:verbose] || options[:debug]) && options[:logfile].nil?
+          options[:logfile] = STDOUT
+        end
+
+        MB::Logging.setup(level: level, location: options[:logfile])
+
+        config.rest_gateway.enable = false
+        config.plugin_manager.eager_loading = false
+        config
       end
 
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
-        invoked_opts.merge!(opts)
-        if args.any? and (args & InvokerBase::NOCONFIG_TASKS).empty?
+        if args.any? and (args & SKIP_CONFIG_TASKS).empty?
           app_config = configure(opts.dup)
           app_config.validate!
           MB::Application.run!(app_config)
@@ -41,8 +58,7 @@ module MotherBrain
       # @return [MB::Plugin]
       def register_plugin(name, version = nil)
         if plugin = MB::Application.plugin_manager.find(name, version)
-          klass = MB::PluginInvoker.fabricate(plugin)
-          self.register klass, klass.plugin.name, "#{klass.plugin.name} [COMMAND]", klass.plugin.description
+          self.register_subcommand MB::Cli::SubCommand.new(plugin)
         else
           cookbook_identifier = "#{name}"
           cookbook_identifier += " (version #{version})" if version
@@ -62,14 +78,28 @@ module MotherBrain
         # @return [Array]
         def parse_args(given_args)
           args, opts = Thor::Options.split(given_args)
-          thor_opts = Thor::Options.new(Invoker.class_options)
+          thor_opts = Thor::Options.new(self.class_options)
           parsed_opts = thor_opts.parse(opts)
 
           [ args, parsed_opts ]
         end
     end
 
+    SKIP_CONFIG_TASKS = [
+      "configure",
+      "help",
+      "version"
+    ].freeze
+
     include MB::Mixin::Services
+
+    def initialize(args = [], options = {}, config = {})
+      super
+      opts = self.options.dup
+      unless SKIP_CONFIG_TASKS.include?(config[:current_task].try(:name))
+        self.class.configure(opts)
+      end
+    end
 
     map 'ver' => :version
 
@@ -111,14 +141,14 @@ module MotherBrain
         raise MB::ConfigExists, "A configuration file already exists. Re-run with the --force flag if you wish to overwrite it."
       end
 
-      @config = MB::Config.new(path)
+      config = MB::Config.new(path)
 
-      @config.chef.api_url     = MB.ui.ask "Enter a Chef API URL: "
-      @config.chef.api_client  = MB.ui.ask "Enter a Chef API Client: "
-      @config.chef.api_key     = MB.ui.ask "Enter the path to the client's Chef API Key: "
-      @config.ssh.user         = MB.ui.ask "Enter a SSH user: "
-      @config.ssh.password     = MB.ui.ask "Enter a SSH password: "
-      @config.save
+      config.chef.api_url     = MB.ui.ask "Enter a Chef API URL: "
+      config.chef.api_client  = MB.ui.ask "Enter a Chef API Client: "
+      config.chef.api_key     = MB.ui.ask "Enter the path to the client's Chef API Key: "
+      config.ssh.user         = MB.ui.ask "Enter a SSH user: "
+      config.ssh.password     = MB.ui.ask "Enter a SSH password: "
+      config.save
 
       MB.ui.say "Config written to: '#{path}'"
     end
