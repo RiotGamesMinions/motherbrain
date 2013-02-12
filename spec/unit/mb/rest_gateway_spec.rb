@@ -193,6 +193,121 @@ describe MB::RestGateway do
         end
       end
     end
+
+    describe "GET /plugins/:name/latest/commands" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata)
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/latest/commands'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
+      end
+    end
+
+    describe "GET /plugins/:name/:version/commands" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata)
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/1_0_0/commands'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
+      end
+    end
+
+    describe "GET /plugins/:name/latest/components" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata)
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/latest/components'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
+      end
+    end
+
+    describe "GET /plugins/:name/:version/components" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata)
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/1_0_0/components'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
+      end
+    end
+
+    describe "GET /plugins/:name/:version/components/:component_id/commands" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata)
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/1_0_0/components/myface/commands'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
+      end
+    end
   end
 
   describe "API Error handling" do
