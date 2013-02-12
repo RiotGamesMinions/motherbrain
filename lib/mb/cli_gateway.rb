@@ -61,6 +61,7 @@ module MotherBrain
       # Load and register a plugin
       #
       # @param [String] name
+      # @param [String] environment
       # @param [String] version
       #
       # @return [MB::Plugin]

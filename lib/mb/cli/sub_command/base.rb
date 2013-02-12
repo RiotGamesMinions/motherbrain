@@ -26,6 +26,7 @@ module MotherBrain
             # Define a new Thor task from the given {MotherBrain::Command}
             #
             # @param [MotherBrain::Command] command
+            # @param [String] environment
             def define_task(command, environment)
               arguments = []
 
