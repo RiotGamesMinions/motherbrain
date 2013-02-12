@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MB::Cli::SubCommandBase do
+describe MB::Cli::SubCommand::Base do
   let(:thor_cli) do
-    Class.new(MB::Cli::SubCommandBase)
+    Class.new(MB::Cli::SubCommand::Base)
   end
 
   describe "::fabricate" do

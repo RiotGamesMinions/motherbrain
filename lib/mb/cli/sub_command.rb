@@ -4,6 +4,7 @@ module MotherBrain
     #
     # Generates SubCommands for Thor from motherbrain plugins or pieces of motherbrain plugins
     module SubCommand
+      autoload :Base, 'mb/cli/sub_command/base'
       autoload :Component, 'mb/cli/sub_command/component'
       autoload :Plugin, 'mb/cli/sub_command/plugin'
 

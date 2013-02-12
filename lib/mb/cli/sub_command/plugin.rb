@@ -2,7 +2,7 @@ module MotherBrain
   module Cli
     module SubCommand
       # @author Jamie Winsor <reset@riotgames.com>
-      class Plugin < SubCommandBase
+      class Plugin < SubCommand::Base
         class << self
           # Return the plugin used to generate the anonymous CLI class
           #

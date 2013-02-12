@@ -2,7 +2,7 @@ module MotherBrain
   module Cli
     module SubCommand
       # @author Jamie Winsor <reset@riotgames.com>
-      class Component < SubCommandBase
+      class Component < SubCommand::Base
         class << self
           # Return the component used to generate the anonymous Invoker class
           #
