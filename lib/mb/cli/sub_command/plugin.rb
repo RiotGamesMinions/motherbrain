@@ -166,11 +166,6 @@ module MotherBrain
             @plugin = plugin
           end
         end
-
-        desc "version", "Display plugin version"
-        def version
-          MB.ui.say self.class.plugin.version
-        end
       end
     end
   end
