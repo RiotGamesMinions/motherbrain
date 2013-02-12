@@ -7,15 +7,14 @@ module MotherBrain
       include MB::Logging
 
       # @return [String]
-      attr_reader :group_id
+      attr_reader :group_ids
 
       # @return [Hash]
       attr_reader :options
 
-      # @param [String] group_id
-      #   a string containing a group_id for the nodes being bootstrapped
-      #     'activemq::master'
-      #     'mysql::slave'
+      # @param [Array] group_ids
+      #   an array of groups for the nodes being bootstrapped
+      #     ['activemq::master']
       # @param [Array<String>] hosts
       #   an array of hostnames or ipaddresses to bootstrap
       #     [ '33.33.33.10', 'reset.riotgames.com' ]
@@ -53,10 +52,10 @@ module MotherBrain
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      def initialize(group_id, hosts, options = {})
-        @group_id = group_id
-        @hosts    = Array(hosts)
-        @options  = options
+      def initialize(group_ids, hosts, options = {})
+        @group_ids = group_ids
+        @hosts = Array(hosts)
+        @options = options
       end
 
       # @example
@@ -67,9 +66,9 @@ module MotherBrain
       #
       # @return [Array<Ridley::SSH::ResponseSet]
       def run
-        log.info { "Bootstrapping group: '#{group_id}' [ #{hosts.join(', ')} ] with options: '#{options}'" }
+        log.info { "Bootstrapping groups: #{group_ids} [ #{hosts.join(', ')} ] with options: '#{options}'" }
         unless hosts && hosts.any?
-          log.info { "No hosts in group: '#{group_id}'. Skipping..." }
+          log.info { "No hosts in groups: #{group_ids}. Skipping..." }
           return [ :ok, [] ]
         end
 

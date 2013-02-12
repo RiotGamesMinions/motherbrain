@@ -1,11 +1,15 @@
 require 'spec_helper'
 
 describe MB::Bootstrap::Manager do
-  let(:plugin) do
-    MB::Plugin.new do
-      name "pvpnet"
-      version "1.2.3"
+  subject { manager }
+  let(:manager) { described_class.new }
 
+  let(:cookbook_metadata) {
+    MB::CookbookMetadata.from_file(fixtures_path.join('cb_metadata.rb'))
+  }
+
+  let(:plugin) {
+    MB::Plugin.new(cookbook_metadata) do
       component "activemq" do
         group "master"
         group "slave"
@@ -24,33 +28,66 @@ describe MB::Bootstrap::Manager do
         bootstrap("nginx::master")
       end
     end
-  end
+  }
 
-  let(:manifest) do
-    MB::Bootstrap::Manifest.new(
-      "activemq::master" => [
-        "amq1.riotgames.com",
-        "amq2.riotgames.com"
-      ],
-      "activemq::slave" => [
-        "amqs1.riotgames.com",
-        "amqs2.riotgames.com"
-      ],
-      "nginx::master" => [
-        "nginx1.riotgames.com"
+  let(:manifest) {
+    MB::Bootstrap::Manifest.new({
+      nodes: [
+        {
+          groups: ["activemq::master"],
+          hosts: [
+            "amq1.riotgames.com",
+            "amq2.riotgames.com"
+          ]
+        },
+        {
+          groups: ["activemq::slave"],
+          hosts: [
+            "amqs1.riotgames.com",
+            "amqs2.riotgames.com"
+          ]
+        },
+        {
+          groups: ["nginx::master"],
+          hosts: [
+            "nginx1.riotgames.com"
+          ]
+        }
       ]
-    )
-  end
+    })
+  }
 
   let(:environment) { "test" }
   let(:server_url) { MB::Application.config.chef.api_url }
+  let(:job_stub) { stub(MB::Job) }
 
-  subject { described_class.new }
-
-  before(:each) do
+  before do
     stub_request(:get, File.join(server_url, "nodes")).
       to_return(status: 200, body: {})
     stub_request(:get, File.join(server_url, "environments/test")).
       to_return(status: 200, body: {})
+
+    manager.stub(async: manager)
+  end
+
+  describe "#bootstrap" do
+    subject(:bootstrap) { manager.bootstrap(environment, manifest, plugin) }
+
+    it "calls #start" do
+      manager.should_receive(:start)
+
+      bootstrap
+    end
+  end
+
+  describe "#start" do
+    subject(:start) { manager.start(environment, manifest, plugin, job_stub) }
+
+    it "kicks off a sequential bootstrap" do
+      job_stub.should_receive(:report_running)
+      manager.should_receive(:sequential_bootstrap)
+
+      start
+    end
   end
 end

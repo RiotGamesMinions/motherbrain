@@ -16,15 +16,17 @@ module MotherBrain
         #
         # @return [Hash]
         def convert_manifest(manifest)
-          [].tap do |ef_manifest|
-            manifest.each_pair do |instance_size, groups|
-              groups.each do |name, amount|
-                amount.times do
-                  ef_manifest << { instance_size: instance_size }
-                end
-              end
+          ef_manifest = Array.new
+
+          manifest.node_groups.each do |node_group|
+            count, type = node_group.slice(:count, :type).values
+
+            count.times do
+              ef_manifest << { instance_size: type }
             end
           end
+
+          ef_manifest
         end
 
         # Convert the created environment response from environment factory into a usable format

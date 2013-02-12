@@ -51,36 +51,39 @@ describe MB::Bootstrap::Routine do
     context "each entry" do
       it "is in FIFO order" do
         subject.task_queue[0].should be_a(Array)
-        subject.task_queue[0][0].group.should eql(amq_master)
-        subject.task_queue[0][0].id.should eql("activemq::master")
-        subject.task_queue[0][1].group.should eql(amq_slave)
-        subject.task_queue[0][1].id.should eql("activemq::slave")
+        subject.task_queue[0][0].group_object.should eql(amq_master)
+        subject.task_queue[0][0].groups.should eql(["activemq::master"])
+        subject.task_queue[0][1].group_object.should eql(amq_slave)
+        subject.task_queue[0][1].groups.should eql(["activemq::slave"])
         subject.task_queue[1].should be_a(Array)
-        subject.task_queue[1][0].group.should eql(mysql_master)
-        subject.task_queue[1][0].id.should eql("mysql::master")
-        subject.task_queue[1][1].group.should eql(mysql_slave)
-        subject.task_queue[1][1].id.should eql("mysql::slave")
-        subject.task_queue[2].group.should eql(nginx_master)
-        subject.task_queue[2].id.should eql("nginx::master")
+        subject.task_queue[1][0].group_object.should eql(mysql_master)
+        subject.task_queue[1][0].groups.should eql(["mysql::master"])
+        subject.task_queue[1][1].group_object.should eql(mysql_slave)
+        subject.task_queue[1][1].groups.should eql(["mysql::slave"])
+        subject.task_queue[2].group_object.should eql(nginx_master)
+        subject.task_queue[2].groups.should eql(["nginx::master"])
       end
     end
   end
 
-  let(:manifest) do
+  let(:manifest) {
     {
-      "activemq::master" => [
-        "amq1.riotgames.com",
-        "amq2.riotgames.com"
-      ],
-      "activemq::slave" => [
-        "amqs1.riotgames.com",
-        "amqs2.riotgames.com"
-      ],
-      "nginx::master" => [
-        "nginx1.riotgames.com"
+      nodes: [
+        {
+          groups: ["activemq::master"],
+          hosts: ["amq1.riotgames.com", "amq2.riotgames.com"]
+        },
+        {
+          groups: ["activemq::slave"],
+          hosts: ["amqs1.riotgames.com", "amqs2.riotgames.com"]
+        },
+        {
+          groups: ["nginx::master"],
+          hosts: ["nginx1.riotgames.com"]
+        }
       ]
     }
-  end
+  }
 
   subject { described_class.new(plugin) }
 

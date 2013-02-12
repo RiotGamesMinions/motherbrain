@@ -32,13 +32,13 @@ module MotherBrain
       #
       # @return [Boolean]
       def has_task?(node_group, task_queue = self.task_queue)
-        !task_queue.find do |task|
+        task_queue.find do |task|
           if task.is_a?(Array)
             has_task?(node_group, task)
           else
-            task.id == node_group
+            (task.groups & [node_group]).any?
           end
-        end.nil?
+        end
       end
 
       private

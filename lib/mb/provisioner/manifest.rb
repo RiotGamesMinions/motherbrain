@@ -12,7 +12,7 @@ module MotherBrain
     #     }
     #   }
     #
-    class Manifest < JSONManifest
+    class Manifest < MotherBrain::Manifest
       class << self
         # Validate the given parameter contains a Hash or Manifest with a valid structure
         #
@@ -22,43 +22,72 @@ module MotherBrain
         # @raise [InvalidProvisionManifest] if the given manifest is not well formed
         def validate!(manifest, plugin)
           unless manifest.is_a?(Hash)
-            raise InvalidProvisionManifest, "Provisioner manifest needs to be type of Hash. You gave: '#{manifest.class}'"
+            raise InvalidProvisionManifest,
+              "The provisioner manifest needs to be a hash, but you provided a(n) #{manifest.class}"
           end
 
-          manifest.each_pair do |instance_type, node_groups|
-            unless node_groups.is_a?(Hash)
-              raise InvalidProvisionManifest, "Value for instance_type needs to be a Hash. You gave: '#{node_groups}'"
+          nodes = manifest[:nodes]
+
+          unless nodes
+            raise InvalidProvisionManifest,
+              "The provisioner manifest needs to have a key 'nodes' containing an array"
+          end
+
+          unless nodes.is_a?(Array)
+            raise InvalidProvisionManifest,
+              "The provisioner manifest needs to have a key 'nodes' containing an array, but it was a(n) #{nodes.class}"
+          end
+
+          nodes.each do |node|
+            unless node.is_a?(Hash)
+              raise InvalidProvisionManifest,
+                "The provisioner manifest needs to have an array of hashes at 'nodes', but there was a #{node.class}: #{node.inspect}"
             end
 
-            node_groups.each_pair do |name, value|
-              match = name.match(Plugin::NODE_GROUP_ID_REGX)
+            type = node[:type]
+            count = node[:count]
+            groups = node[:groups]
+
+            unless type.match(/\w+\.\w+/)
+              raise InvalidProvisionManifest,
+                "Provision manifest contained an entry not in the proper format: '#{type}'. Expected: 'a1.size'"
+            end
+
+            if count
+              unless count.is_a?(Fixnum) && count >= 0
+                raise InvalidProvisionManifest,
+                  "Provision manifest contained an invalid value for count: '#{count}'. Expected an integer greater than 0."
+              end
+            end
+
+            unless groups.is_a?(Array)
+              raise InvalidProvisionManifest,
+                "The provisioner manifest contains a node group without an array of groups: #{node.inspect}"
+            end
+
+            groups.each do |group|
+              match = group.match(Plugin::NODE_GROUP_ID_REGX)
 
               unless match
-                raise InvalidProvisionManifest, "Provision manifest contained an entry not in the proper format: '#{name}'. Expected: 'component::group'"
+                raise InvalidProvisionManifest,
+                  "Provision manifest contained an entry not in the proper format: '#{name}'. Expected: 'component::group'"
               end
 
               component = match[1]
-              group     = match[2]
+              group = match[2]
 
               unless plugin.has_component?(component)
-                raise InvalidProvisionManifest, "Provision manifest describes the component: '#{component}' but '#{plugin.name}' does not have this component"
+                raise InvalidProvisionManifest,
+                  "Provision manifest describes the component: '#{component}' but '#{plugin.name}' does not have this component"
               end
 
               unless plugin.component(component).has_group?(group)
-                raise InvalidProvisionManifest, "Provision manifest describes the group: '#{group}' in the component '#{component}' but that component does not have this group"
+                raise InvalidProvisionManifest,
+                  "Provision manifest describes the group: '#{group}' in the component '#{component}' but that component does not have this group"
               end
             end
           end
         end
-      end
-
-      # Returns the number of nodes expected to be created by this manifest regardless of type
-      #
-      # @return [Integer]
-      def node_count
-        self.collect do |type, node_groups|
-          node_groups.values.inject(:+)
-        end.inject(:+)
       end
 
       # @param [Plugin] plugin
