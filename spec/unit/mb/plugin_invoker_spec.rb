@@ -2,29 +2,34 @@ require 'spec_helper'
 
 describe MotherBrain::PluginInvoker do
   describe "ClassMethods" do
-    subject { Class.new(MB::PluginInvoker) }
+    subject { described_class }
 
-    let(:name) { "pvpnet" }
-
-    let(:commands) do
-      [
-        double('command_one', name: "start", description: "start stuff", execute: -> {})
-      ]
-    end
-
-    let(:components) do
-      [
-        double('component', name: "activemq", commands: commands, description: "activemq stuff")
-      ]
+    let(:metadata) do
+      double('metadata',
+        valid?: true,
+        name: "pvpnet"
+      )
     end
 
     let(:plugin) do
-      double('plugin', name: name, commands: commands, components: components, bootstrap_routine: nil)
+      MB::Plugin.new(metadata) do
+        component "activemq" do
+          description "activemq stuff"
+
+          command "start" do
+            description "start stuff"
+            execute do; end
+          end
+        end
+      end
     end
 
     describe "::fabricate" do
-      it "returns an anonymous class" do
-        subject.fabricate(plugin).should be_a(Class)
+      it "returns an anonymous class with a superclass of MB::PluginInvoker" do
+        klass = subject.fabricate(plugin)
+        
+        klass.superclass.should eql(MB::PluginInvoker)
+        klass.should be_a(Class)
       end
 
       it "sets the plugin class attribute of the fabricated class to the given plugin" do
@@ -39,7 +44,7 @@ describe MotherBrain::PluginInvoker do
         it "has a task for each of the fabricated class' plugin's commands" do
           tasks = subject.fabricate(plugin).tasks
 
-          commands.each do |command|
+          plugin.commands.each do |command|
             tasks.should have_key(command.name)
           end
         end
@@ -47,8 +52,8 @@ describe MotherBrain::PluginInvoker do
         it "has a new for every component of the fabricated class' plugin" do
           subcommands = subject.fabricate(plugin).subcommands
 
-          subcommands.should have(components.length).items
-          components.each do |component|
+          subcommands.should have(plugin.components.length).items
+          plugin.components.each do |component|
             subcommands.should include(component.name)
           end
         end

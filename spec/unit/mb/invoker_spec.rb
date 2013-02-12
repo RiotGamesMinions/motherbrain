@@ -7,7 +7,15 @@ describe MB::Invoker do
     describe ".register_plugin" do
       let(:name) { "myface" }
       let(:version) { nil }
-      let(:plugin) { double(name: name, version: version, description: "Jamie should use Emacs") }
+      let(:metadata) do
+        double('metadata',
+          valid?: true,
+          name: name,
+          description: "Ivey should use SublimeText 2"
+        )
+      end
+
+      let(:plugin) { MB::Plugin.new(metadata) }
       let(:plugin_invoker) { double(name: "#{name} invoker", plugin: name, version: version) }
 
       before(:each) do

@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
-  class PluginInvoker < DynamicInvoker
+  class PluginInvoker < Cli::SubCommandBase
     class << self
       # Return the plugin used to generate the anonymous CLI class
       #
@@ -11,16 +11,16 @@ module MotherBrain
       #
       # @return [PluginInvoker]
       def fabricate(plugin)
-        klass = Class.new(self)
-        klass.namespace(plugin.name)
-        klass.set_plugin(plugin)
+        klass = Class.new(self) do
+          set_plugin(plugin)
+        end
 
         plugin.commands.each do |command|
-          klass.define_command(command)
+          klass.define_task(command)
         end
 
         plugin.components.each do |component|
-          klass.register_component MB::ComponentInvoker.fabricate(klass, component)
+          klass.register_component MB::Cli::SubCommand.new(component)
         end
 
         klass.class_eval do
@@ -155,15 +155,14 @@ module MotherBrain
         self.register klass, klass.component.name, "#{klass.component.name} [COMMAND]", klass.component.description
       end
 
-      protected
-
-        # Set the plugin used to generate the anonymous CLI class. Can be
-        # retrieved later by calling MyClass::plugin.
-        #
-        # @param [MotherBrain::Plugin] plugin
-        def set_plugin(plugin)
-          @plugin = plugin
-        end
+      # Set the plugin used to generate the anonymous CLI class. Can be
+      # retrieved later by calling MyClass::plugin.
+      #
+      # @param [MotherBrain::Plugin] plugin
+      def set_plugin(plugin)
+        self.namespace(plugin.name)
+        @plugin = plugin
+      end
     end
 
     desc "version", "Display plugin version"

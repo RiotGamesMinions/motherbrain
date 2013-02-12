@@ -1,23 +1,22 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
-  class ComponentInvoker < DynamicInvoker
+  # @author Jamie Winsor <reset@riotgames.com>
+  class ComponentInvoker < Cli::SubCommandBase
     class << self
       # Return the component used to generate the anonymous Invoker class
       #
-      # @return [MotherBrain::Component]
+      # @return [MB::Component]
       attr_reader :component
 
-      # @param [MotherBrain::PluginInvoker] plugin_invoker
-      # @param [MotherBrain::Component] component
+      # @param [MB::Component] component
       #
-      # @return [ComponentInvoker]
-      def fabricate(plugin_invoker, component)
-        klass = Class.new(self)
-        klass.namespace(component.name)
-        klass.set_component(component)
+      # @return [MB::ComponentInvoker]
+      def fabricate(component)
+        klass = Class.new(self) do
+          set_component(component)
+        end
 
-        component.commands.each do |command|
-          klass.define_command(command)
+        klass.component.commands.each do |command|
+          klass.define_task(command)
         end
 
         klass.class_eval do
@@ -34,15 +33,14 @@ module MotherBrain
         klass
       end
 
-      protected
-
-        # Set the component used to generate the anonymous Invoker class. Can be
-        # retrieved later by calling MyClass::component.
-        #
-        # @param [MotherBrain::Component] component
-        def set_component(component)
-          @component = component
-        end
+      # Set the component used to generate the anonymous Invoker class. Can be
+      # retrieved later by calling MyClass::component.
+      #
+      # @param [MB::Component] component
+      def set_component(component)
+        self.namespace(component.name)
+        @component = component
+      end
     end
   end
 end

@@ -41,7 +41,7 @@ module MotherBrain
       # @return [MB::Plugin]
       def register_plugin(name, version = nil)
         if plugin = MB::Application.plugin_manager.find(name, version)
-          klass = MB::PluginInvoker.fabricate(plugin)
+          klass = MB::Cli::SubCommand.new(plugin)
           self.register klass, klass.plugin.name, "#{klass.plugin.name} [COMMAND]", klass.plugin.description
         else
           cookbook_identifier = "#{name}"
