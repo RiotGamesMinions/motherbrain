@@ -83,13 +83,13 @@ module MotherBrain
         plugin
       end
 
-      # Ensures at least one entry in args is not nil or false
-      # and that the first entry in args is not included in the
-      # SKIP_CONFIG_TASKS.
+      # Check if we should start the motherbrain application stack based on the 
+      # arguments passed to the CliGateway. The application stack won't be started 
+      # if the first argument is a member of {SKIP_CONFIG_TASKS}.
       # 
       # @param [Array] args
       # 
-      # @return [bool]
+      # @return [Boolean]
       def start_mb_application?(args)
         args.any? && !SKIP_CONFIG_TASKS.include?(args[0])
       end
