@@ -31,11 +31,6 @@ module MotherBrain
         config
       end
 
-      # @param [#to_s] name
-      def invoker_command?(name)
-        (tasks.keys + map.keys).include?(name.to_s)
-      end
-
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
