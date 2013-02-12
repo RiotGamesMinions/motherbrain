@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe MB::Invoker do
+describe MB::CliGateway do
   describe "ClassMethods" do
-    subject { MB::Invoker }
+    subject { described_class }
 
     describe "::new" do
       describe "specifying a configuration file" do

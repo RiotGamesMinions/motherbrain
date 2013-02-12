@@ -1,6 +1,6 @@
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
-  class Invoker < Thor
+  class CliGateway < Thor
     class << self
       include MB::Mixin::Services
 
@@ -44,7 +44,7 @@ module MotherBrain
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
         invoked_opts.merge!(opts)
-        if args.any? and (args & NOCONFIG_TASKS).empty?
+        if args.any? and (args & SKIP_CONFIG_TASKS).empty?
           app_config = configure(opts.dup)
           app_config.validate!
           MB::Application.run!(app_config)
@@ -89,14 +89,14 @@ module MotherBrain
         # @return [Array]
         def parse_args(given_args)
           args, opts = Thor::Options.split(given_args)
-          thor_opts = Thor::Options.new(Invoker.class_options)
+          thor_opts = Thor::Options.new(self.class_options)
           parsed_opts = thor_opts.parse(opts)
 
           [ args, parsed_opts ]
         end
     end
 
-    NOCONFIG_TASKS = [
+    SKIP_CONFIG_TASKS = [
       "configure",
       "help",
       "version"
@@ -109,8 +109,8 @@ module MotherBrain
 
     def initialize(args = [], options = {}, config = {})
       super
-      opts = self.is_a?(Invoker) ? self.options.dup : self.options.merge(Invoker.invoked_opts)
-      unless NOCONFIG_TASKS.include? config[:current_task].try(:name)
+      opts = self.options.dup
+      unless SKIP_CONFIG_TASKS.include? config[:current_task].try(:name)
         @config = self.class.configure(opts)
       end
     end
