@@ -172,12 +172,23 @@ module MotherBrain
           find_plugin!(params[:name]).commands
         end
 
-        desc "list of all the components the latest plugin has"
-        params do
-          requires :name, type: String, desc: "plugin name"
-        end
-        get 'components' do
-          find_plugin!(params[:name]).components
+        resource 'components' do
+          desc "list of all the components the latest plugin has"
+          params do
+            requires :name, type: String, desc: "plugin name"
+          end
+          get do
+            find_plugin!(params[:name]).components
+          end
+
+          desc "list of all the commands the component of the latest plugin version has"
+          params do
+            requires :name, type: String, desc: "plugin name"
+            requires :component_id, type: String, desc: "component name"
+          end
+          get ':component_id/commands' do
+            find_plugin!(params[:name]).component(params[:component_id])
+          end
         end
       end
 
