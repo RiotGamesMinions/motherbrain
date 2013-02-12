@@ -1,18 +1,20 @@
 require 'spec_helper'
 
-describe MB::DynamicInvoker do
-  let(:dynamic_invoker) { Class.new(MB::DynamicInvoker) }
+describe MB::Cli::SubCommand::Base do
+  let(:thor_cli) do
+    Class.new(MB::Cli::SubCommand::Base)
+  end
 
-  describe ".fabricate" do
+  describe "::fabricate" do
     it "raises an AbstractFunction error when not implemented" do
       lambda {
-        dynamic_invoker.fabricate
+        thor_cli.fabricate
       }.should raise_error(MB::AbstractFunction)
     end
   end
 
-  describe ".define_command" do
-    subject(:define_command) { dynamic_invoker.send :define_command, command }
+  describe "::define_task" do
+    subject(:define_task) { thor_cli.send :define_task, command }
 
     let(:command) {
       MB::Command.new(:my_command, scope) do
@@ -22,12 +24,12 @@ describe MB::DynamicInvoker do
       end
     }
 
-    let(:my_command) { dynamic_invoker.instance_method :my_command }
+    let(:my_command) { thor_cli.instance_method :my_command }
 
     let(:scope) { stub(MB::Plugin) }
 
     before do
-      define_command
+      define_task
     end
 
     it "defines the command" do

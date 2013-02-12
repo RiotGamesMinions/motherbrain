@@ -1,14 +1,51 @@
 require 'spec_helper'
 
-describe MB::Invoker do
+describe MB::CliGateway do
   describe "ClassMethods" do
-    subject { MB::Invoker }
+    subject { described_class }
 
-    describe ".register_plugin" do
+    describe "::new" do
+      describe "specifying a configuration file" do
+        let(:location) { tmp_path.join('config.json').to_s }
+
+        before(:each) do
+          generate_valid_config(location)
+        end
+
+        it "loads the specified config file into the ConfigManager" do
+          config = MB::Config.from_file(location)
+          invoker = subject.new([], config: location)
+
+          MB::ConfigManager.instance.config.attributes.should eql(config.attributes)
+        end
+
+        it "raises a ConfigNotFound error when the specified path does not exist" do
+          lambda {
+            invoker = subject.new([], config: tmp_path.join("not_there.json"))
+          }.should raise_error(Chozo::Errors::ConfigNotFound)
+        end
+
+        it "raises a ConfigNotFound error when the specified path is a directory" do
+          lambda {
+            invoker = subject.new([], config: tmp_path)
+          }.should raise_error(Chozo::Errors::ConfigNotFound)
+        end
+      end
+    end
+
+    describe "::register_plugin" do
       let(:name) { "myface" }
       let(:version) { nil }
-      let(:plugin) { double(name: name, version: version, description: "Jamie should use Emacs") }
-      let(:plugin_invoker) { double(name: "#{name} invoker", plugin: name, version: version) }
+      let(:metadata) do
+        double('metadata',
+          valid?: true,
+          name: name,
+          description: "Ivey should use SublimeText 2"
+        )
+      end
+
+      let(:plugin) { MB::Plugin.new(metadata) }
+      let(:plugin_sub_command) { double(name: "#{name} sub command", plugin: name, version: version) }
 
       before(:each) do
         MB.ui.stub(:say)
@@ -32,9 +69,9 @@ describe MB::Invoker do
 
         context "that exists" do
           before(:each) do
-            MB::PluginInvoker.stub(:fabricate).and_return(plugin_invoker)
+            MB::Cli::SubCommand.stub(:fabricate).and_return(plugin_sub_command)
             MB::Application.stub_chain(:plugin_manager, :find).and_return(plugin)
-            plugin_invoker.stub(:plugin).and_return(plugin)
+            plugin_sub_command.stub(:plugin).and_return(plugin)
           end
 
           it "should register the plugin" do
@@ -60,9 +97,9 @@ describe MB::Invoker do
 
         context "that exists" do
           before(:each) do
-            MB::PluginInvoker.stub(:fabricate).and_return(plugin_invoker)
+            MB::Cli::SubCommand.stub(:fabricate).and_return(plugin_sub_command)
             MB::Application.stub_chain(:plugin_manager, :find).and_return(plugin)
-            plugin_invoker.stub(:plugin).and_return(plugin)
+            plugin_sub_command.stub(:plugin).and_return(plugin)
           end
 
           it "should register the plugin" do
