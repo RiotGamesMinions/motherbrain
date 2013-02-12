@@ -31,10 +31,6 @@ module MotherBrain
         config
       end
 
-      def invoked_opts
-        @invoked_opts ||= {}
-      end
-
       # @param [#to_s] name
       def invoker_command?(name)
         (tasks.keys + map.keys).include?(name.to_s)
@@ -43,7 +39,6 @@ module MotherBrain
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
-        invoked_opts.merge!(opts)
         if args.any? and (args & SKIP_CONFIG_TASKS).empty?
           app_config = configure(opts.dup)
           app_config.validate!
