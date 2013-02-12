@@ -6,12 +6,20 @@ module MotherBrain
     #
     # @example valid manifest structure
     #   {
-    #     "activemq::master" => [
-    #       "euca-10-20-37-171.eucalyptus.cloud.riotgames.com",
-    #       "euca-10-20-37-172.eucalyptus.cloud.riotgames.com"
-    #     ],
-    #     "activemq::slave" => [
-    #       "euca-10-20-37-168.eucalyptus.cloud.riotgames.com"
+    #     "nodes": [
+    #       {
+    #         "groups": ["activemq::master"],
+    #         "hosts": [
+    #           "euca-10-20-37-171.eucalyptus.cloud.riotgames.com",
+    #           "euca-10-20-37-172.eucalyptus.cloud.riotgames.com"
+    #         ]
+    #       },
+    #       {
+    #         "groups": ["activemq::slave"],
+    #         "hosts": [
+    #           "euca-10-20-37-168.eucalyptus.cloud.riotgames.com"
+    #          ]
+    #       }
     #     ]
     #   }
     #
