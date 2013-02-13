@@ -149,86 +149,86 @@ module MotherBrain
 
       desc "display all the versions of the given plugin"
       params do
-        requires :name, type: String, desc: "plugin name"
+        requires :plugin_id, type: String, desc: "plugin name"
       end
-      get ':name' do
-        plugin_manager.versions(params[:name])
+      get ':plugin_id' do
+        plugin_manager.versions(params[:plugin_id])
       end
 
-      resource ':name/latest' do
+      resource ':plugin_id/latest' do
         desc "display the latest version of the plugin of the given name"
         params do
-          requires :name, type: String, desc: "plugin name"
+          requires :plugin_id, type: String, desc: "plugin name"
         end
         get do
-          find_plugin!(params[:name])
+          find_plugin!(params[:plugin_id])
         end
 
         desc "list of all the commands the latest plugin can do"
         params do
-          requires :name, type: String, desc: "plugin name"
+          requires :plugin_id, type: String, desc: "plugin name"
         end
         get 'commands' do
-          find_plugin!(params[:name]).commands
+          find_plugin!(params[:plugin_id]).commands
         end
 
         resource 'components' do
           desc "list of all the components the latest plugin has"
           params do
-            requires :name, type: String, desc: "plugin name"
+            requires :plugin_id, type: String, desc: "plugin name"
           end
           get do
-            find_plugin!(params[:name]).components
+            find_plugin!(params[:plugin_id]).components
           end
 
           desc "list of all the commands the component of the latest plugin version has"
           params do
-            requires :name, type: String, desc: "plugin name"
+            requires :plugin_id, type: String, desc: "plugin name"
             requires :component_id, type: String, desc: "component name"
           end
           get ':component_id/commands' do
-            find_plugin!(params[:name]).component(params[:component_id])
+            find_plugin!(params[:plugin_id]).component(params[:component_id])
           end
         end
       end
 
-      resource ':name/:version' do
+      resource ':plugin_id/:version' do
         desc "display the plugin of the given name and version"
         params do
-          requires :name, type: String, desc: "plugin name"
+          requires :plugin_id, type: String, desc: "plugin name"
           requires :version, sem_ver: true
         end
         get do
-          find_plugin!(params[:name], params[:version])
+          find_plugin!(params[:plugin_id], params[:version])
         end
 
         desc "list of all the commands the specified plugin version can do"
         params do
-          requires :name, type: String, desc: "plugin name"
+          requires :plugin_id, type: String, desc: "plugin name"
           requires :version, sem_ver: true
         end
         get 'commands' do
-          find_plugin!(params[:name], params[:version]).commands
+          find_plugin!(params[:plugin_id], params[:version]).commands
         end
 
         resource :components do
           desc "list of all the components the specified plugin version has"
           params do
-            requires :name, type: String, desc: "plugin name"
+            requires :plugin_id, type: String, desc: "plugin name"
             requires :version, sem_ver: true
           end
           get do
-            find_plugin!(params[:name], params[:version]).components
+            find_plugin!(params[:plugin_id], params[:version]).components
           end
 
           desc "list of all the commands the component of the specified plugin version has"
           params do
-            requires :name, type: String, desc: "plugin name"
+            requires :plugin_id, type: String, desc: "plugin name"
             requires :version, sem_ver: true
             requires :component_id, type: String, desc: "component name"
           end
           get ':component_id/commands' do
-            find_plugin!(params[:name], params[:version]).component(params[:component_id])
+            find_plugin!(params[:plugin_id], params[:version]).component(params[:component_id])
           end
         end
       end
