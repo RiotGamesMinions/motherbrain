@@ -20,7 +20,6 @@ module MotherBrain
           attr_reader :plugin
 
           # @param [MotherBrain::Plugin] plugin
-          # @param [String] environment
           #
           # @return [SubCommand::Plugin]
           def fabricate(plugin)

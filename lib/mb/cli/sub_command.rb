@@ -12,7 +12,6 @@ module MotherBrain
         # Generate a new SubCommand for Thor from a motherbrain plugin or component
         #
         # @param [MB::Plugin, MB::Component] object
-        # @param [String] environment
         #
         # @raise [ArgumentError]
         #

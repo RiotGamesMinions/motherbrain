@@ -20,7 +20,6 @@ module MotherBrain
           attr_reader :component
 
           # @param [MB::Component] component
-          # @param [String] environment
           #
           # @return [SubCommand::Component]
           def fabricate(component)
