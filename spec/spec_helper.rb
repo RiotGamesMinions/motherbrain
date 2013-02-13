@@ -16,6 +16,7 @@ def setup_rspec
   RSpec.configure do |config|
     config.include JsonSpec::Helpers
     config.include MotherBrain::SpecHelpers
+    config.include MotherBrain::Mixin::Services
 
     config.mock_with :rspec
     config.treat_symbols_as_metadata_keys_with_true_values = true

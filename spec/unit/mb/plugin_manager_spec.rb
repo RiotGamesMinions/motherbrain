@@ -253,6 +253,47 @@ describe MotherBrain::PluginManager do
     end
   end
 
+  describe "#for_environment" do
+    let(:plugin_id) { "rspec-test" }
+    let(:environment_id) { "rspec-testenv" }
+    let(:environment) do
+      double('environment',
+        name: environment_id,
+        cookbook_versions: {
+          plugin_id => ">= 1.2.3"
+        }
+      )
+    end
+    let(:options) do
+      {
+        remote: true
+      }
+    end
+
+    context "when the environment exists" do
+      before(:each) do
+        environment_manager.should_receive(:find).with(environment_id).and_return(environment)
+      end
+
+      it "attempts to satisfy the environment's plugin (cookbook) constraint" do
+        subject.should_receive(:satisfy).with(plugin_id, ">= 1.2.3", options)
+        subject.for_environment(plugin_id, environment_id, options)
+      end
+    end
+
+    context "when the environment does not exist" do
+      before(:each) do
+        environment_manager.should_receive(:find).with(environment_id).and_raise(MB::EnvironmentNotFound)
+      end
+
+      it "raises an EnvironmentNotFound error" do
+        expect {
+          subject.for_environment(plugin_id, environment_id)
+        }.to raise_error(MB::EnvironmentNotFound)
+      end
+    end
+  end
+
   describe "#clear_plugins" do
     let(:plugin) do
       metadata = MB::CookbookMetadata.new do
@@ -283,6 +324,46 @@ describe MotherBrain::PluginManager do
         subject.should_receive(:load_all_remote)
 
         subject.list(true)
+      end
+    end
+  end
+
+  describe "#satisfy" do
+    let(:plugin_id) { "rspec-test" }
+    let(:versions) do
+      [
+        double('p1', name: "rspec-test", version: "1.0.0"),
+        double('p2', name: "rspec-test", version: "1.2.3"),
+        double('p3', name: "rspec-test", version: "1.3.0")
+      ]
+    end
+    let(:options) do
+      {
+        remote: true
+      }
+    end
+
+    context "when the given constraint tests anything but equality" do
+      let(:constraint) { ">= 1.2.3" }
+
+      before(:each) do
+        subject.should_receive(:versions).with(plugin_id, options[:remote]).and_return(versions)
+        subject.should_receive(:find).with(plugin_id, "1.3.0").and_return(versions[2])
+      end
+
+      it "returns the best plugin for the given constraint" do
+        subject.satisfy(plugin_id, constraint, options).should eql(versions[2])
+      end
+    end
+
+    context "when the given constraint tests equality" do
+      let(:constraint) { "= 1.0.0" }
+
+      it "attempts to load the matching plugin from the remote" do
+        subject.should_receive(:load_remote).with(plugin_id, "1.0.0")
+        subject.should_receive(:find).with(plugin_id, "1.0.0").and_return(versions[0])
+
+        subject.satisfy(plugin_id, constraint, options)
       end
     end
   end
