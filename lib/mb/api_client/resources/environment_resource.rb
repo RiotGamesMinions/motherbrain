@@ -52,6 +52,13 @@ module MotherBrain
         json_delete("/environments/#{id}.json")
       end
 
+      # Return a list of all the environments
+      #
+      # @return [Array]
+      def list
+        json_get("/environments.json")
+      end
+
       # @param [String] id
       #   name of the environment to create
       # @param [String] plugin

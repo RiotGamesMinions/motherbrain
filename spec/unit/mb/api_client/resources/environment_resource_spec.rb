@@ -61,6 +61,15 @@ describe MB::ApiClient::EnvironmentResource do
     end
   end
 
+  describe "#list" do
+    it "sends a GET to /environments.json" do
+      stub_request(:get, "http://0.0.0.0:1984/environments.json").
+        to_return(status: 200, body: MultiJson.encode([]))
+
+      subject.list.should be_a(Array)
+    end
+  end
+
   describe "#provision" do
     let(:plugin_id) { "activemq" }
     let(:env_id) { "rspec-environment" }

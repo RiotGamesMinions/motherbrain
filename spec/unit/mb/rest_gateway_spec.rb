@@ -41,6 +41,19 @@ describe MB::RestGateway do
       end
     end
 
+    describe "GET /environments" do
+      let(:environments) { Array.new }
+
+      before(:each) do
+        environment_manager.should_receive(:list).and_return(environments)
+      end
+
+      it "returns a 200" do
+        get '/environments'
+        last_response.status.should == 200
+      end
+    end
+
     describe "GET /plugins" do
       it "returns all loaded plugins as JSON" do
         get '/plugins'

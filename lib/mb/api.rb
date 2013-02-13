@@ -68,6 +68,11 @@ module MotherBrain
     end
 
     resource :environments do
+      desc "list all of the environments"
+      get do
+        environment_manager.list
+      end
+
       desc "destroy a provisioned environment"
       params do
         requires :id, type: String, desc: "environment name"
