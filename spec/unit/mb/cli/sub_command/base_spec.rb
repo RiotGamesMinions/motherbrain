@@ -14,9 +14,7 @@ describe MB::Cli::SubCommand::Base do
   end
 
   describe "::define_task" do
-    let(:environment) { "test_environment" }
-
-    subject(:define_task) { thor_cli.send :define_task, command, environment }
+    subject(:define_task) { thor_cli.send :define_task, command }
 
     let(:command) {
       MB::Command.new(:my_command, scope) do

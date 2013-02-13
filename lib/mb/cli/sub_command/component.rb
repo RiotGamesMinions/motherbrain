@@ -23,13 +23,15 @@ module MotherBrain
           # @param [String] environment
           #
           # @return [SubCommand::Component]
-          def fabricate(component, environment)
+          def fabricate(component)
+            environment = CliGateway.invoked_opts[:environment]
+
             klass = Class.new(self) do
               set_component(component)
             end
 
             klass.component.commands.each do |command|
-              klass.define_task(command, environment)
+              klass.define_task(command)
             end
 
             klass.class_eval do

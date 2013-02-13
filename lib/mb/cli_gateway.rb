@@ -4,6 +4,10 @@ module MotherBrain
     class << self
       include MB::Mixin::Services
 
+      def invoked_opts
+        @invoked_opts ||= HashWithIndifferentAccess.new
+      end
+
       # @param [Hash] options
       #
       # @return [MB::Config]
@@ -34,6 +38,7 @@ module MotherBrain
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         args, opts = parse_args(given_args)
+        invoked_opts.merge!(opts)
 
         if args.any? and (args & NO_ENVIRONMENT_TASKS).empty?
           unless opts[:environment]
@@ -67,7 +72,7 @@ module MotherBrain
       # @return [MB::Plugin]
       def register_plugin(name, environment, version = nil)
         if plugin = MB::Application.plugin_manager.find(name, version)
-          self.register_subcommand MB::Cli::SubCommand.new(plugin, environment)
+          self.register_subcommand MB::Cli::SubCommand.new(plugin)
         else
           cookbook_identifier = "#{name}"
           cookbook_identifier += " (version #{version})" if version

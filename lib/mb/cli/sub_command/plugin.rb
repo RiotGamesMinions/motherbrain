@@ -23,17 +23,19 @@ module MotherBrain
           # @param [String] environment
           #
           # @return [SubCommand::Plugin]
-          def fabricate(plugin, environment)
+          def fabricate(plugin)
+            environment = CliGateway.invoked_opts[:environment]
+
             klass = Class.new(self) do
               set_plugin(plugin)
             end
 
             plugin.commands.each do |command|
-              klass.define_task(command, environment)
+              klass.define_task(command)
             end
 
             plugin.components.each do |component|
-              klass.register_subcommand MB::Cli::SubCommand.new(component, environment)
+              klass.register_subcommand MB::Cli::SubCommand.new(component)
             end
 
             klass.class_eval do

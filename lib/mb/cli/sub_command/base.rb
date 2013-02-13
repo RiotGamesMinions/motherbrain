@@ -27,7 +27,8 @@ module MotherBrain
             #
             # @param [MotherBrain::Command] command
             # @param [String] environment
-            def define_task(command, environment)
+            def define_task(command)
+              environment = CliGateway.invoked_opts[:environment]
               arguments = []
 
               command.execute.parameters.each do |type, parameter|
