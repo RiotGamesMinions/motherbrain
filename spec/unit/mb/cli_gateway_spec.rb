@@ -36,6 +36,7 @@ describe MB::CliGateway do
     describe "::register_plugin" do
       let(:name) { "myface" }
       let(:version) { nil }
+      let(:environment) { "test_environment" }
       let(:metadata) do
         double('metadata',
           valid?: true,
@@ -62,7 +63,7 @@ describe MB::CliGateway do
           it "should notify the user" do
             MB.ui.should_receive(:say).with("No cookbook with myface (version 1.2.3) plugin was found in your Berkshelf.")
             lambda {
-              subject.register_plugin name, version
+              subject.register_plugin name, environment, version
             }.should raise_error(SystemExit)
           end
         end
@@ -76,7 +77,7 @@ describe MB::CliGateway do
 
           it "should register the plugin" do
             subject.should_receive(:register)
-            subject.register_plugin name, version
+            subject.register_plugin name, environment, version
           end
         end
       end
@@ -90,7 +91,7 @@ describe MB::CliGateway do
           it "should notify the user" do
             MB.ui.should_receive(:say).with("No cookbook with myface plugin was found in your Berkshelf.")
             lambda {
-              subject.register_plugin name, version
+              subject.register_plugin name, environment, version
             }.should raise_error(SystemExit)
           end
         end
@@ -104,7 +105,7 @@ describe MB::CliGateway do
 
           it "should register the plugin" do
             subject.should_receive(:register)
-            subject.register_plugin name, version
+            subject.register_plugin name, environment, version
           end
         end
       end
