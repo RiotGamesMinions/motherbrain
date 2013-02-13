@@ -54,6 +54,37 @@ describe MB::RestGateway do
       end
     end
 
+    describe "GET /environments/:environment_id/commands/:plugin_id" do
+      let(:environment_id) { "rspec_test" }
+      let(:plugin_id) { "myface" }
+      let(:plugin) { double('plugin', commands: []) }
+
+      it "returns the commands of the plugin for the environment" do
+        plugin_manager.should_receive(:for_environment).with(plugin_id, environment_id).and_return(plugin)
+
+        get "/environments/#{environment_id}/commands/#{plugin_id}"
+        last_response.status.should == 200
+        MultiJson.decode(last_response.body).should eql(plugin.commands)
+      end
+    end
+
+    describe "GET /environments/:environment_id/commands/:plugin_id/:component_id" do
+      let(:environment_id) { "rspec_test" }
+      let(:plugin_id) { "myface" }
+      let(:component_id) { "appsrv" }
+      let(:component) { double('component', commands: []) }
+      let(:plugin) { double('plugin') }
+
+      it "returns the commands of the plugin for the environment" do
+        plugin.should_receive(:component!).with(component_id).and_return(component)
+        plugin_manager.should_receive(:for_environment).with(plugin_id, environment_id).and_return(plugin)
+
+        get "/environments/#{environment_id}/commands/#{plugin_id}/#{component_id}"
+        last_response.status.should == 200
+        MultiJson.decode(last_response.body).should eql(component.commands)
+      end
+    end
+
     describe "GET /plugins" do
       it "returns all loaded plugins as JSON" do
         get '/plugins'
@@ -328,7 +359,9 @@ describe MB::RestGateway do
           name 'apple'
           version '1.0.0'
         end
-        MB::Plugin.new(metadata)
+        MB::Plugin.new(metadata) do
+          component "myface" do; end
+        end
       end
 
       before(:each) do
