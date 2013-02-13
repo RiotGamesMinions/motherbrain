@@ -264,6 +264,11 @@ describe MotherBrain::PluginManager do
         }
       )
     end
+    let(:options) do
+      {
+        remote: true
+      }
+    end
 
     context "when the environment exists" do
       before(:each) do
@@ -271,8 +276,8 @@ describe MotherBrain::PluginManager do
       end
 
       it "attempts to satisfy the environment's plugin (cookbook) constraint" do
-        subject.should_receive(:satisfy).with(plugin_id, ">= 1.2.3")
-        subject.for_environment(plugin_id, environment_id)
+        subject.should_receive(:satisfy).with(plugin_id, ">= 1.2.3", options)
+        subject.for_environment(plugin_id, environment_id, options)
       end
     end
 
@@ -333,14 +338,19 @@ describe MotherBrain::PluginManager do
         double('p3', name: "rspec-test", version: "1.3.0")
       ]
     end
+    let(:options) do
+      {
+        remote: true
+      }
+    end
 
     before(:each) do
-      subject.should_receive(:versions).with(plugin_id, anything()).and_return(versions)
+      subject.should_receive(:versions).with(plugin_id, options[:remote]).and_return(versions)
       subject.should_receive(:find).with(plugin_id, "1.3.0").and_return(versions[2])
     end
 
     it "returns the best plugin for the given constraint" do
-      subject.satisfy(plugin_id, constraint).should eql(versions[2])
+      subject.satisfy(plugin_id, constraint, options).should eql(versions[2])
     end
   end
 

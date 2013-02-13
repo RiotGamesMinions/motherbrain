@@ -120,15 +120,19 @@ module MotherBrain
     # @param [String] environment_id
     #   name of the environment
     #
+    # @option options [Boolean] :remote (false)
+    #   include plugins on the remote Chef Server which aren't found locally
+    #
     # @raise [EnvironmentNotFound] if the given environment does not exist
     # @raise [PluginNotFound] if a plugin of the given name is not found
     #
     # @return [MB::Plugin]
-    def for_environment(plugin_id, environment_id)
+    def for_environment(plugin_id, environment_id, options = {})
+      options = options.reverse_merge(remote: false)
       environment = environment_manager.find(environment_id)
       constraint  = environment.cookbook_versions[plugin_id] || "> 0.0.0"
 
-      satisfy(plugin_id, constraint)
+      satisfy(plugin_id, constraint, options)
     end
 
     # @return [Array<MotherBrain::Plugin>]
