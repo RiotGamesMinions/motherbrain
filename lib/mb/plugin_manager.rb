@@ -261,7 +261,7 @@ module MotherBrain
       # Optimize for equality operator. Don't need to find all of the versions if
       # we only care about one.
       version = if constraint.operator == "="
-        load_remote(plugin_id, constraint.version.to_s)
+        load_remote(plugin_id, constraint.version.to_s) if options[:remote]
         constraint.version.to_s
       else
         graph = Solve::Graph.new
