@@ -330,7 +330,6 @@ describe MotherBrain::PluginManager do
 
   describe "#satisfy" do
     let(:plugin_id) { "rspec-test" }
-    let(:constraint) { ">= 1.2.3" }
     let(:versions) do
       [
         double('p1', name: "rspec-test", version: "1.0.0"),
@@ -344,13 +343,28 @@ describe MotherBrain::PluginManager do
       }
     end
 
-    before(:each) do
-      subject.should_receive(:versions).with(plugin_id, options[:remote]).and_return(versions)
-      subject.should_receive(:find).with(plugin_id, "1.3.0").and_return(versions[2])
+    context "when the given constraint tests anything but equality" do
+      let(:constraint) { ">= 1.2.3" }
+
+      before(:each) do
+        subject.should_receive(:versions).with(plugin_id, options[:remote]).and_return(versions)
+        subject.should_receive(:find).with(plugin_id, "1.3.0").and_return(versions[2])
+      end
+
+      it "returns the best plugin for the given constraint" do
+        subject.satisfy(plugin_id, constraint, options).should eql(versions[2])
+      end
     end
 
-    it "returns the best plugin for the given constraint" do
-      subject.satisfy(plugin_id, constraint, options).should eql(versions[2])
+    context "when the given constraint tests equality" do
+      let(:constraint) { "= 1.0.0" }
+
+      it "attempts to load the matching plugin from the remote" do
+        subject.should_receive(:load_remote).with(plugin_id, "1.0.0")
+        subject.should_receive(:find).with(plugin_id, "1.0.0").and_return(versions[0])
+
+        subject.satisfy(plugin_id, constraint, options)
+      end
     end
   end
 

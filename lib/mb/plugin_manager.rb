@@ -258,13 +258,20 @@ module MotherBrain
       options = options.reverse_merge(remote: false)
       constraint = Solve::Constraint.new(constraint)
 
-      graph = Solve::Graph.new
-      versions(plugin_id, options[:remote]).each do |plugin|
-        graph.artifacts(plugin.name, plugin.version)
-      end
+      # Optimize for equality operator. Don't need to find all of the versions if
+      # we only care about one.
+      version = if constraint.operator == "="
+        load_remote(plugin_id, constraint.version.to_s)
+        constraint.version.to_s
+      else
+        graph = Solve::Graph.new
+        versions(plugin_id, options[:remote]).each do |plugin|
+          graph.artifacts(plugin.name, plugin.version)
+        end
 
-      solution = Solve.it!(graph, [[plugin_id, constraint]])
-      version  = solution[plugin_id]
+        solution = Solve.it!(graph, [[plugin_id, constraint]])
+        solution[plugin_id]
+      end
 
       find(plugin_id, version)
     rescue Solve::Errors::NoSolutionError
