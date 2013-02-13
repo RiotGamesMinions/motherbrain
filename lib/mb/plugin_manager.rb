@@ -97,7 +97,7 @@ module MotherBrain
     # @param [String] name
     # @param [#to_s] version (nil)
     #
-    # @option options [Boolean] :remote
+    # @option options [Boolean] :remote (false)
     #   search for the plugin on the remote Chef Server if it isn't found locally
     #
     # @return [Plugin, nil]
@@ -111,6 +111,28 @@ module MotherBrain
           plugin.name == name && plugin.version.to_s == version.to_s
         end
       end
+    end
+
+    # Determine the best version of a plugin to use when communicating to the given environment
+    #
+    # @param [String] plugin_id
+    #   name of the plugin
+    # @param [String] environment_id
+    #   name of the environment
+    #
+    # @option options [Boolean] :remote (false)
+    #   include plugins on the remote Chef Server which aren't found locally
+    #
+    # @raise [EnvironmentNotFound] if the given environment does not exist
+    # @raise [PluginNotFound] if a plugin of the given name is not found
+    #
+    # @return [MB::Plugin]
+    def for_environment(plugin_id, environment_id, options = {})
+      options = options.reverse_merge(remote: false)
+      environment = environment_manager.find(environment_id)
+      constraint  = environment.cookbook_versions[plugin_id] || "> 0.0.0"
+
+      satisfy(plugin_id, constraint, options)
     end
 
     # @return [Array<MotherBrain::Plugin>]
@@ -216,6 +238,44 @@ module MotherBrain
     # @param [MotherBrain::Plugin] plugin
     def remove(plugin)
       @plugins.delete(plugin)
+    end
+
+    # Return the best version of the plugin to use for the given constraint
+    #
+    # @param [String] plugin_id
+    #   name of the plugin
+    # @param [String, Solve::Constraint] constraint
+    #   constraint to satisfy
+    #
+    # @option options [Boolean] :remote (false)
+    #   include plugins on the remote Chef Server which aren't found locally
+    #
+    # @raise [PluginNotFound] if a plugin of the given name which satisfies the given constraint
+    #   is not found
+    #
+    # @return [MB::Plugin]
+    def satisfy(plugin_id, constraint, options = {})
+      options = options.reverse_merge(remote: false)
+      constraint = Solve::Constraint.new(constraint)
+
+      # Optimize for equality operator. Don't need to find all of the versions if
+      # we only care about one.
+      version = if constraint.operator == "="
+        load_remote(plugin_id, constraint.version.to_s) if options[:remote]
+        constraint.version.to_s
+      else
+        graph = Solve::Graph.new
+        versions(plugin_id, options[:remote]).each do |plugin|
+          graph.artifacts(plugin.name, plugin.version)
+        end
+
+        solution = Solve.it!(graph, [[plugin_id, constraint]])
+        solution[plugin_id]
+      end
+
+      find(plugin_id, version)
+    rescue Solve::Errors::NoSolutionError
+      abort PluginNotFound.new(plugin_id, constraint)
     end
 
     # List all of the versions of the plugin of the given name
