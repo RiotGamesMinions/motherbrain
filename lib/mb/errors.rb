@@ -44,8 +44,6 @@ module MotherBrain
   class ValidationFailed < PluginSyntaxError; end
   class DuplicateAction < PluginSyntaxError; end
   class DuplicateGear < PluginSyntaxError; end
-  class CommandNotFound < PluginSyntaxError; end
-  class ComponentNotFound < PluginSyntaxError; end
   class ActionNotFound < PluginSyntaxError; end
   class GroupNotFound < PluginSyntaxError; end
 
@@ -108,6 +106,44 @@ module MotherBrain
 
   class NoBootstrapRoutine < MBError; status_code(108); end
   class PluginDownloadError < MBError; status_code(109); end
+
+  class CommandNotFound < MBError
+    status_code(110)
+
+    attr_reader :name
+    attr_reader :parent
+
+    # @param [String] name
+    #   name of the command that was not found
+    # @param [MB::Plugin, MB::Component] parent
+    #   plugin that we searched for the command on
+    def initialize(name, parent)
+      @name   = name
+      @parent = parent
+    end
+
+    def to_s
+      "#{parent.class} '#{parent}' does not have the command: '#{name}'"
+    end
+  end
+
+  class ComponentNotFound < MBError
+    status_code(111)
+
+    attr_reader :name
+    attr_reader :plugin
+
+    # @param [String] name
+    # @param [MB::Plugin] plugin
+    def initialize(name, plugin)
+      @name   = name
+      @plugin = plugin
+    end
+
+    def to_s
+      "Plugin #{plugin} does not have the component: '#{name}'"
+    end
+  end
 
   class ClusterBusy < MBError; status_code(10); end
   class ClusterNotFound < MBError; status_code(11); end

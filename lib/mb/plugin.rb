@@ -115,7 +115,7 @@ module MotherBrain
       component = component(name)
 
       if component.nil?
-        raise ComponentNotFound, "Component '#{name}' not found on plugin '#{self.name}' (#{self.version})"
+        raise ComponentNotFound.new(name, self)
       end
 
       component
@@ -128,17 +128,14 @@ module MotherBrain
       component(name).present?
     end
 
+    # Find and return a command from the plugin's list of supported commands
+    #
     # @param [#to_s] name
+    #   name of the command to find and return
     #
     # @return [MB::Command]
     def command(name)
-      command = commands.find { |command| command.name == name.to_s }
-
-      if command.nil?
-        raise CommandNotFound, "Command '#{name}' not found on plugin '#{self.name}'"
-      end
-
-      command
+      commands.find { |command| command.name == name.to_s }
     end
 
     # Finds the nodes for the given environment for each {Component} of the plugin groups them
