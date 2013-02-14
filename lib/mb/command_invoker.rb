@@ -71,7 +71,7 @@ module MotherBrain
       command = plugin.command!(command_id)
 
       job.status = "starting command execution"
-      command.invoke(environment_id, options[:arguments])
+      command.invoke(environment_id, *options[:arguments])
       job.report_success("finished executing command")
     rescue MBError => ex
       job.report_failure(ex.to_s)
@@ -86,7 +86,7 @@ module MotherBrain
       command = plugin.component!(component_id).command!(command_id)
 
       job.status = "starting command execution"
-      command.invoke(environment_id, options[:arguments])
+      command.invoke(environment_id, *options[:arguments])
       job.report_success("finished executing command")
     rescue MBError => ex
       job.report_failure(ex.to_s)
