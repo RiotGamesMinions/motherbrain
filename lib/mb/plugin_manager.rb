@@ -133,6 +133,8 @@ module MotherBrain
       constraint  = environment.cookbook_versions[plugin_id] || "> 0.0.0"
 
       satisfy(plugin_id, constraint, options)
+    rescue MotherBrain::EnvironmentNotFound => ex
+      abort ex
     end
 
     # @return [Array<MotherBrain::Plugin>]
