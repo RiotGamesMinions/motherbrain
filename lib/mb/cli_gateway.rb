@@ -53,8 +53,11 @@ module MotherBrain
           MB::Application.run!(app_config)
 
           # If the first argument is the name of a plugin, register that plugin and use it. 
-          if plugin_manager.find(args[0]).present?
-            plugin = register_plugin(args[0], opts[:environment], opts[:plugin_version])
+          if plugin_task?(args[0])
+            name = args[0]
+
+            plugin = register_plugin(name, opts)
+
             MB.ui.say "using #{plugin}"
             MB.ui.say ""
           end
@@ -63,22 +66,42 @@ module MotherBrain
         super
       end
 
+      # Did the user call a plugin task?
+      #
+      # @param [String] name
+      #
+      # @return [Boolean]
+      def plugin_task?(name)
+        non_plugin_tasks = (NO_ENVIRONMENT_TASKS | tasks.keys.map(&:to_s))
+        !non_plugin_tasks.find { |task| task == name }.present?
+      end
+
       # Load and register a plugin
       #
       # @param [String] name
-      # @param [String] environment
-      # @param [String] version
+      #
+      # @option options [#to_s] :plugin_version
+      # @option options [#to_s] :environment
       #
       # @return [MB::Plugin]
-      def register_plugin(name, environment, version = nil)
-        if plugin = MB::Application.plugin_manager.find(name, version)
-          self.register_subcommand MB::Cli::SubCommand.new(plugin)
+      def register_plugin(name, options = {})
+        if options[:plugin_version]
+          plugin = Application.plugin_manager.find(name, options[:plugin_version])
+
+          unless plugin
+            MB.ui.say "No cookbook with #{name} (version #{options[:plugin_version]}) plugin was found in your Berkshelf."
+            exit 1
+          end
         else
-          cookbook_identifier = "#{name}"
-          cookbook_identifier += " (version #{version})" if version
-          MB.ui.say "No cookbook with #{cookbook_identifier} plugin was found in your Berkshelf."
-          exit 1
+          plugin = Application.plugin_manager.for_environment(name, options[:environment], remote: true)
+
+          unless plugin
+            MB.ui.say "No cookbook with #{name} plugin was found for the #{options[:environment]} environment."
+            exit 1
+          end
         end
+
+        self.register_subcommand MB::Cli::SubCommand.new(plugin)
 
         plugin
       end

@@ -54,8 +54,7 @@ describe MB::CliGateway do
 
     describe "::register_plugin" do
       let(:name) { "myface" }
-      let(:version) { nil }
-      let(:environment) { "test_environment" }
+      let(:options) { {plugin_version: nil, environment: "test_env"} }
       let(:metadata) do
         double('metadata',
           valid?: true,
@@ -65,24 +64,27 @@ describe MB::CliGateway do
       end
 
       let(:plugin) { MB::Plugin.new(metadata) }
-      let(:plugin_sub_command) { double(name: "#{name} sub command", plugin: name, version: version) }
+      let(:plugin_sub_command) { double(name: "#{name} sub command", plugin: name, version: options[:plugin_version]) }
 
       before(:each) do
         MB.ui.stub(:say)
       end
 
       context "with a version" do
-        let(:version) { "1.2.3" }
+        before(:each) do
+          options[:plugin_version] = "1.2.3"
+        end
 
         context "that doesn't exist" do
           before(:each) do
             MB::Application.stub_chain(:plugin_manager, :find).and_return(nil)
+            MB::Application.stub_chain(:plugin_manager, :for_environment).and_return(nil)
           end
 
           it "should notify the user" do
             MB.ui.should_receive(:say).with("No cookbook with myface (version 1.2.3) plugin was found in your Berkshelf.")
             lambda {
-              subject.register_plugin name, environment, version
+              subject.register_plugin name, options
             }.should raise_error(SystemExit)
           end
         end
@@ -96,7 +98,7 @@ describe MB::CliGateway do
 
           it "should register the plugin" do
             subject.should_receive(:register)
-            subject.register_plugin name, environment, version
+            subject.register_plugin name, options
           end
         end
       end
@@ -105,12 +107,13 @@ describe MB::CliGateway do
         context "that doesn't exist" do
           before(:each) do
             MB::Application.stub_chain(:plugin_manager, :find).and_return(nil)
+            MB::Application.stub_chain(:plugin_manager, :for_environment).and_return(nil)
           end
 
           it "should notify the user" do
-            MB.ui.should_receive(:say).with("No cookbook with myface plugin was found in your Berkshelf.")
+            MB.ui.should_receive(:say).with("No cookbook with myface plugin was found for the test_env environment.")
             lambda {
-              subject.register_plugin name, environment, version
+              subject.register_plugin name, options
             }.should raise_error(SystemExit)
           end
         end
@@ -118,13 +121,13 @@ describe MB::CliGateway do
         context "that exists" do
           before(:each) do
             MB::Cli::SubCommand.stub(:fabricate).and_return(plugin_sub_command)
-            MB::Application.stub_chain(:plugin_manager, :find).and_return(plugin)
+            MB::Application.stub_chain(:plugin_manager, :for_environment).and_return(plugin)
             plugin_sub_command.stub(:plugin).and_return(plugin)
           end
 
           it "should register the plugin" do
             subject.should_receive(:register)
-            subject.register_plugin name, environment, version
+            subject.register_plugin name, options
           end
         end
       end
