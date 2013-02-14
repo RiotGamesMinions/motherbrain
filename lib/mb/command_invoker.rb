@@ -33,13 +33,10 @@ module MotherBrain
     # @return [JobTicket]
     def invoke_plugin(plugin_id, command_id, environment_id, options = {})
       options = options.reverse_merge(arguments: Array.new)
-      plugin  = plugin_manager.for_environment(plugin_id, environment_id)
+      job     = Job.new(:invoke_plugin)
 
-      unless command = plugin.command(command_id)
-        abort CommandNotFound.new(command_id, plugin)
-      end
-
-      command.invoke(environment_id, options[:arguments])
+      async(:_invoke_plugin_, job, plugin_id, command_id, environment_id, options)
+      job.ticket
     end
 
     # Invoke a component level command on an environment
@@ -59,17 +56,40 @@ module MotherBrain
     # @return [JobTicket]
     def invoke_component(plugin_id, component_id, command_id, environment_id, options = {})
       options = options.reverse_merge(arguments: Array.new)
+      job     = Job.new(:invoke_component)
+
+      async(:_invoke_component_, job, plugin_id, component_id, command_id, environment_id, options)
+      job.ticket
+    end
+
+    # Performs the heavy lifting for {#invoke_plugin}
+    #
+    # @api private
+    def _invoke_plugin_(job, plugin_id, command_id, environment_id, options)
+      job.report_running("determining plugin to activate for environment")
       plugin  = plugin_manager.for_environment(plugin_id, environment_id)
+      command = plugin.command!(command_id)
 
-      unless component = plugin.component(component_id)
-        abort ComponentNotFound.new(component_id, plugin)
-      end
-
-      unless command = component.command(command_id)
-        abort CommandNotFound.new(command_id, plugin)
-      end
-
+      job.status = "starting command execution"
       command.invoke(environment_id, options[:arguments])
+      job.report_success("finished executing command")
+    rescue MBError => ex
+      job.report_failure(ex.to_s)
+    end
+
+    # Performs the heavy lifting for {#invoke_component}
+    #
+    # @api private
+    def _invoke_component_(job, plugin_id, component_id, command_id, environment_id, options = {})
+      job.report_running("determining plugin to activate for environment")
+      plugin  = plugin_manager.for_environment(plugin_id, environment_id)
+      command = plugin.component!(component_id).command!(command_id)
+
+      job.status = "starting command execution"
+      command.invoke(environment_id, options[:arguments])
+      job.report_success("finished executing command")
+    rescue MBError => ex
+      job.report_failure(ex.to_s)
     end
   end
 end
