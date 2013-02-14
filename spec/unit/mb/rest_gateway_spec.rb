@@ -65,9 +65,10 @@ describe MB::RestGateway do
         plugin_manager.should_receive(:find).with(plugin_id, plugin_version).and_return(plugin)
         upgrade_manager.should_receive(:upgrade).with(environment_id, plugin, anything).and_return(job)
 
-        post "/environments/#{environment_id}/upgrade",
-          plugin_id: plugin_id,
-          plugin_version: plugin_version
+        post "/environments/#{environment_id}/upgrade", plugin: {
+            name: plugin_id,
+            version: plugin_version
+          }
 
         last_response.status.should == 201
       end

@@ -88,6 +88,35 @@ module MotherBrain
         
         json_post("/environments/#{id}.json", MultiJson.encode(body))
       end
+
+      # Upgrade the target environment
+      #
+      # @param [String] id
+      #   name of the environment to create
+      # @param [String] plugin
+      #   name of the plugin to use
+      # @param [String] version
+      #   version of the plugin to use
+      #
+      # @option options [Hash] :component_versions
+      #   Hash of components and the versions to set them to
+      # @option options [Hash] :cookbook_versions
+      #   Hash of cookbooks and the versions to set them to
+      # @option options [Hash] :environment_attributes
+      #   Hash of additional attributes to set on the environment
+      # @option options [Boolean] :force
+      #   force provisioning nodes to the environment even if the environment is locked
+      def upgrade(id, plugin, version, options = {})
+        options.slice!(:component_versions, :cookbook_versions, :environment_attributes, :force)
+        body = options.merge(
+          plugin: {
+            name: plugin,
+            version: version
+          }
+        )
+
+        json_post("/environments/#{id}/upgrade.json", MultiJson.encode(body))
+      end
     end
   end
 end
