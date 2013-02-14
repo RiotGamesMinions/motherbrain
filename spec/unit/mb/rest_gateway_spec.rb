@@ -54,6 +54,25 @@ describe MB::RestGateway do
       end
     end
 
+    describe "POST /environments/:environment_id/upgrade" do
+      let(:environment_id) { "rpsec_test" }
+      let(:plugin_id) { "myface" }
+      let(:plugin_version) { "1.0.0" }
+
+      it "delegates to the upgrade manager returns 201" do
+        plugin = double('plugin')
+        job = MB::Job.new(:test).ticket
+        plugin_manager.should_receive(:find).with(plugin_id, plugin_version).and_return(plugin)
+        upgrade_manager.should_receive(:upgrade).with(environment_id, plugin, anything).and_return(job)
+
+        post "/environments/#{environment_id}/upgrade",
+          plugin_id: plugin_id,
+          plugin_version: plugin_version
+
+        last_response.status.should == 201
+      end
+    end
+
     describe "GET /environments/:environment_id/commands/:plugin_id" do
       let(:environment_id) { "rspec_test" }
       let(:plugin_id) { "myface" }

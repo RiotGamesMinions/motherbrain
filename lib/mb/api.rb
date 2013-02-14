@@ -145,6 +145,23 @@ module MotherBrain
         environment_manager.configure(params[:id], params.slice(:attributes, :force))
       end
 
+      desc "upgrade an environment to the specified versions"
+      params do
+        requires :environment_id, type: String, desc: "environment name"
+        requires :plugin_id, type: String, desc: "plugin name"
+        requires :plugin_version, type: String, desc: "version of plugin to upgrade with"
+        optional :component_versions, type: Hash, desc: "the component versions to set with override attributes"
+        optional :cookbook_versions, type: Hash, desc: "the cookbook versions to set on the environment"
+        optional :environment_attributes, type: Hash, desc: "any additional attributes to set on the environment"
+        optional :force, type: Boolean, desc: "force upgrade even if the environment is locked"
+      end
+      post ':environment_id/upgrade' do
+        options = params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force)
+        plugin  = plugin_manager.find(params[:plugin_id], params[:plugin_version])
+
+        upgrade_manager.upgrade(params[:environment_id], plugin, options)
+      end
+
       resource ':environment_id/commands' do
         desc "list of commands the plugin associated with the environment supports"
         params do
