@@ -93,7 +93,11 @@ module MotherBrain
             exit 1
           end
         else
-          plugin = Application.plugin_manager.for_environment(name, options[:environment], remote: true)
+          begin
+            plugin = Application.plugin_manager.for_environment(name, options[:environment], remote: true)
+          rescue MotherBrain::EnvironmentNotFound => e
+            plugin = Application.plugin_manager.find(name)
+          end
 
           unless plugin
             MB.ui.say "No cookbook with #{name} plugin was found for the #{options[:environment]} environment."
