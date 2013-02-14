@@ -91,4 +91,25 @@ describe MB::ApiClient::EnvironmentResource do
       subject.provision(env_id, plugin_id, manifest)
     end
   end
+
+  describe "#upgrade" do
+    let(:env_id) { "rspec-environment" }
+    let(:plugin_id) { "myface" }
+    let(:plugin_version) { "1.0.0" }
+
+    it "sends a POST to /environments/{id}/upgrade.json" do
+      req_body = MultiJson.encode(
+        plugin: {
+          name: plugin_id,
+          version: plugin_version
+        }
+      )
+
+      stub_request(:post, "http://0.0.0.0:1984/environments/#{env_id}/upgrade.json").
+        with(body: req_body).
+        to_return(status: 200, body: MultiJson.encode({}))
+
+      subject.upgrade(env_id, plugin_id, plugin_version)
+    end
+  end
 end
