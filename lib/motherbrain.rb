@@ -33,6 +33,7 @@ module MotherBrain
   autoload :CliClient, 'mb/cli_client'
   autoload :CliGateway, 'mb/cli_gateway'
   autoload :Command, 'mb/command'
+  autoload :CommandInvoker, 'mb/command_invoker'
   autoload :CommandRunner, 'mb/command_runner'
   autoload :Component, 'mb/component'
   autoload :Config, 'mb/config'

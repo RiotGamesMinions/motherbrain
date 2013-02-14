@@ -13,6 +13,13 @@ module MotherBrain
       end
       alias_method :bootstrapper, :bootstrap_manager
 
+      # @raise [Celluloid::DeadActorError] if command invoker has not been started
+      #
+      # @return [Celluloid::Actor(CommandInvoker)]
+      def command_invoker
+        CommandInvoker.instance
+      end
+
       # @raise [Celluloid::DeadActorError] if the config manager has not been started
       #
       # @return [Celluloid::Actor(ConfigManager)]

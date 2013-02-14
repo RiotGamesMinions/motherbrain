@@ -28,7 +28,9 @@ describe MB::Mixin::AttributeSetting do
     end
 
     context "when the component does not exist" do
-      before(:each) { plugin.stub(:component!).with(plugin.name).and_raise(MB::ComponentNotFound) }
+      before(:each) do
+        plugin.stub(:component!).with(plugin.name).and_raise(MB::ComponentNotFound.new(component, plugin))
+      end
 
       it "raises a MB::ComponentNotFound error" do
         expect {

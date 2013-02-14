@@ -67,7 +67,12 @@ module MotherBrain
       end
     end
 
-    resource :environments do
+    resource 'environments' do
+      desc "list all of the environments"
+      get do
+        environment_manager.list
+      end
+
       desc "destroy a provisioned environment"
       params do
         requires :id, type: String, desc: "environment name"
@@ -139,6 +144,62 @@ module MotherBrain
       post ':id/configure' do
         environment_manager.configure(params[:id], params.slice(:attributes, :force))
       end
+
+      resource ':environment_id/commands' do
+        desc "list of commands the plugin associated with the environment supports"
+        params do
+          requires :environment_id, type: String, desc: "environment name"
+          requires :plugin_id, type: String, desc: "plugin name"
+        end
+        get ':plugin_id' do
+          plugin_manager.for_environment(params[:plugin_id], params[:environment_id]).commands
+        end
+
+        desc "invoke a plugin level command on the target environment"
+        params do
+          requires :environment_id, type: String, desc: "environment name"
+          requires :plugin_id, type: String, desc: "plugin name"
+          requires :command_id, type: String, desc: "command name"
+          optional :arguments, type: Array, desc: "optional array of arguments for the command"
+        end
+        post ':plugin_id/:command_id' do
+          command_invoker.invoke_plugin(
+            params[:plugin_id],
+            params[:command_id],
+            params[:environment_id],
+            params.slice(:arguments)
+          )
+        end
+
+        desc "list of commands the component of the plugin associated with the environment supports"
+        params do
+          requires :environment_id, type: String, desc: "environment name"
+          requires :plugin_id, type: String, desc: "plugin name"
+          requires :component_id, type: String, desc: "plugin component name"
+        end
+        get ':plugin_id/:component_id' do
+          plugin = plugin_manager.for_environment(params[:plugin_id], params[:environment_id])
+          plugin.component!(params[:component_id]).commands
+        end
+
+        desc "invoke a plugin component level command on the target environment"
+        params do
+          requires :environment_id, type: String, desc: "environment name"
+          requires :plugin_id, type: String, desc: "plugin name"
+          requires :component_id, type: String, desc: "plugin component name"
+          requires :command_id, type: String, desc: "command name"
+          optional :arguments, type: Array, desc: "optional array of arguments for the command"
+        end
+        post ':plugin_id/:component_id/:command_id' do
+          command_invoker.invoke_component(
+            params[:plugin_id],
+            params[:component_id],
+            params[:command_id],
+            params[:environment_id],
+            params.slice(:arguments)
+          )
+        end
+      end
     end
 
     resource :plugins do
@@ -149,27 +210,88 @@ module MotherBrain
 
       desc "display all the versions of the given plugin"
       params do
-        requires :name, type: String, desc: "plugin name"
+        requires :plugin_id, type: String, desc: "plugin name"
       end
-      get ':name' do
-        plugin_manager.versions(params[:name])
-      end
-
-      desc "display the latest version of the plugin of the given name"
-      params do
-        requires :name, type: String, desc: "plugin name"
-      end
-      get ':name/latest' do
-        find_plugin!(params[:name])
+      get ':plugin_id' do
+        plugin_manager.versions(params[:plugin_id])
       end
 
-      desc "display the plugin of the given name and version"
-      params do
-        requires :name, type: String, desc: "plugin name"
-        requires :version, sem_ver: true
+      resource ':plugin_id/latest' do
+        desc "display the latest version of the plugin of the given name"
+        params do
+          requires :plugin_id, type: String, desc: "plugin name"
+        end
+        get do
+          find_plugin!(params[:plugin_id])
+        end
+
+        desc "list of all the commands the latest plugin can do"
+        params do
+          requires :plugin_id, type: String, desc: "plugin name"
+        end
+        get 'commands' do
+          find_plugin!(params[:plugin_id]).commands
+        end
+
+        resource 'components' do
+          desc "list of all the components the latest plugin has"
+          params do
+            requires :plugin_id, type: String, desc: "plugin name"
+          end
+          get do
+            find_plugin!(params[:plugin_id]).components
+          end
+
+          desc "list of all the commands the component of the latest plugin version has"
+          params do
+            requires :plugin_id, type: String, desc: "plugin name"
+            requires :component_id, type: String, desc: "component name"
+          end
+          get ':component_id/commands' do
+            find_plugin!(params[:plugin_id]).component(params[:component_id])
+          end
+        end
       end
-      get ':name/:version' do
-        find_plugin!(params[:name], params[:version])
+
+      resource ':plugin_id/:version' do
+        desc "display the plugin of the given name and version"
+        params do
+          requires :plugin_id, type: String, desc: "plugin name"
+          requires :version, sem_ver: true
+        end
+        get do
+          find_plugin!(params[:plugin_id], params[:version])
+        end
+
+        desc "list of all the commands the specified plugin version can do"
+        params do
+          requires :plugin_id, type: String, desc: "plugin name"
+          requires :version, sem_ver: true
+        end
+        get 'commands' do
+          find_plugin!(params[:plugin_id], params[:version]).commands
+        end
+
+        resource :components do
+          desc "list of all the components the specified plugin version has"
+          params do
+            requires :plugin_id, type: String, desc: "plugin name"
+            requires :version, sem_ver: true
+          end
+          get do
+            find_plugin!(params[:plugin_id], params[:version]).components
+          end
+
+          desc "list of all the commands the component of the specified plugin version has"
+          params do
+            requires :plugin_id, type: String, desc: "plugin name"
+            requires :version, sem_ver: true
+            requires :component_id, type: String, desc: "component name"
+          end
+          get ':component_id/commands' do
+            find_plugin!(params[:plugin_id], params[:version]).component!(params[:component_id]).commands
+          end
+        end
       end
     end
 
