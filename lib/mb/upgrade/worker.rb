@@ -26,20 +26,19 @@ module MotherBrain
       attr_reader :plugin
 
       # @param [String] environment_name
-      #
       # @param [MotherBrain::Plugin] plugin
-      #
       # @param [MotherBrain::Job] job
       #
       # @option options [Hash] component_versions
       #   Hash of components and the versions to set them to
-      #
       # @option options [Hash] cookbook_versions
       #   Hash of cookbooks and the versions to set them to
-      #
+      # @option options [Hash] environment_attributes
+      #   any additional attributes to set on the environment
+      # @option options [String] environment_attributes_file
+      #   any additional attributes to set on the environment via a json file
       # @option options [Boolean] :force
       #   Force any locks to be overwritten
-      #
       def initialize(environment_name, plugin, job, options = {})
         @environment_name = environment_name
         @plugin           = plugin
