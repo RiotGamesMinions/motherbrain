@@ -67,6 +67,7 @@ module MotherBrain
         group.supervise_as :lock_manager, Locks::Manager
         group.supervise_as :plugin_manager, PluginManager
 
+        group.supervise_as :command_invoker, CommandInvoker
         group.supervise_as :node_querier, NodeQuerier
         group.supervise_as :environment_manager, EnvironmentManager
 

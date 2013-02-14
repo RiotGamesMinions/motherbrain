@@ -41,6 +41,50 @@ describe MB::RestGateway do
       end
     end
 
+    describe "GET /environments" do
+      let(:environments) { Array.new }
+
+      before(:each) do
+        environment_manager.should_receive(:list).and_return(environments)
+      end
+
+      it "returns a 200" do
+        get '/environments'
+        last_response.status.should == 200
+      end
+    end
+
+    describe "GET /environments/:environment_id/commands/:plugin_id" do
+      let(:environment_id) { "rspec_test" }
+      let(:plugin_id) { "myface" }
+      let(:plugin) { double('plugin', commands: []) }
+
+      it "returns the commands of the plugin for the environment" do
+        plugin_manager.should_receive(:for_environment).with(plugin_id, environment_id).and_return(plugin)
+
+        get "/environments/#{environment_id}/commands/#{plugin_id}"
+        last_response.status.should == 200
+        MultiJson.decode(last_response.body).should eql(plugin.commands)
+      end
+    end
+
+    describe "GET /environments/:environment_id/commands/:plugin_id/:component_id" do
+      let(:environment_id) { "rspec_test" }
+      let(:plugin_id) { "myface" }
+      let(:component_id) { "appsrv" }
+      let(:component) { double('component', commands: []) }
+      let(:plugin) { double('plugin') }
+
+      it "returns the commands of the plugin for the environment" do
+        plugin.should_receive(:component!).with(component_id).and_return(component)
+        plugin_manager.should_receive(:for_environment).with(plugin_id, environment_id).and_return(plugin)
+
+        get "/environments/#{environment_id}/commands/#{plugin_id}/#{component_id}"
+        last_response.status.should == 200
+        MultiJson.decode(last_response.body).should eql(component.commands)
+      end
+    end
+
     describe "GET /plugins" do
       it "returns all loaded plugins as JSON" do
         get '/plugins'
@@ -191,6 +235,146 @@ describe MB::RestGateway do
         it "returns a 400 response" do
           last_response.status.should == 400
         end
+      end
+    end
+
+    describe "GET /plugins/:name/latest/commands" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata)
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/latest/commands'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
+      end
+    end
+
+    describe "GET /plugins/:name/:version/commands" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata)
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/1_0_0/commands'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
+      end
+    end
+
+    describe "GET /plugins/:name/latest/components" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata)
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/latest/components'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
+      end
+    end
+
+    describe "GET /plugins/:name/:version/components" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata)
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/1_0_0/components'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
+      end
+    end
+
+    describe "GET /plugins/:name/latest/components/:component_id/commands" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata)
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/latest/components/myface/commands'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
+      end
+    end
+
+    describe "GET /plugins/:name/:version/components/:component_id/commands" do
+      let(:one) do
+        metadata = MB::CookbookMetadata.new do
+          name 'apple'
+          version '1.0.0'
+        end
+        MB::Plugin.new(metadata) do
+          component "myface" do; end
+        end
+      end
+
+      before(:each) do
+        MB::PluginManager.instance.add(one)
+        get '/plugins/apple/1_0_0/components/myface/commands'
+      end
+
+      after(:each) do
+        MB::PluginManager.instance.clear_plugins
+      end
+
+      it "returns a 200 response" do
+        last_response.status.should == 200
       end
     end
   end

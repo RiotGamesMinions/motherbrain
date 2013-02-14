@@ -36,11 +36,10 @@ module MotherBrain
     #
     # @param [String] environment
     #   the environment to invoke the command on
+    # @param [Array] args
     #
     # @raise [MB::EnvironmentNotFound] if the target environment does not exist
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
-    #
-    # @param [Array] args
     def invoke(environment, *args)
       options = args.last.is_a?(Hash) ? args.pop : Hash.new
       options[:chef_environment] = environment
