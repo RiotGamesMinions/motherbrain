@@ -157,14 +157,24 @@ describe MB::Bootstrap::Manifest do
     it { should be_a(MB::Bootstrap::Manifest) }
 
     it "has a key for each node type from the provisioner manifest" do
-      should have(2).items
-      should have_key("activemq::master")
-      should have_key("activemq::slave")
-    end
-
-    it "has a node item for each expected node from provisioner manifest" do
-      manifest["activemq::master"].should have(1).items
-      manifest["activemq::slave"].should have(2).items
+      subject[:nodes].should =~ [
+        {
+          type: "m1.large",
+          groups: ["activemq::master"],
+          hosts: [
+            "euca-10-20-37-171.eucalyptus.cloud.riotgames.com"
+          ]
+        },
+        {
+          type: "m1.small",
+          count: 2,
+          groups: ["activemq::slave"],
+          hosts: [
+            "euca-10-20-37-172.eucalyptus.cloud.riotgames.com",
+            "euca-10-20-37-169.eucalyptus.cloud.riotgames.com"
+          ]
+        }
+      ]
     end
 
     context "given a value for the path argument" do
