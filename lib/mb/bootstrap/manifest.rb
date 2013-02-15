@@ -31,33 +31,31 @@ module MotherBrain
         # @return [Bootstrap::Manifest]
         def from_provisioner(nodes, provisioner_manifest, path = nil)
           nodes = nodes.dup
-          provisioner_manifest = provisioner_manifest.dup
+          attributes = provisioner_manifest.dup
 
-          obj = new.tap do |bootstrap_manifest|
-            provisioner_manifest.node_groups.each do |node_group|
-              instance_type = node_group[:type]
-              count = node_group[:count] || 1
-              groups = node_group[:groups]
+          attributes.node_groups.each do |node_group|
+            instance_type = node_group[:type]
+            count = node_group[:count] || 1
+            groups = node_group[:groups]
 
-              groups.each do |group|
-                bootstrap_manifest[group] = Array.new
+            groups.each do |group|
+              count.times do
+                instance = nodes.find { |node|
+                  node[:instance_type] == instance_type
+                }
 
-                count.times do
-                  instance = nodes.find { |node|
-                    node[:instance_type] == instance_type
-                  }
+                node_group[:hosts] ||= []
+                node_group[:hosts] << instance[:public_hostname]
 
-                  bootstrap_manifest[group] << instance[:public_hostname]
-
-                  nodes.delete(instance)
-                end
+                nodes.delete(instance)
               end
             end
           end
 
-          obj.path = path
+          bootstrap_manifest = new(attributes)
+          bootstrap_manifest.path = path
 
-          obj
+          bootstrap_manifest
         end
 
         # Validates that the instance of manifest describes a layout for the given routine
