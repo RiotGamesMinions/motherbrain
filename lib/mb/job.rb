@@ -110,6 +110,14 @@ module MotherBrain
       transition(:success, result, options)
     end
 
+    def report_boolean(boolean, result = nil, options = {})
+      if boolean
+        report_success(result, options)
+      else
+        report_failure(result, options)
+      end
+    end
+
     # @return [self]
     def save
       JobManager.instance.update(Actor.current)
