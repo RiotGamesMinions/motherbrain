@@ -50,6 +50,24 @@ module MotherBrain
       def finalize
         log.info { "Lock Manager stopping..." }
       end
+
+      # Unlock an environment
+      #
+      # @param [String] environment
+      def unlock(environment)
+        job = Job.new(:unlock)
+
+        chef_mutex = ChefMutex.new(
+          chef_environment: environment,
+          force: true,
+          job: job,
+          report_job_status: true
+        )
+
+        chef_mutex.async.unlock
+
+        job.ticket
+      end
     end
   end
 end

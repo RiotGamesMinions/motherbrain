@@ -303,6 +303,13 @@ module MotherBrain
       MB.ui.say license
     end
 
+    desc "unlock", "Unlock the environment"
+    def unlock
+      job = Locks.manager.unlock(options[:environment])
+
+      CliClient.new(job).display
+    end
+
     private
 
       def version_header
