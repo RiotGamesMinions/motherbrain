@@ -97,9 +97,13 @@ module MotherBrain
       end
 
       log.info { "Locking #{to_s}" }
-      job.status = "Locking #{to_s}" if job
 
-      attempt_lock
+      if job
+        job.status = "Locking #{to_s}"
+        job.report_running if report_job_status
+      end
+
+      report(attempt_lock)
     end
 
     # Obtains a lock, runs the block, and releases the lock when the block
