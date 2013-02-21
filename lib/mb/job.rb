@@ -112,6 +112,14 @@ module MotherBrain
       transition(:success, result, options)
     end
 
+    # @param [Boolean] boolean
+    #   a boolean value representing a success or failure
+    # @param [#to_json] result
+    #   a result which can be converted to JSON
+    # @param [Hash] options
+    #   options to pass to the state machine transition
+    #
+    # @return [Job]
     def report_boolean(boolean, result = nil, options = {})
       if boolean
         report_success(result, options)
