@@ -41,6 +41,13 @@ module MotherBrain
         JobManager.instance
       end
 
+      # @raise [Celluloid::DeadActorError] if the lock manager has not been started
+      #
+      # @return [Celluloid::Actor(Locks::Manager)]
+      def lock_manager
+        Locks::Manager.instance
+      end
+
       # @raise [Celluloid::DeadActorError] if the node querier has not been started
       #
       # @return [Celluloid::Actor(NodeQuerier)]

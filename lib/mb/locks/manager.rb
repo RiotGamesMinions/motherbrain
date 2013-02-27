@@ -4,6 +4,15 @@ module MotherBrain
     #
     # A registry of locks obtained against resources on a Chef Server
     class Manager
+      class << self
+        # @raise [Celluloid::DeadActorError] if lock manager has not been started
+        #
+        # @return [Celluloid::Actor(Locks::Manager)]
+        def instance
+          MB::Application[:lock_manager] or raise Celluloid::DeadActorError, "lock manager not running"
+        end
+      end
+
       include Celluloid
       include MB::Logging
 
