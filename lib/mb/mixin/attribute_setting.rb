@@ -54,7 +54,7 @@ module MotherBrain
       #     "pvpnet" => "3.2.0"
       #   )
       def set_cookbook_versions(env_id, cookbook_versions)
-        cookbook_versions = convert_latest_versions(cookbook_versions)
+        cookbook_versions = expand_latest_versions(cookbook_versions)
 
         log.info "Setting cookbook versions #{cookbook_versions}"
 
@@ -149,13 +149,13 @@ module MotherBrain
         #
         # @example converting versions when 3.1.0 is the latest pvpnet cookbook
         #
-        #   convert_latest_versions(
+        #   expand_latest_versions(
         #     "league" => "1.74.2",
         #     "pvpnet" => "latest"
         #   )
         #   
         #   # => {"league" => "1.74.2", "pvpnet" => "3.1.0"}
-        def convert_latest_versions(cookbook_versions)
+        def expand_latest_versions(cookbook_versions)
           converted_cookbook_versions = cookbook_versions.map do |name, version|
             if version.downcase == "latest"
               Application.ridley.sync do
