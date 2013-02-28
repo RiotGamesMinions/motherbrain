@@ -63,6 +63,14 @@ module MotherBrain
         json_get("/environments.json")
       end
 
+      # Lock the target environment
+      #
+      # @param [String] id
+      #   identifier for the environment to lock
+      def lock(id)
+        json_post("/environments/#{id}/lock.json")
+      end
+
       # @param [String] id
       #   name of the environment to create
       # @param [String] plugin
@@ -91,6 +99,14 @@ module MotherBrain
         )
         
         json_post("/environments/#{id}.json", MultiJson.encode(body))
+      end
+
+      # Unlock the target environment
+      #
+      # @param [String] id
+      #   identifier for the environment to unlock
+      def unlock(id)
+        json_delete("/environments/#{id}/lock.json")
       end
 
       # Upgrade the target environment
