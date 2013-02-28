@@ -1,4 +1,4 @@
-source :rubygems
+source "https://rubygems.org"
 source "http://gems.riotgames.com"
 
 gemspec
