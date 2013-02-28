@@ -4,6 +4,15 @@ module MotherBrain
     #
     # A registry of locks obtained against resources on a Chef Server
     class Manager
+      class << self
+        # @raise [Celluloid::DeadActorError] if lock manager has not been started
+        #
+        # @return [Celluloid::Actor(Locks::Manager)]
+        def instance
+          MB::Application[:lock_manager] or raise Celluloid::DeadActorError, "lock manager not running"
+        end
+      end
+
       include Celluloid
       include MB::Logging
 
@@ -49,6 +58,42 @@ module MotherBrain
 
       def finalize
         log.info { "Lock Manager stopping..." }
+      end
+
+      # Lock an environment
+      #
+      # @param [String] environment
+      def lock(environment)
+        job = Job.new(:lock)
+
+        chef_mutex = ChefMutex.new(
+          chef_environment: environment,
+          force: true,
+          job: job,
+          report_job_status: true
+        )
+
+        chef_mutex.async.lock
+
+        job.ticket
+      end
+
+      # Unlock an environment
+      #
+      # @param [String] environment
+      def unlock(environment)
+        job = Job.new(:unlock)
+
+        chef_mutex = ChefMutex.new(
+          chef_environment: environment,
+          force: true,
+          job: job,
+          report_job_status: true
+        )
+
+        chef_mutex.async.unlock
+
+        job.ticket
       end
     end
   end

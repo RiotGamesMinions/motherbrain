@@ -73,6 +73,22 @@ module MotherBrain
         environment_manager.list
       end
 
+      desc "lock an environment"
+      params do
+        requires :id, type: String, desc: "environment name"
+      end
+      post ':id/lock' do
+        lock_manager.lock(params[:id])
+      end
+
+      desc "unlock an environment"
+      params do
+        requires :id, type: String, desc: "environment name"
+      end      
+      delete ':id/lock' do
+        lock_manager.unlock(params[:id])
+      end
+
       desc "destroy a provisioned environment"
       params do
         requires :id, type: String, desc: "environment name"

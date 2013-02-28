@@ -3,6 +3,8 @@ require 'spec_helper'
 describe MB::ApiClient::EnvironmentResource do
   subject { MB::ApiClient.new.environment }
 
+  let(:empty_response) { MultiJson.encode({}) }
+
   describe "#bootstrap" do
     let(:plugin_id) { "activemq" }
     let(:env_id) { "rspec-environment" }
@@ -21,7 +23,7 @@ describe MB::ApiClient::EnvironmentResource do
 
       stub_request(:put, "http://0.0.0.0:1984/environments/#{env_id}.json").
         with(body: req_body).
-        to_return(status: 200, body: MultiJson.encode({}))
+        to_return(status: 200, body: empty_response)
 
       subject.bootstrap(env_id, plugin_id, manifest)
     end
@@ -44,7 +46,7 @@ describe MB::ApiClient::EnvironmentResource do
 
       stub_request(:post, "http://0.0.0.0:1984/environments/#{env_id}/configure.json").
         with(body: req_body).
-        to_return(status: 200, body: MultiJson.encode({}))
+        to_return(status: 200, body: empty_response)
 
       subject.configure(env_id, attributes: attributes, force: false)
     end
@@ -55,7 +57,7 @@ describe MB::ApiClient::EnvironmentResource do
 
     it "sends a DELETE to /environments/{id}.json" do
       stub_request(:delete, "http://0.0.0.0:1984/environments/#{env_id}.json").
-        to_return(status: 200, body: MultiJson.encode({}))
+        to_return(status: 200, body: empty_response)
 
       subject.destroy(env_id).should be_a(Hash)
     end
@@ -64,9 +66,20 @@ describe MB::ApiClient::EnvironmentResource do
   describe "#list" do
     it "sends a GET to /environments.json" do
       stub_request(:get, "http://0.0.0.0:1984/environments.json").
+        to_return(status: 200, body: empty_response)
+
+      subject.list
+    end
+  end
+
+  describe "#lock" do
+    let(:env_id) { "rpsec-environment" }
+
+    it "sends a POST to /environments/{id}/lock.json" do
+      stub_request(:post, "http://0.0.0.0:1984/environments/#{env_id}/lock.json").
         to_return(status: 200, body: MultiJson.encode([]))
 
-      subject.list.should be_a(Array)
+      subject.lock(env_id)
     end
   end
 
@@ -86,9 +99,20 @@ describe MB::ApiClient::EnvironmentResource do
 
       stub_request(:post, "http://0.0.0.0:1984/environments/#{env_id}.json").
         with(body: req_body).
-        to_return(status: 200, body: MultiJson.encode({}))
+        to_return(status: 200, body: empty_response)
 
       subject.provision(env_id, plugin_id, manifest)
+    end
+  end
+
+  describe "#unlock" do
+    let(:env_id) { "rpsec-environment" }
+
+    it "sends a DELETE to /environments/{id}/lock.json" do
+      stub_request(:delete, "http://0.0.0.0:1984/environments/#{env_id}/lock.json").
+        to_return(status: 200, body: MultiJson.encode([]))
+
+      subject.unlock(env_id)
     end
   end
 
@@ -107,7 +131,7 @@ describe MB::ApiClient::EnvironmentResource do
 
       stub_request(:post, "http://0.0.0.0:1984/environments/#{env_id}/upgrade.json").
         with(body: req_body).
-        to_return(status: 200, body: MultiJson.encode({}))
+        to_return(status: 200, body: empty_response)
 
       subject.upgrade(env_id, plugin_id, plugin_version)
     end

@@ -95,6 +95,8 @@ module MotherBrain
     #
     # @return [Job]
     def report_running(result = nil, options = {})
+      return self if running?
+
       log.debug { "Job (#{id}) running: #{result}" }
       transition(:running, result, options)
     end
@@ -108,6 +110,22 @@ module MotherBrain
     def report_success(result = nil, options = {})
       log.debug { "Job (#{id}) success: #{result}" }
       transition(:success, result, options)
+    end
+
+    # @param [Boolean] boolean
+    #   a boolean value representing a success or failure
+    # @param [#to_json] result
+    #   a result which can be converted to JSON
+    # @param [Hash] options
+    #   options to pass to the state machine transition
+    #
+    # @return [Job]
+    def report_boolean(boolean, result = nil, options = {})
+      if boolean
+        report_success(result, options)
+      else
+        report_failure(result, options)
+      end
     end
 
     # @return [self]
