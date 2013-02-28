@@ -46,7 +46,7 @@ module MotherBrain
         action = get_action(name)
 
         if action.nil?
-          raise ActionNotFound, "#{self.class.keyword} '#{self.attributes[:name]}' does not have the action '#{name}'"
+          raise ActionNotFound, "#{self.class.keyword} '#{self._attributes_[:name]}' does not have the action '#{name}'"
         end
 
         action
@@ -59,7 +59,7 @@ module MotherBrain
       # @return [Set<Action>]
       def add_action(new_action)
         unless get_action(new_action.name).nil?
-          raise DuplicateAction, "Action '#{new_action.name}' already defined on service '#{self.attributes[:name]}'"
+          raise DuplicateAction, "Action '#{new_action.name}' already defined on service '#{self._attributes_[:name]}'"
         end
 
         self.actions.add(new_action)
