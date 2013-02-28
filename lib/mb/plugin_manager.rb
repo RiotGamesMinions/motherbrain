@@ -30,7 +30,8 @@ module MotherBrain
       @plugins        = Set.new
 
       MB::Berkshelf.init
-      load_all
+
+      async_loading? ? async(:load_all) : load_all
 
       if eager_loading?
         @eager_load_timer = every(eager_load_interval, &method(:load_all_remote))
@@ -59,6 +60,16 @@ module MotherBrain
 
       @plugins.add(plugin)
       plugin
+    end
+
+    # Should the plugin manager perform plugin loading operations in the background?
+    #
+    # @note should be disabled if running motherbrain from the CLIGateway to ensure
+    #   all plugins are loaded before being accessed
+    #
+    # @return [Boolean]
+    def async_loading?
+      Application.config.plugin_manager.async_loading
     end
 
     # Clear list of known plugins
