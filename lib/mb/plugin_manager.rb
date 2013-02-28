@@ -331,11 +331,13 @@ module MotherBrain
           versions.each do |version|
             next if find(name, version)
 
-            load_remote(name, version)
+            begin
+              load_remote(name, version)
+            rescue PluginSyntaxError, PluginLoadError, PluginDownloadError => ex
+              log.warn { "error loading remote plugin: #{ex}" }
+            end
           end
         end
-      rescue PluginSyntaxError, PluginLoadError, PluginDownloadError => ex
-        log.warn { "error loading remote plugin: #{ex}" }
       end
   end
 end
