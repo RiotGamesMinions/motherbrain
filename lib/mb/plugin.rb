@@ -273,6 +273,7 @@ module MotherBrain
     def to_json(options = {})
       MultiJson.encode(self.to_hash, options)
     end
+    alias_method :as_json, :to_json
 
     private
 
