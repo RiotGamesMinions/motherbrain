@@ -41,7 +41,29 @@ describe MB::Mixin::AttributeSetting do
   end
 
   describe "#set_cookbook_versions" do
-    pending
+    context "successful" do
+      let(:hash) { Hash.new }
+      before(:each) do
+        env = double('environment', name: "foo")
+        Ridley::EnvironmentResource.stub(:find!).and_return(env)
+        env.should_receive(:cookbook_versions).and_return(hash)
+        env.stub(:save)
+
+        Ridley::CookbookResource.stub(:latest_version).and_return("1.2.4")
+      end
+
+      it "should save the cookbook versions to the environment" do
+        subject.set_cookbook_versions "foo", {"some_book" => "1.2.3"}
+        hash["some_book"].should_not be_nil
+        hash["some_book"].should eq("1.2.3")
+      end
+
+      it "should convert latest to the correct version" do
+        subject.set_cookbook_versions "foo", {"some_book" => "latest"}
+        hash["some_book"].should_not be_nil
+        hash["some_book"].should eq("1.2.4")
+      end
+    end
   end
 
   describe "#set_environment_attributes" do
