@@ -78,7 +78,7 @@ module MotherBrain
 
     def add_chef_attribute(key, value)
       if chef_attribute(key).present?
-        raise DuplicateChefAttribute, "An attribute '#{key}' has already been defined on group '#{attributes[:name]}'"
+        raise DuplicateChefAttribute, "An attribute '#{key}' has already been defined on group '#{_attributes_[:name]}'"
       end
 
       self.chef_attributes[key] = value
