@@ -16,7 +16,7 @@ describe MB::CliGateway do
           config = MB::Config.from_file(location)
           invoker = subject.new([], config: location)
 
-          MB::ConfigManager.instance.config.attributes.should eql(config.attributes)
+          MB::ConfigManager.instance.config._attributes_.should eql(config._attributes_)
         end
 
         it "raises a ConfigNotFound error when the specified path does not exist" do
