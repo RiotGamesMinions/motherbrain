@@ -15,6 +15,10 @@ describe MB::ChefMutex do
       find: nil,
       new: stub(save: true)
   ) }
+  let(:job_stub) { stub(
+    report_boolean: nil,
+    report_running: nil
+  ) }
 
   before do
     chef_mutex.stub locks: locks_stub
@@ -67,7 +71,6 @@ describe MB::ChefMutex do
     end
 
     context "when passed a job" do
-      let(:job_stub) { stub }
       let(:options) { { job: job_stub } }
 
       it "sets the job status" do
@@ -172,7 +175,6 @@ describe MB::ChefMutex do
     end
 
     context "when passed a job" do
-      let(:job_stub) { stub }
       let(:options) { { job: job_stub } }
 
       it "sets the job status" do
