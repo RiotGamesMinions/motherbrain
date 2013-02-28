@@ -203,6 +203,28 @@ describe MotherBrain::PluginManager do
     end
   end
 
+  describe "#async_loading?" do
+    context "if the plugin manager is configured for async loading" do
+      before(:each) do
+        MB::Application.config.plugin_manager.stub(:async_loading) { true }
+      end
+
+      it "returns true" do
+        subject.async_loading?.should be_true
+      end
+    end
+
+    context "if the plugin manager is not configured for async loading" do
+      before(:each) do
+        MB::Application.config.plugin_manager.stub(:async_loading) { false }
+      end
+
+      it "returns false" do
+        subject.async_loading?.should be_false
+      end
+    end
+  end
+
   describe "#find" do
     let(:one) do
       metadata = MB::CookbookMetadata.new do

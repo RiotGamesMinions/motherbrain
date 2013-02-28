@@ -32,6 +32,7 @@ module MotherBrain
 
         config.rest_gateway.enable = false
         config.plugin_manager.eager_loading = false
+        config.plugin_manager.async_loading = false
         config
       end
 
