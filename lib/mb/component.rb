@@ -8,8 +8,7 @@ module MotherBrain
       required: true
 
     attribute :description,
-      type: String,
-      required: true
+      type: String
 
     attribute :version_attribute,
       type: String
@@ -27,6 +26,11 @@ module MotherBrain
       if block_given?
         dsl_eval(&block)
       end
+    end
+
+    # @return [String]
+    def description
+      _attributes_.description || "#{name} component"
     end
 
     # @return [Symbol]
