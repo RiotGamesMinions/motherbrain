@@ -141,13 +141,13 @@ module MotherBrain
           result
         end
 
-        # Convert the "latest" cookbook versions to the latest verison number 
+        # Expand the "latest" cookbook versions to the latest verison number 
         # for the cookbook
         #
         # @param [Hash] cookbook_versions
         #   Hash of cookbooks and the versions
         #
-        # @example converting versions when 3.1.0 is the latest pvpnet cookbook
+        # @example expanding versions when 3.1.0 is the latest pvpnet cookbook
         #
         #   expand_latest_versions(
         #     "league" => "1.74.2",
@@ -156,7 +156,7 @@ module MotherBrain
         #   
         #   # => {"league" => "1.74.2", "pvpnet" => "3.1.0"}
         def expand_latest_versions(cookbook_versions)
-          converted_cookbook_versions = cookbook_versions.map do |name, version|
+          expanded_cookbook_versions = cookbook_versions.map do |name, version|
             if version.downcase == "latest"
               Application.ridley.sync do
                 version = cookbook.latest_version(name)
@@ -165,7 +165,7 @@ module MotherBrain
             [name, version]
           end
 
-          Hash[converted_cookbook_versions]
+          Hash[expanded_cookbook_versions]
        end
     end
   end
