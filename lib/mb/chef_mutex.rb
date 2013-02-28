@@ -94,9 +94,13 @@ module MotherBrain
       end
 
       log.info { "Locking #{to_s}" }
-      job.status = "Locking #{to_s}" if job
 
-      attempt_lock
+      if job
+        job.status = "Locking #{to_s}"
+        job.report_running
+      end
+
+      report(attempt_lock)
     end
 
     # Obtains a lock, runs the block, and releases the lock when the block
@@ -142,12 +146,25 @@ module MotherBrain
       return true if externally_testing?
 
       log.info { "Unlocking #{to_s}" }
-      job.status = "Unlocking #{to_s}" if job
 
-      attempt_unlock
+      if job
+        job.report_running
+        job.status = "Unlocking #{to_s}"
+      end
+
+      report(attempt_unlock)
     end
 
     private
+
+      # Reports a job status
+      # @param [Object] result
+      # @return [Object] result
+      def report(result)
+        job.report_boolean(result) if job
+
+        result
+      end
 
       # Check to see if the passed in lock was created by us
       #
