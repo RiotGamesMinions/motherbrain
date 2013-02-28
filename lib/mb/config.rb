@@ -148,6 +148,11 @@ module MotherBrain
       default: 300, # 5 minutes
       type: Integer
 
+    # Allows the plugin manager load it's plugins asynchronously in the background during startup
+    attribute 'plugin_manager.async_loading',
+      default: true,
+      type: Boolean
+
     attribute 'ef.api_url',
       type: String
 
