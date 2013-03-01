@@ -35,6 +35,9 @@ module MotherBrain
 
     # @option options [String] :url
     #   URL to REST Gateway
+    # @option options [Integer] :retries (5)
+    #   retry requests on 5XX failures
+    # @option options [Float] :retry_interval (0.5)
     # @option options [Hash] :ssl
     #   * :verify (Boolean) [true] set to false to disable SSL verification
     # @option options [URI, String, Hash] :proxy

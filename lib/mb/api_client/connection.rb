@@ -14,8 +14,27 @@ module MotherBrain
         :proxy
       ]
 
+      # @return [Integer]
+      #   how many retries to attempt on HTTP requests
+      attr_reader :retries
+      # @return [Float]
+      #   time to wait between retries
+      attr_reader :retry_interval
+
+      # @param [String] server_url
+      #
+      # @option options [Integer] :retries (5)
+      #   retry requests on 5XX failures
+      # @option options [Float] :retry_interval (0.5)
+      #   how often we should pause between retries
+      # @option options [Hash] :ssl
+      #   * :verify (Boolean) [true] set to false to disable SSL verification
+      # @option options [URI, String, Hash] :proxy
+      #   URI, String, or Hash of HTTP proxy options
       def initialize(server_url, options = {})
-        options = options.slice(*VALID_OPTIONS).reverse_merge(retries: 5, retry_interval: 0.5)
+        options         = options.slice(*VALID_OPTIONS).reverse_merge(retries: 5, retry_interval: 0.5)
+        @retries        = options[:retries]
+        @retry_interval = options[:retry_interval]
 
         options[:builder] = Faraday::Builder.new do |b|
           b.response :json
