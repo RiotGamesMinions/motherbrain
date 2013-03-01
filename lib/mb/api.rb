@@ -174,7 +174,7 @@ module MotherBrain
         params do
           requires :plugin_id, type: String, desc: "plugin name"
         end
-        resource 'commands/:plugin_id' do
+        namespace 'commands/:plugin_id' do
           desc "list of commands the plugin associated with the environment supports"
           get do
             plugin_manager.for_environment(params[:plugin_id], params[:environment_id]).commands
@@ -222,94 +222,75 @@ module MotherBrain
       end
     end
 
-    resource :plugins do
+    namespace 'plugins' do
       desc "list all loaded plugins and their versions"
       get do
         plugin_manager.list
       end
 
-      desc "display all the versions of the given plugin"
       params do
         requires :plugin_id, type: String, desc: "plugin name"
       end
-      get ':plugin_id' do
-        plugin_manager.versions(params[:plugin_id])
-      end
-
-      resource ':plugin_id/latest' do
-        desc "display the latest version of the plugin of the given name"
-        params do
-          requires :plugin_id, type: String, desc: "plugin name"
-        end
+      namespace ':plugin_id' do
+        desc "display all the versions of the given plugin"
         get do
-          find_plugin!(params[:plugin_id])
+          plugin_manager.versions(params[:plugin_id])
         end
 
-        desc "list of all the commands the latest plugin can do"
-        params do
-          requires :plugin_id, type: String, desc: "plugin name"
-        end
-        get 'commands' do
-          find_plugin!(params[:plugin_id]).commands
-        end
-
-        resource 'components' do
-          desc "list of all the components the latest plugin has"
-          params do
-            requires :plugin_id, type: String, desc: "plugin name"
-          end
+        namespace 'latest' do
+          desc "display the latest version of the plugin of the given name"
           get do
-            find_plugin!(params[:plugin_id]).components
+            find_plugin!(params[:plugin_id])
           end
 
-          desc "list of all the commands the component of the latest plugin version has"
-          params do
-            requires :plugin_id, type: String, desc: "plugin name"
-            requires :component_id, type: String, desc: "component name"
+          desc "list of all the commands the latest plugin can do"
+          get 'commands' do
+            find_plugin!(params[:plugin_id]).commands
           end
-          get ':component_id/commands' do
-            find_plugin!(params[:plugin_id]).component(params[:component_id])
+
+          namespace 'components' do
+            desc "list of all the components the latest plugin has"
+            get do
+              find_plugin!(params[:plugin_id]).components
+            end
+
+            desc "list of all the commands the component of the latest plugin version has"
+            params do
+              requires :component_id, type: String, desc: "component name"
+            end
+            get ':component_id/commands' do
+              find_plugin!(params[:plugin_id]).component(params[:component_id])
+            end
           end
         end
-      end
 
-      resource ':plugin_id/:version' do
-        desc "display the plugin of the given name and version"
         params do
-          requires :plugin_id, type: String, desc: "plugin name"
           requires :version, sem_ver: true
         end
-        get do
-          find_plugin!(params[:plugin_id], params[:version])
-        end
-
-        desc "list of all the commands the specified plugin version can do"
-        params do
-          requires :plugin_id, type: String, desc: "plugin name"
-          requires :version, sem_ver: true
-        end
-        get 'commands' do
-          find_plugin!(params[:plugin_id], params[:version]).commands
-        end
-
-        resource :components do
-          desc "list of all the components the specified plugin version has"
-          params do
-            requires :plugin_id, type: String, desc: "plugin name"
-            requires :version, sem_ver: true
-          end
+        namespace ':version' do
+          desc "display the plugin of the given name and version"
           get do
-            find_plugin!(params[:plugin_id], params[:version]).components
+            find_plugin!(params[:plugin_id], params[:version])
           end
 
-          desc "list of all the commands the component of the specified plugin version has"
-          params do
-            requires :plugin_id, type: String, desc: "plugin name"
-            requires :version, sem_ver: true
-            requires :component_id, type: String, desc: "component name"
+          desc "list of all the commands the specified plugin version can do"
+          get 'commands' do
+            find_plugin!(params[:plugin_id], params[:version]).commands
           end
-          get ':component_id/commands' do
-            find_plugin!(params[:plugin_id], params[:version]).component!(params[:component_id]).commands
+
+          namespace 'components' do
+            desc "list of all the components the specified plugin version has"
+            get do
+              find_plugin!(params[:plugin_id], params[:version]).components
+            end
+
+            desc "list of all the commands the component of the specified plugin version has"
+            params do
+              requires :component_id, type: String, desc: "component name"
+            end
+            get ':component_id/commands' do
+              find_plugin!(params[:plugin_id], params[:version]).component!(params[:component_id]).commands
+            end
           end
         end
       end
