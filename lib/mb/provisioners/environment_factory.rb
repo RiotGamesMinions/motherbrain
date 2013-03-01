@@ -101,16 +101,17 @@ module MotherBrain
       #
       # @option options [Boolean] :skip_bootstrap (false)
       #
-      # @return [Job]
+      # @raise [UnexpectedProvisionCount]
+      # @raise [EF::REST::Error]
+      #
+      # @return [Array<Hash>]
       def up(job, env_name, manifest, plugin, options = {})
-        options = options.reverse_merge(
-          skip_bootstrap: false,
-          job: job
-        )
+        options = options.reverse_merge(skip_bootstrap: false)
 
-        job.status = "environment factory provisioner creating #{env_name}"
-        job.report_running
-        connection.environment.create(env_name, self.class.convert_manifest(manifest))
+        begin
+          job.status = "creating new environment called '#{env_name}'"
+          connection.environment.create(env_name, self.class.convert_manifest(manifest))
+        rescue EF::REST::HTTPUnprocessableEntity; end
 
         until connection.environment.created?(env_name)
           sleep self.interval
@@ -118,24 +119,9 @@ module MotherBrain
 
         response = self.class.handle_created(connection.environment.find(env_name, force: true))
         self.class.validate_create(response, manifest)
-
-        if options[:skip_bootstrap]
-          job.report_success(response)
-        else
-          bootstrap_manifest = Bootstrap::Manifest.from_provisioner(response, manifest)
-
-          job = Application.bootstrap(env_name, bootstrap_manifest, plugin, options)
-          
-          until job.completed?
-            sleep 0.1
-          end
-        end
+        response
       rescue UnexpectedProvisionCount, EF::REST::Error => e
-        log.fatal { "an error occured: #{e}" }
-        job.report_failure(e)
-      rescue => e
-        log.fatal { "unknown error occured: #{e}"}
-        job.report_failure("internal error")
+        abort(e)
       end
 
       # Tear down the given environment and the nodes in it

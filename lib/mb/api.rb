@@ -100,7 +100,7 @@ module MotherBrain
           manifest = Provisioner::Manifest.new(params[:manifest])
           manifest.validate!(plugin)
 
-          provisioner.provision(
+          provisioner.async_provision(
             params[:environment_id].freeze,
             manifest.freeze,
             plugin.freeze,
@@ -126,7 +126,7 @@ module MotherBrain
           manifest = Bootstrap::Manifest.new(params[:manifest])
           manifest.validate!(plugin)
 
-          bootstrapper.bootstrap(
+          bootstrapper.async_bootstrap(
             params[:environment_id].freeze,
             manifest.freeze,
             plugin.freeze,

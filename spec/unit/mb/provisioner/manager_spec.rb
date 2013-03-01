@@ -20,4 +20,29 @@ describe MB::Provisioner::Manager do
       end
     end
   end
+
+  subject { described_class.new }
+
+  describe "#async_provision" do
+    let(:environment) { double('environment') }
+    let(:manifest) { double('manifest') }
+    let(:plugin) { double('plugin') }
+
+    it "delegates asynchronously to {#provision}" do
+      subject.should_receive(:async).with(
+        :provision,
+        kind_of(MB::Job),
+        environment,
+        manifest,
+        plugin,
+        anything()
+      )
+
+      subject.async_provision(environment, manifest, plugin)
+    end
+
+    it "returns a JobRecord" do
+      subject.async_provision(environment, manifest, plugin).should be_a(MB::JobRecord)
+    end
+  end
 end

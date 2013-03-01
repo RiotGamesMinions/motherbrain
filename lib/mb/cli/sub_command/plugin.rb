@@ -26,6 +26,7 @@ module MotherBrain
             environment = CliGateway.invoked_opts[:environment]
 
             klass = Class.new(self) do
+              include MB::Mixin::Services
               set_plugin(plugin)
             end
 
@@ -76,7 +77,7 @@ module MotherBrain
                   boot_options = Hash.new.merge(options).deep_symbolize_keys
                   manifest     = MB::Bootstrap::Manifest.from_file(manifest_file)
 
-                  job = Application.bootstrap(
+                  job = bootstrapper.async_bootstrap(
                     environment.freeze,
                     manifest.freeze,
                     plugin.freeze,
@@ -115,7 +116,7 @@ module MotherBrain
                   prov_options = Hash.new.merge(options).deep_symbolize_keys
                   manifest     = Provisioner::Manifest.from_file(manifest_file)
 
-                  job = Application.provision(
+                  job = provisioner.async_provision(
                     environment.freeze,
                     manifest.freeze,
                     plugin.freeze,
