@@ -95,8 +95,6 @@ module MotherBrain
     #
     # @return [Job]
     def report_running(result = nil, options = {})
-      return self if running?
-
       log.debug { "Job (#{id}) running: #{result}" }
       transition(:running, result, options)
     end
