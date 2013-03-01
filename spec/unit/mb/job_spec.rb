@@ -26,7 +26,7 @@ describe MB::Job do
 
       it "registers a job with JobManager" do
         MB::JobManager.instance.active.should have(1).item
-        MB::JobManager.instance.active.should include(subject)
+        MB::JobManager.instance.active[0].id.should == subject.id
       end
     end
   end

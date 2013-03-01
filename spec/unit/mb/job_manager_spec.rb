@@ -24,7 +24,8 @@ describe MB::JobManager do
       subject.add(@fake_job)
 
       subject.active.should have(1).item
-      subject.active.should include(@fake_job)
+      subject.active[0].id.should == @fake_job.id
+      subject.active[0].should be_a(MB::JobRecord)
     end
 
     it "monitors the given job" do
