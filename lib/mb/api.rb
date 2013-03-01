@@ -43,27 +43,27 @@ module MotherBrain
     end
 
     desc "display the loaded configuration"
-    get :config do
+    get 'config' do
       Application.config
     end
 
-    resource :jobs do
+    namespace 'jobs' do
       desc "list all jobs (completed and active)"
       get do
         JobManager.instance.list
       end
 
       desc "list all active jobs"
-      get :active do
+      get 'active' do
         JobManager.instance.active
       end
 
       desc "find and return the Job with the given ID"
       params do
-        requires :id, type: String, desc: "job id"
+        requires :job_id, type: String, desc: "job id"
       end
-      get ':id' do
-        find_job!(params[:id])
+      get ':job_id' do
+        find_job!(params[:job_id])
       end
     end
 
