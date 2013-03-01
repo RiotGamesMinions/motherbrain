@@ -296,6 +296,12 @@ module MotherBrain
       end
     end
 
+    # Force inbound requests to be JSON
+    def call(env)
+      env['CONTENT_TYPE'] = 'application/json'
+      super
+    end
+
     if MB.testing?
       get :mb_error do
         raise MB::InternalError, "a nice error message"
