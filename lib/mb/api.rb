@@ -10,7 +10,7 @@ module MotherBrain
 
     format :json
 
-    rescue_from Grape::Exceptions::ValidationError do |e|
+    rescue_from Grape::Exceptions::Validation do |e|
       body = MultiJson.encode(
         status: e.status,
         message: e.message,
@@ -43,288 +43,254 @@ module MotherBrain
     end
 
     desc "display the loaded configuration"
-    get :config do
+    get 'config' do
       Application.config
     end
 
-    resource :jobs do
+    namespace 'jobs' do
       desc "list all jobs (completed and active)"
       get do
         JobManager.instance.list
       end
 
       desc "list all active jobs"
-      get :active do
+      get 'active' do
         JobManager.instance.active
       end
 
       desc "find and return the Job with the given ID"
       params do
-        requires :id, type: String, desc: "job id"
+        requires :job_id, type: String, desc: "job id"
       end
-      get ':id' do
-        find_job!(params[:id])
+      get ':job_id' do
+        find_job!(params[:job_id])
       end
     end
 
-    resource 'environments' do
+    namespace 'environments' do
       desc "list all of the environments"
       get do
         environment_manager.list
       end
 
-      desc "lock an environment"
-      params do
-        requires :id, type: String, desc: "environment name"
-      end
-      post ':id/lock' do
-        lock_manager.lock(params[:id])
-      end
-
-      desc "unlock an environment"
-      params do
-        requires :id, type: String, desc: "environment name"
-      end      
-      delete ':id/lock' do
-        lock_manager.unlock(params[:id])
-      end
-
-      desc "destroy a provisioned environment"
-      params do
-        requires :id, type: String, desc: "environment name"
-      end
-      delete ':id' do
-        provisioner.destroy(params[:id])
-      end
-
-      desc "create (provision) a new cluster of nodes"
-      params do
-        requires :id, type: String, desc: "environment name"
-        requires :manifest, type: Hash, desc: "a Hash representation of the node group to create"
-        group :plugin do
-          requires :name, type: String, desc: "name of the plugin to use"
-          optional :version, sem_ver: true, desc: "version of the plugin to use"
-        end
-        optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
-        optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
-        optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
-        optional :skip_bootstrap, type: Boolean, desc: "skip automatic bootstrapping of the created environment"
-        optional :force, type: Boolean, desc: "force provisioning nodes to the environment even if the environment is locked"
-      end
-      post ':id' do
-        plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
-        manifest = Provisioner::Manifest.new(params[:manifest])
-        manifest.validate!(plugin)
-
-        provisioner.provision(
-          params[:id].freeze,
-          manifest.freeze,
-          plugin.freeze,
-          params.exclude(:id, :manifest, :plugin).freeze
-        )
-      end
-
-      desc "update (bootstrap) an existing cluster of nodes"
-      params do
-        requires :id, type: String, desc: "environment name"
-        requires :manifest, desc: "a Hash representation of the node group to update"
-        group :plugin do
-          requires :name, type: String, desc: "name of the plugin to use"
-          optional :version, sem_ver: true, desc: "version of the plugin to use"
-        end
-        optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
-        optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
-        optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
-        optional :force, type: Boolean
-        optional :hints
-      end
-      put ':id' do
-        plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
-        manifest = Bootstrap::Manifest.new(params[:manifest])
-        manifest.validate!(plugin)
-
-        bootstrapper.bootstrap(
-          params[:id].freeze,
-          manifest.freeze,
-          plugin.freeze,
-          params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force, :bootstrap_proxy, :hints).freeze
-        )
-      end
-
-      desc "configure an existing environment cluster"
-      params do
-        requires :id, type: String, desc: "environment name"
-        requires :attributes, type: Hash, desc: "a hash of attributes to set on the environment"
-        optional :force, type: Boolean, desc: "force configure even if the environment is locked"
-      end
-      post ':id/configure' do
-        environment_manager.configure(params[:id], params.slice(:attributes, :force))
-      end
-
-      desc "upgrade an environment to the specified versions"
       params do
         requires :environment_id, type: String, desc: "environment name"
-        group :plugin do
-          requires :name, type: String, desc: "name of the plugin to use"
-          optional :version, sem_ver: true, desc: "version of the plugin to use"
-        end
-        optional :component_versions, type: Hash, desc: "the component versions to set with override attributes"
-        optional :cookbook_versions, type: Hash, desc: "the cookbook versions to set on the environment"
-        optional :environment_attributes, type: Hash, desc: "any additional attributes to set on the environment"
-        optional :force, type: Boolean, desc: "force upgrade even if the environment is locked"
       end
-      post ':environment_id/upgrade' do
-        options = params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force)
-        plugin  = plugin_manager.find(params[:plugin][:name], params[:plugin][:version])
+      namespace ':environment_id' do
+        desc "destroy a provisioned environment"
+        delete do
+          provisioner.destroy(params[:environment_id])
+        end
 
-        upgrade_manager.upgrade(params[:environment_id], plugin, options)
-      end
-
-      resource ':environment_id/commands' do
-        desc "list of commands the plugin associated with the environment supports"
+        desc "create (provision) a new cluster of nodes"
         params do
-          requires :environment_id, type: String, desc: "environment name"
-          requires :plugin_id, type: String, desc: "plugin name"
+          requires :manifest, type: Hash, desc: "a Hash representation of the node group to create"
+          group :plugin do
+            requires :name, type: String, desc: "name of the plugin to use"
+            optional :version, sem_ver: true, desc: "version of the plugin to use"
+          end
+          optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
+          optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
+          optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
+          optional :skip_bootstrap, type: Boolean, desc: "skip automatic bootstrapping of the created environment"
+          optional :force, type: Boolean, desc: "force provisioning nodes to the environment even if the environment is locked"
         end
-        get ':plugin_id' do
-          plugin_manager.for_environment(params[:plugin_id], params[:environment_id]).commands
-        end
+        post do
+          plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
+          manifest = Provisioner::Manifest.new(params[:manifest])
+          manifest.validate!(plugin)
 
-        desc "invoke a plugin level command on the target environment"
-        params do
-          requires :environment_id, type: String, desc: "environment name"
-          requires :plugin_id, type: String, desc: "plugin name"
-          requires :command_id, type: String, desc: "command name"
-          optional :arguments, type: Array, desc: "optional array of arguments for the command"
-        end
-        post ':plugin_id/:command_id' do
-          command_invoker.invoke_plugin(
-            params[:plugin_id],
-            params[:command_id],
-            params[:environment_id],
-            params.slice(:arguments)
+          provisioner.provision(
+            params[:environment_id].freeze,
+            manifest.freeze,
+            plugin.freeze,
+            params.exclude(:environment_id, :manifest, :plugin).freeze
           )
         end
 
-        desc "list of commands the component of the plugin associated with the environment supports"
+        desc "update (bootstrap) an existing cluster of nodes"
         params do
-          requires :environment_id, type: String, desc: "environment name"
-          requires :plugin_id, type: String, desc: "plugin name"
-          requires :component_id, type: String, desc: "plugin component name"
+          requires :manifest, desc: "a Hash representation of the node group to update"
+          group :plugin do
+            requires :name, type: String, desc: "name of the plugin to use"
+            optional :version, sem_ver: true, desc: "version of the plugin to use"
+          end
+          optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
+          optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
+          optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
+          optional :force, type: Boolean
+          optional :hints
         end
-        get ':plugin_id/:component_id' do
-          plugin = plugin_manager.for_environment(params[:plugin_id], params[:environment_id])
-          plugin.component!(params[:component_id]).commands
+        put do
+          plugin   = find_plugin!(params[:plugin][:name], params[:plugin][:version])
+          manifest = Bootstrap::Manifest.new(params[:manifest])
+          manifest.validate!(plugin)
+
+          bootstrapper.bootstrap(
+            params[:environment_id].freeze,
+            manifest.freeze,
+            plugin.freeze,
+            params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force, :bootstrap_proxy, :hints).freeze
+          )
         end
 
-        desc "invoke a plugin component level command on the target environment"
-        params do
-          requires :environment_id, type: String, desc: "environment name"
-          requires :plugin_id, type: String, desc: "plugin name"
-          requires :component_id, type: String, desc: "plugin component name"
-          requires :command_id, type: String, desc: "command name"
-          optional :arguments, type: Array, desc: "optional array of arguments for the command"
+        desc "lock an environment"
+        post 'lock' do
+          lock_manager.lock(params[:environment_id])
         end
-        post ':plugin_id/:component_id/:command_id' do
-          command_invoker.invoke_component(
-            params[:plugin_id],
-            params[:component_id],
-            params[:command_id],
-            params[:environment_id],
-            params.slice(:arguments)
-          )
+
+        desc "unlock an environment"
+        delete 'lock' do
+          lock_manager.unlock(params[:environment_id])
+        end
+
+        desc "configure an existing environment cluster"
+        params do
+          requires :attributes, type: Hash, desc: "a hash of attributes to set on the environment"
+          optional :force, type: Boolean, desc: "force configure even if the environment is locked"
+        end
+        post 'configure' do
+          environment_manager.configure(params[:environment_id], params.slice(:attributes, :force))
+        end
+
+        desc "upgrade an environment to the specified versions"
+        params do
+          group :plugin do
+            requires :name, type: String, desc: "name of the plugin to use"
+            optional :version, sem_ver: true, desc: "version of the plugin to use"
+          end
+          optional :component_versions, type: Hash, desc: "the component versions to set with override attributes"
+          optional :cookbook_versions, type: Hash, desc: "the cookbook versions to set on the environment"
+          optional :environment_attributes, type: Hash, desc: "any additional attributes to set on the environment"
+          optional :force, type: Boolean, desc: "force upgrade even if the environment is locked"
+        end
+        post 'upgrade' do
+          options = params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force)
+          plugin  = plugin_manager.find(params[:plugin][:name], params[:plugin][:version])
+
+          upgrade_manager.upgrade(params[:environment_id], plugin, options)
+        end
+
+        params do
+          requires :plugin_id, type: String, desc: "plugin name"
+        end
+        namespace 'commands/:plugin_id' do
+          desc "list of commands the plugin associated with the environment supports"
+          get do
+            plugin_manager.for_environment(params[:plugin_id], params[:environment_id]).commands
+          end
+
+          desc "invoke a plugin level command on the target environment"
+          params do
+            requires :command_id, type: String, desc: "command name"
+            optional :arguments, type: Array, desc: "optional array of arguments for the command"
+          end
+          post ':command_id' do
+            command_invoker.invoke_plugin(
+              params[:plugin_id],
+              params[:command_id],
+              params[:environment_id],
+              params.slice(:arguments)
+            )
+          end
+
+          desc "list of commands the component of the plugin associated with the environment supports"
+          params do
+            requires :component_id, type: String, desc: "plugin component name"
+          end
+          get ':component_id' do
+            plugin = plugin_manager.for_environment(params[:plugin_id], params[:environment_id])
+            plugin.component!(params[:component_id]).commands
+          end
+
+          desc "invoke a plugin component level command on the target environment"
+          params do
+            requires :component_id, type: String, desc: "plugin component name"
+            requires :command_id, type: String, desc: "command name"
+            optional :arguments, type: Array, desc: "optional array of arguments for the command"
+          end
+          post ':component_id/:command_id' do
+            command_invoker.invoke_component(
+              params[:plugin_id],
+              params[:component_id],
+              params[:command_id],
+              params[:environment_id],
+              params.slice(:arguments)
+            )
+          end
         end
       end
     end
 
-    resource :plugins do
+    namespace 'plugins' do
       desc "list all loaded plugins and their versions"
       get do
         plugin_manager.list
       end
 
-      desc "display all the versions of the given plugin"
       params do
         requires :plugin_id, type: String, desc: "plugin name"
       end
-      get ':plugin_id' do
-        plugin_manager.versions(params[:plugin_id])
-      end
-
-      resource ':plugin_id/latest' do
-        desc "display the latest version of the plugin of the given name"
-        params do
-          requires :plugin_id, type: String, desc: "plugin name"
-        end
+      namespace ':plugin_id' do
+        desc "display all the versions of the given plugin"
         get do
-          find_plugin!(params[:plugin_id])
+          plugin_manager.versions(params[:plugin_id])
         end
 
-        desc "list of all the commands the latest plugin can do"
-        params do
-          requires :plugin_id, type: String, desc: "plugin name"
-        end
-        get 'commands' do
-          find_plugin!(params[:plugin_id]).commands
-        end
-
-        resource 'components' do
-          desc "list of all the components the latest plugin has"
-          params do
-            requires :plugin_id, type: String, desc: "plugin name"
-          end
+        namespace 'latest' do
+          desc "display the latest version of the plugin of the given name"
           get do
-            find_plugin!(params[:plugin_id]).components
+            find_plugin!(params[:plugin_id])
           end
 
-          desc "list of all the commands the component of the latest plugin version has"
-          params do
-            requires :plugin_id, type: String, desc: "plugin name"
-            requires :component_id, type: String, desc: "component name"
+          desc "list of all the commands the latest plugin can do"
+          get 'commands' do
+            find_plugin!(params[:plugin_id]).commands
           end
-          get ':component_id/commands' do
-            find_plugin!(params[:plugin_id]).component(params[:component_id])
+
+          namespace 'components' do
+            desc "list of all the components the latest plugin has"
+            get do
+              find_plugin!(params[:plugin_id]).components
+            end
+
+            desc "list of all the commands the component of the latest plugin version has"
+            params do
+              requires :component_id, type: String, desc: "component name"
+            end
+            get ':component_id/commands' do
+              find_plugin!(params[:plugin_id]).component(params[:component_id])
+            end
           end
         end
-      end
 
-      resource ':plugin_id/:version' do
-        desc "display the plugin of the given name and version"
         params do
-          requires :plugin_id, type: String, desc: "plugin name"
           requires :version, sem_ver: true
         end
-        get do
-          find_plugin!(params[:plugin_id], params[:version])
-        end
-
-        desc "list of all the commands the specified plugin version can do"
-        params do
-          requires :plugin_id, type: String, desc: "plugin name"
-          requires :version, sem_ver: true
-        end
-        get 'commands' do
-          find_plugin!(params[:plugin_id], params[:version]).commands
-        end
-
-        resource :components do
-          desc "list of all the components the specified plugin version has"
-          params do
-            requires :plugin_id, type: String, desc: "plugin name"
-            requires :version, sem_ver: true
-          end
+        namespace ':version' do
+          desc "display the plugin of the given name and version"
           get do
-            find_plugin!(params[:plugin_id], params[:version]).components
+            find_plugin!(params[:plugin_id], params[:version])
           end
 
-          desc "list of all the commands the component of the specified plugin version has"
-          params do
-            requires :plugin_id, type: String, desc: "plugin name"
-            requires :version, sem_ver: true
-            requires :component_id, type: String, desc: "component name"
+          desc "list of all the commands the specified plugin version can do"
+          get 'commands' do
+            find_plugin!(params[:plugin_id], params[:version]).commands
           end
-          get ':component_id/commands' do
-            find_plugin!(params[:plugin_id], params[:version]).component!(params[:component_id]).commands
+
+          namespace 'components' do
+            desc "list of all the components the specified plugin version has"
+            get do
+              find_plugin!(params[:plugin_id], params[:version]).components
+            end
+
+            desc "list of all the commands the component of the specified plugin version has"
+            params do
+              requires :component_id, type: String, desc: "component name"
+            end
+            get ':component_id/commands' do
+              find_plugin!(params[:plugin_id], params[:version]).component!(params[:component_id]).commands
+            end
           end
         end
       end
