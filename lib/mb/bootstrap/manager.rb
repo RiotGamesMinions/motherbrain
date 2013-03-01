@@ -20,8 +20,7 @@ module MotherBrain
         log.info { "Bootstrap Manager starting..." }
       end
 
-      # Bootstrap a collection of nodes described in the given manifest by performing
-      # each {BootTask} in the proper order
+      # Asynchronously bootstrap a collection of nodes described in the given manifest in the proper order
       #
       # @param [String] environment
       # @param [Bootstrap::Manifest] manifest
@@ -29,7 +28,6 @@ module MotherBrain
       # @param [Plugin] plugin
       #   a MotherBrain plugin with a bootstrap routine to follow
       #
-      # @option options [MB::Job] :job
       # @option options [Hash] :component_versions (Hash.new)
       #   Hash of components and the versions to set them to
       # @option options [Hash] :cookbook_versions (Hash.new)
@@ -65,7 +63,27 @@ module MotherBrain
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      def bootstrap(environment, manifest, plugin, options = {})
+      #
+      # @return [MB::JobRecord]
+      #   a reference to the executing job
+      def async_bootstrap(environment, manifest, plugin, options = {})
+        job = Job.new(:bootstrap)
+        async(:bootstrap, job, environment, manifest, plugin, options)
+
+        job.ticket
+      end
+
+      # Bootstrap a collection of nodes described in the given manifest in the proper order
+      #
+      # @param [MB::Job] job
+      # @param [String] environment
+      # @param [MB::Bootstrap::Manifest] manifest
+      #   manifest of nodes and what they should become
+      # @param [MB::Plugin] plugin
+      #   a MotherBrain plugin with a bootstrap routine to follow
+      #
+      # @see {#bootstrap} for options
+      def bootstrap(job, environment, manifest, plugin, options = {})
         options = options.reverse_merge(
           cookbook_versions: Hash.new,
           component_versions: Hash.new,
@@ -74,51 +92,18 @@ module MotherBrain
           bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
           force: false
         )
-        options[:environment] = environment
-        job = options[:job] || Job.new(:bootstrap)
 
-        async.start(environment, manifest, plugin, job, options)
-
-        job.ticket
-      end
-
-      # @param [String] environment
-      # @param [Bootstrap::Manifest] manifest
-      #   manifest of nodes and what they should become
-      # @param [Plugin] plugin
-      #   a MotherBrain plugin with a bootstrap routine to follow
-      # @param [MotherBrain::Job] job
-      #
-      # @see #bootstrap for options
-      def start(environment, manifest, plugin, job, options = {})
         job.report_running
 
         manifest.validate!(plugin)
 
-        unless Application.ridley.environment.find(environment)
-          raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
+        job.status = "searching for environment"
+        unless chef_conn.environment.find(environment)
+          log.fatal { "Failed to location the environment '#{environment}'"}
+          return job.report_failure("Environment '#{environment}' not found")
         end
 
-        log.info { "Starting bootstrap of nodes on: #{environment}" }
-        sequential_bootstrap(environment, manifest, plugin, job, options)
-      rescue => error
-        log.fatal { "unknown error occured: #{error}"}
-        job.report_failure(error)
-      end
-
-      def finalize
-        log.info { "Bootstrap Manager stopping..." }
-      end
-
-      # @param [String] environment
-      # @param [Bootstrap::Manifest] manifest
-      #   manifest of nodes and what they should become
-      # @param [MotherBrain::Plugin] plugin
-      #   a MotherBrain plugin with a bootstrap routine to follow
-      # @param [MotherBrain::Job] job
-      #
-      # @see #bootstrap for options
-      def sequential_bootstrap(environment, manifest, plugin, job, options = {})
+        job.status = "Starting bootstrap of nodes on: #{environment}"
         task_queue = plugin.bootstrap_routine.task_queue.dup
         
         chef_synchronize(chef_environment: environment, force: options[:force], job: job) do
@@ -156,48 +141,61 @@ module MotherBrain
         end
 
         job.report_success
+      rescue => error
+        log.fatal { "unknown error occured: #{error}"}
+        job.report_failure(error)
       end
 
-      # Concurrently bootstrap a grouped collection of nodes from a manifest and return
-      # their results. This function will block until all nodes have finished
-      # bootstrapping.
-      #
-      # @param [Bootstrap::Manifest] manifest
-      #   a hash where the keys are node group names and the values are arrays of hostnames
-      # @param [BootTask, Array<BootTask>] boot_tasks
-      #   a hash where the keys are node group names and the values are arrays of hostnames
-      #
-      # @see #bootstrap for options
-      #
-      # @return [Hash]
-      #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
-      def concurrent_bootstrap(manifest, boot_tasks, options = {})
-        workers = Array(boot_tasks).collect do |boot_task|
-          nodes = manifest.hosts_for_groups(boot_task.groups)
+      def finalize
+        log.info { "Bootstrap Manager stopping..." }
+      end
 
-          worker_options = options.merge(
-            run_list: boot_task.group_object.run_list,
-            attributes: boot_task.group_object.chef_attributes
-          )
+      private
 
-          Worker.new(boot_task.groups, nodes, worker_options)
+        def chef_conn
+          Application.ridley
         end
 
-        futures = workers.collect do |worker|
-          [
-            worker.group_ids,
-            worker.future.run
-          ]
-        end
+        # Concurrently bootstrap a grouped collection of nodes from a manifest and return
+        # their results. This function will block until all nodes have finished
+        # bootstrapping.
+        #
+        # @param [Bootstrap::Manifest] manifest
+        #   a hash where the keys are node group names and the values are arrays of hostnames
+        # @param [BootTask, Array<BootTask>] boot_tasks
+        #   a hash where the keys are node group names and the values are arrays of hostnames
+        #
+        # @see #bootstrap for options
+        #
+        # @return [Hash]
+        #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
+        def concurrent_bootstrap(manifest, boot_tasks, options = {})
+          workers = Array(boot_tasks).collect do |boot_task|
+            nodes = manifest.hosts_for_groups(boot_task.groups)
 
-        {}.tap do |response|
-          futures.each do |group_ids, future|
-            response[group_ids] = future.value
+            worker_options = options.merge(
+              run_list: boot_task.group_object.run_list,
+              attributes: boot_task.group_object.chef_attributes
+            )
+
+            Worker.new(boot_task.groups, nodes, worker_options)
           end
+
+          futures = workers.collect do |worker|
+            [
+              worker.group_ids,
+              worker.future.run
+            ]
+          end
+
+          {}.tap do |response|
+            futures.each do |group_ids, future|
+              response[group_ids] = future.value
+            end
+          end
+        ensure
+          Array(workers).map { |worker| worker.terminate if worker.alive? }
         end
-      ensure
-        Array(workers).map { |worker| worker.terminate if worker.alive? }
-      end
     end
   end
 end

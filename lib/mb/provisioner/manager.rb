@@ -50,6 +50,7 @@ module MotherBrain
 
       include Celluloid
       include MB::Logging
+      include MB::Mixin::Services
 
       def initialize
         log.info { "Provision Manager starting..." }
@@ -100,19 +101,12 @@ module MotherBrain
           force: false
         )
 
-        job_type    = options[:skip_bootstrap] ? :provision : :provision_and_bootstrap
-        job         = Job.new(job_type)
-        ticket      = job.ticket
-        provisioner = self.class.new_provisioner(options)
-        Provisioner::Manifest.validate!(manifest, plugin)
+        job_type = options[:skip_bootstrap] ? :provision : :provision_and_bootstrap
+        job      = Job.new(job_type)
 
-        log.debug "manager delegating creation of #{environment}..."
-        provisioner.async.up(job, environment, manifest, plugin, options.slice(*WORKER_OPTS))
+        async(:_provision_, job, environment, manifest, plugin, options)
 
-        ticket
-      rescue InvalidProvisionManifest => e
-        job.report_failure(e)
-        ticket
+        job.ticket
       end
 
       # Destroy an environment provisioned by MotherBrain
@@ -136,6 +130,26 @@ module MotherBrain
 
       def finalize
         log.info { "Provision Manager stopping..." }
+      end
+
+      def _provision_(job, environment, manifest, plugin, options)
+        worker = self.class.new_provisioner(options)
+        Provisioner::Manifest.validate!(manifest, plugin)
+        
+        response = worker.up(job, environment, manifest, plugin, options.slice(*WORKER_OPTS))
+
+        if options[:skip_bootstrap]
+          job.report_success(response)
+        else
+          bootstrap_manifest = Bootstrap::Manifest.from_provisioner(response, manifest)
+          bootstrapper._bootstrap_(job, env_name, bootstrap_manifest, plugin, options)
+        end
+      rescue InvalidProvisionManifest, UnexpectedProvisionCount, EF::REST::Error => ex
+        log.fatal { "an error occured: #{ex}" }
+        job.report_failure(ex)
+      rescue => ex
+        log.fatal { "unknown error occured: #{ex}"}
+        job.report_failure("internal error")
       end
     end
   end

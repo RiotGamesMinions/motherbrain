@@ -70,24 +70,41 @@ describe MB::Bootstrap::Manager do
     manager.stub(async: manager)
   end
 
-  describe "#bootstrap" do
-    subject(:bootstrap) { manager.bootstrap(environment, manifest, plugin) }
+  describe "#async_bootstrap" do
+    it "delegates asynchronously to #_bootstrap_" do
+      options = double('options')
+      manager.should_receive(:async).with(
+        :bootstrap,
+        kind_of(MB::Job),
+        environment,
+        manifest,
+        plugin,
+        options
+      )
 
-    it "calls #start" do
-      manager.should_receive(:start)
+      manager.async_bootstrap(environment, manifest, plugin, options)
+    end
 
-      bootstrap
+    it "returns a JobRecord" do
+      manager.async_bootstrap(environment, manifest, plugin).should be_a(MB::JobRecord)
     end
   end
 
-  describe "#start" do
-    subject(:start) { manager.start(environment, manifest, plugin, job_stub) }
-
-    it "kicks off a sequential bootstrap" do
+  describe "#bootstrap" do
+    before(:each) do
+      job_stub.stub(:status=)
       job_stub.should_receive(:report_running)
-      manager.should_receive(:sequential_bootstrap)
+    end
 
-      start
+    context "when the environment cannot be found" do
+      before(:each) do
+        manager.stub_chain(:chef_conn, :environment, :find).with(environment).and_return(nil)
+      end
+
+      it "sets the job to failed" do
+        job_stub.should_receive(:report_failure)
+        manager.bootstrap(job_stub, environment, manifest, plugin)
+      end
     end
   end
 end
