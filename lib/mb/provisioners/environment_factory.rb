@@ -108,11 +108,15 @@ module MotherBrain
       def up(job, env_name, manifest, plugin, options = {})
         options = options.reverse_merge(skip_bootstrap: false)
 
-        job.status = "environment factory provisioner creating #{env_name}"
-        connection.environment.create(env_name, self.class.convert_manifest(manifest))
+        begin
+          job.status = "creating new environment called '#{env_name}'"
+          connection.environment.create(env_name, self.class.convert_manifest(manifest))
 
-        until connection.environment.created?(env_name)
-          sleep self.interval
+          until connection.environment.created?(env_name)
+            sleep self.interval
+          end
+        rescue EF::REST::HTTPUnprocessableEntity
+          job.status = "environment already exists, skipping creation"
         end
 
         response = self.class.handle_created(connection.environment.find(env_name, force: true))
