@@ -4,7 +4,9 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class ApiClient < Celluloid::SupervisionGroup
     autoload :Connection, 'mb/api_client/connection'
+    autoload :Middleware, 'mb/api_client/middleware'
     autoload :Resource, 'mb/api_client/resource'
+    
     require 'mb/api_client/resources'
 
     class << self
@@ -33,8 +35,9 @@ module MotherBrain
     resource ApiClient::JobResource, :job
     resource ApiClient::PluginResource, :plugin
 
-    # @option options [String] :url
+    # @param [String] url
     #   URL to REST Gateway
+    #
     # @option options [Integer] :retries (5)
     #   retry requests on 5XX failures
     # @option options [Float] :retry_interval (0.5)
@@ -42,14 +45,9 @@ module MotherBrain
     #   * :verify (Boolean) [true] set to false to disable SSL verification
     # @option options [URI, String, Hash] :proxy
     #   URI, String, or Hash of HTTP proxy options
-    def initialize(options = {})
-      options = options.reverse_merge(url: DEFAULT_URL)
-
+    def initialize(url = DEFAULT_URL, options = {})
       super(Celluloid::Registry.new)
-      pool(ApiClient::Connection, size: 4, args: [
-        options[:url],
-        options
-      ], as: :connection_pool)
+      pool(ApiClient::Connection, size: 4, args: [url, options], as: :connection_pool)
     end
 
     def finalize
