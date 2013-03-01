@@ -23,9 +23,6 @@ module MotherBrain
 
     trap_exit :force_complete
 
-    # @return [Set<Job>]
-    #   listing of all active jobs
-    attr_reader :active
 
     # @return [Set<JobRecord>]
     #   listing of records of all jobs; completed and active
@@ -34,14 +31,14 @@ module MotherBrain
 
     def initialize
       @records = Set.new
-      @active  = Set.new
+      @_active  = Set.new
     end
 
     # Track and record the given job
     #
     # @param [Job] job
     def add(job)
-      active.add(job)
+      @_active.add(job)
       records.add JobRecord.new(job)
       monitor(job)
     end
@@ -50,18 +47,18 @@ module MotherBrain
     #
     # @param [Job] job
     def complete_job(job)
-      active.delete(job)
+      @_active.delete(job)
 
       if job.alive?
         unmonitor(job)
       end
     end
 
-    # Array of active jobs
-    #
-    # @return [JobRecord]
-    def active_jobs
-      active.collect {|j| JobRecord.new(j) }
+    # listing of all active jobs
+    # @return [Set<JobRecord>]
+    def active
+      active_ids = @_active.collect {|j| j.id }
+      records.select {|r| active_ids.include?(r.id) }
     end
 
     # @param [String] id
@@ -84,7 +81,7 @@ module MotherBrain
     end
 
     def finalize
-      active.map { |job| job.terminate if job.alive? }
+      @_active.map { |job| job.terminate if job.alive? }
     end
 
     private

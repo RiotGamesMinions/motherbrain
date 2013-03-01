@@ -24,7 +24,8 @@ describe MB::JobManager do
       subject.add(@fake_job)
 
       subject.active.should have(1).item
-      subject.active.should include(@fake_job)
+      subject.active[0].id.should == @fake_job.id
+      subject.active[0].should be_a(MB::JobRecord)
     end
 
     it "monitors the given job" do
@@ -56,21 +57,4 @@ describe MB::JobManager do
       subject.should_not be_monitoring(@fake_job)
     end
   end
-
-  describe "#active_jobs" do
-    it "has the same jobs as the active jobs set" do
-      subject.add(@fake_job)
-
-      subject.active_jobs.should have(1).item
-      subject.active_jobs[0].id.should == @fake_job.id
-    end
-
-    it "should be a JobRecord" do
-      subject.add(@fake_job)
-
-      subject.active_jobs[0].should be_an_instance_of(MotherBrain::JobRecord)
-    end
-  end
-
-
 end
