@@ -3,7 +3,7 @@ require 'spec_helper'
 describe MB::ApiClient::EnvironmentResource do
   subject { MB::ApiClient.new.environment }
 
-  let(:empty_response) { MultiJson.encode({}) }
+  let(:empty_response) { Hash.new }
 
   describe "#bootstrap" do
     let(:plugin_id) { "activemq" }
@@ -59,7 +59,7 @@ describe MB::ApiClient::EnvironmentResource do
       stub_request(:delete, "http://0.0.0.0:1984/environments/#{env_id}.json").
         to_return(status: 200, body: empty_response)
 
-      subject.destroy(env_id).should be_a(Hash)
+      subject.destroy(env_id)
     end
   end
 
