@@ -104,7 +104,7 @@ module MotherBrain
             params[:environment_id].freeze,
             manifest.freeze,
             plugin.freeze,
-            params.exclude(:environment_id, :manifest, :plugin).freeze
+            params.except(:environment_id, :manifest, :plugin).freeze
           )
         end
 
