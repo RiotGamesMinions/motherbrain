@@ -38,7 +38,6 @@ module MotherBrain
       # @return [Celluloid::Registry]
       attr_reader :registry
 
-      def_delegator :provisioner_manager, :provision
       def_delegator :upgrade_manager, :upgrade
       def_delegator :config_manager, :config
 
