@@ -143,7 +143,7 @@ module MotherBrain
           job.report_success(response)
         else
           bootstrap_manifest = Bootstrap::Manifest.from_provisioner(response, manifest)
-          bootstrapper.bootstrap(job, env_name, bootstrap_manifest, plugin, options)
+          bootstrapper.bootstrap(job, environment, bootstrap_manifest, plugin, options)
         end
       rescue InvalidProvisionManifest, UnexpectedProvisionCount, EF::REST::Error => ex
         log.fatal { "an error occured: #{ex}" }
