@@ -11,11 +11,11 @@ module MotherBrain
     format :json
 
     rescue_from Grape::Exceptions::ValidationError do |e|
-      body = {
+      body = MultiJson.encode(
         status: e.status,
         message: e.message,
         param: e.param
-      }
+      )
       rack_response(body, e.status, "Content-type" => "application/json")
     end
 
@@ -100,7 +100,7 @@ module MotherBrain
       desc "create (provision) a new cluster of nodes"
       params do
         requires :id, type: String, desc: "environment name"
-        requires :manifest, desc: "a Hash representation of the node group to create"
+        requires :manifest, type: Hash, desc: "a Hash representation of the node group to create"
         group :plugin do
           requires :name, type: String, desc: "name of the plugin to use"
           optional :version, sem_ver: true, desc: "version of the plugin to use"
