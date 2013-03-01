@@ -35,26 +35,21 @@ module MotherBrain
 
     # @option options [String] :url
     #   URL to REST Gateway
-    # @option options [Hash] :params
-    #   URI query unencoded key/value pairs
-    # @option options [Hash] :headers
-    #   unencoded HTTP header key/value pairs
-    # @option options [Hash] :request
-    #   request options
+    # @option options [Integer] :retries (5)
+    #   retry requests on 5XX failures
+    # @option options [Float] :retry_interval (0.5)
     # @option options [Hash] :ssl
     #   * :verify (Boolean) [true] set to false to disable SSL verification
     # @option options [URI, String, Hash] :proxy
     #   URI, String, or Hash of HTTP proxy options
-    # @option options [Class] parallel_manager
-    #   the parallel http manager to use
     def initialize(options = {})
-      options = options.reverse_merge(
-        url: DEFAULT_URL,
-        builder: Faraday::Builder.new { |b| b.adapter :net_http_persistent }
-      )
+      options = options.reverse_merge(url: DEFAULT_URL)
 
       super(Celluloid::Registry.new)
-      pool(ApiClient::Connection, size: 4, args: [options], as: :connection_pool)
+      pool(ApiClient::Connection, size: 4, args: [
+        options[:url],
+        options
+      ], as: :connection_pool)
     end
 
     def finalize
