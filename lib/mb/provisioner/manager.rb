@@ -93,7 +93,6 @@ module MotherBrain
         ticket      = job.ticket
         provisioner = self.class.new_provisioner(options)
 
-        log.debug "manager delegating destruction of #{environment}..."
         provisioner.async.down(job, environment.to_s)
 
         ticket
@@ -133,6 +132,8 @@ module MotherBrain
           skip_bootstrap: false,
           force: false
         )
+
+        job.report_running("preparing to provision")
 
         worker = self.class.new_provisioner(options)
         Provisioner::Manifest.validate!(manifest, plugin)
