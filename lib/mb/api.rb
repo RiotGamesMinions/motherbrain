@@ -55,7 +55,7 @@ module MotherBrain
 
       desc "list all active jobs"
       get 'active' do
-        JobManager.instance.active_jobs
+        JobManager.instance.active
       end
 
       desc "find and return the Job with the given ID"
