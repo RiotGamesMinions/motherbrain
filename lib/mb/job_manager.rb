@@ -57,6 +57,13 @@ module MotherBrain
       end
     end
 
+    # Array of active jobs
+    #
+    # @return [JobRecord]
+    def active_jobs
+      active.collect {|j| JobRecord.new(j) }
+    end
+
     # @param [String] id
     def find(id)
       records.find { |record| record.id == id }
