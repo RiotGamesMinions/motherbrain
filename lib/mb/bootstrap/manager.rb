@@ -134,7 +134,7 @@ module MotherBrain
           end
 
           while tasks = task_queue.shift
-            job.status = "Bootstrapping #{Array(tasks).collect(&:groups).flatten.uniq.join(', ')}"
+            job.status = "bootstrapping group(s): #{Array(tasks).collect(&:groups).flatten.uniq.join(', ')}"
 
             failures = concurrent_bootstrap(manifest, tasks, options).select do |group, response_set|
               response_set.has_errors?

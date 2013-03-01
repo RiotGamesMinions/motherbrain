@@ -109,13 +109,16 @@ module MotherBrain
         options = options.reverse_merge(skip_bootstrap: false)
 
         begin
-          job.status = "creating new environment called '#{env_name}'"
+          job.status = "creating new environment"
           connection.environment.create(env_name, self.class.convert_manifest(manifest))
         rescue EF::REST::HTTPUnprocessableEntity; end
 
         until connection.environment.created?(env_name)
+          job.status = "waiting for environment to be created"
           sleep self.interval
         end
+
+        job.status = "environment created"
 
         response = self.class.handle_created(connection.environment.find(env_name, force: true))
         self.class.validate_create(response, manifest)
