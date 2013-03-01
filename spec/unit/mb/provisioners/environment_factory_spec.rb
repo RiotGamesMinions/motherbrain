@@ -62,8 +62,6 @@ describe MB::Provisioners::EnvironmentFactory do
 
     context "if given skip_bootstrap option" do
       it "skips the bootstrap process" do
-        job.should_receive(:report_running)
-        job.should_receive(:report_success)
         connection = double('connection')
         environment = double('environment')
         converted_manifest = double('converted_manifest')
