@@ -1,23 +1,15 @@
 require 'spec_helper'
 
-describe MB::Locks do
-  describe "ClassMethods" do
-    subject { described_class }
-
-    describe "::manager" do
-      it "returns a Locks::Manager" do
-        subject.manager.should be_a(MB::Locks::Manager)
-      end
-    end
-  end
-
+describe MB::Mixin::Locks do
   subject do
     Class.new do
-      include MB::Locks
+      include MB::Mixin::Locks
     end.new
   end
 
-  before(:each) { MB::Locks.manager.reset! }
+  let(:lock_manager) { MB::LockManager.instance }
+
+  before(:each) { lock_manager.reset! }
 
   describe "#chef_locks" do
     it "returns a Set" do
@@ -28,7 +20,7 @@ describe MB::Locks do
   describe "#find_lock" do
     it "returns a Chef::Mutex if a mutex with the given name is registered" do
       mutex = double('mutex', type: :chef_environment, name: "my_environment")
-      MB::Locks.manager.stub(:locks).and_return([mutex])
+      lock_manager.stub(:locks).and_return([mutex])
 
       subject.find_lock(chef_environment: "my_environment").should eql(mutex)
     end

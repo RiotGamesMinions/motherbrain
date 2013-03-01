@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::Locks::Manager do
+describe MB::LockManager do
   subject { described_class.new }
 
   describe "#locks" do

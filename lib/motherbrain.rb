@@ -48,7 +48,7 @@ module MotherBrain
   autoload :JobManager, 'mb/job_manager'
   autoload :JobRecord, 'mb/job_record'
   autoload :JobTicket, 'mb/job_ticket'
-  autoload :Locks, 'mb/locks'
+  autoload :LockManager, 'mb/lock_manager'
   autoload :Logging, 'mb/logging'
   autoload :Manifest, 'mb/manifest'
   autoload :Mixin, 'mb/mixin'
