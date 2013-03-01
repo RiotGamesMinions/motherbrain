@@ -1,19 +1,11 @@
-module MotherBrain
+module MotherBrain::Mixin
   # @author Jamie Winsor <jamie@vialstudios.com>
   module Locks
-    autoload :Manager, 'mb/locks/manager'
-
-    class << self
-      # @return [Locks::Manager]
-      def manager
-        MB::Application[:lock_manager] or raise Celluloid::DeadActorError, "lock manager actor not running"
-      end
-    end
-
     extend Forwardable
+    extend MB::Mixin::Services
 
-    def_delegator "MB::Locks.manager", :locks, :chef_locks
-    def_delegator "MB::Locks.manager", :find, :find_lock
+    def_delegator lock_manager, :locks, :chef_locks
+    def_delegator lock_manager, :find, :find_lock
 
     # Attempts to create a lock. Fails if the lock already exists.
     #
