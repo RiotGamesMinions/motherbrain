@@ -71,7 +71,7 @@ describe MB::Bootstrap::Manager do
   end
 
   describe "#async_bootstrap" do
-    it "delegates asynchronously to #_bootstrap_" do
+    it "delegates asynchronously to {#bootstrap}" do
       options = double('options')
       manager.should_receive(:async).with(
         :bootstrap,

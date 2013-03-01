@@ -116,7 +116,7 @@ module MotherBrain
                   prov_options = Hash.new.merge(options).deep_symbolize_keys
                   manifest     = Provisioner::Manifest.from_file(manifest_file)
 
-                  job = Application.provision(
+                  job = provisioner.async_provision(
                     environment.freeze,
                     manifest.freeze,
                     plugin.freeze,

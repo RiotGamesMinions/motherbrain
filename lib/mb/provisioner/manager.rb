@@ -56,55 +56,26 @@ module MotherBrain
         log.info { "Provision Manager starting..." }
       end
 
-      # Returns a SafeReturn array whose body is an array of hashes representing the nodes
-      # created for the given manifest
-      #
-      # @example body of success
-      #   [
-      #     {
-      #       instance_type: "m1.large",
-      #       public_hostname: "node1.riotgames.com"
-      #     },
-      #     {
-      #       instance_type: "m1.small",
-      #       public_hostname: "node2.riotgames.com"
-      #     }
-      #   ]
+      # Asynchronously create a new environment
       #
       # @param [#to_s] environment
       #   name of the environment to create or append to
-      # @param [Provisioner::Manifest] manifest
+      # @param [MB::Provisioner::Manifest] manifest
       #   manifest of nodes to create
-      # @param [MotherBrain::Plugin] plugin
+      # @param [MB::Plugin] plugin
       #   the plugin we are creating these nodes for
       #
-      # @option options [Hash] :component_versions (Hash.new)
-      #   Hash of components and the versions to set them to
-      # @option options [Hash] :cookbook_versions (Hash.new)
-      #   Hash of cookbooks and the versions to set them to
-      # @option options [Hash] :environment_attributes (Hash.new)
-      #   Hash of additional attributes to set on the environment
-      # @option options [Boolean] :skip_bootstrap (false)
-      #   skip automatic bootstrapping of the created environment
-      # @option options [#to_sym] :with
-      #   id of provisioner to use
-      # @option options [Boolean] :force (false)
-      #   force provisioning nodes to the environment even if the environment is locked
+      # @see {#provision} for options
       #
-      # @return [JobTicket]
-      def provision(environment, manifest, plugin, options = {})
-        options = options.reverse_merge(
-          component_versions: Hash.new,
-          cookbook_versions: Hash.new,
-          environment_attributes: Hash.new,
-          skip_bootstrap: false,
-          force: false
-        )
+      # @return [MB::JobRecord]
+      #   a reference to the executing job
+      def async_provision(environment, manifest, plugin, options = {})
+        options = options.reverse_merge(skip_bootstrap: false)
 
         job_type = options[:skip_bootstrap] ? :provision : :provision_and_bootstrap
         job      = Job.new(job_type)
 
-        async(:_provision_, job, environment, manifest, plugin, options)
+        async(:provision, job, environment, manifest, plugin, options)
 
         job.ticket
       end
@@ -132,7 +103,37 @@ module MotherBrain
         log.info { "Provision Manager stopping..." }
       end
 
-      def _provision_(job, environment, manifest, plugin, options)
+      # Create a new environment
+      #
+      # @param [MB::Job] job
+      # @param [#to_s] environment
+      #   name of the environment to create or append to
+      # @param [MB::Provisioner::Manifest] manifest
+      #   manifest of nodes to create
+      # @param [MB::Plugin] plugin
+      #   the plugin we are creating these nodes for
+      #
+      # @option options [Hash] :component_versions (Hash.new)
+      #   Hash of components and the versions to set them to
+      # @option options [Hash] :cookbook_versions (Hash.new)
+      #   Hash of cookbooks and the versions to set them to
+      # @option options [Hash] :environment_attributes (Hash.new)
+      #   Hash of additional attributes to set on the environment
+      # @option options [Boolean] :skip_bootstrap (false)
+      #   skip automatic bootstrapping of the created environment
+      # @option options [#to_sym] :with
+      #   id of provisioner to use
+      # @option options [Boolean] :force (false)
+      #   force provisioning nodes to the environment even if the environment is locked
+      def provision(job, environment, manifest, plugin, options = {})
+        options = options.reverse_merge(
+          component_versions: Hash.new,
+          cookbook_versions: Hash.new,
+          environment_attributes: Hash.new,
+          skip_bootstrap: false,
+          force: false
+        )
+
         worker = self.class.new_provisioner(options)
         Provisioner::Manifest.validate!(manifest, plugin)
         
@@ -142,7 +143,7 @@ module MotherBrain
           job.report_success(response)
         else
           bootstrap_manifest = Bootstrap::Manifest.from_provisioner(response, manifest)
-          bootstrapper._bootstrap_(job, env_name, bootstrap_manifest, plugin, options)
+          bootstrapper.bootstrap(job, env_name, bootstrap_manifest, plugin, options)
         end
       rescue InvalidProvisionManifest, UnexpectedProvisionCount, EF::REST::Error => ex
         log.fatal { "an error occured: #{ex}" }
