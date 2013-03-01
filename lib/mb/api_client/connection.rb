@@ -1,4 +1,5 @@
 require 'ridley/middleware'
+require 'mb/api_client/middleware'
 
 module MotherBrain
   class ApiClient
@@ -36,7 +37,7 @@ module MotherBrain
               Errno::ETIMEDOUT,
               Faraday::Error::TimeoutError
             ]
-
+          b.request :motherbrain_auth
           b.adapter :net_http_persistent
         end
 
