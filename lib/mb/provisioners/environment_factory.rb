@@ -111,12 +111,10 @@ module MotherBrain
         begin
           job.status = "creating new environment called '#{env_name}'"
           connection.environment.create(env_name, self.class.convert_manifest(manifest))
+        rescue EF::REST::HTTPUnprocessableEntity; end
 
-          until connection.environment.created?(env_name)
-            sleep self.interval
-          end
-        rescue EF::REST::HTTPUnprocessableEntity
-          job.status = "environment already exists, skipping creation"
+        until connection.environment.created?(env_name)
+          sleep self.interval
         end
 
         response = self.class.handle_created(connection.environment.find(env_name, force: true))

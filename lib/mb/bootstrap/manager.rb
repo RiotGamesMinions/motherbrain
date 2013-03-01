@@ -136,11 +136,17 @@ module MotherBrain
           while tasks = task_queue.shift
             job.status = "Bootstrapping #{Array(tasks).collect(&:groups).flatten.uniq.join(', ')}"
 
-            concurrent_bootstrap(manifest, tasks, options)
-          end
-        end
+            failures = concurrent_bootstrap(manifest, tasks, options).select do |group, response_set|
+              response_set.has_errors?
+            end
 
-        job.report_success
+            unless failures.empty?
+              return job.report_failure("failed to bootstrap group(s): #{failures.keys.join(', ')}")
+            end
+          end
+
+          job.report_success
+        end
       rescue => error
         log.fatal { "unknown error occured: #{error}"}
         job.report_failure(error)
