@@ -62,7 +62,7 @@ module MotherBrain
         group.supervise_as :ridley, Ridley::Client, config.to_ridley
 
         group.supervise_as :job_manager, JobManager
-        group.supervise_as :lock_manager, Locks::Manager
+        group.supervise_as :lock_manager, LockManager
         group.supervise_as :plugin_manager, PluginManager
 
         group.supervise_as :command_invoker, CommandInvoker

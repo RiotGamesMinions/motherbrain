@@ -28,6 +28,7 @@ module MotherBrain
     include Celluloid
     include Celluloid::Notifications
     include MB::Logging
+    include MB::Mixin::Services
 
     extend Forwardable
 
@@ -221,11 +222,11 @@ module MotherBrain
 
         result = locks.delete(data_bag_id)
 
-        Locks.manager.unregister(Actor.current)
+        lock_manager.unregister(Actor.current)
 
         result
       rescue
-        Locks.manager.register(Actor.current)
+        lock_manager.register(Actor.current)
       end
 
       # Create our data bag if it doesn't already exist
@@ -280,11 +281,11 @@ module MotherBrain
           time: Time.now
         ).save
 
-        Locks.manager.register(Actor.current)
+        lock_manager.register(Actor.current)
 
         result
       rescue
-        Locks.manager.unregister(Actor.current)
+        lock_manager.unregister(Actor.current)
       end
   end
 end
