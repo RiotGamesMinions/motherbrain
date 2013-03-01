@@ -126,7 +126,7 @@ module MotherBrain
           manifest = Bootstrap::Manifest.new(params[:manifest])
           manifest.validate!(plugin)
 
-          bootstrapper.bootstrap(
+          bootstrapper.async_bootstrap(
             params[:environment_id].freeze,
             manifest.freeze,
             plugin.freeze,
