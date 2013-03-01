@@ -2,7 +2,7 @@ module MotherBrain
   # @author Jamie Winsor <jamie@vialstudios.com>
   class Command
     include Chozo::VariaModel
-    include MB::Locks
+    include MB::Mixin::Locks
 
     attribute :name,
       type: String,

@@ -9,8 +9,8 @@ module MotherBrain
       extend Forwardable
 
       include Celluloid
-      include MB::Locks
       include MB::Logging
+      include MB::Mixin::Locks
       include MB::Mixin::AttributeSetting
 
       # @return [String]

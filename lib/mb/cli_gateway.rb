@@ -306,14 +306,14 @@ module MotherBrain
 
     desc "lock", "Lock an environment"
     def lock
-      job = Locks.manager.lock(options[:environment])
+      job = lock_manager.lock(options[:environment])
 
       CliClient.new(job).display
     end
 
     desc "unlock", "Unlock an environment"
     def unlock
-      job = Locks.manager.unlock(options[:environment])
+      job = lock_manager.unlock(options[:environment])
 
       CliClient.new(job).display
     end

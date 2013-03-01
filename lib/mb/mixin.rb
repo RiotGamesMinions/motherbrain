@@ -1,6 +1,3 @@
-module MotherBrain
-  module Mixin
-    autoload :AttributeSetting, 'mb/mixin/attribute_setting'
-    autoload :Services, 'mb/mixin/services'
-  end
+Dir["#{File.dirname(__FILE__)}/mixin/*.rb"].sort.each do |path|
+  require "mb/mixin/#{File.basename(path, '.rb')}"
 end
