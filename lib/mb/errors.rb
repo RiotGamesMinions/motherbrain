@@ -215,4 +215,5 @@ module MotherBrain
   end
 
   class InvalidLockType < MBError; status_code(23); end
+  class BootstrapError < MBError; status_code(24); end
 end
