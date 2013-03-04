@@ -137,7 +137,11 @@ module MotherBrain
             job.status = "bootstrapping group(s): #{Array(tasks).collect(&:groups).flatten.uniq.join(', ')}"
 
             failures = concurrent_bootstrap(manifest, tasks, options).select do |group, response_set|
-              response_set.has_errors?
+              if response_set.respond_to?(:has_errors?)
+                response_set.has_errors?
+              else
+                response_set.first != :ok
+              end
             end
 
             unless failures.empty?
