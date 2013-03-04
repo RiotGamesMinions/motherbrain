@@ -17,7 +17,7 @@ describe MB::Component do
   describe "#description" do
     subject { component.description }
 
-    it { should eq("activemq component") }
+    it { should eq("activemq component commands") }
 
     context "with a description" do
       let(:component) {

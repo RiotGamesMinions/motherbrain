@@ -30,7 +30,7 @@ module MotherBrain
 
     # @return [String]
     def description
-      _attributes_.description || "#{name} component"
+      _attributes_.description || "#{name} component commands"
     end
 
     # @return [Symbol]
