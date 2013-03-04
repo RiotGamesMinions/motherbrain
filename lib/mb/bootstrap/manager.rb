@@ -141,7 +141,7 @@ module MotherBrain
             end
 
             unless failures.empty?
-              return job.report_failure("failed to bootstrap group(s): #{failures.keys.join(', ')}")
+              job.report_failure("failed to bootstrap group(s): #{failures.keys.join(', ')}")
             end
           end
 
