@@ -160,6 +160,7 @@ module MotherBrain
     end
 
     def finalize
+      status = "complete"
       JobManager.instance.complete_job(Actor.current)
     end
 
