@@ -145,7 +145,7 @@ module MotherBrain
             end
 
             unless failures.empty?
-              job.report_failure("failed to bootstrap group(s): #{failures.keys.join(', ')}")
+              abort BootstrapError.new("failed to bootstrap group(s): #{failures.keys.join(', ')}")
             end
           end
 
@@ -154,6 +154,8 @@ module MotherBrain
       rescue => error
         log.fatal { "unknown error occured: #{error}"}
         job.report_failure(error)
+      ensure
+        job.finalize if job && job.alive?
       end
 
       def finalize
