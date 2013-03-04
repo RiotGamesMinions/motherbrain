@@ -4,11 +4,29 @@ describe MB::Component do
   let(:environment) { 'mb-test' }
   let(:chef_conn) { double('chef_conn') }
 
-  subject do
+  subject { component }
+
+  let(:component) {
     MB::Component.new("activemq") do
       group "masters" do
         # block
       end
+    end
+  }
+
+  describe "#description" do
+    subject { component.description }
+
+    it { should eq("activemq component commands") }
+
+    context "with a description" do
+      let(:component) {
+        MB::Component.new("activemq") do
+          description "ActiveMQ"
+        end
+      }
+
+      it { should eq("ActiveMQ") }
     end
   end
 
