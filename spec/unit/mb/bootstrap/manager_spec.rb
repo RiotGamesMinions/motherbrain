@@ -101,8 +101,11 @@ describe MB::Bootstrap::Manager do
         manager.stub_chain(:chef_conn, :environment, :find).with(environment).and_return(nil)
       end
 
-      it "sets the job to failed" do
+      it "sets the job to failed and terminates it" do
         job_stub.should_receive(:report_failure)
+        job_stub.should_receive(:alive?) { true }
+        job_stub.should_receive(:terminate)
+        
         manager.bootstrap(job_stub, environment, manifest, plugin)
       end
     end

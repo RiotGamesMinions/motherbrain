@@ -153,7 +153,7 @@ module MotherBrain
         log.fatal { "unknown error occured: #{ex}"}
         job.report_failure("internal error")
       ensure
-        job.finalize if job && job.alive?
+        job.terminate if job && job.alive?
       end
     end
   end

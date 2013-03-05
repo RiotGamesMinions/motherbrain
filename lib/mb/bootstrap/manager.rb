@@ -155,7 +155,7 @@ module MotherBrain
         log.fatal { "unknown error occured: #{error}"}
         job.report_failure(error)
       ensure
-        job.finalize if job && job.alive?
+        job.terminate if job && job.alive?
       end
 
       def finalize
