@@ -110,6 +110,18 @@ describe MB::Bootstrap::Manifest do
         )
       end
     end
+
+    context "when there is no nodes key" do
+      let(:attributes) { { "component::group" => ["box1"] } }
+
+      it "raises an InvalidBootstrapManifest error" do
+        expect {
+          validate!
+        }.to raise_error(
+          MB::InvalidBootstrapManifest
+        )
+      end
+    end
   end
 
   describe ".from_provisioner" do
