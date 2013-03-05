@@ -85,6 +85,7 @@ module MotherBrain
       # @see {#bootstrap} for options
       def bootstrap(job, environment, manifest, plugin, options = {})
         options = options.reverse_merge(
+          environment: environment,
           cookbook_versions: Hash.new,
           component_versions: Hash.new,
           environment_attributes: Hash.new,
