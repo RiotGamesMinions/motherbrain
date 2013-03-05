@@ -1,10 +1,12 @@
 require 'dcell'
+require 'chef'
 require 'ohai'
 
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   module Agent
     autoload :ChefClient, 'mb/agent/chef_client'
+    autoload :JobNotifier, 'mb/agent/job_notifier'
     autoload :Ohai, 'mb/agent/ohai'
 
     class SupervisionGroup < Celluloid::SupervisionGroup
