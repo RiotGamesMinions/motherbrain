@@ -13,6 +13,8 @@ require 'set'
 require 'ostruct'
 require 'multi_json'
 
+require 'chef/mash'
+
 require 'mb/version'
 require 'mb/errors'
 require 'mb/ridley_ext'
@@ -20,6 +22,8 @@ require 'mb/ridley_ext'
 # @author Jamie Winsor <reset@riotgames.com>
 module MotherBrain
   autoload :AbstractGear, 'mb/abstract_gear'
+  autoload :Agent, 'mb/agent'
+  autoload :AgentCtl, 'mb/agent_ctl'
   autoload :Api, 'mb/api'
   autoload :ApiClient, 'mb/api_client'
   autoload :ApiHelpers, 'mb/api_helpers'
