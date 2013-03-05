@@ -41,7 +41,7 @@ module MotherBrain
         args, opts = parse_args(given_args)
         invoked_opts.merge!(opts)
 
-        if args.any? and (args & NO_ENVIRONMENT_TASKS).empty?
+        if args.count > 1 and (args & NO_ENVIRONMENT_TASKS).empty?
           unless opts[:environment]
             MB.ui.say "No value provided for required option '--environment'"
             exit 1
@@ -93,7 +93,7 @@ module MotherBrain
             MB.ui.say "No cookbook with #{name} (version #{options[:plugin_version]}) plugin was found in your Berkshelf."
             exit 1
           end
-        else
+        elsif options[:environment]
           begin
             plugin = Application.plugin_manager.for_environment(name, options[:environment], remote: true)
           rescue MotherBrain::EnvironmentNotFound => e
@@ -104,6 +104,8 @@ module MotherBrain
             MB.ui.say "No cookbook with #{name} plugin was found for the #{options[:environment]} environment."
             exit 1
           end
+        else
+          plugin = Application.plugin_manager.find(name)
         end
 
         self.register_subcommand MB::Cli::SubCommand.new(plugin)
