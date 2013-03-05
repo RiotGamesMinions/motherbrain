@@ -1,3 +1,5 @@
+require 'optparse'
+
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   module AgentCtl
@@ -28,13 +30,13 @@ module MotherBrain
           end
         end.parse!(args)
 
-        options
+        default_options.reverse_merge(options)
       end
 
       def run(args, filename)
         options = parse(args, filename)
         
-        puts "==> Starting motherbrain agent on #{options[:host]}:#{options[:port]}..."
+        puts "==> motherbrain agent running on #{options[:host]}:#{options[:port]}..."
         MB::Agent.start(options)
       end
     end
