@@ -10,14 +10,16 @@ module MotherBrain
     autoload :Ohai, 'mb/agent/ohai'
 
     class SupervisionGroup < Celluloid::SupervisionGroup
+      cattr_accessor :default_chef_attributes
       cattr_accessor :chef_options
-      cattr_accessor :ohai_options
 
-      supervise Agent::ChefClient, as: :chef_client, args: chef_options
-      supervise Agent::Ohai, as: :ohai, args: ohai_options
+      supervise MB::Agent::ChefClient, as: :chef_client
+      supervise MB::Agent::Ohai, as: :ohai
     end
 
     class << self
+      # @return [MB::Config]
+      attr_reader :config
       # @return [String]
       attr_reader :node_id
       # @return [String]
@@ -28,11 +30,10 @@ module MotherBrain
       # @return [Hash]
       def default_options
         {
+          config: MB::Config.default_path,
           node_id: nil,
           host: "127.0.0.1",
-          port: 27400,
-          chef_options: Hash.new,
-          ohai_options: Hash.new
+          port: 27400
         }
       end
 
@@ -70,8 +71,8 @@ module MotherBrain
         @node_id = options[:node_id]
         @host    = options[:host]
         @port    = options[:port]
-        Agent::SupervisionGroup.chef_options = options[:chef_options]
-        Agent::SupervisionGroup.ohai_options = options[:ohai_options]
+        @config  = MB::Config.from_file(options[:config])
+        MB::Logging.setup(@config.to_logger)
       end
 
       # Setup and run the agent in the foreground
