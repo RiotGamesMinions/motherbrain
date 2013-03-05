@@ -71,6 +71,11 @@ module MotherBrain
               "Plugin '#{plugin.name}' (#{plugin.version}) does not contain a bootstrap routine"
           end
 
+          unless manifest[:nodes].is_a?(Array)
+            msg = "Manifest should contain an array of nodes"
+            raise InvalidBootstrapManifest, msg
+          end
+
           manifest.node_groups.each do |node_group|
             groups = node_group[:groups]
 
