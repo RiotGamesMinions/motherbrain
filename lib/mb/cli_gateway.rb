@@ -106,6 +106,11 @@ module MotherBrain
           end
         else
           plugin = Application.plugin_manager.find(name)
+
+          unless plugin
+            MB.ui.say "No cookbook with #{name} plugin was found in your Berkshelf."
+            exit 1
+          end
         end
 
         self.register_subcommand MB::Cli::SubCommand.new(plugin)
