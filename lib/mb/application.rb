@@ -36,7 +36,7 @@ module MotherBrain
 
       # @raise [Celluloid::DeadActorError] if Application has not been started
       #
-      # @return [Celluloid::SupervisionGroup(Application)]
+      # @return [Celluloid::SupervisionGroup(MB::Application::SupervisionGroup)]
       def instance
         return @instance unless @instance.nil?
 
@@ -112,7 +112,7 @@ module MotherBrain
 
       def reconfigure(_msg, new_config)
         log.debug { "[Application] ConfigManager has changed: re-configuring components..." }
-        self.class.ridley.async.configure(new_config.to_ridley)
+        @registry[:ridley].async.configure(new_config.to_ridley)
       end
 
       def interrupt
