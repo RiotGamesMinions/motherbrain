@@ -14,29 +14,20 @@ trap 'HUP' do
 end
 
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   #
   # Main application supervisor for MotherBrain
   #
   # @example running the application in the foreground
   #   MB::Application.run(config)
   #
-  # @example running the application asynchronously
+  # @example running the application in the background
   #   MB::Application.run!(config)
-  #
-  class Application < Celluloid::SupervisionGroup
+  module Application
     class << self
       extend Forwardable
       include MB::Mixin::Services
-
-      # The Actor registry for MotherBrain.
-      #
-      # @note MotherBrain uses it's own registry instead of Celluloid::Registry.root to
-      #   avoid conflicts in the larger namespace. Use MB::Application[] to access MotherBrain
-      #   actors instead of Celluloid::Actor[].
-      #
-      # @return [Celluloid::Registry]
-      attr_reader :registry
+      include MB::Logging
 
       def_delegator :upgrade_manager, :upgrade
       def_delegator :config_manager, :config
@@ -45,100 +36,108 @@ module MotherBrain
 
       # @raise [Celluloid::DeadActorError] if Application has not been started
       #
-      # @return [Celluloid::SupervisionGroup(Application)]
+      # @return [Celluloid::SupervisionGroup(MB::Application::SupervisionGroup)]
       def instance
-        MB::Application[:motherbrain] or raise Celluloid::DeadActorError, "application not running"
+        return @instance unless @instance.nil?
+
+        raise Celluloid::DeadActorError, "application not running"
+      end
+
+      # The Actor registry for MotherBrain.
+      #
+      # @note MotherBrain uses it's own registry instead of Celluloid::Registry.root to
+      #   avoid conflicts in the larger namespace. Use MB::Application[] to access MotherBrain
+      #   actors instead of Celluloid::Actor[].
+      #
+      # @return [Celluloid::Registry]
+      def registry
+        @registry ||= Celluloid::Registry.new
       end
 
       # Run the application asynchronously (terminate after execution)
       #
-      # @param [MB::Config] app_config
-      def run!(app_config)
-        MB::FileSystem.init
-        MB::Application[:motherbrain] = group = super()
-
-        # Core services
-        group.supervise_as :config_manager, ConfigManager, app_config
-        group.supervise_as :ridley, Ridley::Client, config.to_ridley
-
-        group.supervise_as :job_manager, JobManager
-        group.supervise_as :lock_manager, LockManager
-        group.supervise_as :plugin_manager, PluginManager
-
-        group.supervise_as :command_invoker, CommandInvoker
-        group.supervise_as :node_querier, NodeQuerier
-        group.supervise_as :environment_manager, EnvironmentManager
-
-        # Userland workers
-        group.supervise_as :bootstrap_manager, Bootstrap::Manager
-        group.supervise_as :provisioner_manager, Provisioner::Manager
-        group.supervise_as :upgrade_manager, Upgrade::Manager
-
-        if config.rest_gateway.enable
-          group.supervise_as :rest_gateway, RestGateway, config.to_rest_gateway
-        end
-
-        group
+      # @param [MB::Config] config
+      def run!(config)
+        log.info { "MotherBrain starting..." }
+        setup
+        @instance = Application::SupervisionGroup.new(config)
       end
 
       # Run the application in the foreground (sleep on main thread)
       #
-      # @param [MB::Config] app_config
-      def run(app_config)
+      # @param [MB::Config] config
+      def run(config)
         loop do
-          supervisor = run!(app_config)
+          supervisor = run!(config)
 
           sleep 0.1 while supervisor.alive?
 
-          Logger.error "!!! Celluloid::SupervisionGroup #{self} crashed. Restarting..."
+          log.fatal { "!!! #{self} crashed. Restarting..." }
         end
+      end
+
+      # Prepare the application and environment to run motherbrain
+      def setup
+        MB::FileSystem.init
       end
     end
 
-    @registry = Celluloid::Registry.new
+    class SupervisionGroup < ::Celluloid::SupervisionGroup
+      include Celluloid::Notifications
+      include MB::Logging
 
-    include Celluloid::Notifications
-    include MB::Logging
+      def initialize(config)
+        super(MB::Application.registry) do |s|
+          s.supervise_as :config_manager, MB::ConfigManager, config
+          s.supervise_as :ridley, Ridley::Client, config.to_ridley
+          s.supervise_as :job_manager, MB::JobManager
+          s.supervise_as :lock_manager, MB::LockManager
+          s.supervise_as :plugin_manager, MB::PluginManager
+          s.supervise_as :command_invoker, MB::CommandInvoker
+          s.supervise_as :node_querier, MB::NodeQuerier
+          s.supervise_as :environment_manager, MB::EnvironmentManager
+          s.supervise_as :bootstrap_manager, MB::Bootstrap::Manager
+          s.supervise_as :provisioner_manager, MB::Provisioner::Manager
+          s.supervise_as :upgrade_manager, MB::Upgrade::Manager
 
-    def initialize(*args)
-      super(self.class.registry)
-      log.info { "MotherBrain starting..." }
-      @interrupt_mutex = Mutex.new
-      @interrupted     = false
-      subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
-    end
+          if config.rest_gateway.enable
+            s.supervise_as :rest_gateway, MB::RestGateway, config.to_rest_gateway
+          end
+        end
 
-    def reconfigure(_msg, new_config)
-      log.debug { "[Application] ConfigManager has changed: re-configuring components..." }
-      self.class.ridley.async.configure(new_config.to_ridley)
-    end
+        @interrupt_mutex = Mutex.new
+        @interrupted     = false
+        subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
+      end
 
-    def interrupt
-      interrupt_mutex.synchronize do
-        unless interrupted
-          @interrupted = true
+      def reconfigure(_msg, new_config)
+        log.debug { "[Application] ConfigManager has changed: re-configuring components..." }
+        @registry[:ridley].async.configure(new_config.to_ridley)
+      end
 
-          reverse_terminate
+      def interrupt
+        interrupt_mutex.synchronize do
+          unless interrupted
+            @interrupted = true
+
+            reverse_terminate
+          end
         end
       end
+
+      # Terminate our child processes in reverse order
+      #
+      # @see https://github.com/celluloid/celluloid/pull/152
+      def reverse_terminate
+        @members.reverse_each(&:terminate)
+
+        terminate
+      end
+
+      private
+
+        attr_reader :interrupt_mutex
+        attr_reader :interrupted
     end
-
-    # Terminate our child processes in reverse order
-    #
-    # @see https://github.com/celluloid/celluloid/pull/152
-    def reverse_terminate
-      @members.reverse_each(&:terminate)
-
-      terminate
-    end
-
-    def finalize
-      log.info { "MotherBrain stopping..." }
-    end
-
-    private
-
-      attr_reader :interrupt_mutex
-      attr_reader :interrupted
   end
 end
