@@ -97,6 +97,8 @@ module MotherBrain
       # @author Jamie Winsor <reset@riotgames.com>
       # @api private
       class Action
+        include MB::Mixin::Services
+
         # @return [String]
         attr_reader :name
         # @return [Set<Ridley::Node>]
@@ -125,14 +127,29 @@ module MotherBrain
           runner = ActionRunner.new(environment, nodes)
           runner.instance_eval(&block)
 
-          responses = nodes.collect do |node|
-            Application.node_querier.future.chef_run(node.public_hostname)
-          end.map(&:value)
+          # @todo JW: refactor all of this to just use the agent commander
+          #   and drop support for running Chef via SSH with the node querier.
+          if Application.config.agent_commander.enable
+            responses = nodes.collect do |node|
+              agent_run(node.public_hostname)
+            end.map(&:value)
 
-          response_set = Ridley::SSH::ResponseSet.new(responses)
+            failures = responses.select { |status, _| status == :error }
 
-          if response_set.has_errors?
-            raise ChefRunFailure.new(response_set.failures)
+            unless failures.empty?
+              p failures
+              raise ChefRunFailure.new(failures)
+            end
+          else
+            responses = nodes.collect do |node|
+              ssh_run(node.public_hostname)
+            end.map(&:value)
+
+            response_set = Ridley::SSH::ResponseSet.new(responses)
+
+            if response_set.has_errors?
+              raise ChefRunFailure.new(response_set.failures)
+            end
           end
 
           self
@@ -145,6 +162,25 @@ module MotherBrain
           attr_reader :component
           attr_reader :runner
           attr_reader :block
+
+          def ssh_run(node)
+            Application.node_querier.future.chef_run(node)
+          end
+
+          # @return [Celluloid::Future]
+          def agent_run(node)
+            Celluloid::Future.new {
+              begin
+                job = Job.new(:service_action)
+                agent_commander.run_chef(job, node)
+                [ :ok, nil ]
+              rescue Exception => ex
+                [ :error, ex.to_s ]
+              ensure
+                job.terminate
+              end
+            }
+          end
 
         # @author Jamie Winsor <reset@riotgames.com>
         # @api private
