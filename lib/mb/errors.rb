@@ -230,4 +230,8 @@ module MotherBrain
       "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
     end
   end
+
+  # Agent Execution Errors
+  class AgentExecutionError < MBError; end
+  class ChefClientError < AgentExecutionError; status_code(200); end
 end

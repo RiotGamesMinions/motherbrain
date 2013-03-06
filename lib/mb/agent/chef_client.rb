@@ -22,9 +22,9 @@ module MotherBrain::Agent
       client = nil
       result
     rescue Exception => ex
-      log.fatal { "Chef encountered an error: #{ex.class} - #{ex.message}" }
+      log.fatal { "Chef Client encountered an error: #{ex.class} - #{ex.message}" }
       log.debug { ex.backtrace.join("\n ") }
-      abort(ex)
+      abort MB::ChefClientError.new(ex)
     end
   end
 end
