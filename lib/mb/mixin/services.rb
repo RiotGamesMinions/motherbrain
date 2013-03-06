@@ -5,6 +5,13 @@ module MotherBrain
     # A mixin to provide easy access to the various services (actors) running in the
     # motherbrain stack.
     module Services
+      # @raise [Celluloid::DeadActorError] if the agent commander has not been started
+      #
+      # @return [Celluloid::Actor(AgentCommander)]
+      def agent_commander
+        AgentCommander.instance
+      end
+
       # @raise [Celluloid::DeadActorError] if the bootstrap manager has not been started
       #
       # @return [Celluloid::Actor(Bootstrap::Manager)]

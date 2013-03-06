@@ -23,6 +23,7 @@ require 'mb/ridley_ext'
 module MotherBrain
   autoload :AbstractGear, 'mb/abstract_gear'
   autoload :Agent, 'mb/agent'
+  autoload :AgentCommander, 'mb/agent_commander'
   autoload :AgentCtl, 'mb/agent_ctl'
   autoload :Api, 'mb/api'
   autoload :ApiClient, 'mb/api_client'

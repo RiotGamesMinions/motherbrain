@@ -231,6 +231,8 @@ module MotherBrain
     end
   end
 
+  class AgentNotFound < MBError; status_code(25); end
+
   # Agent Execution Errors
   class AgentExecutionError < MBError; end
   class ChefClientError < AgentExecutionError; status_code(200); end

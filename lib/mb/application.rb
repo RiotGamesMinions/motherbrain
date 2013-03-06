@@ -93,6 +93,7 @@ module MotherBrain
           s.supervise_as :job_manager, MB::JobManager
           s.supervise_as :lock_manager, MB::LockManager
           s.supervise_as :plugin_manager, MB::PluginManager
+          s.supervise_as :agent_commander, MB::AgentCommander
           s.supervise_as :command_invoker, MB::CommandInvoker
           s.supervise_as :node_querier, MB::NodeQuerier
           s.supervise_as :environment_manager, MB::EnvironmentManager

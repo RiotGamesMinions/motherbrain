@@ -153,6 +153,10 @@ module MotherBrain
       default: true,
       type: Boolean
 
+    attribute 'agent_commander.enable',
+      default: false,
+      type: Boolean
+
     attribute 'ef.api_url',
       type: String
 
