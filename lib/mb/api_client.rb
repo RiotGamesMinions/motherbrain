@@ -35,6 +35,10 @@ module MotherBrain
     resource ApiClient::JobResource, :job
     resource ApiClient::PluginResource, :plugin
 
+    finalizer do
+      connection.terminate if connection.alive?
+    end
+
     # @param [String] url
     #   URL to REST Gateway
     #
@@ -48,10 +52,6 @@ module MotherBrain
     def initialize(url = DEFAULT_URL, options = {})
       super(Celluloid::Registry.new)
       pool(ApiClient::Connection, size: 4, args: [url, options], as: :connection_pool)
-    end
-
-    def finalize
-      connection.terminate if connection.alive?
     end
 
     def connection

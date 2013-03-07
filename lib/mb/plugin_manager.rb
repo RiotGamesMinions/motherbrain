@@ -24,6 +24,10 @@ module MotherBrain
     # @return [Timers::Timer, nil]
     attr_reader :eager_load_timer
 
+    finalizer do
+      log.info { "Plugin Manager stopping..." }
+    end
+
     def initialize
       log.info { "Plugin Manager starting..." }
       @berkshelf_path = MB::Berkshelf.path
@@ -96,10 +100,6 @@ module MotherBrain
     # @return [Integer]
     def eager_load_interval
       Application.config.plugin_manager.eager_load_interval
-    end
-
-    def finalize
-      log.info { "Plugin Manager stopping..." }
     end
 
     # Find and return a registered plugin of the given name and version. If no version

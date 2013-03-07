@@ -29,6 +29,10 @@ module MotherBrain
     attr_reader :records
     alias_method :list, :records
 
+    finalizer do
+      @_active.map { |job| job.terminate if job.alive? }
+    end
+
     def initialize
       @records = Set.new
       @_active  = Set.new
@@ -78,10 +82,6 @@ module MotherBrain
     # @return [String]
     def uuid
       Celluloid::UUID.generate
-    end
-
-    def finalize
-      @_active.map { |job| job.terminate if job.alive? }
     end
 
     private
