@@ -131,8 +131,8 @@ module MotherBrain
     rescue => ex
       ex = ex.cause if ex.respond_to?(:cause)
 
-      log.fatal { "error in lock sync: #{ex}" }
-      job.report_failure(ex.to_s) if job
+      job.set_status(ex.to_s) if job
+      log_exception(ex)
 
       if ex.is_a?(ResourceLocked)
         return false
