@@ -25,31 +25,33 @@ module MotherBrain
     #
     class Manifest < MotherBrain::Manifest
       class << self
+        # Create a new instance of {Bootstrap::Manifest} from the returning value from calling
+        # {Provisioner#up} on a provisioner and the provision manifest sent to {Provisioner#up}.
+        #
         # @param [Hash] nodes
+        #   the result from calling {#up} on a provisioner
         # @param [Provisioner::Manifest] provisioner_manifest
+        #   the manifest sent to the provisioner performing {#up}
         #
         # @return [Bootstrap::Manifest]
         def from_provisioner(nodes, provisioner_manifest, path = nil)
-          nodes = nodes.dup
+          nodes      = nodes.dup
           attributes = provisioner_manifest.dup
 
           attributes.node_groups.each do |node_group|
             instance_type = node_group[:type]
-            count = node_group[:count] || 1
-            groups = node_group[:groups]
+            count         = node_group[:count] || 1
+            groups        = node_group[:groups]
+            hosts         = Set.new
 
             groups.each do |group|
               count.times do
-                instance = nodes.find { |node|
-                  node[:instance_type] == instance_type
-                }
-
-                node_group[:hosts] ||= []
-                node_group[:hosts] << instance[:public_hostname]
-
-                nodes.delete(instance)
+                instances = nodes.select { |node| node[:instance_type] == instance_type }
+                instances.each { |instance| hosts.add(instance[:public_hostname]) }
               end
             end
+
+            node_group[:hosts] = hosts.to_a
           end
 
           bootstrap_manifest = new(attributes)
