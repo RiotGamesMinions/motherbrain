@@ -97,8 +97,6 @@ module MotherBrain
       # @author Jamie Winsor <reset@riotgames.com>
       # @api private
       class Action
-        include MB::Mixin::Services
-
         # @return [String]
         attr_reader :name
         # @return [Set<Ridley::Node>]
@@ -127,29 +125,14 @@ module MotherBrain
           runner = ActionRunner.new(environment, nodes)
           runner.instance_eval(&block)
 
-          # @todo JW: refactor all of this to just use the agent commander
-          #   and drop support for running Chef via SSH with the node querier.
-          if Application.config.agent_commander.enable
-            responses = nodes.collect do |node|
-              agent_run(node.public_hostname)
-            end.map(&:value)
+          responses = nodes.collect do |node|
+            Application.node_querier.future.chef_run(node.public_hostname)
+          end.map(&:value)
 
-            failures = responses.select { |status, _| status == :error }
+          response_set = Ridley::SSH::ResponseSet.new(responses)
 
-            unless failures.empty?
-              p failures
-              raise ChefRunFailure.new(failures)
-            end
-          else
-            responses = nodes.collect do |node|
-              ssh_run(node.public_hostname)
-            end.map(&:value)
-
-            response_set = Ridley::SSH::ResponseSet.new(responses)
-
-            if response_set.has_errors?
-              raise ChefRunFailure.new(response_set.failures)
-            end
+          if response_set.has_errors?
+            raise ChefRunFailure.new(response_set.failures)
           end
 
           self
