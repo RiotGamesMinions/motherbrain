@@ -23,7 +23,6 @@ module MotherBrain
 
     trap_exit :force_complete
 
-
     # @return [Set<JobRecord>]
     #   listing of records of all jobs; completed and active
     attr_reader :records
@@ -87,7 +86,10 @@ module MotherBrain
     private
 
       def force_complete(actor, reason)
-        log.warn { "job crashed: #{reason}" }
+        if reason
+          log.fatal { "job crashed: #{reason}" }
+        end
+
         complete_job(actor)
       end
   end
