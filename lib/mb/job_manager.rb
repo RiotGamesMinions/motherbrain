@@ -86,10 +86,6 @@ module MotherBrain
     private
 
       def force_complete(actor, reason)
-        if reason
-          log.fatal { "job crashed: #{reason}" }
-        end
-
         complete_job(actor)
       end
   end
