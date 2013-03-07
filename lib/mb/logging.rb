@@ -91,5 +91,13 @@ module MotherBrain
       MB::Logging.logger
     end
     alias_method :log, :logger
+
+    # Log an exception and it's backtrace to FATAL
+    #
+    # @param [Exception] ex
+    def log_exception(ex)
+      log.fatal { "#{ex.class}: #{ex}" }
+      log.fatal { ex.backtrace.join("\n") }
+    end
   end
 end
