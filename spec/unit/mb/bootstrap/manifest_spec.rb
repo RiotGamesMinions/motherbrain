@@ -124,7 +124,7 @@ describe MB::Bootstrap::Manifest do
     end
   end
 
-  describe ".from_provisioner" do
+  describe "::from_provisioner" do
     let(:manifest) {
       described_class.from_provisioner(provisioner_response, provisioner_manifest, path)
     }
@@ -196,6 +196,46 @@ describe MB::Bootstrap::Manifest do
         manifest.path.should eql('/tmp/path')
       end
     end
-  end
 
+    context "given one node returned by the provisioner and a manifest containing with multiple groups" do
+      let(:response) do
+        [
+          {
+            instance_type: "m1.large",
+            public_hostname: "euca-10-20-37-170.eucalyptus.cloud.riotgames.com"
+          }
+        ]
+      end
+
+      let(:provisioner_manifest) do
+        MB::Provisioner::Manifest.new(
+          {
+            nodes: [
+              {
+                type: "m1.large",
+                groups: ["activemq::master", "activemq::slave"],
+                count: 1
+              }
+            ]
+          }
+        )
+      end
+
+      subject do
+        described_class.from_provisioner(response, provisioner_manifest)
+      end
+
+      it "contains one node group" do
+        subject.node_groups.should have(1).item
+      end
+
+      it "has one host in that node group" do
+        subject.node_groups.first[:hosts].should have(1).item
+      end
+
+      it "has two groups in that node group" do
+        subject.node_groups.first[:groups].should have(2).items
+      end
+    end
+  end
 end
