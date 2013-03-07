@@ -41,7 +41,7 @@ module MotherBrain
         args, opts = parse_args(given_args)
         invoked_opts.merge!(opts)
 
-        if args.count > 1 and (args & NO_ENVIRONMENT_TASKS).empty?
+        if args.any? and (args & NO_ENVIRONMENT_TASKS).empty?
           unless opts[:environment]
             MB.ui.say "No value provided for required option '--environment'"
             exit 1
