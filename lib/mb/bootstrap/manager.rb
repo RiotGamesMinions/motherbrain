@@ -16,6 +16,10 @@ module MotherBrain
       include MB::Mixin::Locks
       include MB::Mixin::AttributeSetting
 
+      finalizer do
+        log.info { "Bootstrap Manager stopping..." }
+      end
+
       def initialize
         log.info { "Bootstrap Manager starting..." }
       end
@@ -157,10 +161,6 @@ module MotherBrain
         job.report_failure(error)
       ensure
         job.terminate if job && job.alive?
-      end
-
-      def finalize
-        log.info { "Bootstrap Manager stopping..." }
       end
 
       private

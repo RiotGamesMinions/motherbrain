@@ -57,6 +57,11 @@ module MotherBrain
 
     def_delegator :machine, :state
 
+    finalizer do
+      status = "complete"
+      JobManager.instance.complete_job(Actor.current)
+    end
+
     # @param [#to_s] type
     def initialize(type)
       @machine = StateMachine.new
@@ -157,11 +162,6 @@ module MotherBrain
       @result = result
       machine.transition(state, options)
       Actor.current
-    end
-
-    def finalize
-      status = "complete"
-      JobManager.instance.complete_job(Actor.current)
     end
 
     def to_s

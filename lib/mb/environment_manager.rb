@@ -15,6 +15,10 @@ module MotherBrain
     include MB::Mixin::Locks
     include MB::Mixin::Services
 
+    finalizer do
+      log.info { "Environment Manager stopping..." }
+    end
+
     def initialize
       log.info { "Environment Manager starting..." }
     end
@@ -45,10 +49,6 @@ module MotherBrain
       async(:_configure_, environment, job, options)
 
       job.ticket
-    end
-
-    def finalize
-      log.info { "Environment Manager stopping..." }
     end
 
     # Find an environment on the remote Chef server

@@ -18,6 +18,10 @@ module MotherBrain
 
     EMBEDDED_RUBY_PATH = "/opt/chef/embedded/bin/ruby".freeze
 
+    finalizer do
+      log.info { "Node Querier stopping..." }
+    end
+
     def initialize
       log.info { "Node Querier starting..." }
     end
@@ -229,10 +233,6 @@ module MotherBrain
       end
 
       copy_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options)
-    end
-
-    def finalize
-      log.info { "Node Querier stopping..." }
     end
   end
 end

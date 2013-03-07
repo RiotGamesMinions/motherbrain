@@ -52,6 +52,10 @@ module MotherBrain
       include MB::Logging
       include MB::Mixin::Services
 
+      finalizer do
+        log.info { "Provision Manager stopping..." }
+      end
+
       def initialize
         log.info { "Provision Manager starting..." }
       end
@@ -96,10 +100,6 @@ module MotherBrain
         provisioner.async.down(job, environment.to_s)
 
         ticket
-      end
-
-      def finalize
-        log.info { "Provision Manager stopping..." }
       end
 
       # Create a new environment
