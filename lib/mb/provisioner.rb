@@ -38,10 +38,37 @@ module MotherBrain
       end
     end
 
+    # Request a provisioner to generate a set of nodes described by the given manifest
+    #
+    # @param [String] environment
+    #   name of the set of nodes to be created
+    # @param [MB::Provisioner::Manifest] manifest
+    #   manifest describing how many and what kind of nodes to create
+    #
+    # @example
+    #   [
+    #     {
+    #       instance_type: "m1.large",
+    #       public_hostname: "cloud-1.riotgames.com"
+    #     },
+    #     {
+    #       instance_type: "m1.small",
+    #       public_hostname: "cloud-2.riotgames.com"
+    #     }
+    #   ]
+    #
+    # @return [Array]
+    #   an array of hashes representing nodes generated of given sizes
     def up(environment, manifest)
       raise AbstractFunction
     end
 
+    # Destroy a set of provisioned nodes
+    #
+    # @param [String] environment
+    #   name of the set of nodes to destroy
+    #
+    # @return [Boolean]
     def down(environment)
       raise AbstractFunction
     end

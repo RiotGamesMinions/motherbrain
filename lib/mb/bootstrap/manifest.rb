@@ -38,26 +38,31 @@ module MotherBrain
           nodes      = nodes.dup
           attributes = provisioner_manifest.dup
 
-          attributes.node_groups.each do |node_group|
-            instance_type = node_group[:type]
-            count         = node_group[:count] || 1
-            groups        = node_group[:groups]
-            hosts         = Set.new
+          new.tap do |boot_manifest|
+            boot_manifest.path    = path
+            boot_manifest[:nodes] = Array.new
 
-            groups.each do |group|
-              count.times do
-                instances = nodes.select { |node| node[:instance_type] == instance_type }
-                instances.each { |instance| hosts.add(instance[:public_hostname]) }
+            attributes.node_groups.each do |node_group|
+              instance_type = node_group[:type]
+              count         = node_group[:count] || 1
+              groups        = node_group[:groups]
+              hosts         = Set.new
+
+              used_instances = nodes.select { |node|
+                node[:instance_type] == instance_type
+              }.take(count)
+
+              used_instances.each do |used_instance|
+                hosts.add(used_instance[:public_hostname])
+                nodes.delete(used_instance)
               end
+
+              boot_manifest[:nodes] << {
+                groups: groups,
+                hosts: hosts.to_a
+              }
             end
-
-            node_group[:hosts] = hosts.to_a
           end
-
-          bootstrap_manifest = new(attributes)
-          bootstrap_manifest.path = path
-
-          bootstrap_manifest
         end
 
         # Validates that the instance of manifest describes a layout for the given routine

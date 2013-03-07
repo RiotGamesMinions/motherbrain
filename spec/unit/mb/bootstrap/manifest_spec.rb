@@ -133,15 +133,15 @@ describe MB::Bootstrap::Manifest do
       [
         {
           instance_type: "m1.large",
-          public_hostname: "euca-10-20-37-171.eucalyptus.cloud.riotgames.com"
+          public_hostname: "cloud-1.riotgames.com"
         },
         {
           instance_type: "m1.small",
-          public_hostname: "euca-10-20-37-172.eucalyptus.cloud.riotgames.com"
+          public_hostname: "cloud-2.riotgames.com"
         },
         {
           instance_type: "m1.small",
-          public_hostname: "euca-10-20-37-169.eucalyptus.cloud.riotgames.com"
+          public_hostname: "cloud-3.riotgames.com"
         }
       ]
     }
@@ -152,6 +152,7 @@ describe MB::Bootstrap::Manifest do
           nodes: [
             {
               type: "m1.large",
+              count: 1,
               groups: ["activemq::master"]
             },
             {
@@ -168,25 +169,96 @@ describe MB::Bootstrap::Manifest do
 
     it { should be_a(MB::Bootstrap::Manifest) }
 
-    it "has a key for each node type from the provisioner manifest" do
+    it "has a 'nodes' key" do
+      subject.should have_key(:nodes)
+    end
+
+    it "has a node group for each node group in the provisioner manifest" do
+      subject.node_groups.should have(provisioner_manifest[:nodes].length).items
+    end
+
+    it "each node group contains two keys: 'groups' and 'hosts'" do
+      subject.node_groups.each do |node_group|
+        node_group.keys.should have(2).items
+        node_group.should have_key(:groups)
+        node_group.should have_key(:hosts)
+      end
+    end
+
+    it "has an appropriate number of hosts for the desired count" do
       subject[:nodes].should =~ [
         {
-          type: "m1.large",
           groups: ["activemq::master"],
           hosts: [
-            "euca-10-20-37-171.eucalyptus.cloud.riotgames.com"
+            "cloud-1.riotgames.com"
           ]
         },
         {
-          type: "m1.small",
-          count: 2,
           groups: ["activemq::slave"],
           hosts: [
-            "euca-10-20-37-172.eucalyptus.cloud.riotgames.com",
-            "euca-10-20-37-169.eucalyptus.cloud.riotgames.com"
+            "cloud-2.riotgames.com",
+            "cloud-3.riotgames.com"
           ]
         }
       ]
+    end
+
+    context "multiple nodes of the same type returned by the provisioner" do
+      let(:provisioner_response) do
+        [
+          {
+            instance_type: "m1.large",
+            public_hostname: "cloud-1.riotgames.com"
+          },
+          {
+            instance_type: "m1.large",
+            public_hostname: "cloud-2.riotgames.com"
+          },
+          {
+            instance_type: "m1.large",
+            public_hostname: "cloud-3.riotgames.com"
+          }
+        ]
+      end
+
+      let(:provisioner_manifest) do
+        MB::Provisioner::Manifest.new(
+          nodes: [
+            {
+              type: "m1.large",
+              count: 1,
+              groups: ["activemq::master"]
+            },
+            {
+              type: "m1.large",
+              count: 2,
+              groups: ["activemq::slave"]
+            }
+          ]
+        )
+      end
+
+      subject do
+        described_class.from_provisioner(provisioner_response, provisioner_manifest)
+      end
+
+      it "has an appropriate number of hosts for the desired count" do
+        subject[:nodes].should =~ [
+          {
+            groups: ["activemq::master"],
+            hosts: [
+              "cloud-1.riotgames.com"
+            ]
+          },
+          {
+            groups: ["activemq::slave"],
+            hosts: [
+              "cloud-2.riotgames.com",
+              "cloud-3.riotgames.com"
+            ]
+          }
+        ]
+      end
     end
 
     context "given a value for the path argument" do
@@ -202,7 +274,7 @@ describe MB::Bootstrap::Manifest do
         [
           {
             instance_type: "m1.large",
-            public_hostname: "euca-10-20-37-170.eucalyptus.cloud.riotgames.com"
+            public_hostname: "cloud-1.riotgames.com"
           }
         ]
       end
@@ -235,6 +307,17 @@ describe MB::Bootstrap::Manifest do
 
       it "has two groups in that node group" do
         subject.node_groups.first[:groups].should have(2).items
+      end
+
+      it "has an appropriate number of hosts for the desired count" do
+        subject.node_groups.should =~ [
+          {
+            groups: ["activemq::master", "activemq::slave"],
+            hosts: [
+              "cloud-1.riotgames.com"
+            ]
+          }
+        ]
       end
     end
   end
