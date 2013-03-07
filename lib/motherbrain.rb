@@ -64,6 +64,7 @@ module MotherBrain
   autoload :Provisioners, 'mb/provisioners'
   autoload :RestGateway, 'mb/rest_gateway'
   autoload :SrvCtl, 'mb/srv_ctl'
+  autoload :System, 'mb/system'
   autoload :Upgrade, 'mb/upgrade'
 
   class << self

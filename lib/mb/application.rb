@@ -1,3 +1,5 @@
+require 'dcell'
+
 trap 'INT' do
   MB.log.info "Shutting down..."
   MB::Application.instance.interrupt
@@ -51,7 +53,7 @@ module MotherBrain
       #
       # @return [Celluloid::Registry]
       def registry
-        @registry ||= Celluloid::Registry.new
+        Celluloid::Registry.root
       end
 
       # Run the application asynchronously (terminate after execution)
@@ -60,6 +62,7 @@ module MotherBrain
       def run!(config)
         log.info { "MotherBrain starting..." }
         setup
+        DCell.start id: "#{MB::System.node_name}.mb", addr: "tcp://127.0.0.1:27410"
         @instance = Application::SupervisionGroup.new(config)
       end
 

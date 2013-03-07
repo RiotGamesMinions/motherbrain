@@ -31,7 +31,6 @@ module MotherBrain
       def default_options
         {
           config: MB::Config.default_path,
-          node_id: nil,
           host: "127.0.0.1",
           port: 27400
         }
@@ -41,11 +40,7 @@ module MotherBrain
       #
       # @return [String, nil]
       def node_id
-        @node_id ||= begin
-          ohai = ::Ohai::System.new
-          ohai.require_plugin("#{Agent::Ohai.os}/hostname")
-          ohai[:fqdn] || ohai[:hostname]
-        end
+        @node_id ||= "#{MB::System.node_name}.mba"
       end
 
       # Run the agent in the foreground
