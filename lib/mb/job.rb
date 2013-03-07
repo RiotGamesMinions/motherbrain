@@ -36,6 +36,7 @@ module MotherBrain
     include Celluloid
     include MB::Logging
     include MB::Job::States
+    include MB::Mixin::Services
 
     attr_reader :id
     attr_reader :type
@@ -58,17 +59,17 @@ module MotherBrain
     def_delegator :machine, :state
 
     finalizer do
-      status = "complete"
-      JobManager.instance.complete_job(Actor.current)
+      set_status("complete")
+      job_manager.complete_job(Actor.current)
     end
 
     # @param [#to_s] type
     def initialize(type)
       @machine = StateMachine.new
       @type    = type.to_s
-      @id      = JobManager.instance.uuid
+      @id      = job_manager.uuid
       @result  = nil
-      JobManager.instance.add(Actor.current)
+      job_manager.add(Actor.current)
     end
 
     # @param [#to_json] result
@@ -133,7 +134,7 @@ module MotherBrain
 
     # @return [self]
     def save
-      JobManager.instance.update(Actor.current)
+      job_manager.update(Actor.current)
     end
 
     def status

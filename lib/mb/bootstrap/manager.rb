@@ -152,9 +152,9 @@ module MotherBrain
               abort BootstrapError.new("failed to bootstrap group(s): #{failures.keys.join(', ')}")
             end
           end
-
-          job.report_success
         end
+
+        job.report_success
       rescue => ex
         job.report_failure(ex)
         log_exception(ex)
