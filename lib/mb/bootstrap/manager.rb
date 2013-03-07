@@ -104,7 +104,6 @@ module MotherBrain
 
         job.status = "searching for environment"
         unless chef_conn.environment.find(environment)
-          log.fatal { "Failed to location the environment '#{environment}'"}
           return job.report_failure("Environment '#{environment}' not found")
         end
 
@@ -156,9 +155,9 @@ module MotherBrain
 
           job.report_success
         end
-      rescue => error
-        log.fatal { "unknown error occured: #{error}"}
-        job.report_failure(error)
+      rescue => ex
+        job.report_failure(ex)
+        log_exception(ex)
       ensure
         job.terminate if job && job.alive?
       end

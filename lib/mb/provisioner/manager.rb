@@ -147,11 +147,11 @@ module MotherBrain
           bootstrapper.bootstrap(job, environment, bootstrap_manifest, plugin, options)
         end
       rescue InvalidProvisionManifest, UnexpectedProvisionCount, EF::REST::Error => ex
-        log.fatal { "an error occured: #{ex}" }
         job.report_failure(ex)
+        log_exception(ex)
       rescue => ex
-        log.fatal { "unknown error occured: #{ex}"}
         job.report_failure("internal error")
+        log_exception(ex)
       ensure
         job.terminate if job && job.alive?
       end
