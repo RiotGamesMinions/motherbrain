@@ -28,6 +28,10 @@ module MotherBrain
 
     def_delegator :handler, :rack_app
 
+    finalizer do
+      log.info { "REST Gateway stopping..." }
+    end
+
     # @option options [String] :host ('0.0.0.0')
     # @option options [Integer] :port (1984)
     # @option options [Boolean] :quiet (false)
@@ -46,10 +50,6 @@ module MotherBrain
     # @param [Reel::Connection] connection
     def on_connect(connection)
       pool.handle(connection.detach)
-    end
-
-    def finalize
-      log.info { "REST Gateway stopping..." }
     end
 
     private

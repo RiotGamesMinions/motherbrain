@@ -18,6 +18,10 @@ module MotherBrain
     # @return [Set<ChefMutex>]
     attr_reader :locks
 
+    finalizer do
+      log.info { "Lock Manager stopping..." }
+    end
+
     def initialize
       log.info { "Lock Manager starting..." }
       @locks = Set.new
@@ -53,10 +57,6 @@ module MotherBrain
     # @param [ChefMutex] mutex
     def unregister(mutex)
       locks.delete(mutex)
-    end
-
-    def finalize
-      log.info { "Lock Manager stopping..." }
     end
 
     # Lock an environment

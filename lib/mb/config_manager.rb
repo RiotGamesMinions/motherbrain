@@ -19,6 +19,10 @@ module MotherBrain
     # @return [MB::Config]
     attr_reader :config
 
+    finalizer do
+      log.info { "Config Manager stopping..." }
+    end
+
     # @param [MB::Config] new_config
     def initialize(new_config)
       log.info { "Config Manager starting..." }
@@ -54,10 +58,6 @@ module MotherBrain
     # @return [Boolean]
     def reloading?
       @reloading
-    end
-
-    def finalize
-      log.info { "Config Manager stopping..." }
     end
 
     private
