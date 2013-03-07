@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+$:.push File.expand_path("../../lib", __FILE__)
+require 'motherbrain'
+require 'dcell'
+require 'irb'
+
+DCell.start id: "#{MB::System.node_name}.mbi", addr: "tcp://127.0.0.1:24720"
+IRB.start(__FILE__)
