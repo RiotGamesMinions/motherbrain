@@ -96,8 +96,10 @@ module MotherBrain
     #
     # @param [Exception] ex
     def log_exception(ex)
+      ex = ex.respond_to?(:cause) ? ex.cause : ex
+
       log.fatal { "#{ex.class}: #{ex}" }
-      log.fatal { ex.backtrace.join("\n") }
+      log.fatal { ex.backtrace.join("\n") } unless ex.backtrace.nil?
     end
   end
 end

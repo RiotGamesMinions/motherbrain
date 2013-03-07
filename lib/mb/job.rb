@@ -144,6 +144,7 @@ module MotherBrain
       @status = string
       save
     end
+    alias_method :set_status, :status=
 
     # @return [JobTicket]
     def ticket

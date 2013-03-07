@@ -122,24 +122,20 @@ module MotherBrain
         err = "Resource #{current_lock['id']} locked by #{current_lock['client_name']}"
         err << " since #{current_lock['time']} (PID #{current_lock['process_id']})"
 
-        abort ResourceLocked.new(err)
+        raise ResourceLocked.new(err)
       end
 
       yield
 
       unlock
     rescue => ex
-      ex = ex.cause if ex.respond_to?(:cause)
-
       job.set_status(ex.to_s) if job
-      log_exception(ex)
 
-      if ex.is_a?(ResourceLocked)
-        return false
-      else
-        unlock if self.unlock_on_failure
-        abort(ex)
+      unless ex.is_a?(ResourceLocked)
+        unlock if unlock_on_failure
       end
+
+      abort(ex)
     end
 
     # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
