@@ -155,6 +155,8 @@ module MotherBrain
         end
 
         job.report_success
+      rescue ResourceLocked => ex
+        job.report_failure(ex)
       rescue => ex
         job.report_failure(ex)
         log_exception(ex)
