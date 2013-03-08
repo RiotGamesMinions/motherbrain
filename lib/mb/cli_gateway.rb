@@ -38,6 +38,7 @@ module MotherBrain
 
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
+        config[:shell] ||= Thor::Base.shell.new
         args, opts = parse_args(given_args)
         invoked_opts.merge!(opts)
 
@@ -64,7 +65,16 @@ module MotherBrain
           end
         end
 
-        super
+        dispatch(nil, given_args.dup, nil, config)
+      rescue MB::MBError, Thor::Error => ex
+        ENV["THOR_DEBUG"] == "1" ? (raise ex) : config[:shell].error(ex.message)
+        exit ex.respond_to?(:status_code) ? ex.status_code : 1
+      rescue Errno::EPIPE
+        # This happens if a thor command is piped to something like `head`,
+        # which closes the pipe when it's done reading. This will also
+        # mean that if the pipe is closed, further unnecessary
+        # computation will not occur.
+        exit(0)
       end
 
       # Did the user call a plugin task?
