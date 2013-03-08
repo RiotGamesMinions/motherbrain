@@ -120,8 +120,6 @@ module MotherBrain
           nodes[group.name] = group.nodes(environment)
         end
       end
-    rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
-      raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
     end
 
     def add_group(group)
