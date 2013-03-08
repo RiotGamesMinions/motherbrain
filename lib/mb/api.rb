@@ -79,7 +79,7 @@ module MotherBrain
       namespace ':environment_id' do
         desc "destroy a provisioned environment"
         delete do
-          provisioner.destroy(params[:environment_id])
+          provisioner.async_destroy(params[:environment_id])
         end
 
         desc "create (provision) a new cluster of nodes"

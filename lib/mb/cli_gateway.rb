@@ -311,7 +311,7 @@ module MotherBrain
     def destroy
       destroy_options = Hash.new.merge(options).deep_symbolize_keys
 
-      job = Provisioner::Manager.instance.destroy(options[:environment], destroy_options)
+      job = provisioner.async_destroy(options[:environment], destroy_options)
 
       CliClient.new(job).display
     end
