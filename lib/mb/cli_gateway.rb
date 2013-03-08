@@ -75,6 +75,8 @@ module MotherBrain
         # mean that if the pipe is closed, further unnecessary
         # computation will not occur.
         exit(0)
+      ensure
+        MB::Application.instance.terminate
       end
 
       # Did the user call a plugin task?
