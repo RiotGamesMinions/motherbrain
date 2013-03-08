@@ -114,6 +114,7 @@ module MotherBrain
 
         job.report_success("environment destroyed")
       rescue BootstrapError => ex
+        job.report_failure(ex)
         log_exception(ex)
       ensure
         job.terminate if job && job.alive?
@@ -164,11 +165,8 @@ module MotherBrain
           bootstrap_manifest = Bootstrap::Manifest.from_provisioner(response, manifest)
           bootstrapper.bootstrap(job, environment, bootstrap_manifest, plugin, options)
         end
-      rescue InvalidProvisionManifest, UnexpectedProvisionCount, EF::REST::Error => ex
+      rescue BootstrapError => ex
         job.report_failure(ex)
-        log_exception(ex)
-      rescue => ex
-        job.report_failure("internal error")
         log_exception(ex)
       ensure
         job.terminate if job && job.alive?

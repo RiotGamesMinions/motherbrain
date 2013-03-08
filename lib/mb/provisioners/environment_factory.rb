@@ -98,8 +98,8 @@ module MotherBrain
       #
       # @option options [Boolean] :skip_bootstrap (false)
       #
-      # @raise [UnexpectedProvisionCount]
-      # @raise [EF::REST::Error]
+      # @raise [MB::ProvisionError]
+      #   if a caught error occurs during provisioning
       #
       # @return [Array<Hash>]
       def up(job, env_name, manifest, plugin, options = {})
@@ -120,8 +120,8 @@ module MotherBrain
         response = self.class.handle_created(connection.environment.find(env_name, force: true))
         self.class.validate_create(response, manifest)
         response
-      rescue UnexpectedProvisionCount, EF::REST::Error => e
-        abort(e)
+      rescue UnexpectedProvisionCount, EF::REST::Error => ex
+        abort ProvisionError.new(ex)
       end
 
       # Tear down the given environment and the nodes in it
@@ -130,6 +130,9 @@ module MotherBrain
       #   a job to track the progress of this action
       # @param [String] env_name
       #   the name of the environment to destroy
+      #
+      # @raise [MB::ProvisionError]
+      #   if a caught error occurs during provisioning
       #
       # @return [Boolean]
       def down(job, env_name)
@@ -146,7 +149,7 @@ module MotherBrain
 
         true
       rescue EF::REST::Error => ex
-        abort BootstrapError.new(ex)
+        abort ProvisionError.new(ex)
       end
 
       private
