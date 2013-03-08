@@ -51,13 +51,12 @@ describe MB::Provisioners::EnvironmentFactory do
   subject { described_class.new(options) }
 
   describe "#up" do
-    let(:job) { MB::Job.new(:provision) }
+    let(:job) { double('job') }
     let(:env_name) { "mbtest" }
     let(:plugin) { double('plugin') }
 
     before(:each) do
-      job.stub(:status=)
-      job.stub(:status)
+      job.stub(:set_status)
     end
 
     context "if given skip_bootstrap option" do
@@ -65,13 +64,13 @@ describe MB::Provisioners::EnvironmentFactory do
         connection = double('connection')
         environment = double('environment')
         converted_manifest = double('converted_manifest')
+        subject.stub(:connection) { connection }
         described_class.should_receive(:convert_manifest).with(manifest).and_return(converted_manifest)
         described_class.should_receive(:handle_created).with(environment).and_return(Array.new)
         described_class.should_receive(:validate_create).and_return(true)
         connection.stub_chain(:environment, :create).with(env_name, converted_manifest).and_return(Hash.new)
         connection.stub_chain(:environment, :created?).with(env_name).and_return(true)
         connection.stub_chain(:environment, :find).with(env_name, force: true).and_return(environment)
-        subject.connection = connection
 
         subject.up(job, env_name, manifest, plugin, skip_bootstrap: true)
       end
@@ -82,12 +81,14 @@ describe MB::Provisioners::EnvironmentFactory do
     let(:job) { double('job') }
     let(:env_name) { "mbtest" }
 
+    before(:each) do
+      job.stub(:set_status)
+    end
+
     it "sends a destroy command to environment factory with the given environment" do
-      job.should_receive(:report_running)
-      job.should_receive(:report_success)
       connection = double('connection')
+      subject.stub(:connection) { connection }
       connection.stub_chain(:environment, :destroy).with(env_name).and_return(Hash.new)
-      subject.connection = connection
 
       subject.down(job, env_name)
     end

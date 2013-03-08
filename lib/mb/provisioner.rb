@@ -68,6 +68,9 @@ module MotherBrain
     # @param [String] environment
     #   name of the set of nodes to destroy
     #
+    # @raise [MB::ProvisionError]
+    #   if a caught error occurs during provisioning
+    #
     # @return [Boolean]
     def down(environment)
       raise AbstractFunction

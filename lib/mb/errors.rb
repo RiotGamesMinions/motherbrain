@@ -179,22 +179,6 @@ module MotherBrain
   class ManifestNotFound < MBError; status_code(20); end
   class InvalidManifest < MBError; status_code(21); end
 
-  class UnexpectedProvisionCount < MBError
-    status_code(20)
-
-    attr_reader :expected
-    attr_reader :got
-
-    def initialize(expected, got)
-      @expected = expected
-      @got      = got
-    end
-
-    def to_s
-      "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
-    end
-  end
-
   class ComponentNotVersioned < MBError
     status_code(22)
 
@@ -217,4 +201,19 @@ module MotherBrain
   class InvalidLockType < MBError; status_code(23); end
   class BootstrapError < MBError; status_code(24); end
   class CookbookConstraintNotSatisfied < BootstrapError; end
+
+  class ProvisionError < MBError; status_code(20); end
+  class UnexpectedProvisionCount < ProvisionError
+    attr_reader :expected
+    attr_reader :got
+
+    def initialize(expected, got)
+      @expected = expected
+      @got      = got
+    end
+
+    def to_s
+      "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
+    end
+  end
 end
