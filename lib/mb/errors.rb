@@ -202,10 +202,8 @@ module MotherBrain
   class BootstrapError < MBError; status_code(24); end
   class CookbookConstraintNotSatisfied < BootstrapError; end
 
-  class ProvisionError < MBError; status_code(25); end
+  class ProvisionError < MBError; status_code(20); end
   class UnexpectedProvisionCount < ProvisionError
-    status_code(20)
-
     attr_reader :expected
     attr_reader :got
 

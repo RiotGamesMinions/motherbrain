@@ -163,7 +163,7 @@ module MotherBrain
         #
         # @return [Boolean]
         def destroyed?(environment)
-          connection.environment.find(environment).nil?
+          connection.environment.find(environment, force: true).nil?
         end
     end
   end
