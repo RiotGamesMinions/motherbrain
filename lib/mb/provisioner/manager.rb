@@ -60,6 +60,20 @@ module MotherBrain
         log.info { "Provision Manager starting..." }
       end
 
+      # Asynchronously destroy an environment that was created with motherbrain
+      #
+      # @param [String] environment
+      #   name of the environment to destroy
+      #
+      # @option options [#to_sym] :with
+      #   id of provisioner to use
+      def async_destroy(environment, options = {})
+        job = Job.new(:destroy_provision)
+        async(:destroy, job, environment, options)
+
+        job.ticket
+      end
+
       # Asynchronously create a new environment
       #
       # @param [#to_s] environment
@@ -84,28 +98,32 @@ module MotherBrain
         job.ticket
       end
 
-      # Destroy an environment provisioned by MotherBrain
+      # Destroy an environment that was created with motherbrain
       #
-      # @param [#to_s] environment
+      # @param [MB::Job] job
+      #   a job to update with progress
+      # @param [String] environment
       #   name of the environment to destroy
+      #
       # @option options [#to_sym] :with
       #   id of provisioner to use
-      #
-      # @return [JobTicket]
-      def destroy(environment, options = {})
-        job         = Job.new(:destroy_provision)
-        ticket      = job.ticket
-        provisioner = self.class.new_provisioner(options)
+      def destroy(job, environment, options = {})
+        worker = self.class.new_provisioner(options)
+        job.report_running
+        worker.down(job, environment)
 
-        provisioner.async.down(job, environment.to_s)
-
-        ticket
+        job.report_success("environment destroyed")
+      rescue BootstrapError => ex
+        log_exception(ex)
+      ensure
+        job.terminate if job && job.alive?
       end
 
       # Create a new environment
       #
       # @param [MB::Job] job
-      # @param [#to_s] environment
+      #   a job to update with progress
+      # @param [String] environment
       #   name of the environment to create or append to
       # @param [MB::Provisioner::Manifest] manifest
       #   manifest of nodes to create

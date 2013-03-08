@@ -69,9 +69,6 @@ module MotherBrain
       # @return [Float]
       attr_accessor :interval
 
-      # @return [EF::REST::Connection]
-      attr_accessor :connection
-
       # @option options [#to_f] :interval
       #   set a polling interval to see if the environment is ready (default: 30.0)
       # @option options [#to_s] :api_url
@@ -109,16 +106,16 @@ module MotherBrain
         options = options.reverse_merge(skip_bootstrap: false)
 
         begin
-          job.status = "creating new environment"
+          job.set_status("creating new environment")
           connection.environment.create(env_name, self.class.convert_manifest(manifest))
         rescue EF::REST::HTTPUnprocessableEntity; end
 
         until connection.environment.created?(env_name)
-          job.status = "waiting for environment to be created"
+          job.set_status("waiting for environment to be created")
           sleep self.interval
         end
 
-        job.status = "environment created"
+        job.set_status("environment created")
 
         response = self.class.handle_created(connection.environment.find(env_name, force: true))
         self.class.validate_create(response, manifest)
@@ -134,20 +131,37 @@ module MotherBrain
       # @param [String] env_name
       #   the name of the environment to destroy
       #
-      # @return [Job]
+      # @return [Boolean]
       def down(job, env_name)
-        log.debug "environment factory destroying #{env_name}"
-        job.report_running
-        response = connection.environment.destroy(env_name)
+        job.set_status("sending request to environment factory to destroy environment")
+        connection.environment.destroy(env_name)
 
-        job.report_success(response)
-      rescue EF::REST::Error => e
-        log.fatal { "an error occured: #{e}" }
-        job.report_failure(e)
-      rescue => e
-        log.fatal { "unknown error occured: #{e}"}
-        job.report_failure("internal error")
+        # @todo JW: disable check until environment factory's API stops caching previously
+        #   existing environments
+        #
+        # until destroyed?(env_name)
+        #   job.set_status("waiting for environment to be destroyed")
+        #   sleep 2
+        # end
+
+        true
+      rescue EF::REST::Error => ex
+        abort BootstrapError.new(ex)
       end
+
+      private
+
+        # @return [EF::REST::Connection]
+        attr_accessor :connection
+
+        # Has the given environment been destroyed?
+        #
+        # @param [String] environment
+        #
+        # @return [Boolean]
+        def destroyed?(environment)
+          connection.environment.find(environment).nil?
+        end
     end
   end
 end
