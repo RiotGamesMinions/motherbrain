@@ -57,6 +57,7 @@ module MotherBrain
       # @raise [ArgumentError] if given invalid version constraints
       def set_cookbook_versions(env_id, cookbook_versions)
         cookbook_versions = expand_constraints(expand_latest_versions(cookbook_versions))
+        satisfies_constraints?(cookbook_versions)
 
         log.info "Setting cookbook versions #{cookbook_versions}"
 
@@ -195,6 +196,28 @@ module MotherBrain
         Hash[expanded]
       rescue Solve::Errors::InvalidConstraintFormat => ex
         raise ArgumentError, ex
+      end
+
+      # Ensure the chef server can satisfy the desired cookbook version constraints
+      #
+      # @param [Hash] cookbook_versions
+      #   Hash of cookbooks and the versions
+      #
+      # @raise [MB::CookbookConstraintNotSatisfied]
+      #   if the constraints cannot be satisfied
+      def satisfies_constraints?(cookbook_versions)
+        failures = cookbook_versions.collect do |name, constraint|
+          Celluloid::Future.new {
+            if Application.ridley.cookbook.satisfy(name, constraint).nil?
+              "#{name} (#{constraint})"
+            end
+          }
+        end.map(&:value).compact
+
+        unless failures.empty?
+          raise MB::CookbookConstraintNotSatisfied,
+            "couldn't satisfy constraints for cookbook version(s): #{failures.join(', ')}"
+        end
       end
     end
   end
