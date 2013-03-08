@@ -52,7 +52,7 @@ module MotherBrain
         if start_mb_application?(args)
           app_config = configure(opts.dup)
           app_config.validate!
-          MB::Application.run!(app_config)
+          @app = MB::Application.run!(app_config)
 
           # If the first argument is the name of a plugin, register that plugin and use it. 
           if plugin_task?(args[0])
@@ -76,7 +76,7 @@ module MotherBrain
         # computation will not occur.
         exit(0)
       ensure
-        MB::Application.instance.terminate if MB::Application.instance.alive?
+        @app.terminate if @app && @app.alive?
       end
 
       # Did the user call a plugin task?
