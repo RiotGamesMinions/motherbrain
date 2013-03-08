@@ -53,8 +53,10 @@ module MotherBrain
       #     "league" => "1.74.2",
       #     "pvpnet" => "3.2.0"
       #   )
+      #
+      # @raise [ArgumentError] if given invalid version constraints
       def set_cookbook_versions(env_id, cookbook_versions)
-        cookbook_versions = expand_latest_versions(cookbook_versions)
+        cookbook_versions = expand_constraints(expand_latest_versions(cookbook_versions))
 
         log.info "Setting cookbook versions #{cookbook_versions}"
 
@@ -141,32 +143,59 @@ module MotherBrain
           result
         end
 
-        # Expand the "latest" cookbook versions to the latest verison number 
-        # for the cookbook
-        #
-        # @param [Hash] cookbook_versions
-        #   Hash of cookbooks and the versions
-        #
-        # @example expanding versions when 3.1.0 is the latest pvpnet cookbook
-        #
-        #   expand_latest_versions(
-        #     "league" => "1.74.2",
-        #     "pvpnet" => "latest"
-        #   )
-        #   
-        #   # => {"league" => "1.74.2", "pvpnet" => "3.1.0"}
-        def expand_latest_versions(cookbook_versions)
-          expanded_cookbook_versions = cookbook_versions.map do |name, version|
-            if version.downcase == "latest"
-              Application.ridley.sync do
-                version = cookbook.latest_version(name)
-              end
+      # Expand the "latest" cookbook versions to the latest verison number 
+      # for the cookbook
+      #
+      # @param [Hash] cookbook_versions
+      #   Hash of cookbooks and the versions
+      #
+      # @example expanding versions when 3.1.0 is the latest pvpnet cookbook
+      #
+      #   expand_latest_versions(
+      #     "league" => "1.74.2",
+      #     "pvpnet" => "latest"
+      #   )
+      #   
+      #   # => {"league" => "1.74.2", "pvpnet" => "3.1.0"}
+      def expand_latest_versions(cookbook_versions)
+        expanded_cookbook_versions = cookbook_versions.map do |name, version|
+          if version.downcase == "latest"
+            Application.ridley.sync do
+              version = cookbook.latest_version(name)
             end
-            [name, version]
           end
+          [name, version]
+        end
 
-          Hash[expanded_cookbook_versions]
-       end
+        Hash[expanded_cookbook_versions]
+      end
+
+      # Expand constraints strings given to their fully qualified constraint operators
+      #
+      # @param [Hash] cookbook_versions
+      #   Hash of cookbooks and the versions
+      #
+      # @raise [ArgumentError] if the array of constraints contains an entry which is not in the
+      #   correct version constraint format
+      #
+      # @example
+      #   expand_constraints(
+      #     "league" => "1.74.2",
+      #     "pvpnet" => ">= 1.2.3"
+      #   )
+      #   
+      #   # => { "league" => "= 1.74.2", "pvpnet" => ">= 1.2.3" }
+      #
+      # @return [Hash]
+      def expand_constraints(cookbook_versions)
+        expanded = cookbook_versions.collect do |name, constraint|
+          [name, Solve::Constraint.new(constraint).to_s]
+        end
+
+        Hash[expanded]
+      rescue Solve::Errors::InvalidConstraintFormat => ex
+        raise ArgumentError, ex
+      end
     end
   end
 end

@@ -52,16 +52,35 @@ describe MB::Mixin::AttributeSetting do
         Ridley::CookbookResource.stub(:latest_version).and_return("1.2.4")
       end
 
-      it "should save the cookbook versions to the environment" do
-        subject.set_cookbook_versions "foo", {"some_book" => "1.2.3"}
+      it "saves the cookbook versions to the environment" do
+        subject.set_cookbook_versions "foo", {"some_book" => "= 1.2.3"}
         hash["some_book"].should_not be_nil
-        hash["some_book"].should eq("1.2.3")
+        hash["some_book"].should eq("= 1.2.3")
       end
 
-      it "should convert latest to the correct version" do
+      it "converts 'latest' to a (=) constraint of the latest" do
         subject.set_cookbook_versions "foo", {"some_book" => "latest"}
         hash["some_book"].should_not be_nil
-        hash["some_book"].should eq("1.2.4")
+        hash["some_book"].should eq("= 1.2.4")
+      end
+    end
+
+    context "given incomplete version constraints" do
+      let(:constraints) do
+        { "some_cook" => "123" }
+      end
+
+      let(:env) { double('environment', name: "foo") }
+
+      before(:each) do
+        subject.stub(:expand_latest_versions) { constraints }
+        Ridley::EnvironmentResource.stub(:find!).and_return(env)
+        env.stub(:save)
+      end
+
+      it "expands them to a fully qualified constraint format" do
+        env.stub_chain(:cookbook_versions, :merge!).with("some_cook" => "= 123.0.0")
+        subject.set_cookbook_versions "foo", constraints
       end
     end
   end
