@@ -257,7 +257,7 @@ module MotherBrain
         exit(1)
       end
 
-      job = environment_manager.configure(options[:environment], attributes: attributes, force: options[:force])
+      job = environment_manager.async_configure(options[:environment], attributes: attributes, force: options[:force])
 
       CliClient.new(job).display
     end

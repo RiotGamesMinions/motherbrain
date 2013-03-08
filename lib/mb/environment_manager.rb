@@ -23,10 +23,10 @@ module MotherBrain
       log.info { "Environment Manager starting..." }
     end
 
-    # Configure a target environment with the given attributes
+    # Asynchronously configure a target environment with the given attributes
     #
-    # @param [#to_s] id
-    #   identifier for the environment to configure
+    # @param [String] id
+    #   identifier of the environment to configure
     #
     # @option options [Hash] :attributes (Hash.new)
     #   a hash of attributes to merge with the existing attributes of an environment
@@ -37,85 +37,71 @@ module MotherBrain
     #   existing attributes of the environment
     #
     # @return [JobTicket]
-    def configure(id, options = {})
+    def async_configure(id, options = {})
+      job = Job.new(:configure_environment)
+      async(:configure, job, id, options)
+
+      job.ticket
+    end
+
+    # Configure a target environment with the given attributes
+    #
+    # @param [MB::Job] job
+    #   a job to update with progress
+    # @param [String] id
+    #   identifier of the environment to configure
+    #
+    # @option options [Hash] :attributes (Hash.new)
+    #   a hash of attributes to merge with the existing attributes of an environment
+    # @option options [Boolean] :force (false)
+    #   force configure even if the environment is locked
+    #
+    # @api private
+    def configure(job, id, options = {})
       options = options.reverse_merge(
         attributes: Hash.new,
         force: false
       )
 
-      job         = Job.new(:configure_environment)
-      environment = find(id)
+      node_success = 0
+      node_failure = 0
 
-      async(:_configure_, environment, job, options)
+      job.report_running("finding environment")
+      unless environment = ridley.environment.find(id)
+        return job.report_failure("an environment named '#{id}' was not found")
+      end
 
-      job.ticket
-    end
-
-    # Find an environment on the remote Chef server
-    #
-    # @param [#to_s] id
-    #   identifier for the environment to find
-    #
-    # @raise [EnvironmentNotFound] if the given environment does not exist
-    #
-    # @return [Ridley::EnvironmentResource]
-    def find(id)
-      ridley.environment.find!(id)
-    rescue Ridley::Errors::ResourceNotFound => ex
-      abort EnvironmentNotFound.new("no environment '#{id}' was found")
-    end
-
-    # Returns a list of environments present on the remote server
-    #
-    # @return [Array<Ridley::EnvironmentResource>]
-    def list
-      ridley.environment.all
-    end
-
-    # Performs the heavy lifting for {#configure}
-    #
-    # @param [Ridley::EnvironmentResource] environment
-    #   the environment to lock and configure
-    # @param [MB::Job] job
-    #   a job to update with progress
-    # @param [Hash] options
-    #   see {#configure} for deatils
-    #
-    # @note making this a separate function allows us to run the heavy lifting of {#configure} in
-    #   an asynchronous manner
-    #
-    # @api private
-    def _configure_(environment, job, options = {})
-      job.report_running("configuring environment: #{environment.name}")
-
-      chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
+      chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do        
+        job.set_status("saving updated environment")
         environment.default_attributes.deep_merge!(options[:attributes])
-        job.status = "saving updated environment"
         environment.save
 
-        job.status = "searching for nodes in the environment"
+        job.set_status("searching for nodes in the environment")
         nodes = ridley.search(:node, "chef_environment:#{environment.name}")
 
-        job.status = "performing chef_run on #{nodes.length} nodes"
-        failures = 0
-
+        job.set_status("performing a chef client run on #{nodes.length} nodes")
         nodes.collect do |node|
           node_querier.future(:chef_run, node.public_hostname)
         end.each do |future|
           begin
             future.value
+            node_success += 1
           rescue RemoteCommandError => ex
-            log.fatal { "error configuring node: #{ex}" }
-            failures += 1
+            log_exception(ex)
+            node_failure += 1
           end
         end
-
-        if failures == 0
-          job.report_success("finished chef_run on #{nodes.length} nodes")
-        else
-          job.report_failure("chef_run failed on #{failures} nodes")
-        end
       end
+
+      if node_failure > 0
+        job.report_failure("chef client run failed on #{node_failure} nodes")
+      else
+        job.report_success("finished chef client run on #{node_success} nodes")
+      end
+    rescue ResourceLocked => ex
+      job.report_failure(ex)
+    ensure
+      job.terminate if job && job.alive?
     end
   end
 end
