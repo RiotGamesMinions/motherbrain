@@ -182,8 +182,6 @@ module MotherBrain
           nodes[component.name] = component.nodes(environment)
         end
       end
-    rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
-      raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
     end
 
     # @param [MB::Component] component
