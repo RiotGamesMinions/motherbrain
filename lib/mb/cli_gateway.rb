@@ -76,7 +76,7 @@ module MotherBrain
         # computation will not occur.
         exit(0)
       ensure
-        MB::Application.instance.terminate
+        MB::Application.instance.terminate if MB::Application.instance.alive?
       end
 
       # Did the user call a plugin task?
