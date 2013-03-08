@@ -5,10 +5,12 @@ module MotherBrain
     class Worker
       include Celluloid
       include MB::Logging
+      include MB::Mixin::Services
 
       # @return [String]
       attr_reader :group_ids
-
+      # @return [Array<String>]
+      attr_reader :hosts
       # @return [Hash]
       attr_reader :options
 
@@ -54,8 +56,8 @@ module MotherBrain
       #   URL to a proxy server to bootstrap through
       def initialize(group_ids, hosts, options = {})
         @group_ids = group_ids
-        @hosts = Array(hosts)
-        @options = options
+        @hosts     = Array(hosts)
+        @options   = options
       end
 
       # @example
@@ -63,6 +65,9 @@ module MotherBrain
       #     #<Ridley::SSH::ResponseSet @failures=[], @successes=[]>,
       #     #<Ridley::SSH::ResponseSet @failures=[], @successes=[]>
       #   ]
+      #
+      # @raise [MB::BootstrapError]
+      #   if there was an error during the bootstrap process
       #
       # @return [Array<Ridley::SSH::ResponseSet]
       def run
@@ -78,15 +83,11 @@ module MotherBrain
 
         [].tap do |futures|
           unless full_nodes.empty?
-            futures << Celluloid::Future.new {
-              full_bootstrap(full_nodes, options)
-            }
+            future(:_full_bootstrap_, full_nodes, options)
           end
 
           unless partial_nodes.empty?
-            futures << Celluloid::Future.new {
-              partial_bootstrap(partial_nodes, options.slice(:attributes, :run_list))
-            }
+            future(:_partial_bootstrap_, partial_nodes, options.slice(:attributes, :run_list))
           end
         end.map(&:value).flatten.inject(:merge)
       end
@@ -121,7 +122,7 @@ module MotherBrain
       # @return [Array]
       def bootstrap_type_filter
         known_nodes = Celluloid::Future.new {
-          chef_conn.node.all.map { |node| node.name.to_s }
+          chef_connection.node.all.map { |node| node.name.to_s }
         }
 
         partial_nodes = self.nodes.select do |node|
@@ -162,7 +163,7 @@ module MotherBrain
         @nodes ||= hosts.collect do |host|
           {
             hostname: host,
-            node_name: Application.node_querier.future.node_name(host)
+            node_name: node_querier.future.node_name(host)
           }
         end.collect! do |node|
           node[:node_name] = node[:node_name].value
@@ -170,43 +171,54 @@ module MotherBrain
         end
       end
 
-      protected
+      # @param [Array<String>] target_nodes
+      # @param [Hash] options
+      #
+      # @raise [MB::BootstrapError]
+      #   if an error occured while bootstrapping one or more nodes
+      #
+      # @return [Ridley::SSH::ResponseSet]
+      def _full_bootstrap_(target_nodes, options)
+        chef_connection.node.bootstrap(target_nodes, options)
+      rescue Ridley::Errors::RidleyError => ex
+        abort MB::BootstrapError.new(ex.to_s)
+      end
 
-        # @param [Array<String>] target_nodes
-        # @param [Hash] options
-        #
-        # @return [Ridley::SSH::ResponseSet]
-        def full_bootstrap(target_nodes, options)
-          chef_conn.node.bootstrap(target_nodes, options)
-        end
+      # @param [Array<Hash>] target_nodes
+      # @param [Hash] options
+      #
+      # @raise [MB::BootstrapError]
+      #   if an error occured while bootstrapping one or more nodes
+      #
+      # @return [Ridley::SSH::ResponseSet]
+      def _partial_bootstrap_(target_nodes, options)
+        failures = 0
 
-        # @param [Array<Hash>] target_nodes
-        # @param [Hash] options
-        #
-        # @return [Ridley::SSH::ResponseSet]
-        def partial_bootstrap(target_nodes, options)
-          Ridley::SSH::ResponseSet.new.tap do |response_set|
-            target_nodes.collect do |node|
-              Celluloid::Future.new {
-                log.info { "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap" }
+        response = Ridley::SSH::ResponseSet.new.tap do |response_set|
+          target_nodes.collect do |node|
+            Celluloid::Future.new {
+              log.info { "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap" }
 
-                chef_conn.node.merge_data(node[:node_name], options)
-                Application.node_querier.put_secret(node[:hostname])
-                Application.node_querier.chef_run(node[:hostname])
-              }
-            end.map do |future|
+              chef_connection.node.merge_data(node[:node_name], options)
+              node_querier.put_secret(node[:hostname])
+              node_querier.chef_run(node[:hostname])
+            }
+          end.map do |future|
+            begin
               response_set.add_response(future.value)
+            rescue RemoteCommandError => ex
+              log_exception(ex)
+              failures += 1
             end
           end
         end
 
-        def chef_conn
-          Application.ridley
+        if failures > 0
+          abort BootstrapError.new("error partially bootstrapping #{failures} nodes")
         end
 
-      private
-
-        attr_reader :hosts
+        response
+      end
     end
   end
 end

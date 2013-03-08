@@ -157,7 +157,7 @@ module MotherBrain
         job.report_success
       rescue ResourceLocked => ex
         job.report_failure(ex)
-      rescue => ex
+      rescue BootstrapError => ex
         job.report_failure(ex)
         log_exception(ex)
       ensure
