@@ -41,16 +41,15 @@ module MotherBrain
             klass.class_eval do
               desc("nodes ENVIRONMENT", "List all nodes grouped by Component and Group")
               define_method(:nodes) do |environment|
-                MB.ui.say "\n"
-                MB.ui.say "** listing nodes in #{environment}:"
-                MB.ui.say "\n"
-
                 nodes = plugin.nodes(environment).each do |component, groups|
                   groups.each do |group, nodes|
                     nodes.collect! { |node| "#{node.public_hostname} (#{node.public_ipv4})" }
                   end
                 end
 
+                MB.ui.say "\n"
+                MB.ui.say "** listing nodes in #{environment}:"
+                MB.ui.say "\n"
                 MB.ui.say nodes.to_yaml
               end
 
