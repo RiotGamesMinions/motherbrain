@@ -83,6 +83,24 @@ describe MB::Mixin::AttributeSetting do
         subject.set_cookbook_versions "foo", constraints
       end
     end
+
+    context "when constraints could not be satisfiied" do
+      let(:constraints) do
+        { "rspec_test" => "= 1.2.3", "rspec_fail_test" => ">= 2.0.0" }
+      end
+
+      before(:each) do
+        subject.stub(:expand_latest_versions) { constraints }
+      end
+
+      it "raises an error" do
+        subject.stub(:satisfies_constraints?).with(constraints).and_raise
+
+        expect {
+          subject.set_cookbook_versions "foo", constraints
+        }.to raise_error
+      end
+    end
   end
 
   describe "#set_environment_attributes" do
