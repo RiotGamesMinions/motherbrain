@@ -41,6 +41,10 @@ describe MB::Mixin::AttributeSetting do
   end
 
   describe "#set_cookbook_versions" do
+    before(:each) do
+      subject.stub(:satisfies_constraints?) { true }
+    end
+
     context "successful" do
       let(:hash) { Hash.new }
       before(:each) do
@@ -91,10 +95,10 @@ describe MB::Mixin::AttributeSetting do
 
       before(:each) do
         subject.stub(:expand_latest_versions) { constraints }
+        subject.stub(:satisfies_constraints?).with(constraints).and_raise
       end
 
       it "raises an error" do
-        subject.stub(:satisfies_constraints?).with(constraints).and_raise
 
         expect {
           subject.set_cookbook_versions "foo", constraints
