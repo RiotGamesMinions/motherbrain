@@ -150,7 +150,7 @@ module MotherBrain
           optional :force, type: Boolean, desc: "force configure even if the environment is locked"
         end
         post 'configure' do
-          environment_manager.configure(params[:environment_id], params.slice(:attributes, :force))
+          environment_manager.async_configure(params[:environment_id], params.slice(:attributes, :force))
         end
 
         desc "upgrade an environment to the specified versions"
