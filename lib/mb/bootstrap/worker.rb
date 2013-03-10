@@ -7,18 +7,15 @@ module MotherBrain
       include MB::Logging
       include MB::Mixin::Services
 
-      # @return [String]
-      attr_reader :group_ids
       # @return [Array<String>]
       attr_reader :hosts
       # @return [Hash]
       attr_reader :options
 
-      # @param [Array] group_ids
-      #   an array of groups for the nodes being bootstrapped
-      #     ['activemq::master']
       # @param [Array<String>] hosts
       #   an array of hostnames or ipaddresses to bootstrap
+      #
+      #   @example
       #     [ '33.33.33.10', 'reset.riotgames.com' ]
       #
       # @option options [Hash] :attributes (Hash.new)
@@ -54,26 +51,33 @@ module MotherBrain
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      def initialize(group_ids, hosts, options = {})
-        @group_ids = group_ids
-        @hosts     = Array(hosts)
-        @options   = options
+      def initialize(hosts, options = {})
+        @hosts   = Array(hosts)
+        @options = options
       end
 
-      # @example
-      #   worker.run => [
-      #     #<Ridley::SSH::ResponseSet @failures=[], @successes=[]>,
-      #     #<Ridley::SSH::ResponseSet @failures=[], @successes=[]>
-      #   ]
+      # Run a bootstrap on each of the hosts given to this instance of {Worker}
       #
       # @raise [MB::BootstrapError]
       #   if there was an error during the bootstrap process
       #
-      # @return [Array<Ridley::SSH::ResponseSet]
+      # @return [Array<Hash>]
+      #   [
+      #     {
+      #       node: "cloud-1.riotgames.com",
+      #       status: :ok
+      #       message: ""
+      #       bootstrap_type: :full
+      #     },
+      #     {
+      #       node: "cloud-2.riotgames.com",
+      #       status: :error,
+      #       message: "client verification error"
+      #       bootstrap_type: :partial
+      #     }
+      #   ]
       def run
-        log.info { "Bootstrapping groups: #{group_ids} [ #{hosts.join(', ')} ] with options: '#{options}'" }
         unless hosts && hosts.any?
-          log.info { "No hosts in groups: #{group_ids}. Skipping..." }
           return [ :ok, [] ]
         end
 
@@ -89,7 +93,7 @@ module MotherBrain
           unless partial_nodes.empty?
             future(:_partial_bootstrap_, partial_nodes, options.slice(:attributes, :run_list))
           end
-        end.map(&:value).flatten.inject(:merge)
+        end.map(&:value).flatten
       end
 
       # Split the nodes to bootstrap into two groups. One group of nodes who do not have a client
@@ -174,50 +178,104 @@ module MotherBrain
       # @param [Array<String>] target_nodes
       # @param [Hash] options
       #
-      # @raise [MB::BootstrapError]
-      #   if an error occured while bootstrapping one or more nodes
-      #
-      # @return [Ridley::SSH::ResponseSet]
-      def _full_bootstrap_(target_nodes, options)
+      # @return [Array<Hash>]
+      #   [
+      #     {
+      #       node: "cloud-1.riotgames.com",
+      #       status: :ok
+      #       message: "",
+      #       bootstrap_type: :full
+      #     },
+      #     {
+      #       node: "cloud-2.riotgames.com",
+      #       status: :error,
+      #       message: "client verification error",
+      #       bootstrap_type: :full
+      #     }
+      #   ]
+      def full_bootstrap(target_nodes, options)
         chef_connection.node.bootstrap(target_nodes, options)
       rescue Ridley::Errors::RidleyError => ex
-        abort MB::BootstrapError.new(ex.to_s)
+        abort BootstrapError.new(ex.to_s)
       end
 
-      # @param [Array<Hash>] target_nodes
-      # @param [Hash] options
+      # Perform a bootstrap on a group of nodes which have already been registered with the Chef server.
       #
-      # @raise [MB::BootstrapError]
-      #   if an error occured while bootstrapping one or more nodes
+      # Partial bootstrap steps:
+      #   1. The given values given for the run_list and attributes options will be merged with the existing
+      #      node data
+      #   2. Your organization's secret key will be placed on the node
+      #   3. Perform a chef client run on the target node
       #
-      # @return [Ridley::SSH::ResponseSet]
-      def _partial_bootstrap_(target_nodes, options)
-        failures = 0
+      # @param [Array<Hash>] nodes
+      #   an array of hashes containing node data
+      #
+      #   @example
+      #   [
+      #     {
+      #       node_name: "reset",
+      #       hostname: "reset.riotgames.com"
+      #     },
+      #     {
+      #       node_name: "cloud-1",
+      #       hostname: "cloud-1.riotgames.com"
+      #     }
+      #   ]
+      #
+      # @option options [Array] :run_list
+      #   a chef run list
+      # @option options [Hash] :attributes
+      #   attributes to set on the node at normal precedence
+      #
+      # @return [Array<Hash>]
+      #   [
+      #     {
+      #       node_name: "cloud-1",
+      #       hostname: "cloud-1.riotgames.com",
+      #       status: :ok,
+      #       message: "",
+      #       bootstrap_type: :partial
+      #     },
+      #     {
+      #       node_name: "cloud-2",
+      #       hostname: "cloud-2.riotgames.com",
+      #       status: :error,
+      #       message: "client verification error",
+      #       bootstrap_type: :partial
+      #     }
+      #   ]
+      def partial_bootstrap(nodes, options = {})
+        nodes.collect do |node|
+          Celluloid::Future.new {
+            hostname  = node[:hostname]
+            node_name = node[:node_name]
 
-        response = Ridley::SSH::ResponseSet.new.tap do |response_set|
-          target_nodes.collect do |node|
-            Celluloid::Future.new {
-              log.info { "Node (#{node[:node_name]}):(#{node[:hostname]}) is already registered with Chef: performing a partial bootstrap" }
-
-              chef_connection.node.merge_data(node[:node_name], options)
-              node_querier.put_secret(node[:hostname])
-              node_querier.chef_run(node[:hostname])
+            log.info {
+              "Node (#{node_name}):(#{hostname}) is already registered with Chef: performing a partial bootstrap"
             }
-          end.map do |future|
+
+            response = {
+              node_name: node_name,
+              hostname: hostname,
+              bootstrap_type: :partial,
+              message: "",
+              status: nil
+            }
+
             begin
-              response_set.add_response(future.value)
-            rescue RemoteCommandError => ex
-              log_exception(ex)
-              failures += 1
+              chef_connection.node.merge_data(node_name, options)
+              node_querier.put_secret(hostname)
+              node_querier.chef_run(hostname)
+
+              response[:status] = :ok
+            rescue Ridley::Errors::HTTPNotFound, RemoteCommandError => ex
+              response[:status]  = :error
+              response[:message] = ex.to_s
             end
-          end
-        end
 
-        if failures > 0
-          abort BootstrapError.new("error partially bootstrapping #{failures} nodes")
-        end
-
-        response
+            response
+          }
+        end.map(&:value)
       end
     end
   end
