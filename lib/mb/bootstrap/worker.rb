@@ -89,11 +89,11 @@ module MotherBrain
 
         [].tap do |futures|
           if full_nodes.any?
-            future(:full_bootstrap, full_nodes, options)
+            futures << future(:full_bootstrap, full_nodes, options)
           end
 
           if partial_nodes.any?
-            future(:partial_bootstrap, partial_nodes, options.slice(:attributes, :run_list))
+            futures << future(:partial_bootstrap, partial_nodes, options.slice(:attributes, :run_list))
           end
         end.map(&:value).flatten
       end
@@ -175,7 +175,7 @@ module MotherBrain
             hostname: host,
             node_name: node_querier.future(:node_name, host)
           }
-        end.inject({}) do |node|
+        end.collect do |node|
           node[:node_name] = node[:node_name].value
           node
         end
@@ -228,9 +228,24 @@ module MotherBrain
       #
       # @return [Array<Hash>]
       def full_bootstrap(hostnames, options = {})
-        chef_connection.node.bootstrap(hostnames, options)
-      rescue Ridley::Errors::RidleyError => ex
-        abort BootstrapError.new(ex.to_s)
+        chef_connection.node.bootstrap(hostnames, options).collect do |ssh_response|
+          response = {
+            node_name: nil,
+            hostname: ssh_response.host,
+            bootstrap_type: :full,
+            message: "",
+            status: nil
+          }
+
+          if ssh_response.error?
+            response[:status]  = :error
+            response[:message] = ssh_response.stderr.chomp
+          else
+            response[:status] = :ok
+          end
+
+          response
+        end
       end
 
       # Perform a bootstrap on a group of nodes which have already been registered with the Chef server.

@@ -142,28 +142,26 @@ module MotherBrain
             group_names    = "#{Array(tasks).collect(&:groups).flatten.uniq.join(', ')}"
 
             job.set_status("bootstrapping group(s): #{group_names}")
-            concurrent_bootstrap(manifest, tasks, options).each do |group, responses|
+            concurrent_bootstrap(job, manifest, tasks, options).each do |group, responses|
               errors = responses.select { |response| response[:status] == :error }
 
               unless errors.empty?
                 grouped_errors[group] ||= Array.new
-                grouped_errors << errors
+                grouped_errors[group] << errors
               end
             end
 
-            job.set_status("done bootstrapping group(s): #{group_names}")
             unless grouped_errors.empty?
               abort GroupBootstrapError.new(grouped_errors)
             end
+
+            job.set_status("done bootstrapping group(s): #{group_names}")
           end
         end
 
         job.report_success
-      rescue ResourceLocked => ex
+      rescue ResourceLocked, BootstrapError => ex
         job.report_failure(ex)
-      rescue BootstrapError => ex
-        job.report_failure(ex)
-        log_exception(ex)
       ensure
         job.terminate if job && job.alive?
       end
@@ -207,7 +205,7 @@ module MotherBrain
       #       }
       #     ]
       #   }
-      def concurrent_bootstrap(manifest, boot_tasks, options = {})
+      def concurrent_bootstrap(job, manifest, boot_tasks, options = {})
         workers  = Array.new
         response = Hash.new
 
@@ -216,7 +214,7 @@ module MotherBrain
           nodes  = manifest.hosts_for_groups(groups)
 
           if nodes.empty?
-            log.info { "Skipping bootstrap: no hosts found matching group(s): #{groups}" }
+            log.info { "Skipping bootstrap of group(s): #{groups}. No hosts defined in manifest for these group(s)." }
             next
           end
 
@@ -227,7 +225,7 @@ module MotherBrain
 
           workers << worker = Worker.new(nodes)
 
-          log.info { "bootstrapping groups: #{groups} with options: '#{options}'" }
+          job.set_status("performing bootstrap on group(s): #{groups}")
           response[groups] = worker.future(:run, worker_options)
         end
 
