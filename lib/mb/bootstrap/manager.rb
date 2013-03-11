@@ -15,6 +15,7 @@ module MotherBrain
       include MB::Logging
       include MB::Mixin::Locks
       include MB::Mixin::AttributeSetting
+      include MB::Mixin::Services
 
       finalizer do
         log.info { "Bootstrap Manager stopping..." }
@@ -102,54 +103,57 @@ module MotherBrain
 
         manifest.validate!(plugin)
 
-        job.status = "searching for environment"
-        unless chef_conn.environment.find(environment)
+        job.set_status("searching for environment")
+        unless chef_connection.environment.find(environment)
           return job.report_failure("Environment '#{environment}' not found")
         end
 
-        job.status = "Starting bootstrap of nodes on: #{environment}"
+        job.set_status("Starting bootstrap of nodes on: #{environment}")
         task_queue = plugin.bootstrap_routine.task_queue.dup
         
         chef_synchronize(chef_environment: environment, force: options[:force], job: job) do
           if options[:component_versions].any?
-            job.status = "Setting component versions"
+            job.set_status("Setting component versions")
             set_component_versions(environment, plugin, options[:component_versions])
           end
 
           if options[:cookbook_versions].any?
-            job.status = "Setting cookbook versions"
+            job.set_status("Setting cookbook versions")
             set_cookbook_versions(environment, options[:cookbook_versions])
           end
 
           if options[:environment_attributes].any?
-            job.status = "Setting environment attributes"
+            job.set_status("Setting environment attributes")
             set_environment_attributes(environment, options[:environment_attributes])
           end
 
           unless options[:environment_attributes_file].nil?
-            job.status = "Setting environment attributes from file"
+            job.set_status("Setting environment attributes from file")
             begin
               attribute_hash = MultiJson.decode(File.open(options[:environment_attributes_file]).read)
               set_environment_attributes_from_hash(environment, attribute_hash)
-            rescue MultiJson::DecodeError => error
-              log.fatal { "Failed to parse json supplied in environment attributes file."}
-              return job.report_failure(error)
+            rescue MultiJson::DecodeError => ex
+              abort InvalidAttributesFile.new(ex.to_s)
             end
           end
 
           while tasks = task_queue.shift
-            job.status = "bootstrapping group(s): #{Array(tasks).collect(&:groups).flatten.uniq.join(', ')}"
+            grouped_errors = Hash.new
+            group_names    = "#{Array(tasks).collect(&:groups).flatten.uniq.join(', ')}"
 
-            failures = concurrent_bootstrap(manifest, tasks, options).select do |group, response_set|
-              if response_set.respond_to?(:has_errors?)
-                response_set.has_errors?
-              else
-                response_set.first != :ok
+            job.set_status("bootstrapping group(s): #{group_names}")
+            concurrent_bootstrap(manifest, tasks, options).each do |group, responses|
+              errors = responses.select { |response| response[:status] == :error }
+
+              unless errors.empty?
+                grouped_errors[group] ||= Array.new
+                grouped_errors << errors
               end
             end
 
-            unless failures.empty?
-              abort BootstrapError.new("failed to bootstrap group(s): #{failures.keys.join(', ')}")
+            job.set_status("done bootstrapping group(s): #{group_names}")
+            unless grouped_errors.empty?
+              abort GroupBootstrapError.new(grouped_errors)
             end
           end
         end
@@ -164,52 +168,75 @@ module MotherBrain
         job.terminate if job && job.alive?
       end
 
-      private
+      # Concurrently bootstrap a grouped collection of nodes from a manifest and return
+      # their results. This function will block until all nodes have finished
+      # bootstrapping.
+      #
+      # @param [Bootstrap::Manifest] manifest
+      #   a hash where the keys are node group names and the values are arrays of hostnames
+      # @param [BootTask, Array<BootTask>] boot_tasks
+      #   a hash where the keys are node group names and the values are arrays of hostnames
+      #
+      # @see #bootstrap for options
+      #
+      # @return [Hash]
+      #   a hash where keys are group names and their values are the results of {Bootstrap::Worker#run}
+      #
+      # @example
+      #   {
+      #     "activemq::master" => [
+      #       {
+      #         node: "cloud-1.riotgames.com",
+      #         status: :ok
+      #         message: ""
+      #         bootstrap_type: :full
+      #       },
+      #       {
+      #         node: "cloud-2.riotgames.com",
+      #         status: :error,
+      #         message: "client verification error"
+      #         bootstrap_type: :partial
+      #       }
+      #     ]
+      #     "activemq::slave" => [
+      #       {
+      #         node: "cloud-3.riotgames.com",
+      #         status: :ok
+      #         message: ""
+      #         bootstrap_type: :partial
+      #       }
+      #     ]
+      #   }
+      def concurrent_bootstrap(manifest, boot_tasks, options = {})
+        workers  = Array.new
+        response = Hash.new
 
-        def chef_conn
-          Application.ridley
+        Array(boot_tasks).each do |boot_task|
+          groups = boot_task.groups
+          nodes  = manifest.hosts_for_groups(groups)
+
+          if nodes.empty?
+            log.info { "Skipping bootstrap: no hosts found matching group(s): #{groups}" }
+            next
+          end
+
+          worker_options = options.merge(
+            run_list: boot_task.group_object.run_list,
+            attributes: boot_task.group_object.chef_attributes
+          )
+
+          workers << worker = Worker.new(nodes)
+
+          log.info { "bootstrapping groups: #{groups} with options: '#{options}'" }
+          response[groups] = worker.future(:run, worker_options)
         end
 
-        # Concurrently bootstrap a grouped collection of nodes from a manifest and return
-        # their results. This function will block until all nodes have finished
-        # bootstrapping.
-        #
-        # @param [Bootstrap::Manifest] manifest
-        #   a hash where the keys are node group names and the values are arrays of hostnames
-        # @param [BootTask, Array<BootTask>] boot_tasks
-        #   a hash where the keys are node group names and the values are arrays of hostnames
-        #
-        # @see #bootstrap for options
-        #
-        # @return [Hash]
-        #   a hash where keys are group names and their values are their Ridley::SSH::ResultSet
-        def concurrent_bootstrap(manifest, boot_tasks, options = {})
-          workers = Array(boot_tasks).collect do |boot_task|
-            nodes = manifest.hosts_for_groups(boot_task.groups)
-
-            worker_options = options.merge(
-              run_list: boot_task.group_object.run_list,
-              attributes: boot_task.group_object.chef_attributes
-            )
-
-            Worker.new(boot_task.groups, nodes, worker_options)
-          end
-
-          futures = workers.collect do |worker|
-            [
-              worker.group_ids,
-              worker.future.run
-            ]
-          end
-
-          {}.tap do |response|
-            futures.each do |group_ids, future|
-              response[group_ids] = future.value
-            end
-          end
-        ensure
-          Array(workers).map { |worker| worker.terminate if worker.alive? }
+        response.each_with_object({}) do |(groups, future), resp|
+          resp[groups] = future.value
         end
+      ensure
+        workers.map { |worker| worker.terminate if worker.alive? }
+      end
     end
   end
 end

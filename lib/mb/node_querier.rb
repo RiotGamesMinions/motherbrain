@@ -133,6 +133,11 @@ module MotherBrain
     #
     # @raise [RemoteScriptError] if there was an error in execution
     #
+    # @note
+    #   Use {#_ruby_script_} if the caller of this function is same actor as the receiver. You will
+    #   not be able to rescue from the RemoteScriptError thrown by {#ruby_script} but you will
+    #   be able to rescue from {#_ruby_script_}.
+    #
     # @return [String]
     def ruby_script(name, host, options = {})
       _ruby_script_(name, host, options = {})

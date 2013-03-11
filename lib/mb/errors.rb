@@ -200,7 +200,13 @@ module MotherBrain
 
   class InvalidLockType < MBError; status_code(23); end
   class BootstrapError < MBError; status_code(24); end
+  class GroupBootstrapError < BootstrapError
+    def initialize(grouped_errors)
+      
+    end
+  end
   class CookbookConstraintNotSatisfied < BootstrapError; end
+  class InvalidAttributesFile < BootstrapError; end
 
   class ProvisionError < MBError; status_code(20); end
   class UnexpectedProvisionCount < ProvisionError

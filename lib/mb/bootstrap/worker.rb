@@ -9,14 +9,39 @@ module MotherBrain
 
       # @return [Array<String>]
       attr_reader :hosts
-      # @return [Hash]
-      attr_reader :options
 
       # @param [Array<String>] hosts
       #   an array of hostnames or ipaddresses to bootstrap
       #
       #   @example
       #     [ '33.33.33.10', 'reset.riotgames.com' ]
+      def initialize(hosts)
+        @hosts = Array(hosts)
+      end
+
+      # Run a bootstrap on each of the hosts given to this instance of {Worker}
+      #
+      # @example
+      #   hosts = [
+      #     "cloud-1.riotgames.com",
+      #     "cloud-2.riotgames.com"
+      #   ]
+      #   worker = Worker.new(hosts)
+      #
+      #   worker.run #=> [
+      #     {
+      #       node: "cloud-1.riotgames.com",
+      #       status: :ok
+      #       message: ""
+      #       bootstrap_type: :full
+      #     },
+      #     {
+      #       node: "cloud-2.riotgames.com",
+      #       status: :error,
+      #       message: "client verification error"
+      #       bootstrap_type: :partial
+      #     }
+      #   ]
       #
       # @option options [Hash] :attributes (Hash.new)
       #   a hash of attributes to use in the first Chef run
@@ -51,34 +76,11 @@ module MotherBrain
       #   bootstrap template to use
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      def initialize(hosts, options = {})
-        @hosts   = Array(hosts)
-        @options = options
-      end
-
-      # Run a bootstrap on each of the hosts given to this instance of {Worker}
-      #
-      # @raise [MB::BootstrapError]
-      #   if there was an error during the bootstrap process
       #
       # @return [Array<Hash>]
-      #   [
-      #     {
-      #       node: "cloud-1.riotgames.com",
-      #       status: :ok
-      #       message: ""
-      #       bootstrap_type: :full
-      #     },
-      #     {
-      #       node: "cloud-2.riotgames.com",
-      #       status: :error,
-      #       message: "client verification error"
-      #       bootstrap_type: :partial
-      #     }
-      #   ]
-      def run
-        unless hosts && hosts.any?
-          return [ :ok, [] ]
+      def run(options = {})
+        if hosts.empty?
+          return Array.new
         end
 
         full_nodes    = Array.new
@@ -86,12 +88,12 @@ module MotherBrain
         full_nodes, partial_nodes = bootstrap_type_filter
 
         [].tap do |futures|
-          unless full_nodes.empty?
-            future(:_full_bootstrap_, full_nodes, options)
+          if full_nodes.any?
+            future(:full_bootstrap, full_nodes, options)
           end
 
-          unless partial_nodes.empty?
-            future(:_partial_bootstrap_, partial_nodes, options.slice(:attributes, :run_list))
+          if partial_nodes.any?
+            future(:partial_bootstrap, partial_nodes, options.slice(:attributes, :run_list))
           end
         end.map(&:value).flatten
       end
@@ -107,13 +109,14 @@ module MotherBrain
       # the target node was initially bootstrapped.
       #
       # @example splitting hosts into two groups based on chef client presence
-      #   @hosts => [
+      #   hosts = [
       #     "no-client1.riotgames.com",
       #     "no-client2.riotgames.com",
       #     'has-client.riotgames.com"'
       #   ]
+      #   worker = Worker.new(hosts)
       #
-      #   self.bootstrap_type_filter => [
+      #   worker.bootstrap_type_filter => [
       #     [ "no-client1.riotgames.com", "no-client2.riotgames.com" ],
       #     [
       #       {
@@ -123,7 +126,7 @@ module MotherBrain
       #     ]
       #   ]
       #
-      # @return [Array]
+      # @return [Array<Array>]
       def bootstrap_type_filter
         known_nodes = Celluloid::Future.new {
           chef_connection.node.all.map { |node| node.name.to_s }
@@ -144,10 +147,9 @@ module MotherBrain
       # hostname is the address to communicate to the node with and the node_name is the
       # name the node is identified in Chef as.
       #
-      # @option options [Boolean] :force
-      #
       # @example
-      #   worker.nodes => [
+      #   worker = Worker.new(..)
+      #   worker.nodes #=> [
       #     {
       #       hostname: "riot_one.riotgames.com",
       #       node_name: "riot_one"
@@ -158,8 +160,12 @@ module MotherBrain
       #     }
       #   ]
       #
+      # @option options [Boolean] :force (false)
+      #
       # @return [Hash]
-      def nodes
+      def nodes(options = {})
+        options = options.reverse_merge(force: false)
+
         if options[:force]
           @nodes = nil
         end
@@ -167,34 +173,62 @@ module MotherBrain
         @nodes ||= hosts.collect do |host|
           {
             hostname: host,
-            node_name: node_querier.future.node_name(host)
+            node_name: node_querier.future(:node_name, host)
           }
-        end.collect! do |node|
+        end.inject({}) do |node|
           node[:node_name] = node[:node_name].value
           node
         end
       end
 
-      # @param [Array<String>] target_nodes
-      # @param [Hash] options
+      # Perform a bootstrap on a group of nodes which have not yet been registered with the Chef server
+      # and may not have Ruby, Chef, or other requirements installed.
       #
-      # @return [Array<Hash>]
-      #   [
+      # @example
+      #   hostnames = [
+      #     "cloud-1.riotgames.com",
+      #     "cloud-2.riotgames.com"
+      #   ]
+      #   worker = Worker.new(...)
+      #
+      #   worker.full_bootstrap(target_nodes) #=> [
       #     {
-      #       node: "cloud-1.riotgames.com",
+      #       node_name: "cloud-1",
+      #       hostname: "cloud-1.riotgames.com",
       #       status: :ok
       #       message: "",
       #       bootstrap_type: :full
       #     },
       #     {
-      #       node: "cloud-2.riotgames.com",
+      #       node_name: "cloud-2",
+      #       hostname: "cloud-2.riotgames.com",
       #       status: :error,
       #       message: "client verification error",
       #       bootstrap_type: :full
       #     }
       #   ]
-      def full_bootstrap(target_nodes, options)
-        chef_connection.node.bootstrap(target_nodes, options)
+      #
+      # @param [Array<String>] hostnames
+      #   an array of hostnames to fully bootstrap
+      #
+      # @option options [Hash] :hints (Hash.new)
+      #   a hash of Ohai hints to place on the bootstrapped node
+      # @option options [Hash] :attributes (Hash.new)
+      #   a hash of attributes to use in the first Chef run
+      # @option options [Array] :run_list (Array.new)
+      #   an initial run list to bootstrap with
+      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      #   version of Chef to install on the node
+      # @option options [String] :environment ("_default")
+      #   environment to join the node to
+      # @option options [Boolean] :sudo (true)
+      #   bootstrap with sudo
+      # @option options [String] :template ("omnibus")
+      #   bootstrap template to use
+      #
+      # @return [Array<Hash>]
+      def full_bootstrap(hostnames, options = {})
+        chef_connection.node.bootstrap(hostnames, options)
       rescue Ridley::Errors::RidleyError => ex
         abort BootstrapError.new(ex.to_s)
       end
@@ -207,11 +241,8 @@ module MotherBrain
       #   2. Your organization's secret key will be placed on the node
       #   3. Perform a chef client run on the target node
       #
-      # @param [Array<Hash>] nodes
-      #   an array of hashes containing node data
-      #
-      #   @example
-      #   [
+      # @example
+      #   nodes = [
       #     {
       #       node_name: "reset",
       #       hostname: "reset.riotgames.com"
@@ -221,14 +252,9 @@ module MotherBrain
       #       hostname: "cloud-1.riotgames.com"
       #     }
       #   ]
+      #   worker = Worker.new(...)
       #
-      # @option options [Array] :run_list
-      #   a chef run list
-      # @option options [Hash] :attributes
-      #   attributes to set on the node at normal precedence
-      #
-      # @return [Array<Hash>]
-      #   [
+      #   worker.partial_bootstrap(nodes) #=> [
       #     {
       #       node_name: "cloud-1",
       #       hostname: "cloud-1.riotgames.com",
@@ -244,6 +270,16 @@ module MotherBrain
       #       bootstrap_type: :partial
       #     }
       #   ]
+      #
+      # @param [Array<Hash>] nodes
+      #   an array of hashes containing node data
+      #
+      # @option options [Array] :run_list
+      #   a chef run list
+      # @option options [Hash] :attributes
+      #   attributes to set on the node at normal precedence
+      #
+      # @return [Array<Hash>]
       def partial_bootstrap(nodes, options = {})
         nodes.collect do |node|
           Celluloid::Future.new {
