@@ -28,6 +28,7 @@ module MotherBrain
       # Asynchronously bootstrap a collection of nodes described in the given manifest in the proper order
       #
       # @param [String] environment
+      #   name of the environment to bootstrap nodes to
       # @param [Bootstrap::Manifest] manifest
       #   manifest of nodes and what they should become
       # @param [Plugin] plugin
@@ -41,31 +42,16 @@ module MotherBrain
       #   Hash of additional attributes to set on the environment
       # @option options [Boolean] :force
       #   ignore and bypass any existing locks on an environment
-      # @option options [Hash] :ssh
-      #   * :user (String) a shell user that will login to each node and perform the bootstrap command on
-      #   * :password (String) the password for the shell user that will perform the bootstrap
-      #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
-      #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
-      #   * :sudo (Boolean) [True] bootstrap with sudo
-      # @option options [String] :server_url
-      #   URL to the Chef API to bootstrap the target node(s) to
-      # @option options [String] :client_name
-      #   name of the client used to authenticate with the Chef API
-      # @option options [String] :client_key
-      #   filepath to the client's private key used to authenticate with the Chef API
-      # @option options [String] :organization
-      #   the Organization to connect to. This is only used if you are connecting to
-      #   private Chef or hosted Chef
-      # @option options [String] :validator_client
-      #   the name of the Chef validator client to use in bootstrapping
-      # @option options [String] :validator_path
-      #   filepath to the validator used to bootstrap the node
-      # @option options [String] :encrypted_data_bag_secret_path
-      #   filepath on your host machine to your organizations encrypted data bag secret
+      # @option options [Hash] :attributes (Hash.new)
+      #   a hash of node level attributes to set on the bootstrapped nodes
+      # @option options [Array] :run_list (Array.new)
+      #   an initial run list to bootstrap with
+      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      #   version of Chef to install on the node
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
-      # @option options [String] :template ("omnibus")
-      #   bootstrap template to use
+      # @option options [Boolean] :sudo (true)
+      #   bootstrap with sudo
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
       #
@@ -81,16 +67,17 @@ module MotherBrain
       # Bootstrap a collection of nodes described in the given manifest in the proper order
       #
       # @param [MB::Job] job
+      #   a job to send progress updates to
       # @param [String] environment
+      #   name of the environment to bootstrap nodes to
       # @param [MB::Bootstrap::Manifest] manifest
       #   manifest of nodes and what they should become
       # @param [MB::Plugin] plugin
       #   a MotherBrain plugin with a bootstrap routine to follow
       #
-      # @see {#bootstrap} for options
+      # @see {#async_bootstrap} for options
       def bootstrap(job, environment, manifest, plugin, options = {})
         options = options.reverse_merge(
-          environment: environment,
           cookbook_versions: Hash.new,
           component_versions: Hash.new,
           environment_attributes: Hash.new,
@@ -98,6 +85,7 @@ module MotherBrain
           bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
           force: false
         )
+        options[:environment] = environment
 
         job.report_running
 
@@ -170,12 +158,25 @@ module MotherBrain
       # their results. This function will block until all nodes have finished
       # bootstrapping.
       #
+      # @param [MB::Job] job
+      #   a job to send progress updates to
       # @param [Bootstrap::Manifest] manifest
       #   a hash where the keys are node group names and the values are arrays of hostnames
       # @param [BootTask, Array<BootTask>] boot_tasks
       #   a hash where the keys are node group names and the values are arrays of hostnames
       #
-      # @see #bootstrap for options
+      # @option options [Hash] :attributes (Hash.new)
+      #   a hash of attributes to use in the first Chef run
+      # @option options [Array] :run_list (Array.new)
+      #   an initial run list to bootstrap with
+      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      #   version of Chef to install on the node
+      # @option options [Hash] :hints (Hash.new)
+      #   a hash of Ohai hints to place on the bootstrapped node
+      # @option options [Boolean] :sudo (true)
+      #   bootstrap with sudo
+      # @option options [String] :bootstrap_proxy (nil)
+      #   URL to a proxy server to bootstrap through
       #
       # @return [Hash]
       #   a hash where keys are group names and their values are the results of {Bootstrap::Worker#run}
