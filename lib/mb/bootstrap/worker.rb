@@ -19,7 +19,18 @@ module MotherBrain
         @hosts = Array(hosts)
       end
 
-      # Run a bootstrap on each of the hosts given to this instance of {Worker}
+      # Run a bootstrap on each of the hosts given to this instance of {Worker}. There are two different kinds of
+      # bootstrap processes which may be run on a node; a partial bootstrap and a full bootstrap.
+      #
+      # Partial Bootstrap: a node will be partially bootstrapped if it has
+      #   1. Chef installed by omnibus
+      #   2. Ruby installed by omnibus
+      #   3. A Chef client registered with the Chef server.
+      #      note: the name of the client is the "node_name" of the node. This obtained by running the
+      #            ruby node name script "script/node_name.rb" on the node.
+      #
+      # Full Bootstrap: a node will be fully bootstrapped if it does not satisfy all of the criteria for a
+      #   partial bootstrap.
       #
       # @example
       #   hosts = [
@@ -314,7 +325,7 @@ module MotherBrain
             }
 
             begin
-              chef_connection.node.merge_data(node_name, options)
+              chef_connection.node.merge_data(node_name, options.slice(:run_list, :attributes))
               node_querier.put_secret(hostname)
               node_querier.chef_run(hostname)
 
