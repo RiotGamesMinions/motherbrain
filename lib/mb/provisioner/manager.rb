@@ -113,7 +113,7 @@ module MotherBrain
         worker.down(job, environment)
 
         job.report_success("environment destroyed")
-      rescue BootstrapError => ex
+      rescue ProvisionError => ex
         job.report_failure(ex)
         log_exception(ex)
       ensure
@@ -165,7 +165,7 @@ module MotherBrain
           bootstrap_manifest = Bootstrap::Manifest.from_provisioner(response, manifest)
           bootstrapper.bootstrap(job, environment, bootstrap_manifest, plugin, options)
         end
-      rescue BootstrapError => ex
+      rescue ProvisionError => ex
         job.report_failure(ex)
         log_exception(ex)
       ensure

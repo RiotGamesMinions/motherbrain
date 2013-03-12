@@ -139,13 +139,10 @@ module MotherBrain
         job.set_status("sending request to environment factory to destroy environment")
         connection.environment.destroy(env_name)
 
-        # @todo JW: disable check until environment factory's API stops caching previously
-        #   existing environments
-        #
-        # until destroyed?(env_name)
-        #   job.set_status("waiting for environment to be destroyed")
-        #   sleep 2
-        # end
+        until destroyed?(env_name)
+          job.set_status("waiting for environment to be destroyed")
+          sleep 2
+        end
 
         true
       rescue EF::REST::Error => ex
@@ -163,7 +160,8 @@ module MotherBrain
         #
         # @return [Boolean]
         def destroyed?(environment)
-          connection.environment.find(environment, force: true).nil?
+          response = connection.environment.find(environment, force: true)
+          response[:status] == "pending"
         end
     end
   end

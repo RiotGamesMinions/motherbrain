@@ -88,6 +88,7 @@ describe MB::Provisioners::EnvironmentFactory do
     it "sends a destroy command to environment factory with the given environment" do
       connection = double('connection')
       subject.stub(:connection) { connection }
+      subject.should_receive(:destroyed?).with(env_name).and_return(true)
       connection.stub_chain(:environment, :destroy).with(env_name).and_return(Hash.new)
 
       subject.down(job, env_name)
