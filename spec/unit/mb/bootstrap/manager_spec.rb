@@ -92,13 +92,13 @@ describe MB::Bootstrap::Manager do
 
   describe "#bootstrap" do
     before(:each) do
-      job_stub.stub(:status=)
+      job_stub.stub(:set_status)
       job_stub.should_receive(:report_running)
     end
 
     context "when the environment cannot be found" do
       before(:each) do
-        manager.stub_chain(:chef_conn, :environment, :find).with(environment).and_return(nil)
+        manager.stub_chain(:chef_connection, :environment, :find).with(environment).and_return(nil)
       end
 
       it "sets the job to failed and terminates it" do
@@ -109,5 +109,9 @@ describe MB::Bootstrap::Manager do
         manager.bootstrap(job_stub, environment, manifest, plugin)
       end
     end
+  end
+
+  describe "#concurrent_bootstrap" do
+    pending
   end
 end

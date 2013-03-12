@@ -135,7 +135,7 @@ module MotherBrain
         unlock if unlock_on_failure
       end
 
-      abort(ex)
+      raise(ex)
     end
 
     # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is

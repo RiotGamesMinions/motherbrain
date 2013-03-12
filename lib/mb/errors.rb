@@ -200,7 +200,20 @@ module MotherBrain
 
   class InvalidLockType < MBError; status_code(23); end
   class BootstrapError < MBError; status_code(24); end
+  class GroupBootstrapError < BootstrapError
+    attr_reader :errors
+
+    def initialize(errors)
+      @errors = errors
+    end
+
+    def to_s
+      group_err_count = errors.collect { |group, errors| "#{group} (#{errors.length} errors)" }.join(', ')
+      "there were failures while bootstrapping some groups: #{group_err_count}"
+    end
+  end
   class CookbookConstraintNotSatisfied < BootstrapError; end
+  class InvalidAttributesFile < BootstrapError; end
 
   class ProvisionError < MBError; status_code(20); end
   class UnexpectedProvisionCount < ProvisionError
