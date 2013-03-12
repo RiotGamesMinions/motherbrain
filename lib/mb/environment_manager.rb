@@ -67,9 +67,7 @@ module MotherBrain
       node_failure = 0
 
       job.report_running("finding environment")
-      unless environment = ridley.environment.find(id)
-        return job.report_failure("an environment named '#{id}' was not found")
-      end
+      environment = find(id)
 
       chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do        
         job.set_status("saving updated environment")
@@ -98,10 +96,31 @@ module MotherBrain
       else
         job.report_success("finished chef client run on #{node_success} nodes")
       end
-    rescue ResourceLocked => ex
+    rescue EnvironmentNotFound, ResourceLocked => ex
       job.report_failure(ex)
     ensure
       job.terminate if job && job.alive?
+    end
+
+    # Find an environment on the remote Chef server
+    #
+    # @param [#to_s] id
+    #   identifier for the environment to find
+    #
+    # @raise [EnvironmentNotFound] if the given environment does not exist
+    #
+    # @return [Ridley::EnvironmentResource]
+    def find(id)
+      ridley.environment.find!(id)
+    rescue Ridley::Errors::ResourceNotFound => ex
+      abort EnvironmentNotFound.new("no environment '#{id}' was found")
+    end
+
+    # Returns a list of environments present on the remote server
+    #
+    # @return [Array<Ridley::EnvironmentResource>]
+    def list
+      ridley.environment.all
     end
   end
 end

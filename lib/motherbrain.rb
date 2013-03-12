@@ -61,6 +61,8 @@ module MotherBrain
   autoload :SrvCtl, 'mb/srv_ctl'
   autoload :Upgrade, 'mb/upgrade'
 
+  CHEF_VERSION = "11.4.0".freeze
+
   class << self
     extend Forwardable
 

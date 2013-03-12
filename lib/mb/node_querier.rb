@@ -133,19 +133,16 @@ module MotherBrain
     #
     # @raise [RemoteScriptError] if there was an error in execution
     #
+    # @note
+    #   Use {#_ruby_script_} if the caller of this function is same actor as the receiver. You will
+    #   not be able to rescue from the RemoteScriptError thrown by {#ruby_script} but you will
+    #   be able to rescue from {#_ruby_script_}.
+    #
     # @return [String]
     def ruby_script(name, host, options = {})
-      name    = name.split('.rb')[0]
-      script  = File.read(MB.scripts.join("#{name}.rb"))
-      command = "#{EMBEDDED_RUBY_PATH} -e '#{script}'"
-      status, response = ssh_command(host, command, options)
-
-      case status
-      when :ok
-        response.stdout.chomp
-      when :error
-        abort RemoteScriptError.new(response.stderr.chomp)
-      end
+      _ruby_script_(name, host, options = {})
+    rescue MB::RemoteScriptError => ex
+      abort(ex)
     end
 
     # Return the Chef node_name of the target host. A nil value is returned if a
@@ -166,8 +163,8 @@ module MotherBrain
     #
     # @return [String, nil]
     def node_name(host, options = {})
-      ruby_script('node_name', host, options)
-    rescue RemoteScriptError
+      _ruby_script_('node_name', host, options)
+    rescue MB::RemoteScriptError
       nil
     end
 
@@ -234,5 +231,25 @@ module MotherBrain
 
       copy_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options)
     end
+
+    private
+
+      # An internal lifting function for {#ruby_script}. Any instance functions delegating to {#ruby_script}
+      # should instead delegate to this internal function.
+      def _ruby_script_(name, host, options = {})
+        name    = name.split('.rb')[0]
+        script  = File.read(MB.scripts.join("#{name}.rb"))
+        command = "#{EMBEDDED_RUBY_PATH} -e '#{script}'"
+        status, response = ssh_command(host, command, options)
+
+        case status
+        when :ok
+          response.stdout.chomp
+        when :error
+          raise MB::RemoteScriptError.new(response.stderr.chomp)
+        else
+          raise ArgumentError, "unknown status returned from #ssh_command: #{status}"
+        end
+      end
   end
 end

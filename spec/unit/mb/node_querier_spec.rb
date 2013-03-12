@@ -15,13 +15,13 @@ describe MB::NodeQuerier do
 
   describe "#node_name" do
     it "returns the response of the successfully run script" do
-      subject.should_receive(:ruby_script).and_return('my_node')
+      subject.should_receive(:_ruby_script_).and_return('my_node')
 
       subject.node_name(double('host')).should eql('my_node')
     end
 
     it "returns nil if there was an error in remote execution" do
-      subject.should_receive(:ruby_script).and_raise(MB::RemoteScriptError)
+      subject.should_receive(:_ruby_script_).and_raise(MB::RemoteScriptError)
 
       subject.node_name(double('host')).should be_nil
     end
