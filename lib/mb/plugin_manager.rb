@@ -35,6 +35,8 @@ module MotherBrain
 
       MB::Berkshelf.init
 
+      load_local_plugin if local_plugin?
+
       async_loading? ? async(:load_all) : load_all
 
       if eager_loading?
@@ -100,6 +102,20 @@ module MotherBrain
     # @return [Integer]
     def eager_load_interval
       Application.config.plugin_manager.eager_load_interval
+    end
+
+    # Determines if we're running inside of a cookbook with a plugin.
+    #
+    # @return [Boolean]
+    def local_plugin?
+      %w[
+        metadata.rb
+        motherbrain.rb
+      ].all? { |file| File.exist? file }
+    end
+
+    def load_local_plugin
+      load_file '.'
     end
 
     # Find and return a registered plugin of the given name and version. If no version
