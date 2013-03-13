@@ -126,5 +126,11 @@ module MotherBrain
 end
 
 Dir["#{File.dirname(__FILE__)}/gears/*.rb"].sort.each do |path|
-  require "mb/gears/#{File.basename(path, '.rb')}"
+  basename = File.basename(path, '.rb')
+
+  begin
+    require "mb/gears/#{basename}"
+  rescue LoadError => error
+    # puts "Error loading #{basename} gear: #{error.message}"
+  end
 end
