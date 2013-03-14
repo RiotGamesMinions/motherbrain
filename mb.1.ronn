@@ -1,0 +1,64 @@
+# NAME
+
+mb - an orchestrator for chef environments
+
+# SYNOPSIS
+
+    mb PLUGIN [ provision MANIFEST | bootstrap MANIFEST | CUSTOM_COMMAND [ PARAMETER ] ] --environment ENVIRONMENT [ -v | -d ] [ --components [ COMPONENT:VERSION [ ... ] ] ]
+
+# DESCRIPTION
+
+MotherBrain (`mb`) orchestrates environments via plugins written for the software being deployed. `mb` is capable of provisioning environments via Environment Factory or taking existing nodes and bootstrap them into Chef from the respective manifests.  `mb` also can define custom commands that control the state of services on nodes, often done via setting attributes on nodes and running chef-client.  See mb-plugins(1) for more detail.
+
+# OPTIONS
+
+    --environment ENV, -e ENV
+        Set the name of the environment  
+    -d
+        Set log level to debug
+    -v
+        Set log level to verbose
+
+# EXAMPLES
+
+    mb my_plugin provision production_cluster_manifest.json --environment QA_2
+
+    mb my_plugin bootstrap existing_servers_manifest.json --environment QA_7
+
+# EXIT STATUS
+
+   0 if all procedures triggered by the command exited successful
+
+**TODO: Fill these in with the correct exit codes**
+
+   1xx if a chef-client error is encountered during bootstrap or provision
+   2xx if a communication error is encountered while attempting to contact either the Chef server or nodes in the environment
+   3xx if a MotherBrain error occurs that is likely caused by a bug in MotherBrain itself
+
+# INSTALL
+
+Add this line to your application's Gemfile:
+
+    gem 'motherbrain'
+
+And then execute:
+
+    $ bundle install
+
+Or install independently:
+
+    $ gem install motherbrain
+
+# AUTHORS
+
+* Jamie Winsor (<jamie@vialstudios.com>)
+* Jesse Howarth (<jhowarth@riotgames.com>)
+* Justin Campbell (<justin@justincampbell.me>)
+
+# BUGS
+
+Please file an issue at http://github.com/RiotGames/motherbrain/issues
+
+# SEE ALSO
+
+mb-plugins(1) # TODO

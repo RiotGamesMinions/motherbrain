@@ -1,0 +1,46 @@
+# NAME
+
+mb-provision - a MotherBrain command to provision nodes via a supported node provisioning system such as a VM cloud.
+
+# SYNOPSIS
+
+    mb PLUGIN provision MANIFEST --environment ENVIRONMENT [ --components COMPONENT:VERSION [ COMPONENT:VERSION [ ... ] ] ]
+
+# DESCRIPTION
+
+Given a manifest json (see EXAMPLES), `mb` is capable of requesting a set of nodes and then boostrapping them into chef in the proper order with the correct runlists and environment attributes.
+
+# OPTIONS
+
+See mb(1)
+
+# EXAMPLES
+
+    mb my_plugin provision qa_cluster.json --environment QA_12 --components server:1.4.2 database:5.5.26a
+
+### Manifest JSON
+
+    {
+      "nodes": [{
+        "groups": ["spectator::tomcat_feapp"],
+        "type": "m1.large",
+        "count": 1
+      },
+      {
+        "groups": ["spectator::tomcat_beapp"],
+        "type": "m1.large",
+        "count": 1
+      },
+      {
+        "groups": ["spectator::varnish"],
+        "type": "m1.large",
+        "count": 1
+      },
+      {
+        "groups": ["spectator::activemq"],
+        "type": "m1.large",
+        "count": 1
+      }]
+    }
+
+
