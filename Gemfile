@@ -15,6 +15,7 @@ platforms :jruby do
 end
 
 group :development do
+  gem 'ronn'
   gem 'aruba'
   gem 'coolline'
   gem 'cucumber'
