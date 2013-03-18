@@ -287,6 +287,10 @@ module MotherBrain
         "and then bootstrap with:",
         "",
         "  mb #{cookbook.name} bootstrap bootstrap.json",
+        "",
+        "To see all available commands, run:",
+        "",
+        "  mb #{cookbook.name} help",
         "\n"
       ].join("\n")
     end
