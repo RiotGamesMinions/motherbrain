@@ -1,0 +1,8 @@
+{
+  "nodes": [
+    {
+      "groups": [<%= config[:groups].map { |group| "\"app::#{group}\"" }.join(", ") %>],
+      "hosts": ["replace.with.a.host.name"]
+    }
+  ]
+}

@@ -160,12 +160,15 @@ module MotherBrain
     SKIP_CONFIG_TASKS = [
       "configure",
       "help",
+      "init",
       "version"
     ].freeze
 
     NO_ENVIRONMENT_TASKS = (SKIP_CONFIG_TASKS + ["plugins"]).freeze
 
     include MB::Mixin::Services
+
+    source_root File.join(__FILE__, '../../../templates')
 
     def initialize(args = [], options = {}, config = {})
       super
@@ -260,6 +263,36 @@ module MotherBrain
       job = environment_manager.async_configure(options[:environment], attributes: attributes, force: options[:force])
 
       CliClient.new(job).display
+    end
+
+    desc "init [PATH]", "Create a MotherBrain plugin for the current cookbook"
+    def init(path = Dir.pwd)
+      metadata = File.join(path, 'metadata.rb')
+
+      unless File.exist?(metadata)
+        MB.ui.say "#{path} is not a cookbook"
+        return
+      end
+
+      cookbook = CookbookMetadata.from_file(metadata)
+      config = { name: cookbook.name, groups: %w[default] }
+      template 'bootstrap.json', File.join(path, 'bootstrap.json'), config
+      template 'motherbrain.rb', File.join(path, 'motherbrain.rb'), config
+
+      MB.ui.say [
+        "",
+        "MotherBrain plugin created.",
+        "",
+        "Take a look at motherbrain.rb and bootstrap.json,",
+        "and then bootstrap with:",
+        "",
+        "  mb #{cookbook.name} bootstrap bootstrap.json",
+        "",
+        "To see all available commands, run:",
+        "",
+        "  mb #{cookbook.name} help",
+        "\n"
+      ].join("\n")
     end
 
     method_option :remote,
