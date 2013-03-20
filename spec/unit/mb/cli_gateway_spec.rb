@@ -33,6 +33,36 @@ describe MB::CliGateway do
       end
     end
 
+    describe "::requires_environment?" do
+      context "no arguments" do
+        it "should be false" do
+          subject.requires_environment?([]).should be_false
+        end
+      end
+
+      context "one argument" do
+        ["configure_environment", "destroy", "lock", "unlock"].each do |command|
+          it "should require an environment for #{command}" do
+            subject.requires_environment?([command]).should be_true
+          end
+        end
+
+        it "should not require an environment for a plugin" do
+          subject.requires_environment?(["myface"]).should be_false
+        end
+      end
+      
+      context "plugin command" do
+        it "should require an environment for bootstrap" do
+          subject.requires_environment?(["myface", "bootstrap"]).should be_true
+        end
+
+        it "should not require an environment for help" do
+          subject.requires_environment?(["myface", "help"]).should be_false
+        end
+      end
+    end
+
     describe "::start_mb_application?" do
       let(:args) {["myface"]}
 
