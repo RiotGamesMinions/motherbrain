@@ -60,6 +60,10 @@ describe MB::CliGateway do
         it "should not require an environment for help" do
           subject.requires_environment?(["myface", "help"]).should be_false
         end
+
+        it "should not require an environment for subtask help" do
+          subject.requires_environment?(["myface", "help", "bootstrap"]).should be_false
+        end
       end
     end
 
