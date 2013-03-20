@@ -42,7 +42,7 @@ module MotherBrain
         args, opts = parse_args(given_args)
         invoked_opts.merge!(opts)
 
-        if args.any? and (args & NO_ENVIRONMENT_TASKS).empty?
+        if requires_environment?(args)
           unless opts[:environment]
             MB.ui.say "No value provided for required option '--environment'"
             exit 1
@@ -79,13 +79,33 @@ module MotherBrain
         @app.terminate if @app && @app.alive?
       end
 
+      # Does this invocation require an environment?
+      #
+      # @param [Array<String>] args the CLI arguments
+      #
+      # @return [Boolean]
+      def requires_environment?(args)
+        return false if args.count.zero?
+
+        if ENVIRONMENT_TASKS.include?(args.first)
+          return true
+        end
+        
+        if args.count == 1
+          return false
+        end
+
+        # All plugin commands require an environment except for help.
+        return !args.include?("help")
+      end
+
       # Did the user call a plugin task?
       #
       # @param [String] name
       #
       # @return [Boolean]
       def plugin_task?(name)
-        non_plugin_tasks = (NO_ENVIRONMENT_TASKS | tasks.keys.map(&:to_s))
+        non_plugin_tasks = tasks.keys.map(&:to_s)
         !non_plugin_tasks.find { |task| task == name }.present?
       end
 
@@ -164,7 +184,12 @@ module MotherBrain
       "version"
     ].freeze
 
-    NO_ENVIRONMENT_TASKS = (SKIP_CONFIG_TASKS + ["plugins"]).freeze
+    ENVIRONMENT_TASKS = [
+      "configure_environment",
+      "destroy",
+      "lock",
+      "unlock",
+    ].freeze
 
     include MB::Mixin::Services
 
