@@ -39,8 +39,8 @@ module MotherBrain
             end
 
             klass.class_eval do
-              desc("nodes ENVIRONMENT", "List all nodes grouped by Component and Group")
-              define_method(:nodes) do |environment|
+              desc("nodes", "List all nodes grouped by Component and Group")
+              define_method(:nodes) do
                 nodes = plugin.nodes(environment).each do |component, groups|
                   groups.each do |group, nodes|
                     nodes.collect! { |node| "#{node.public_hostname} (#{node.public_ipv4})" }
