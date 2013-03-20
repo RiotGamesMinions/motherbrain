@@ -35,7 +35,7 @@ describe MB::CliGateway do
 
     describe "::requires_environment?" do
       context "no arguments" do
-        it "should be false" do
+        it "should not require an environment" do
           subject.requires_environment?([]).should be_false
         end
       end
