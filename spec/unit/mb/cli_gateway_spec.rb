@@ -40,13 +40,23 @@ describe MB::CliGateway do
         end
       end
 
-      context "one argument" do
-        ["configure_environment", "destroy", "lock", "unlock"].each do |command|
+      context "base command" do
+        ["destroy", "lock", "unlock"].each do |command|
           it "should require an environment for #{command}" do
             subject.requires_environment?([command]).should be_true
           end
         end
 
+        it "should require an environment for configure_environment" do
+          subject.requires_environment?(["configure_environment", "manifest"]).should be_true
+        end
+
+        it "should not require an environment for versions" do
+          subject.requires_environment?(["versions"]).should be_false
+        end
+      end
+
+      context "plugin argument" do
         it "should not require an environment for a plugin" do
           subject.requires_environment?(["myface"]).should be_false
         end

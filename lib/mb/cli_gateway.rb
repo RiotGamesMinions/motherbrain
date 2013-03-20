@@ -87,8 +87,12 @@ module MotherBrain
       def requires_environment?(args)
         return false if args.count.zero?
 
+        if ENVIRONMENT_TASKS.include?(args.first)
+          return true
+        end
+        
         if args.count == 1
-          return ENVIRONMENT_TASKS.include?(args.first)
+          return false
         end
 
         # All plugin commands require an environment except for help.
