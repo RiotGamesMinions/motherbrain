@@ -1,4 +1,4 @@
-require 'celluloid'
+require 'celluloid/autostart'
 require 'chozo'
 require 'ridley'
 require 'solve'
