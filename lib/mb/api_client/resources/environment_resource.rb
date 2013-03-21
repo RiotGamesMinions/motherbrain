@@ -10,6 +10,14 @@ module MotherBrain
       #
       # @option options [String] :version
       #   version of the plugin to use
+      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      #   version of Chef to install on the node
+      # @option options [Hash] :component_versions (Hash.new)
+      #   Hash of components and the versions to set them to
+      # @option options [Hash] :cookbook_versions (Hash.new)
+      #   Hash of cookbooks and the versions to set them to
+      # @option options [Hash] :environment_attributes (Hash.new)
+      #   Hash of additional attributes to set on the environment
       # @option options [Boolean] :force
       # @option options [Array] :hints
       def bootstrap(id, plugin, manifest, options = {})
@@ -18,10 +26,8 @@ module MotherBrain
           plugin: {
             name: plugin,
             version: options[:version]
-          },
-          force: options[:force],
-          hints: options[:hints]
-        }
+          }
+        }.merge(options.except(:version))
 
         json_put("/environments/#{id}.json", MultiJson.encode(body))
       end
