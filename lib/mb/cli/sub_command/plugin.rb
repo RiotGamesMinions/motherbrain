@@ -54,6 +54,9 @@ module MotherBrain
               end
 
               if plugin.bootstrap_routine.present?
+                method_option :chef_version,
+                  type: :string,
+                  desc: "The version of Chef to bootstrap the node(s) with"
                 method_option :component_versions,
                   type: :hash,
                   desc: "The component versions to set with override attributes",
@@ -90,6 +93,9 @@ module MotherBrain
                   CliClient.new(job).display
                 end
 
+                method_option :chef_version,
+                  type: :string,
+                  desc: "The version of Chef to bootstrap the node(s) with"
                 method_option :component_versions,
                   type: :hash,
                   desc: "The component versions to set with override attributes",

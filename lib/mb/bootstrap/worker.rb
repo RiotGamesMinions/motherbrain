@@ -58,7 +58,7 @@ module MotherBrain
       #   a hash of attributes to use in the first Chef run
       # @option options [Array] :run_list (Array.new)
       #   an initial run list to bootstrap with
-      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      # @option options [String] :chef_version
       #   version of Chef to install on the node
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
@@ -201,7 +201,7 @@ module MotherBrain
       # @param [Array<String>] hostnames
       #   an array of hostnames to fully bootstrap
       #
-      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      # @option options [String] :chef_version
       #   version of Chef to install on the node
       # @option options [Hash] :attributes (Hash.new)
       #   a hash of attributes to use in the first Chef run
@@ -215,7 +215,6 @@ module MotherBrain
       # @return [Array<Hash>]
       def full_bootstrap(hostnames, options = {})
         options = options.reverse_merge(
-          chef_version: MB::CHEF_VERSION,
           run_list: Array.new,
           attributes: Hash.new,
           hints: Hash.new,
