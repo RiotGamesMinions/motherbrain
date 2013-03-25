@@ -10,7 +10,7 @@ module MotherBrain
       #
       # @option options [String] :version
       #   version of the plugin to use
-      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      # @option options [String] :chef_version
       #   version of Chef to install on the node
       # @option options [Hash] :component_versions (Hash.new)
       #   Hash of components and the versions to set them to
@@ -85,7 +85,7 @@ module MotherBrain
       #
       # @option options [String] :version
       #   version of the plugin to use
-      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      # @option options [String] :chef_version
       #   version of Chef to install on the node
       # @option options [Hash] :component_versions (Hash.new)
       #   Hash of components and the versions to set them to

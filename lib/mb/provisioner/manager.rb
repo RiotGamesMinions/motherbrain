@@ -131,7 +131,7 @@ module MotherBrain
       # @param [MB::Plugin] plugin
       #   the plugin we are creating these nodes for
       #
-      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      # @option options [String] :chef_version
       #   version of Chef to install on the node
       # @option options [Hash] :component_versions (Hash.new)
       #   Hash of components and the versions to set them to

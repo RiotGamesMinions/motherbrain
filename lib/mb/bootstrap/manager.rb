@@ -46,7 +46,7 @@ module MotherBrain
       #   a hash of node level attributes to set on the bootstrapped nodes
       # @option options [Array] :run_list (Array.new)
       #   an initial run list to bootstrap with
-      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      # @option options [String] :chef_version
       #   version of Chef to install on the node
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
@@ -169,7 +169,7 @@ module MotherBrain
       #   a hash of attributes to use in the first Chef run
       # @option options [Array] :run_list (Array.new)
       #   an initial run list to bootstrap with
-      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      # @option options [String] :chef_version
       #   version of Chef to install on the node
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
