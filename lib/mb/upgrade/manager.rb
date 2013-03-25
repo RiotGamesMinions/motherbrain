@@ -14,6 +14,7 @@ module MotherBrain
       end
 
       include Celluloid
+      include MB::Logging
 
       finalizer do
         log.info { "Upgrade Manager stopping..." }
