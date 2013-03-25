@@ -16,9 +16,7 @@ describe MB::ApiClient::EnvironmentResource do
         plugin: {
           name: plugin_id,
           version: nil
-        },
-        force: nil,
-        hints: nil
+        }
       )
 
       stub_request(:put, "http://0.0.0.0:1984/environments/#{env_id}.json").
