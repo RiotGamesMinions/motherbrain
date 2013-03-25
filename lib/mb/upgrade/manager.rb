@@ -2,7 +2,7 @@ module MotherBrain
   module Upgrade
     # @author Justin Campbell <justin@justincampbell.me>
     #
-    # Manages an upgrade using a {MotherBrain::Upgrade::Worker}.
+    # Handles upgrading nodes in already environments.
     class Manager
       class << self
         # @raise [Celluloid::DeadActorError] if Upgrade Manager has not been started
@@ -15,8 +15,12 @@ module MotherBrain
 
       include Celluloid
 
-      # @param [String] environment_name
-      # @param [MotherBrain::Plugin] plugin
+      # Asynchronously upgrade an environment
+      #
+      # @param [String] environment
+      #   name of the environment to upgrade
+      # @param [MB::Plugin] plugin
+      #   plugin to use for performing the upgrade on the environment
       #
       # @option options [Hash] component_versions
       #   Hash of components and the versions to set them to
@@ -38,9 +42,13 @@ module MotherBrain
         job.ticket
       end
 
-      # @param [MotherBrain::Job] job
-      # @param [String] environment_name
-      # @param [MotherBrain::Plugin] plugin
+      # Synchronously upgrade an environment
+      #
+      # @param [MB::Job] job
+      # @param [String] environment
+      #   name of the environment to upgrade
+      # @param [MB::Plugin] plugin
+      #   plugin to use for performing the upgrade on the environment
       #
       # @option options [Hash] component_versions
       #   Hash of components and the versions to set them to
