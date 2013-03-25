@@ -136,7 +136,7 @@ module MotherBrain
     end
 
     def command(command_name)
-      scope.command(command_name).invoke(environment, [])
+      scope.command(command_name).invoke(environment)
     end
 
     # @author Jamie Winsor <jamie@vialstudios.com>
