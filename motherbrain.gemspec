@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.version       = MotherBrain::VERSION
   s.required_ruby_version = ">= 1.9.1"
 
-  s.add_runtime_dependency 'celluloid', '>= 0.12.4'
+  s.add_runtime_dependency 'celluloid', '~> 0.12.4'
   s.add_runtime_dependency 'reel', '>= 0.3.0.pre'
   s.add_runtime_dependency 'grape', '>= 0.2.6'
   s.add_runtime_dependency 'net-ssh'
