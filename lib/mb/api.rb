@@ -170,7 +170,7 @@ module MotherBrain
           options = params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force)
           plugin  = plugin_manager.find(params[:plugin][:name], params[:plugin][:version])
 
-          upgrade_manager.upgrade(params[:environment_id], plugin, options)
+          upgrade_manager.async_upgrade(params[:environment_id], plugin, options)
         end
 
         params do

@@ -63,13 +63,11 @@ describe MB::RestGateway do
         plugin = double('plugin')
         job = MB::Job.new(:test).ticket
         plugin_manager.should_receive(:find).with(plugin_id, plugin_version).and_return(plugin)
-        upgrade_manager.should_receive(:upgrade).with(environment_id, plugin, anything).and_return(job)
+        upgrade_manager.should_receive(:async_upgrade).with(environment_id, plugin, anything).and_return(job)
 
         post "/environments/#{environment_id}/upgrade",
-          MultiJson.dump(plugin: {
-                           name: plugin_id,
-                           version: plugin_version
-                         })
+          MultiJson.dump(plugin: { name: plugin_id, version: plugin_version })
+
         last_response.status.should == 201
       end
     end

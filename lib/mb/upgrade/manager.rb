@@ -5,9 +5,9 @@ module MotherBrain
     # Manages an upgrade using a {MotherBrain::Upgrade::Worker}.
     class Manager
       class << self
-      # @raise [Celluloid::DeadActorError] if Upgrade Manager has not been started
-      #
-      # @return [Celluloid::Actor(Upgrade::Manager)]
+        # @raise [Celluloid::DeadActorError] if Upgrade Manager has not been started
+        #
+        # @return [Celluloid::Actor(Upgrade::Manager)]
         def instance
           MB::Application[:upgrade_manager] or raise Celluloid::DeadActorError, "upgrade manager not running"
         end
@@ -15,15 +15,51 @@ module MotherBrain
 
       include Celluloid
 
-      # @see MotherBrain::Upgrade::Worker#initialize
+      # @param [String] environment_name
+      # @param [MotherBrain::Plugin] plugin
+      #
+      # @option options [Hash] component_versions
+      #   Hash of components and the versions to set them to
+      # @option options [Hash] cookbook_versions
+      #   Hash of cookbooks and the versions to set them to
+      # @option options [Hash] environment_attributes
+      #   any additional attributes to set on the environment
+      # @option options [String] environment_attributes_file
+      #   any additional attributes to set on the environment via a json file
+      # @option options [Boolean] :force
+      #   Force any locks to be overwritten
       #
       # @return [JobTicket]
-      def upgrade(environment, plugin, options = {})
+      def async_upgrade(environment, plugin, options = {})
         job = Job.new(:upgrade)
 
-        Worker.new(environment.freeze, plugin.freeze, job, options.freeze).async.run
+        async(:upgrade, job, environment, plugin, options)
 
         job.ticket
+      end
+
+      # @param [MotherBrain::Job] job
+      # @param [String] environment_name
+      # @param [MotherBrain::Plugin] plugin
+      #
+      # @option options [Hash] component_versions
+      #   Hash of components and the versions to set them to
+      # @option options [Hash] cookbook_versions
+      #   Hash of cookbooks and the versions to set them to
+      # @option options [Hash] environment_attributes
+      #   any additional attributes to set on the environment
+      # @option options [String] environment_attributes_file
+      #   any additional attributes to set on the environment via a json file
+      # @option options [Boolean] :force
+      #   Force any locks to be overwritten
+      #
+      # @return [Job]
+      def upgrade(job, environment, plugin, options = {})
+        worker = Worker.new(job, environment.freeze, plugin.freeze, options.freeze)
+        worker.run
+      ensure
+        worker.terminate if worker && worker.alive?
+        job.terminate if job && job.alive?
       end
     end
   end

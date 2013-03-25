@@ -39,10 +39,10 @@ module MotherBrain
       #   any additional attributes to set on the environment via a json file
       # @option options [Boolean] :force
       #   Force any locks to be overwritten
-      def initialize(environment_name, plugin, job, options = {})
+      def initialize(job, environment_name, plugin, options = {})
+        @job              = job
         @environment_name = environment_name
         @plugin           = plugin
-        @job              = job
         @options          = options
       end
 
