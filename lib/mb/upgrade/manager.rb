@@ -15,6 +15,14 @@ module MotherBrain
 
       include Celluloid
 
+      finalizer do
+        log.info { "Upgrade Manager stopping..." }
+      end
+
+      def initialize
+        log.info { "Upgrade Manager starting..." }
+      end
+
       # Asynchronously upgrade an environment
       #
       # @param [String] environment
