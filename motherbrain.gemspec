@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.name          = "motherbrain"
   s.require_paths = ["lib"]
   s.version       = MotherBrain::VERSION
-  s.required_ruby_version = ">= 1.9.1"
+  s.required_ruby_version = ">= 1.9.3"
 
   s.add_runtime_dependency 'celluloid', '~> 0.13.0'
   s.add_runtime_dependency 'dcell', '~> 0.13.0'
