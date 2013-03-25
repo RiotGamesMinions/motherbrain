@@ -160,7 +160,7 @@ module MotherBrain
                 define_method(:upgrade) do
                   upgrade_options = Hash.new.merge(options).deep_symbolize_keys
 
-                  job = Application.upgrade(
+                  job = upgrade_manager.async_upgrade(
                     environment.freeze,
                     plugin.freeze,
                     upgrade_options.freeze

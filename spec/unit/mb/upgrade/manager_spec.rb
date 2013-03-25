@@ -2,30 +2,36 @@ require 'spec_helper'
 
 describe MB::Upgrade::Manager do
   let(:environment) { "environment" }
-  let(:plugin) do
-    metadata = MB::CookbookMetadata.new do
-      name "motherbrain"
-      version "0.1.0"
-    end
-    MB::Plugin.new(metadata)
-  end
+  let(:plugin) { double('plugin') }
   let(:options) { Hash.new }
 
-  let(:worker_stub) { stub MB::Upgrade::Worker }
+  subject { described_class.new }
 
-  describe "#upgrade" do
+  describe "#async_upgrade" do
     let(:ticket) { double('ticket') }
     let(:job) { double('job', ticket: ticket) }
-    let(:upgrade) { klass.new.upgrade environment, plugin, options }
 
-    it "creates a job and delegates to a worker" do
-      future = double
+    before(:each) do
       MB::Job.should_receive(:new).with(:upgrade).and_return(job)
-      MB::Upgrade::Worker.should_receive(:new).with(environment, plugin, job, options).and_return(worker_stub)
-      worker_stub.stub(:async).and_return(future)
-      future.should_receive(:run)
+      subject.should_receive(:async).with(:upgrade, job, environment, plugin, options).and_return(ticket)
+    end
 
-      upgrade
+    it "returns a job ticket" do
+      subject.async_upgrade(environment, plugin, options).should eql(ticket)
+    end
+  end
+
+  describe "#upgrade" do
+    let(:job) { double('job', alive?: true) }
+    let(:worker) { double('worker', alive?: true) }
+
+    it "runs the request in a worker and then terminates the job and worker" do
+      MB::Upgrade::Worker.should_receive(:new).with(job, environment, plugin, options).and_return(worker)
+      job.should_receive(:terminate)
+      worker.should_receive(:terminate)
+      worker.should_receive(:run)
+
+      subject.upgrade(job, environment, plugin, options)
     end
   end
 end

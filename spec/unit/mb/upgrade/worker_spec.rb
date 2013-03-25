@@ -3,7 +3,7 @@ require 'spec_helper'
 describe MB::Upgrade::Worker do
   subject { worker }
 
-  let(:worker) { klass.new(environment_name, plugin, job, options).wrapped_object }
+  let(:worker) { klass.new(job, environment_name, plugin, options).wrapped_object }
 
   let(:component1) { MB::Component.new component_name }
   let(:component_name) { "component1" }
@@ -30,13 +30,13 @@ describe MB::Upgrade::Worker do
     plugin.stub(:component!).with(component_name).and_return(component1)
   end
 
+  after(:each) { job.terminate }
+
   its(:environment_name) { should == environment_name }
   its(:plugin) { should == plugin }
   its(:options) { should == options }
 
   describe "#run" do
-    after(:each) { job.terminate }
-
     subject(:run) { worker.run }
 
     it "wraps the upgrade in a lock" do
