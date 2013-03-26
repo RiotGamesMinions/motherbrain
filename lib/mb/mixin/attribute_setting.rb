@@ -137,8 +137,7 @@ module MotherBrain
       # @raise [ArgumentError]
       #   if an unknown value for the 'type' parameter is specified
       def set_environment_attributes_from_file(env_id, filepath, type = :json)
-        contents = nil
-        File.open(filepath) { |f| contents = f.read }
+        contents = File.read(filepath)
 
         case type
         when :json
