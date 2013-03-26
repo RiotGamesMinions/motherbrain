@@ -152,7 +152,7 @@ describe MB::Upgrade::Worker do
         options[:environment_attributes_file] = filepath
       end
 
-      it "it sets environment attributes on the environment with the contents of the file" do
+      it "sets environment attributes on the environment with the contents of the file" do
         worker.should_receive(:set_environment_attributes_from_file).with(environment_name, filepath).ordered
 
         run
@@ -165,6 +165,49 @@ describe MB::Upgrade::Worker do
 
           job.should be_failure
         end
+      end
+    end
+
+    context "when environment_attributes_file is not passed as an option" do
+      before do
+        options[:environment_attributes_file] = nil
+      end
+
+      it "does not set the environment attributes on the environment" do
+        worker.should_not_receive(:set_environment_attributes_file)
+
+        run
+      end
+    end
+
+    context "when environment_attributes is passed as an option" do
+      let(:env_attributes) do
+        {
+          "foo" => "bar",
+          "baz.quux" => 42
+        }
+      end
+
+      before do
+        options[:environment_attributes] = env_attributes
+      end
+
+      it "sets environment attributes on the environment" do
+        worker.should_receive(:set_environment_attributes).with(environment_name, env_attributes).ordered
+
+        run
+      end
+    end
+
+    context "when environment_attributes is not passed as an option" do
+      before do
+        options[:environment_attributes] = nil
+      end
+
+      it "does not set the environment attributes on the environment" do
+        worker.should_not_receive(:set_environment_attributes)
+
+        run
       end
     end
   end
