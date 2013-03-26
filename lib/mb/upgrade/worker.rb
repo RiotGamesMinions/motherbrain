@@ -88,11 +88,8 @@ module MotherBrain
 
         job.status = "Finishing up"
         job.report_success
-      rescue EnvironmentNotFound, InvalidAttributesFile => error
-        job.report_failure(error)
-      rescue => error
-        log.fatal { "unknown error occured: #{error}"}
-        job.report_failure("internal error")
+      rescue EnvironmentNotFound, InvalidAttributesFile => ex
+        job.report_failure(ex)
       end
 
       private
