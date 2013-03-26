@@ -3,6 +3,15 @@ require 'spec_helper'
 describe MB::NodeQuerier do
   subject { described_class.new }
 
+  describe "#list" do
+    it "returns a list of nodes from the motherbrain's chef connection", focus: true do
+      nodes = double
+      MB::Application.ridley.stub_chain(:node, :all).and_return(nodes)
+
+      subject.list.should eql(nodes)
+    end
+  end
+
   describe "#ruby_script" do
     it "raises a RemoteScriptError if there was an error executing the script" do
       subject.stub(:ssh_command).and_return([:error, double('response', stderr: 'error_message')])

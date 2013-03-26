@@ -15,6 +15,7 @@ module MotherBrain
     extend Forwardable
     include Celluloid
     include MB::Logging
+    include MB::Mixin::Services
 
     EMBEDDED_RUBY_PATH = "/opt/chef/embedded/bin/ruby".freeze
 
@@ -24,6 +25,13 @@ module MotherBrain
 
     def initialize
       log.info { "Node Querier starting..." }
+    end
+
+    # List all of the nodes on the target Chef Server
+    #
+    # @return [Array<Hash>]
+    def list
+      chef_connection.node.all
     end
 
     # Run an arbitrary SSH command on the target host
