@@ -50,8 +50,8 @@ describe MB::Upgrade::Worker do
     end
 
     it "marks the job as 'running' and then 'success' if successful" do
-      job.should_receive(:report_running)
-      job.should_receive(:report_success)
+      job.should_receive(:report_running).ordered
+      job.should_receive(:report_success).ordered
 
       run
     end
@@ -142,6 +142,29 @@ describe MB::Upgrade::Worker do
         worker.should_not_receive :run_chef
 
         run
+      end
+    end
+
+    context "when environment_attributes_file is passed as an option" do
+      let(:filepath) { double }
+
+      before do
+        options[:environment_attributes_file] = filepath
+      end
+
+      it "it sets environment attributes on the environment with the contents of the file" do
+        worker.should_receive(:set_environment_attributes_from_file).with(environment_name, filepath).ordered
+
+        run
+      end
+
+      context "when the environment attributes file is invalid" do
+        it "sets the job to failed" do
+          worker.should_receive(:set_environment_attributes_from_file).and_raise(MB::InvalidAttributesFile)
+          run
+
+          job.should be_failure
+        end
       end
     end
   end
