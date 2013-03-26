@@ -17,7 +17,6 @@ Given /^a cookbook "(.*?)" at version "(.*?)" with a plugin that can bootstrap$/
 end
 
 When /^I bootstrap "(.*?)"$/ do |name|
-  @aruba_timeout_seconds = 600
   register_mock "application_init", "bootstrap_mock_ridley"
   run_simple(unescape("mb #{name} bootstrap #{@bootstrap_manifest} --environment #{name}prod -d -L /tmp/aruba-mb.log"), false)
 end
