@@ -243,16 +243,39 @@ module MotherBrain
     # Check if the target host is registered with the Chef server. If the node does not have Chef and
     # ruby installed by omnibus it will be considered unregistered.
     #
+    # @example showing a node who is registered to Chef
+    #   node_querier.registered?("192.168.1.101") #=> true
+    # @example showing a node who does not have ruby or is not registered to Chef
+    #   node_querier.registered?("192.168.1.102") #=> false
+    #
     # @param [String] host
     #   public hostname of the target node
     #
     # @return [Boolean]
     def registered?(host)
+      !registered_as(host).nil?
+    end
+
+    # Returns the client name the target node is registered to Chef with.
+    # 
+    # If the node does not have a client registered with the Chef server or if Chef and ruby were not installed
+    # by omnibus this function will return nil.
+    #
+    # @example showing a node who is registered to Chef
+    #   node_querier.registered_as("192.168.1.101") #=> "reset.riotgames.com"
+    # @example showing a node who does not have ruby or is not registered to Chef
+    #   node_querier.registered_as("192.168.1.102") #=> nil
+    #
+    # @param [String] host
+    #   public hostname of the target node
+    #
+    # @return [String, nil]
+    def registered_as(host)
       if (client_id = node_name(host)).nil?
         return false
       end
 
-      !chef_connection.client.find(client_id).nil?
+      chef_connection.client.find(client_id).try(:name)
     end
 
     private

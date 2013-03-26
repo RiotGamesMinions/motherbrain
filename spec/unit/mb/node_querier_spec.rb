@@ -64,20 +64,38 @@ describe MB::NodeQuerier do
     let(:host) { "192.168.1.1" }
     let(:node_name) { "reset.riotgames.com" }
 
-    before do
-      subject.stub(:node_name).with(host).and_return(node_name)
-    end
-
-    it "returns true if the target node has a client registered on the Chef server" do
-      subject.chef_connection.stub_chain(:client, :find).with(node_name).and_return(double)
+    it "returns true if the target node is registered with the Chef server" do
+      subject.should_receive(:registered_as).with(host).and_return(node_name)
 
       subject.registered?(host).should be_true
     end
 
-    it "returns false if the target node does not have a client registered on the Chef server" do
-      subject.chef_connection.stub_chain(:client, :find).with(node_name).and_return(nil)
+    it "returns false if the target node is not registered with the Chef server" do
+      subject.should_receive(:registered_as).with(host).and_return(nil)
 
       subject.registered?(host).should be_false
+    end
+  end
+
+  describe "#registered_as" do
+    let(:host) { "192.168.1.1" }
+    let(:node_name) { "reset.riotgames.com" }
+    let(:client) { double('client', name: node_name) }
+
+    before do
+      subject.stub(:node_name).with(host).and_return(node_name)
+    end
+
+    it "returns the name of the client the target node has registered to the Chef server" do
+      subject.chef_connection.stub_chain(:client, :find).with(node_name).and_return(client)
+
+      subject.registered_as(host).should eql(client.name)
+    end
+
+    it "returns nil if the target node does not have a client registered on the Chef server" do
+      subject.chef_connection.stub_chain(:client, :find).with(node_name).and_return(nil)
+
+      subject.registered_as(host).should be_false
     end
 
     context "when the target node's node_name cannot be resolved" do
@@ -86,7 +104,7 @@ describe MB::NodeQuerier do
       end
 
       it "returns false" do
-        subject.registered?(host).should be_false
+        subject.registered_as(host).should be_false
       end
     end
   end
