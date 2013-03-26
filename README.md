@@ -22,6 +22,6 @@ TODO: Write usage instructions here
 
 # Authors
 
-* Jamie Winsor (<jamie@vialstudios.com>)
+* Jamie Winsor (<reset@riotgames.com>)
 * Jesse Howarth (<jhowarth@riotgames.com>)
-* Justin Campbell (<justin@justincampbell.me>)
+* Justin Campbell (<justin.campbell@riotgames.com>)

@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   module Provisioner
     autoload :Manager, 'mb/provisioner/manager'
     autoload :Manifest, 'mb/provisioner/manifest'

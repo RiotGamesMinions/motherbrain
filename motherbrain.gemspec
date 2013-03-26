@@ -3,7 +3,7 @@ require File.expand_path('../lib/mb/version', __FILE__)
 
 Gem::Specification.new do |s|
   s.authors       = ["Jamie Winsor", "Jesse Howarth", "Justin Campbell"]
-  s.email         = ["jamie@vialstudios.com", "jhowarth@riotgames.com", "justin@justincampbell.me"]
+  s.email         = ["reset@riotgames.com", "jhowarth@riotgames.com", "justin.campbell@riotgames.com"]
   s.description   = %q{An orchestrator for Chef}
   s.summary       = s.description
   s.homepage      = "https://github.com/RiotGames/motherbrain"

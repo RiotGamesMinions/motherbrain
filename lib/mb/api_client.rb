@@ -1,7 +1,7 @@
 require 'faraday'
 
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class ApiClient < Celluloid::SupervisionGroup
     autoload :Connection, 'mb/api_client/connection'
     autoload :Middleware, 'mb/api_client/middleware'

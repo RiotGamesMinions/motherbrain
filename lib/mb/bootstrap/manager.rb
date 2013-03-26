@@ -1,6 +1,6 @@
 module MotherBrain
   module Bootstrap
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     class Manager
       class << self
         # @raise [Celluloid::DeadActorError] if Bootstrap Manager has not been started

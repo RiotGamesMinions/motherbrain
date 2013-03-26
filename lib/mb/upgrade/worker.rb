@@ -1,6 +1,6 @@
 module MotherBrain
   module Upgrade
-    # @author Justin Campbell <justin@justincampbell.me>
+    # @author Justin Campbell <justin.campbell@riotgames.com>
     #
     # Upgrades a plugin by pinning cookbook versions and override attributes
     # (based on the plugin components' version attributes).

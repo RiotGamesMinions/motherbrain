@@ -2,7 +2,7 @@ require 'grape'
 require 'mb/api_validators'
 
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class Api < Grape::API
     helpers MB::Logging
     helpers MB::ApiHelpers

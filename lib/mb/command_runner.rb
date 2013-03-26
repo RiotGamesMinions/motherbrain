@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class CommandRunner
     # @return [String]
     attr_reader :environment
@@ -139,7 +139,7 @@ module MotherBrain
       scope.command(command_name).invoke(environment)
     end
 
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class CleanRoom < CleanRoomBase
       def initialize(*args)

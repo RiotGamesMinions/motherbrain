@@ -2,7 +2,7 @@ require 'tempfile'
 
 module MotherBrain
   module FileSystem
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     #
     # Thin wrapper around ::Tempfile to ensure we always write temporary files
     # into MotherBrain's configured temporary directory

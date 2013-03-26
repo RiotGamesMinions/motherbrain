@@ -1,7 +1,7 @@
 require 'reel'
 
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class RestGateway < Reel::Server
     class << self
       # @raise [Celluloid::DeadActorError] if rest gateway has not been started

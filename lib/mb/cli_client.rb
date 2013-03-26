@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Justin Campbell <justin@justincampbell.me>
+  # @author Justin Campbell <justin.campbell@riotgames.com>
   #
   # A class for encapsulating view behavior for a user of the CLI.
   #

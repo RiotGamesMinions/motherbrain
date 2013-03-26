@@ -1,6 +1,6 @@
 module MotherBrain
   module Gear
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     class Service < AbstractGear
       register_gear :service
 
@@ -81,7 +81,7 @@ module MotherBrain
           self.actions.find { |action| action.name == name }
         end
 
-      # @author Jamie Winsor <jamie@vialstudios.com>
+      # @author Jamie Winsor <reset@riotgames.com>
       # @api private
       class CleanRoom < CleanRoomBase
         # @param [String] name
@@ -94,7 +94,7 @@ module MotherBrain
           attr_reader :component
       end
 
-      # @author Jamie Winsor <jamie@vialstudios.com>
+      # @author Jamie Winsor <reset@riotgames.com>
       # @api private
       class Action
         # @return [String]
@@ -146,7 +146,7 @@ module MotherBrain
           attr_reader :runner
           attr_reader :block
 
-        # @author Jamie Winsor <jamie@vialstudios.com>
+        # @author Jamie Winsor <reset@riotgames.com>
         # @api private
         class ActionRunner
           include Logging

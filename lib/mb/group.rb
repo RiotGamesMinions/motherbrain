@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class Group
     include Chozo::VariaModel
 
@@ -114,7 +114,7 @@ module MotherBrain
         value.gsub(/[\:\[\]\+\!\^\(\)\{\}]/) { |x| "\\#{x}" }
       end
 
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class CleanRoom < CleanRoomBase
       # @param [#to_s] value

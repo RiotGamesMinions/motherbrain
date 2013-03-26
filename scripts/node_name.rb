@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# @author Jamie Winsor <jamie@vialstudios.com>
+# @author Jamie Winsor <reset@riotgames.com>
 #
 # Print the node name of the executing node to STDOUT
 #

@@ -1,6 +1,6 @@
 module MotherBrain
   module Bootstrap
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     #
     # Manifest for bootstrapping a collection of nodes as a specified node group
     #

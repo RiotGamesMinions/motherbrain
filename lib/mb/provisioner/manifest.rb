@@ -1,6 +1,6 @@
 module MotherBrain
   module Provisioner
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     #
     # Manifest for creating a set of nodes of a given instance type for a set of node groups
     #

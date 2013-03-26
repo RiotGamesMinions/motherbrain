@@ -1,6 +1,6 @@
 module MotherBrain
   module Bootstrap
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class Worker
       include Celluloid

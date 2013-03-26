@@ -17,7 +17,7 @@ require 'mb/version'
 require 'mb/errors'
 require 'mb/ridley_ext'
 
-# @author Jamie Winsor <jamie@vialstudios.com>
+# @author Jamie Winsor <reset@riotgames.com>
 module MotherBrain
   autoload :AbstractGear, 'mb/abstract_gear'
   autoload :Api, 'mb/api'

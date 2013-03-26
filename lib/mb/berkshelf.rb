@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   #
   # This module contains integration code for Berkshelf into MotherBrain 
   module Berkshelf

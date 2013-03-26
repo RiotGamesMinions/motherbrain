@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class CookbookMetadata
     class << self
       # @return [Cookbook::Metadata]
@@ -70,7 +70,7 @@ module MotherBrain
         CleanRoom.new(self).instance_eval(&block)
       end
 
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class CleanRoom < CleanRoomBase
       dsl_attr_writer :name

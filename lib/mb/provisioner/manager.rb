@@ -1,6 +1,6 @@
 module MotherBrain
   module Provisioner
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     #
     # Handles provisioning of nodes and joining them to a Chef Server. Requests are
     # delegated to a provisioner of the desired type or 'Environment Factory' by

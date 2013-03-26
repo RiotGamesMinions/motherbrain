@@ -1,6 +1,6 @@
 module MotherBrain
   module Mixin
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     #
     # A mixin to provide easy access to creating, destroying, and executing within
     # locks in a running motherbrain application.

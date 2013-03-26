@@ -1,7 +1,7 @@
 module MotherBrain
   module Mixin
-    # @author Jamie Winsor <jamie@vialstudios.com>
-    # @author Justin Campbell <justin@justincampbell.me>
+    # @author Jamie Winsor <reset@riotgames.com>
+    # @author Justin Campbell <justin.campbell@riotgames.com>
     module AttributeSetting
       extend Forwardable
       include MB::Logging
