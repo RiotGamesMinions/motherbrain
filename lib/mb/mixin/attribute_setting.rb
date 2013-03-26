@@ -5,6 +5,7 @@ module MotherBrain
     module AttributeSetting
       extend Forwardable
       include MB::Logging
+      include MB::Mixin::Services
 
       # Set the appropriate attributes at the environment level to the desired version
       # for each component given
@@ -23,8 +24,6 @@ module MotherBrain
       #     "component_two" => "2.3.0"
       #   )
       def set_component_versions(env_id, plugin, component_versions)
-        log.info "Setting component versions #{component_versions}"
-
         override_attributes = Hash.new
 
         component_versions.each do |component_name, version|
@@ -32,7 +31,9 @@ module MotherBrain
           override_attributes.deep_merge!(version_hash)
         end
 
-        Application.ridley.sync do
+        log.info "Setting component versions #{component_versions}"
+
+        chef_connection.sync do
           env = environment.find!(env_id)
           env.override_attributes.merge!(override_attributes)
           env.save
@@ -61,7 +62,7 @@ module MotherBrain
 
         log.info "Setting cookbook versions #{cookbook_versions}"
 
-        Application.ridley.sync do
+        chef_connection.sync do
           env = environment.find!(env_id)
           env.cookbook_versions.merge!(cookbook_versions)
           env.save
@@ -110,7 +111,9 @@ module MotherBrain
       #     }
       #   )
       def set_environment_attributes_from_hash(env_id, new_attributes)
-        Application.ridley.sync do
+        log.info "Setting environment attributes: #{new_attributes}"
+
+        chef_connection.sync do
           env = environment.find!(env_id)
           env.override_attributes.deep_merge!(new_attributes)
           env.save
@@ -195,10 +198,9 @@ module MotherBrain
         def expand_latest_versions(cookbook_versions)
           expanded_cookbook_versions = cookbook_versions.map do |name, version|
             if version.downcase == "latest"
-              Application.ridley.sync do
-                version = cookbook.latest_version(name)
-              end
+              version = chef_connection.cookbook.latest_version(name)
             end
+
             [name, version]
           end
 
@@ -242,7 +244,7 @@ module MotherBrain
         def satisfies_constraints?(cookbook_versions)
           failures = cookbook_versions.collect do |name, constraint|
             Celluloid::Future.new {
-              if Application.ridley.cookbook.satisfy(name, constraint).nil?
+              if chef_connection.cookbook.satisfy(name, constraint).nil?
                 "#{name} (#{constraint})"
               end
             }
