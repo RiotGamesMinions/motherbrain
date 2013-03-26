@@ -11,6 +11,7 @@ module MotherBrain
       include MB::Logging
       include MB::Mixin::Locks
       include MB::Mixin::AttributeSetting
+      include MB::Mixin::Services
 
       # @return [String]
       attr_reader :environment_name
@@ -101,11 +102,6 @@ module MotherBrain
           end
         end
 
-        # @return [Ridley::Connection]
-        def chef_connection
-          Application.ridley
-        end
-
         # @return [Hash]
         def component_versions
           options[:component_versions] || {}
@@ -145,7 +141,7 @@ module MotherBrain
           job.status = "Running Chef on nodes"
 
           nodes.map { |node|
-            Application.node_querier.future.chef_run(node)
+            node_querier.future.chef_run(node)
           }.map(&:value)
         end
     end
