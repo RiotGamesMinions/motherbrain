@@ -117,12 +117,7 @@ module MotherBrain
 
           unless options[:environment_attributes_file].nil?
             job.set_status("Setting environment attributes from file")
-            begin
-              attribute_hash = MultiJson.decode(File.open(options[:environment_attributes_file]).read)
-              set_environment_attributes_from_hash(environment, attribute_hash)
-            rescue MultiJson::DecodeError => ex
-              abort InvalidAttributesFile.new(ex.to_s)
-            end
+            set_environment_attributes_from_file(environment_name, options[:environment_attributes_file])
           end
 
           while tasks = task_queue.shift

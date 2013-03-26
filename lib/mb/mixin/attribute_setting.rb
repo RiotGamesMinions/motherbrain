@@ -146,7 +146,7 @@ module MotherBrain
           raise ArgumentError, "cannot read attributes from files of type: #{type}"
         end
       rescue MultiJson::DecodeError => ex
-        raise InvalidAttributesFile, ex
+        raise InvalidAttributesFile, "Invalid JSON in #{filepath}: #{ex}"
       end
 
       # Set environment level attributes on an environment from the given JSON string

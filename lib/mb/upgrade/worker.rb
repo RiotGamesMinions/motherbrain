@@ -78,13 +78,7 @@ module MotherBrain
 
           unless options[:environment_attributes_file].nil?
             job.status = "Setting environment attributes from file"
-            begin
-              attribute_hash = MultiJson.decode(File.open(options[:environment_attributes_file]).read)
-              set_environment_attributes_from_hash(environment_name, attribute_hash)
-            rescue MultiJson::DecodeError => error
-              log.fatal { "Failed to parse json supplied in environment attributes file."}
-              return job.report_failure(error)
-            end
+            set_environment_attributes_from_file(environment_name, options[:environment_attributes_file])
           end
 
           if component_versions.any? or cookbook_versions.any?
@@ -94,8 +88,7 @@ module MotherBrain
 
         job.status = "Finishing up"
         job.report_success
-      rescue EnvironmentNotFound => error
-        log.fatal { "environment not found: #{error}" }
+      rescue EnvironmentNotFound, InvalidAttributesFile => error
         job.report_failure(error)
       rescue => error
         log.fatal { "unknown error occured: #{error}"}
