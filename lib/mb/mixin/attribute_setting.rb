@@ -1,3 +1,5 @@
+require 'mb/mixin/services'
+
 module MotherBrain
   module Mixin
     # @author Jamie Winsor <reset@riotgames.com>
