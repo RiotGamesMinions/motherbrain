@@ -240,6 +240,21 @@ module MotherBrain
       copy_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options)
     end
 
+    # Check if the target host is registered with the Chef server. If the node does not have Chef and
+    # ruby installed by omnibus it will be considered unregistered.
+    #
+    # @param [String] host
+    #   public hostname of the target node
+    #
+    # @return [Boolean]
+    def registered?(host)
+      if (client_id = node_name(host)).nil?
+        return false
+      end
+
+      !chef_connection.client.find(client_id).nil?
+    end
+
     private
 
       # An internal lifting function for {#ruby_script}. Any instance functions delegating to {#ruby_script}
