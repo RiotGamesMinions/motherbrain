@@ -101,7 +101,7 @@ module MotherBrain
       # Set arbitrary attributes at the environment level
       #
       # @param [String] env_id
-      #   the name identifier of the environment to modify
+      #   the name of the environment to modify
       # @param [Hash] environment_attributes_hash
       #   Hash of attributes and values
       #
@@ -119,6 +119,44 @@ module MotherBrain
           env.override_attributes.deep_merge!(environment_attributes_hash)
           env.save
         end
+      end
+
+      # Set environment level attributes on an environment from the contents of the file
+      # at the given filepath
+      #
+      # @param [String] env_id
+      #   the name of the environment to modify
+      # @param [String] filepath
+      #   path to the file to read attributes from
+      # @param [Symbol] type
+      #   the type of the contents found within the file
+      #
+      # @raise [InvalidAttributesFile]
+      #   if the contents of the attributes file are missing or not well formed
+      # @raise [ArgumentError]
+      #   if an unknown value for the 'type' parameter is specified
+      def set_environment_attributes_from_file(env_id, filepath, type = :json)
+        contents = nil
+        File.open(filepath) { |f| contents = f.read }
+
+        case type
+        when :json
+          set_environment_attributes_from_json(env_id, contents)
+        else
+          raise ArgumentError, "cannot read attributes from files of type: #{type}"
+        end
+      rescue MultiJson::DecodeError => ex
+        raise InvalidAttributesFile, ex
+      end
+
+      # Set environment level attributes on an environment from the given JSON string
+      #
+      # @param [String] env_id
+      #   the name of the environment to modify
+      # @param [String] json
+      #   the json to use as attributes
+      def set_environment_attributes_from_json(env_id, json)
+        set_environment_attributes_from_hash(env_id, MultiJson.decode(json))
       end
 
       private
@@ -144,81 +182,81 @@ module MotherBrain
           result
         end
 
-      # Expand the "latest" cookbook versions to the latest verison number 
-      # for the cookbook
-      #
-      # @param [Hash] cookbook_versions
-      #   Hash of cookbooks and the versions
-      #
-      # @example expanding versions when 3.1.0 is the latest pvpnet cookbook
-      #
-      #   expand_latest_versions(
-      #     "league" => "1.74.2",
-      #     "pvpnet" => "latest"
-      #   )
-      #   
-      #   # => {"league" => "1.74.2", "pvpnet" => "3.1.0"}
-      def expand_latest_versions(cookbook_versions)
-        expanded_cookbook_versions = cookbook_versions.map do |name, version|
-          if version.downcase == "latest"
-            Application.ridley.sync do
-              version = cookbook.latest_version(name)
+        # Expand the "latest" cookbook versions to the latest verison number 
+        # for the cookbook
+        #
+        # @param [Hash] cookbook_versions
+        #   Hash of cookbooks and the versions
+        #
+        # @example expanding versions when 3.1.0 is the latest pvpnet cookbook
+        #
+        #   expand_latest_versions(
+        #     "league" => "1.74.2",
+        #     "pvpnet" => "latest"
+        #   )
+        # 
+        #   # => {"league" => "1.74.2", "pvpnet" => "3.1.0"}
+        def expand_latest_versions(cookbook_versions)
+          expanded_cookbook_versions = cookbook_versions.map do |name, version|
+            if version.downcase == "latest"
+              Application.ridley.sync do
+                version = cookbook.latest_version(name)
+              end
             end
+            [name, version]
           end
-          [name, version]
+
+          Hash[expanded_cookbook_versions]
         end
 
-        Hash[expanded_cookbook_versions]
-      end
+        # Expand constraints strings given to their fully qualified constraint operators
+        #
+        # @param [Hash] cookbook_versions
+        #   Hash of cookbooks and the versions
+        #
+        # @raise [ArgumentError] if the array of constraints contains an entry which is not in the
+        #   correct version constraint format
+        #
+        # @example
+        #   expand_constraints(
+        #     "league" => "1.74.2",
+        #     "pvpnet" => ">= 1.2.3"
+        #   )
+        #   
+        #   # => { "league" => "= 1.74.2", "pvpnet" => ">= 1.2.3" }
+        #
+        # @return [Hash]
+        def expand_constraints(cookbook_versions)
+          expanded = cookbook_versions.collect do |name, constraint|
+            [name, Solve::Constraint.new(constraint).to_s]
+          end
 
-      # Expand constraints strings given to their fully qualified constraint operators
-      #
-      # @param [Hash] cookbook_versions
-      #   Hash of cookbooks and the versions
-      #
-      # @raise [ArgumentError] if the array of constraints contains an entry which is not in the
-      #   correct version constraint format
-      #
-      # @example
-      #   expand_constraints(
-      #     "league" => "1.74.2",
-      #     "pvpnet" => ">= 1.2.3"
-      #   )
-      #   
-      #   # => { "league" => "= 1.74.2", "pvpnet" => ">= 1.2.3" }
-      #
-      # @return [Hash]
-      def expand_constraints(cookbook_versions)
-        expanded = cookbook_versions.collect do |name, constraint|
-          [name, Solve::Constraint.new(constraint).to_s]
+          Hash[expanded]
+        rescue Solve::Errors::InvalidConstraintFormat => ex
+          raise ArgumentError, ex
         end
 
-        Hash[expanded]
-      rescue Solve::Errors::InvalidConstraintFormat => ex
-        raise ArgumentError, ex
-      end
+        # Ensure the chef server can satisfy the desired cookbook version constraints
+        #
+        # @param [Hash] cookbook_versions
+        #   Hash of cookbooks and the versions
+        #
+        # @raise [MB::CookbookConstraintNotSatisfied]
+        #   if the constraints cannot be satisfied
+        def satisfies_constraints?(cookbook_versions)
+          failures = cookbook_versions.collect do |name, constraint|
+            Celluloid::Future.new {
+              if Application.ridley.cookbook.satisfy(name, constraint).nil?
+                "#{name} (#{constraint})"
+              end
+            }
+          end.map(&:value).compact
 
-      # Ensure the chef server can satisfy the desired cookbook version constraints
-      #
-      # @param [Hash] cookbook_versions
-      #   Hash of cookbooks and the versions
-      #
-      # @raise [MB::CookbookConstraintNotSatisfied]
-      #   if the constraints cannot be satisfied
-      def satisfies_constraints?(cookbook_versions)
-        failures = cookbook_versions.collect do |name, constraint|
-          Celluloid::Future.new {
-            if Application.ridley.cookbook.satisfy(name, constraint).nil?
-              "#{name} (#{constraint})"
-            end
-          }
-        end.map(&:value).compact
-
-        unless failures.empty?
-          raise MB::CookbookConstraintNotSatisfied,
-            "couldn't satisfy constraints for cookbook version(s): #{failures.join(', ')}"
+          unless failures.empty?
+            raise MB::CookbookConstraintNotSatisfied,
+              "couldn't satisfy constraints for cookbook version(s): #{failures.join(', ')}"
+          end
         end
-      end
     end
   end
 end

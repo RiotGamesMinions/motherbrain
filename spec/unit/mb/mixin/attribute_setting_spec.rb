@@ -124,4 +124,55 @@ describe MB::Mixin::AttributeSetting do
       end
     end
   end
+
+  describe "#set_environment_attributes_from_file" do
+    let(:env) { double }
+    let(:filepath) { tmp_path.join('attr-test-file') }
+    let(:contents) { double }
+
+    before(:each) { FileUtils.touch(filepath) }
+
+    context "given the type :json" do
+      it "delegates to set_environment_attributes_from_json" do
+        subject.should_receive(:set_environment_attributes_from_json).with(env, anything)
+
+        subject.set_environment_attributes_from_file(env, filepath, :json)
+      end
+
+      it "raises an InvalidAttributesFile error if there was a problem decoding json" do
+        subject.should_receive(:set_environment_attributes_from_json).and_raise(MultiJson::DecodeError)
+
+        expect {
+          subject.set_environment_attributes_from_file(env, filepath, :json)
+        }.to raise_error(MB::InvalidAttributesFile)
+      end
+    end
+
+    it "raises an MB::ArgumentError when given an unknown type" do
+      expect {
+        subject.set_environment_attributes_from_file(env, filepath, :not_known)
+      }.to raise_error(MB::ArgumentError)
+    end
+  end
+
+  describe "#set_environment_attributes_from_json" do
+    let(:env) { double }
+    let(:data) { double }
+
+    before(:each) { subject.stub(:set_environment_attributes_from_hash) }
+
+    it "decodes the given string to json" do
+      MultiJson.should_receive(:decode).with(data)
+
+      subject.set_environment_attributes_from_json(env, data)
+    end
+
+    it "delegates to #set_environment_attributes_from_hash with the environment and decoded json" do
+      decoded_json = double
+      MultiJson.should_receive(:decode).and_return(decoded_json)
+      subject.should_receive(:set_environment_attributes_from_hash).with(env, decoded_json)
+
+      subject.set_environment_attributes_from_json(env, data)
+    end
+  end
 end
