@@ -20,6 +20,10 @@ module MotherBrain
       app_root_path.join('spec/fixtures')
     end
 
+    def mocks_path
+      app_root_path.join('spec/mocks')
+    end
+
     def clean_tmp_path
       FileUtils.rm_rf(tmp_path)
       FileUtils.mkdir_p(tmp_path)
@@ -57,6 +61,10 @@ module MotherBrain
 
     def mb_config_path
       MB::Config.default_path
+    end
+
+    def register_mock(hook, mock)
+      set_env "motherbrain_mocks_#{hook}", mocks_path.join("#{mock}.rb").to_s
     end
 
     # @param [String] name
