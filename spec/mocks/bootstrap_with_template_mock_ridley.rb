@@ -26,15 +26,3 @@ ssh.should_receive(:error?).and_return(false)
 
 RSpec::Mocks::setup(Application.node_querier.wrapped_object)
 Application.node_querier.wrapped_object.should_receive(:node_name).and_return("foo.example.com")
-
-
-# RSpec::Mocks::setup(Application.bootstrap_manager.wrapped_object)
-# bootstrapper = double('bootstrapper')
-# Application.bootstrap_manager.wrapped_object.class_eval do
-#   def bootstrap(job, environment, manifest, plugin, options = {})
-#     job.report_running
-#     job.report_success
-#     job.terminate if job.alive?
-#   end
-# end
-
