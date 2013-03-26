@@ -11,6 +11,7 @@ module MotherBrain
       include MB::Logging
       include MB::Mixin::Locks
       include MB::Mixin::AttributeSetting
+      include MB::Mixin::Services
 
       # @return [String]
       attr_reader :environment_name
@@ -78,13 +79,7 @@ module MotherBrain
 
           unless options[:environment_attributes_file].nil?
             job.status = "Setting environment attributes from file"
-            begin
-              attribute_hash = MultiJson.decode(File.open(options[:environment_attributes_file]).read)
-              set_environment_attributes_from_hash(environment_name, attribute_hash)
-            rescue MultiJson::DecodeError => error
-              log.fatal { "Failed to parse json supplied in environment attributes file."}
-              return job.report_failure(error)
-            end
+            set_environment_attributes_from_file(environment_name, options[:environment_attributes_file])
           end
 
           if component_versions.any? or cookbook_versions.any?
@@ -94,12 +89,8 @@ module MotherBrain
 
         job.status = "Finishing up"
         job.report_success
-      rescue EnvironmentNotFound => error
-        log.fatal { "environment not found: #{error}" }
-        job.report_failure(error)
-      rescue => error
-        log.fatal { "unknown error occured: #{error}"}
-        job.report_failure("internal error")
+      rescue EnvironmentNotFound, InvalidAttributesFile => ex
+        job.report_failure(ex)
       end
 
       private
@@ -109,11 +100,6 @@ module MotherBrain
           unless chef_connection.environment.find(environment_name)
             raise EnvironmentNotFound, "Environment '#{environment_name}' not found"
           end
-        end
-
-        # @return [Ridley::Connection]
-        def chef_connection
-          Application.ridley
         end
 
         # @return [Hash]
@@ -155,7 +141,7 @@ module MotherBrain
           job.status = "Running Chef on nodes"
 
           nodes.map { |node|
-            Application.node_querier.future.chef_run(node)
+            node_querier.future.chef_run(node)
           }.map(&:value)
         end
     end
