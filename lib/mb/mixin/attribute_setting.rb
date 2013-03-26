@@ -68,11 +68,13 @@ module MotherBrain
         end
       end
 
-      # Set arbitrary attributes at the environment level
+      # Set environment level attributes on an environment from a hash containing
+      # keys identifying attributes using the dot notation syntax and values of those
+      # attributes as values.
       #
       # @param [String] env_id
       #   the name identifier of the environment to modify
-      # @param [Hash] environment_attributes
+      # @param [Hash] new_attributes
       #   Hash of attributes and values
       #
       # @example setting multiple attributes on an environment
@@ -81,42 +83,36 @@ module MotherBrain
       #     "foo"      => "bar",
       #     "baz.quux" => 42
       #   )
-      def set_environment_attributes(env_id, environment_attributes)
-        log.info "Setting environment attributes #{environment_attributes}"
-
+      def set_environment_attributes(env_id, new_attributes)
         override_attributes = Hash.new
 
-        environment_attributes.each do |attribute, value|
+        new_attributes.each do |attribute, value|
           attribute_hash = Hash.from_dotted_path(attribute.to_s, value.to_s)
           override_attributes.deep_merge!(attribute_hash)
         end
 
-        Application.ridley.sync do
-          env = environment.find!(env_id)
-          env.override_attributes.deep_merge!(override_attributes)
-          env.save
-        end
+        set_environment_attributes_from_hash(env_id, override_attributes)
       end
 
       # Set arbitrary attributes at the environment level
       #
       # @param [String] env_id
       #   the name of the environment to modify
-      # @param [Hash] environment_attributes_hash
-      #   Hash of attributes and values
+      # @param [Hash] new_attributes
+      #   Hash of attributes to set on the environment
       #
       # @example setting multiple attributes on an environment
       #
       #   set_environment_attributes_from_hash("test-environment",
-      #     {"foo"      => "bar",
-      #     "baz.quux" => 42}
+      #     "foo" => "bar",
+      #     "baz  => {
+      #       "quux" => 42
+      #     }
       #   )
-      def set_environment_attributes_from_hash(env_id, environment_attributes_hash)
-        log.info "Setting environment attributes from hash #{environment_attributes_hash}"
-
+      def set_environment_attributes_from_hash(env_id, new_attributes)
         Application.ridley.sync do
           env = environment.find!(env_id)
-          env.override_attributes.deep_merge!(environment_attributes_hash)
+          env.override_attributes.deep_merge!(new_attributes)
           env.save
         end
       end
