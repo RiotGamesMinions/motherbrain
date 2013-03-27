@@ -284,8 +284,11 @@ module MotherBrain
       # should instead delegate to this internal function.
       def _ruby_script_(name, host, options = {})
         name    = name.split('.rb')[0]
-        script  = File.read(MB.scripts.join("#{name}.rb"))
-        command = "#{EMBEDDED_RUBY_PATH} -e '#{script}'"
+        lines   = File.readlines(MB.scripts.join("#{name}.rb"))
+
+        oneliner = lines.collect { |line| line.gsub('"', "'").strip.chomp }
+        command = "#{EMBEDDED_RUBY_PATH} -e \"#{oneliner.join(';')}\""
+
         status, response = ssh_command(host, command, options)
 
         case status
