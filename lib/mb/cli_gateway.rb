@@ -252,11 +252,12 @@ module MotherBrain
 
       config = MB::Config.new(path)
 
-      config.chef.api_url     = MB.ui.ask "Enter a Chef API URL: "
-      config.chef.api_client  = MB.ui.ask "Enter a Chef API Client: "
-      config.chef.api_key     = MB.ui.ask "Enter the path to the client's Chef API Key: "
-      config.ssh.user         = MB.ui.ask "Enter a SSH user: "
-      config.ssh.password     = MB.ui.ask "Enter a SSH password: "
+      require 'mb/thor' # MONKIES
+      config.chef.api_url     = MB.ui.ask "Enter a Chef API URL:", default: config.chef.api_url
+      config.chef.api_client  = MB.ui.ask "Enter a Chef API Client:", default: config.chef.api_client
+      config.chef.api_key     = MB.ui.ask "Enter the path to the client's Chef API Key:", default: config.chef.api_key
+      config.ssh.user         = MB.ui.ask "Enter a SSH user:", default: config.ssh.user
+      config.ssh.password     = MB.ui.ask "Enter a SSH password:", default: config.ssh.password
       config.save
 
       MB.ui.say "Config written to: '#{path}'"
