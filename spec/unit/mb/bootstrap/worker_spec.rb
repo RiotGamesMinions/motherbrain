@@ -1,6 +1,9 @@
 require 'spec_helper'
 
 describe MB::Bootstrap::Worker do
+  let(:node_querier) { double('node_querier') }
+  let(:chef_connection) { double('chef_connection') }
+
   describe "ClassMethods" do
     subject { described_class }
 
@@ -55,7 +58,6 @@ describe MB::Bootstrap::Worker do
   end
 
   describe "#nodes" do
-    let(:node_querier) { double('node_querier') }
     let(:hosts) do
       [
         "cloud-1.riotgames.com",
@@ -214,43 +216,87 @@ describe MB::Bootstrap::Worker do
     let(:nodes) { [node] }
 
     before(:each) do
-      subject.chef_connection.stub_chain(:node, :merge_data).with(node[:node_name], options)
-      subject.node_querier.should_receive(:put_secret).with(node[:hostname])
-      subject.node_querier.should_receive(:chef_run).with(node[:hostname])
+      subject.stub(node_querier: node_querier, chef_connection: chef_connection)
+      node_querier.stub(put_secret: nil, chef_run: nil)
+      chef_connection.stub_chain(:node, :merge_data)
+    end
+
+    it "merges the given data with chef, puts the chef secret on the node, and then runs chef" do
+      chef_connection.node.should_receive(:merge_data).with(node[:node_name], options)
+      node_querier.should_receive(:put_secret).with(node[:hostname]).ordered
+      node_querier.should_receive(:chef_run).with(node[:hostname]).ordered
+
+      subject.partial_bootstrap(nodes)
     end
 
     it "returns an array of hashes" do
       subject.partial_bootstrap(nodes).should each be_a(Hash)
     end
 
-    it "each hash has a ':node_name' key/value" do
-      subject.partial_bootstrap(nodes).should each have_key(:node_name)
-    end
-
-    it "each hash has a ':hostname' key/value" do
-      subject.partial_bootstrap(nodes).should each have_key(:hostname)
-    end
-
-    it "each hash has a value of ':partial' for ':bootstrap_type'" do
-      response = subject.partial_bootstrap(nodes)
-
-      response.should each have_key(:bootstrap_type)
-      response.each do |result|
-        result[:bootstrap_type].should eql(:partial)
+    context "each response" do
+      it "each hash has a ':node_name' key/value" do
+        subject.partial_bootstrap(nodes).should each have_key(:node_name)
       end
-    end
 
-    it "each hash has a value of ':ok' for ':status'" do
-      response = subject.partial_bootstrap(nodes)
-
-      response.should each have_key(:status)
-      response.each do |result|
-        result[:status].should eql(:ok)
+      it "each hash has a ':hostname' key/value" do
+        subject.partial_bootstrap(nodes).should each have_key(:hostname)
       end
-    end
 
-    it "each hash has a ':message' key/value" do
-      subject.partial_bootstrap(nodes).should each have_key(:message)
+      it "each hash has a value of ':partial' for ':bootstrap_type'" do
+        response = subject.partial_bootstrap(nodes)
+
+        response.should each have_key(:bootstrap_type)
+        response.each do |result|
+          result[:bootstrap_type].should eql(:partial)
+        end
+      end
+
+      it "each hash has a value of ':ok' for ':status'" do
+        response = subject.partial_bootstrap(nodes)
+
+        response.should each have_key(:status)
+        response.each do |result|
+          result[:status].should eql(:ok)
+        end
+      end
+
+      it "each hash has a ':message' key/value" do
+        subject.partial_bootstrap(nodes).should each have_key(:message)
+      end
+
+      context "when placing the secret file on the node fails" do
+        let(:exception) { MB::RemoteFileCopyError.new("error in copy") }
+        let(:response) { subject.partial_bootstrap(nodes).first }
+
+        before do
+          node_querier.should_receive(:put_secret).and_raise(exception)
+        end
+
+        it "sets the value of the :status key to :error" do
+          response[:status] == :error
+        end
+
+        it "has the message from the raised exception for :message" do
+          response[:message].should eql(exception.message)
+        end
+      end
+
+      context "when running chef on the node fails" do
+        let(:exception) { MB::RemoteCommandError.new("error in command") }
+        let(:response) { subject.partial_bootstrap(nodes).first }
+
+        before do
+          node_querier.should_receive(:chef_run).and_raise(exception)
+        end
+
+        it "sets the value of the :status key to :error" do
+          response[:status] == :error
+        end
+
+        it "has the message from the raised exception for :message" do
+          response[:message].should eql(exception.message)
+        end
+      end
     end
   end
 end

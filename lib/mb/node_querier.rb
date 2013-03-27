@@ -77,6 +77,8 @@ module MotherBrain
     #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
     #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
     #   * :sudo (Boolean) [True] bootstrap with sudo
+    #
+    # @raise [RemoteFileCopyError]
     def copy_file(local_file, remote_file, host, options = {})
       options                  = options.reverse_merge(Application.config.slice(:ssh))
       options[:ssh][:paranoid] = false
@@ -84,7 +86,7 @@ module MotherBrain
       scp_options = options.dup
       scp_options[:ssh] = scp_options[:ssh].slice(*Net::SSH::VALID_OPTIONS)
 
-      MB.log.debug "Copying file '#{local_file}' to '#{host}:#{remote_file}'"
+      log.info { "Copying file '#{local_file}' to '#{host}:#{remote_file}'" }
 
       if options[:ssh][:sudo]
         tmp_location = "/home/#{options[:ssh][:user]}/#{File.basename(remote_file)}"
@@ -93,6 +95,8 @@ module MotherBrain
       else
         Net::SCP.upload!(host, nil, local_file, remote_file, scp_options)
       end
+    rescue Net::SCP::Error => ex
+      abort RemoteFileCopyError.new(ex.to_s)
     end
 
     # Write the given data to the filepath on the target host
@@ -106,6 +110,8 @@ module MotherBrain
     #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
     #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
     #   * :sudo (Boolean) [True] bootstrap with sudo
+    #
+    # @raise [RemoteFileCopyError]
     def write_file(data, remote_file, host, options = {})
       file = FileSystem::Tempfile.new
       file.write(data.to_s)
@@ -226,6 +232,8 @@ module MotherBrain
     #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
     #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
     #   * :sudo (Boolean) [True] bootstrap with sudo
+    #
+    # @raise [RemoteFileCopyError]
     #
     # @return [Ridley::SSH::Response]
     def put_secret(host, options = {})

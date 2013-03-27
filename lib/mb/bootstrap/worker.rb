@@ -339,7 +339,7 @@ module MotherBrain
               node_querier.chef_run(hostname)
 
               response[:status] = :ok
-            rescue Ridley::Errors::HTTPNotFound, RemoteCommandError => ex
+            rescue Ridley::Errors::HTTPNotFound, RemoteCommandError, RemoteFileCopyError => ex
               response[:status]  = :error
               response[:message] = ex.to_s
             end
