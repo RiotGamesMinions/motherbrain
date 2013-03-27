@@ -3,6 +3,75 @@ module MotherBrain
     # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class Worker
+      class << self
+        # Split an array of hashes containing hostname and node_name keys into two groups. This
+        # function can be combined with Bootstrap::Worker#nodes to filter the nodes into two
+        # bootstrap groups.
+        #
+        # The first group containing all nodes who do not have a Chef client registered on
+        # the Chef server or do not have Ruby/Chef installed by omnibus. This group of nodes will require
+        # a full bootstrap {Bootstrap::Worker#full_bootstrap}.
+        #
+        # The second group containing all nodes who already have a Chef client registered on
+        # the Chef server and have Ruby/Chef installed by omnibus. This group of nodes will require a
+        # parital bootstrap {Bootstrap::Worker#partial_bootstrap}.
+        #
+        # @example splitting hosts into two groups based on chef client presence
+        #   nodes = [
+        #     {
+        #       hostname: "no-client1.riotgames.com",
+        #       node_name: nil,
+        #     },
+        #     {
+        #       hostname: "no-client2.riotgames.com",
+        #       node_name: nil
+        #     }
+        #     {
+        #       hostname: "has-client.riotgames.com",
+        #       node_name: "has-client"
+        #     }
+        #   ]
+        #
+        #   Bootstrap::Worker.bootstrap_type_filter(nodes) #=> [
+        #     [
+        #       {
+        #         hostname: "no-client1.riotgames.com",
+        #         node_name: nil,
+        #       },
+        #       {
+        #         hostname: "no-client2.riotgames.com",
+        #         node_name: nil
+        #       }
+        #     ],
+        #     [
+        #       {
+        #         hostname: "has-client.riotgames.com",
+        #         node_name: "has-client"
+        #       }
+        #     ]
+        #   ]
+        #
+        # @param [Array<Hash>] nodes
+        #   an array of hases containing a hostname and node_name key. This output can be found by
+        #   running Bootstrap::Worker#nodes
+        #
+        # @return [Array<Array>]
+        def bootstrap_type_filter(nodes)
+          full_nodes    = Array.new
+          partial_nodes = Array.new
+
+          nodes.each do |node|
+            if node[:node_name].nil?
+              full_nodes << node
+            else
+              partial_nodes << node
+            end
+          end
+
+          [ full_nodes, partial_nodes ]
+        end
+      end
+
       include Celluloid
       include MB::Logging
       include MB::Mixin::Services
@@ -73,13 +142,12 @@ module MotherBrain
           return Array.new
         end
 
-        full_nodes    = Array.new
-        partial_nodes = Array.new
-        full_nodes, partial_nodes = bootstrap_type_filter
+        full_nodes, partial_nodes = self.class.bootstrap_type_filter(nodes)
 
         [].tap do |futures|
           if full_nodes.any?
-            futures << future(:full_bootstrap, full_nodes, options)
+            hostnames = full_nodes.collect { |node| node[:hostname] }
+            futures << future(:full_bootstrap, hostnames, options)
           end
 
           if partial_nodes.any?
@@ -88,56 +156,15 @@ module MotherBrain
         end.map(&:value).flatten
       end
 
-      # Split the nodes to bootstrap into two groups. One group of nodes who do not have a client
-      # present on the Chef Server and require a full bootstrap and another group of nodes who
-      # have a client and require a partial bootstrap.
-      #
-      # The first group of nodes will be returned as an array of hostnames to bootstrap.
-      #
-      # The second group of nodes will be returned as an array of Hashes containing a hostname and
-      # the node_name for the machine. The node_name may defer from the hostname depending on how
-      # the target node was initially bootstrapped.
-      #
-      # @example splitting hosts into two groups based on chef client presence
-      #   hosts = [
-      #     "no-client1.riotgames.com",
-      #     "no-client2.riotgames.com",
-      #     'has-client.riotgames.com"'
-      #   ]
-      #   worker = Worker.new(hosts)
-      #
-      #   worker.bootstrap_type_filter => [
-      #     [ "no-client1.riotgames.com", "no-client2.riotgames.com" ],
-      #     [
-      #       {
-      #         hostname: "has-client.riotgames.com",
-      #         node_name: "has-client.internal"
-      #       }
-      #     ]
-      #   ]
-      #
-      # @return [Array<Array>]
-      def bootstrap_type_filter
-        known_nodes = Celluloid::Future.new {
-          chef_connection.node.all.map { |node| node.name.to_s }
-        }
-
-        partial_nodes = self.nodes.select do |node|
-          known_nodes.value.include?(node[:node_name])
-        end
-
-        full_nodes = (self.nodes - partial_nodes)
-        full_nodes.collect! { |node| node[:hostname] }
-
-        [ full_nodes, partial_nodes ]
-      end
-
       # Query the given hostnames and return an expanded view containing an array of Hashes
       # each representing a hostname. Each hash contains a hostname and node_name key. The
       # hostname is the address to communicate to the node with and the node_name is the
       # name the node is identified in Chef as.
       #
-      # @example
+      # If the node has not registered with the Chef server then the node_name value will
+      # be nil.
+      #
+      # @example showing one node who has been registered with Chef and one which has not
       #   worker = Worker.new(..)
       #   worker.nodes #=> [
       #     {
@@ -146,13 +173,14 @@ module MotherBrain
       #     },
       #     {
       #       hostname: "riot_two.riotgames.com",
-      #       node_name: "riot_two"
+      #       node_name: nil
       #     }
       #   ]
       #
       # @option options [Boolean] :force (false)
+      #   reload the cached value of nodes if it has been cached
       #
-      # @return [Hash]
+      # @return [Array<Hash>]
       def nodes(options = {})
         options = options.reverse_merge(force: false)
 
@@ -161,13 +189,12 @@ module MotherBrain
         end
 
         @nodes ||= hosts.collect do |host|
+          [ host, node_querier.future(:registered_as, host) ]
+        end.collect do |host, client_name|
           {
             hostname: host,
-            node_name: node_querier.future(:node_name, host)
+            node_name: client_name.value
           }
-        end.collect do |node|
-          node[:node_name] = node[:node_name].value
-          node
         end
       end
 
@@ -198,8 +225,8 @@ module MotherBrain
       #     }
       #   ]
       #
-      # @param [Array<String>] hostnames
-      #   an array of hostnames to fully bootstrap
+      # @param [Array<Hash>] hostnames
+      #   an array of hashes containing node data
       #
       # @option options [String] :chef_version
       #   version of Chef to install on the node
