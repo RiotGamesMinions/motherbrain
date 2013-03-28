@@ -285,7 +285,7 @@ module MotherBrain
     # @return [String, nil]
     def registered_as(host)
       if (client_id = node_name(host)).nil?
-        return false
+        return nil
       end
 
       chef_connection.client.find(client_id).try(:name)

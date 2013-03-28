@@ -95,7 +95,13 @@ describe MB::NodeQuerier do
     it "returns nil if the target node does not have a client registered on the Chef server" do
       subject.chef_connection.stub_chain(:client, :find).with(node_name).and_return(nil)
 
-      subject.registered_as(host).should be_false
+      subject.registered_as(host).should be_nil
+    end
+
+    it "returns nil if we can't determine the node_name of the host" do
+      subject.should_receive(:node_name).with(host).and_return(nil)
+
+      subject.registered_as(host).should be_nil
     end
 
     context "when the target node's node_name cannot be resolved" do
