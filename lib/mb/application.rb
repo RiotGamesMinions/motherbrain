@@ -72,6 +72,8 @@ module MotherBrain
 
           sleep 0.1 while supervisor.alive?
 
+          break if supervisor.interrupted
+
           log.fatal { "!!! #{self} crashed. Restarting..." }
         end
       end
@@ -85,6 +87,8 @@ module MotherBrain
     class SupervisionGroup < ::Celluloid::SupervisionGroup
       include Celluloid::Notifications
       include MB::Logging
+
+      attr_reader :interrupted
 
       def initialize(config)
         super(MB::Application.registry) do |s|
@@ -137,7 +141,6 @@ module MotherBrain
       private
 
         attr_reader :interrupt_mutex
-        attr_reader :interrupted
     end
   end
 end
