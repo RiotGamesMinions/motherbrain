@@ -68,7 +68,7 @@ module MotherBrain
         dispatch(nil, given_args.dup, nil, config)
       rescue MB::MBError, Thor::Error => ex
         ENV["THOR_DEBUG"] == "1" ? (raise ex) : config[:shell].error(ex.message)
-        exit ex.respond_to?(:status_code) ? ex.status_code : 1
+        exit ex.respond_to?(:exit_code) ? ex.exit_code : MB::MBError::DEFAULT_EXIT_CODE
       rescue Errno::EPIPE
         # This happens if a thor command is piped to something like `head`,
         # which closes the pipe when it's done reading. This will also
