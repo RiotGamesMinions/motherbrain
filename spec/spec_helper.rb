@@ -43,6 +43,9 @@ else
 
   Spork.prefork do
     setup_rspec
+    require 'celluloid'
+    require 'dcell'
+    DCell.start id: "rspec", addr: "tcp://127.0.0.1:27410"
   end
 
   Spork.each_run do

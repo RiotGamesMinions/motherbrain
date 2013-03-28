@@ -146,6 +146,25 @@ module MotherBrain
           attr_reader :runner
           attr_reader :block
 
+          def ssh_run(node)
+            Application.node_querier.future.chef_run(node)
+          end
+
+          # @return [Celluloid::Future]
+          def agent_run(node)
+            Celluloid::Future.new {
+              begin
+                job = Job.new(:service_action)
+                agent_commander.run_chef(job, node)
+                [ :ok, nil ]
+              rescue Exception => ex
+                [ :error, ex.to_s ]
+              ensure
+                job.terminate
+              end
+            }
+          end
+
         # @author Jamie Winsor <reset@riotgames.com>
         # @api private
         class ActionRunner

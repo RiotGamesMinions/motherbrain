@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'celluloid', '~> 0.13.0'
   s.add_runtime_dependency 'dcell', '~> 0.13.0'
+  s.add_runtime_dependency 'chef', '>= 11.4.0'
   s.add_runtime_dependency 'reel', '>= 0.3.0'
   s.add_runtime_dependency 'grape', '>= 0.3.2'
   s.add_runtime_dependency 'net-ssh'
