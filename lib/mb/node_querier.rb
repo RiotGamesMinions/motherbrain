@@ -81,8 +81,6 @@ module MotherBrain
     #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
     # @option options [Float] :timeout (10.0)
     #   timeout value for SSH bootstrap
-    # @option options [Boolean] :sudo (true)
-    #   bootstrap with sudo
     #
     # @raise [RemoteFileCopyError]
     def copy_file(local_file, remote_file, host, options = {})
@@ -111,8 +109,6 @@ module MotherBrain
     #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
     # @option options [Float] :timeout (10.0)
     #   timeout value for SSH bootstrap
-    # @option options [Boolean] :sudo (true)
-    #   bootstrap with sudo
     #
     # @raise [RemoteFileCopyError]
     def write_file(data, remote_file, host, options = {})
@@ -188,6 +184,7 @@ module MotherBrain
     # Run Chef-Client on the target host
     #
     # @param [String] host
+    #
     # @option options [String] :user
     #   a shell user that will login to each node and perform the bootstrap command on (required)
     # @option options [String] :password
@@ -226,15 +223,20 @@ module MotherBrain
     # Place an encrypted data bag secret on the target host
     #
     # @param [String] host
+    #
     # @option options [String] :secret
     #   the encrypted data bag secret of the node querier's chef conn will be used
     #   as the default key
-    # @option options [Hash] :ssh
-    #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
-    #   * :password (String) the password for the shell user that will perform the bootstrap
-    #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
-    #   * :sudo (Boolean) [True] bootstrap with sudo
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (10.0)
+    #   timeout value for SSH bootstrap
+    # @option options [Boolean] :sudo
+    #   bootstrap with sudo
     #
     # @raise [RemoteFileCopyError]
     #
