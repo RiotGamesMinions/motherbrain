@@ -1,8 +1,8 @@
-# MotherBrain
+# motherbrain
 
-MotherBrain is an orchestration framework for Chef. In the same way that you
+motherbrain is an orchestration framework for Chef. In the same way that you
 would use Chef's Knife command to create a single node, you can use
-MotherBrain to create and control an entire application environment.
+motherbrain to create and control an entire application environment.
 
 ## Requirements
 
@@ -11,13 +11,13 @@ MotherBrain to create and control an entire application environment.
 
 ## Installation
 
-Install MotherBrain via RubyGems:
+Install motherbrain via RubyGems:
 
 ```sh
 gem install mb
 ```
 
-If your cookbook has a Gemfile, you'll probably want to add MotherBrain there
+If your cookbook has a Gemfile, you'll probably want to add motherbrain there
 instead:
 
 ```ruby
@@ -26,7 +26,7 @@ gem 'motherbrain'
 
 and then install with `bundle install`.
 
-Before using MotherBrain, you'll need to create a configuration file with `mb
+Before using motherbrain, you'll need to create a configuration file with `mb
 configure`:
 
 ```
@@ -38,7 +38,7 @@ Enter a SSH password:
 Config written to: '~/.mb/config.json'
 ```
 
-You can verify that MotherBrain is installed correctly and pointing to a Chef
+You can verify that motherbrain is installed correctly and pointing to a Chef
 server my running `mb plugins --remote`:
 
 ```
@@ -50,7 +50,7 @@ $ mb plugins --remote
 
 ## Getting Started
 
-MotherBrain comes with an `init` command to help you get started quickly. We'll
+motherbrain comes with an `init` command to help you get started quickly. We'll
 be using the ohai cookbook for this tutorial:
 
 ```
@@ -66,7 +66,7 @@ ohai$ mb init
       create  bootstrap.json
       create  motherbrain.rb
 
-MotherBrain plugin created.
+motherbrain plugin created.
 
 Take a look at motherbrain.rb and bootstrap.json,
 and then bootstrap with:
