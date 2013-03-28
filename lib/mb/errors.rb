@@ -11,6 +11,10 @@ module MotherBrain
 
     alias_method :mesage, :to_s
 
+    def to_s
+      "[err_code]: #{status_code} [reason]: #{super}"
+    end
+
     def to_hash
       {
         code: status_code,
