@@ -1,11 +1,13 @@
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   class MBError < StandardError
+    DEFAULT_EXIT_CODE = 1
+
     class << self
       # @param [Integer] code
       #
       # @return [Integer]
-      def exit_code(code = 1)
+      def exit_code(code = DEFAULT_EXIT_CODE)
         return @exit_code if @exit_code
         @exit_code = code
       end
@@ -115,7 +117,7 @@ module MotherBrain
       @job_id = id
     end
 
-    def to_s
+    def message
       "No job with ID: '#{job_id}' found"
     end
   end
@@ -131,7 +133,7 @@ module MotherBrain
       @version = version
     end
 
-    def to_s
+    def message
       msg = "No plugin named '#{name}'"
       msg << " of version (#{version})" unless version.nil?
       msg << " found"
@@ -156,7 +158,7 @@ module MotherBrain
       @parent = parent
     end
 
-    def to_s
+    def message
       "#{parent.class} '#{parent}' does not have the command: '#{name}'"
     end
   end
@@ -174,7 +176,7 @@ module MotherBrain
       @plugin = plugin
     end
 
-    def to_s
+    def message
       "Plugin #{plugin} does not have the component: '#{name}'"
     end
   end
@@ -194,7 +196,7 @@ module MotherBrain
       @errors = errors
     end
 
-    def to_s
+    def message
       msg = errors.collect do |key, messages|
         "* #{key}: #{messages.join(', ')}"
       end
@@ -222,7 +224,7 @@ module MotherBrain
       @component_name = component_name
     end
 
-    def to_s
+    def message
       [
         "Component '#{component_name}' is not versioned",
         "You can version components with:",
@@ -241,7 +243,7 @@ module MotherBrain
       @errors = errors
     end
 
-    def to_s
+    def message
       group_err_count = errors.collect { |group, errors| "#{group} (#{errors.length} errors)" }.join(', ')
       "there were failures while bootstrapping some groups: #{group_err_count}"
     end
@@ -259,7 +261,7 @@ module MotherBrain
       @got      = got
     end
 
-    def to_s
+    def message
       "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
     end
   end
