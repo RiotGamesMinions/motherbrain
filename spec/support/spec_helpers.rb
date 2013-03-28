@@ -63,10 +63,6 @@ module MotherBrain
       MB::Config.default_path
     end
 
-    def register_mock(hook, mock)
-      set_env "motherbrain_mocks_#{hook}", mocks_path.join("#{mock}.rb").to_s
-    end
-
     # @param [String] name
     #   name of the cookbook to generate
     #

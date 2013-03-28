@@ -16,6 +16,7 @@ require 'multi_json'
 require 'mb/version'
 require 'mb/errors'
 require 'mb/ridley_ext'
+require 'mb/test'
 
 # @author Jamie Winsor <jamie@vialstudios.com>
 module MotherBrain

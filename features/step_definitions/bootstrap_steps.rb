@@ -17,7 +17,9 @@ Given /^a cookbook "(.*?)" at version "(.*?)" with a plugin that can bootstrap$/
 end
 
 When /^I bootstrap "(.*?)"$/ do |name|
-  register_mock "application_init", "bootstrap_mock_ridley"
+  set_env "MB_TEST_INIT_ENV", "#{name}prod"
+  set_env "MB_TEST_INIT_COOKBOOK", name
+  set_env "MB_TEST_INIT_BOOTSTRAP", "true"
   run_simple(unescape("mb #{name} bootstrap #{@bootstrap_manifest} --environment #{name}prod -d -L /tmp/aruba-mb.log"), false)
 end
 
@@ -28,7 +30,9 @@ end
 
 
 When /^I bootstrap "(.*?)" with the extra bootstrap template$/ do |name|
-  register_mock "application_init", "bootstrap_with_template_mock_ridley"
+  set_env "MB_TEST_INIT_ENV", "#{name}prod"
+  set_env "MB_TEST_INIT_COOKBOOK", name
+  set_env "MB_TEST_INIT_BOOTSTRAP", "true"
+  set_env "MB_TEST_INIT_TEMPLATE", @template
   run_simple(unescape("mb #{name} bootstrap #{@bootstrap_manifest} --environment #{name}prod --template #{@template} -d -L /tmp/aruba-mb.log"), false)
 end
-

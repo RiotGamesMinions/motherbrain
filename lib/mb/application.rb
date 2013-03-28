@@ -78,10 +78,7 @@ module MotherBrain
 
       # Prepare the application and environment to run motherbrain
       def setup
-        if ENV['motherbrain_mocks_application_setup']
-          log.info { "Loading application_setup mocks from #{ENV['motherbrain_mocks_application_setup']}" }
-          eval(File.read(ENV['motherbrain_mocks_application_setup']))
-        end
+        MB::Test.mock(:setup) if MB.testing?
         MB::FileSystem.init
       end
     end
@@ -112,10 +109,7 @@ module MotherBrain
         @interrupt_mutex = Mutex.new
         @interrupted     = false
         subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
-        if ENV['motherbrain_mocks_application_init']
-          log.info { "Loading application_init mocks from #{ENV['motherbrain_mocks_application_init']}" }
-          eval(File.read(ENV['motherbrain_mocks_application_init']))
-        end
+        MB::Test.mock(:init) if MB.testing?
       end
 
       def reconfigure(_msg, new_config)

@@ -11,7 +11,6 @@ Feature: allow additional/configurable bootstrap scripts
     When I bootstrap "awesomed"
     Then the exit status should be 0
 
-  @ivey
   Scenario: custom template
     Given a cookbook "awesomed" at version "1.2.3" with a plugin that can bootstrap
     And an extra bootstrap template
