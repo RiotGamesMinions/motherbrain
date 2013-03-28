@@ -16,6 +16,7 @@ require 'multi_json'
 require 'mb/version'
 require 'mb/errors'
 require 'mb/ridley_ext'
+require 'mb/thor_ext'
 
 # @author Jamie Winsor <reset@riotgames.com>
 module MotherBrain

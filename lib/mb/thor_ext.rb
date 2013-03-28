@@ -1,3 +1,5 @@
+# Code from https://github.com/wycats/thor/pull/317
+
 class Thor
   module Shell
     class Basic

@@ -253,7 +253,6 @@ module MotherBrain
 
       config = MB::Config.new(path)
 
-      require 'mb/thor' # MONKIES
       config.chef.api_url     = MB.ui.ask "Enter a Chef API URL:", default: config.chef.api_url
       config.chef.api_client  = MB.ui.ask "Enter a Chef API Client:", default: config.chef.api_client
       config.chef.api_key     = MB.ui.ask "Enter the path to the client's Chef API Key:", default: config.chef.api_key
