@@ -1,4 +1,4 @@
-require 'net/scp'
+require 'net/sftp'
 
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
@@ -39,6 +39,7 @@ module MotherBrain
     # @param [String] host
     #   hostname of the target node
     # @param [String] command
+    #
     # @option options [String] :user
     #   a shell user that will login to each node and perform the bootstrap command on (required)
     # @option options [String] :password
@@ -71,31 +72,28 @@ module MotherBrain
     # @param [String] local_file
     # @param [String] remote_file
     # @param [String] host
-    # @option options [Hash] :ssh
-    #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
-    #   * :password (String) the password for the shell user that will perform the bootstrap
-    #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
-    #   * :sudo (Boolean) [True] bootstrap with sudo
+    #
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (10.0)
+    #   timeout value for SSH bootstrap
+    # @option options [Boolean] :sudo (true)
+    #   bootstrap with sudo
     #
     # @raise [RemoteFileCopyError]
     def copy_file(local_file, remote_file, host, options = {})
-      options                  = options.reverse_merge(Application.config.slice(:ssh))
-      options[:ssh][:paranoid] = false
-
-      scp_options = options.dup
-      scp_options[:ssh] = scp_options[:ssh].slice(*Net::SSH::VALID_OPTIONS)
+      options = options.reverse_merge(Application.config[:ssh].to_hash)
 
       log.info { "Copying file '#{local_file}' to '#{host}:#{remote_file}'" }
 
-      if options[:ssh][:sudo]
-        tmp_location = "/home/#{options[:ssh][:user]}/#{File.basename(remote_file)}"
-        Net::SCP.upload!(host, nil, local_file, tmp_location, scp_options)
-        ssh_command(host, "mv #{tmp_location} #{remote_file}", options)
-      else
-        Net::SCP.upload!(host, nil, local_file, remote_file, scp_options)
+      Net::SFTP.start(host, options[:user], options.slice(*Net::SSH::VALID_OPTIONS)) do |sftp|
+        sftp.upload!(local_file, remote_file)
       end
-    rescue Net::SCP::Error => ex
+    rescue Net::SFTP::Exception, Net::SSH::AuthenticationFailed => ex
       abort RemoteFileCopyError.new(ex.to_s)
     end
 
@@ -104,12 +102,17 @@ module MotherBrain
     # @param [#to_s] data
     # @param [String] remote_file
     # @param [String] host
-    # @option options [Hash] :ssh
-    #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
-    #   * :password (String) the password for the shell user that will perform the bootstrap
-    #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
-    #   * :sudo (Boolean) [True] bootstrap with sudo
+    #
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (10.0)
+    #   timeout value for SSH bootstrap
+    # @option options [Boolean] :sudo (true)
+    #   bootstrap with sudo
     #
     # @raise [RemoteFileCopyError]
     def write_file(data, remote_file, host, options = {})
