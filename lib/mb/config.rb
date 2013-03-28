@@ -27,8 +27,8 @@ module MotherBrain
         end
       end
 
-      def knife
-        Knife.new.parse
+      def chef_config
+        MB::Chef::Config.new.parse
       end
     end
 
@@ -38,26 +38,26 @@ module MotherBrain
       required: true
 
     attribute 'chef.api_url',
-      default: knife[:chef_server_url],
+      default: chef_config[:chef_server_url],
       type: String,
       required: true
 
     attribute 'chef.api_client',
-      default: knife[:node_name],
+      default: chef_config[:node_name],
       type: String,
       required: true
 
     attribute 'chef.api_key',
-      default: knife[:client_key],
+      default: chef_config[:client_key],
       type: String,
       required: true
 
     attribute 'chef.validator_client',
-      default: knife[:validation_client_name],
+      default: chef_config[:validation_client_name],
       type: String
 
     attribute 'chef.validator_path',
-      default: knife[:validation_key],
+      default: chef_config[:validation_key],
       type: String
 
     attribute 'chef.bootstrap_proxy',
