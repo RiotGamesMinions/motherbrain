@@ -124,18 +124,9 @@ module MotherBrain
           unless interrupted
             @interrupted = true
 
-            reverse_terminate
+            terminate
           end
         end
-      end
-
-      # Terminate our child processes in reverse order
-      #
-      # @see https://github.com/celluloid/celluloid/pull/152
-      def reverse_terminate
-        @members.reverse_each(&:terminate)
-
-        terminate
       end
 
       private
