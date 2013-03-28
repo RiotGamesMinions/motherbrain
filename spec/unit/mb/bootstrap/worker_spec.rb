@@ -4,33 +4,6 @@ describe MB::Bootstrap::Worker do
   let(:node_querier) { double('node_querier') }
   let(:chef_connection) { double('chef_connection') }
 
-  describe "ClassMethods" do
-    subject { described_class }
-
-    describe "#bootstrap_type_filter" do
-      let(:nodes) do
-        [
-          {
-            hostname: "riot_one.riotgames.com",
-            node_name: "riot_one"
-          },
-          {
-            hostname: "riot_two.riotgames.com",
-            node_name: nil
-          }
-        ]
-      end
-
-      it "returns an array containing two arrays" do
-        result = subject.bootstrap_type_filter(nodes)
-
-        result.should be_a(Array)
-        result.should have(2).items
-        result.should each be_a(Array)
-      end
-    end
-  end
-
   let(:nodes) do
     [
       "cloud-1.riotgames.com",

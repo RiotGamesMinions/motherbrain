@@ -3,75 +3,6 @@ module MotherBrain
     # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class Worker
-      class << self
-        # Split an array of hashes containing hostname and node_name keys into two groups. This
-        # function can be combined with Bootstrap::Worker#nodes to filter the nodes into two
-        # bootstrap groups.
-        #
-        # The first group containing all nodes who do not have a Chef client registered on
-        # the Chef server or do not have Ruby/Chef installed by omnibus. This group of nodes will require
-        # a full bootstrap {Bootstrap::Worker#full_bootstrap}.
-        #
-        # The second group containing all nodes who already have a Chef client registered on
-        # the Chef server and have Ruby/Chef installed by omnibus. This group of nodes will require a
-        # parital bootstrap {Bootstrap::Worker#partial_bootstrap}.
-        #
-        # @example splitting hosts into two groups based on chef client presence
-        #   nodes = [
-        #     {
-        #       hostname: "no-client1.riotgames.com",
-        #       node_name: nil,
-        #     },
-        #     {
-        #       hostname: "no-client2.riotgames.com",
-        #       node_name: nil
-        #     }
-        #     {
-        #       hostname: "has-client.riotgames.com",
-        #       node_name: "has-client"
-        #     }
-        #   ]
-        #
-        #   Bootstrap::Worker.bootstrap_type_filter(nodes) #=> [
-        #     [
-        #       {
-        #         hostname: "no-client1.riotgames.com",
-        #         node_name: nil,
-        #       },
-        #       {
-        #         hostname: "no-client2.riotgames.com",
-        #         node_name: nil
-        #       }
-        #     ],
-        #     [
-        #       {
-        #         hostname: "has-client.riotgames.com",
-        #         node_name: "has-client"
-        #       }
-        #     ]
-        #   ]
-        #
-        # @param [Array<Hash>] nodes
-        #   an array of hases containing a hostname and node_name key. This output can be found by
-        #   running Bootstrap::Worker#nodes
-        #
-        # @return [Array<Array>]
-        def bootstrap_type_filter(nodes)
-          full_nodes    = Array.new
-          partial_nodes = Array.new
-
-          nodes.each do |node|
-            if node[:node_name].nil?
-              full_nodes << node
-            else
-              partial_nodes << node
-            end
-          end
-
-          [ full_nodes, partial_nodes ]
-        end
-      end
-
       include Celluloid
       include MB::Logging
       include MB::Mixin::Services
@@ -142,7 +73,7 @@ module MotherBrain
           return Array.new
         end
 
-        full_nodes, partial_nodes = self.class.bootstrap_type_filter(nodes)
+        full_nodes, partial_nodes = nodes.partition { |node| node[:node_name].nil? }
 
         [].tap do |futures|
           if full_nodes.any?
