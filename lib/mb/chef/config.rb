@@ -27,45 +27,45 @@ module MotherBrain
 
       private
 
-      def parse_file
-        lines.each { |line| parse_line line }
-      end
+        def parse_file
+          lines.each { |line| parse_line line }
+        end
 
-      def parse_line(line)
-        eval line, binding
-      rescue
-      end
+        def parse_line(line)
+          eval line, binding
+        rescue
+        end
 
-      def method_missing(key, value = nil)
-        store key.to_sym, value
-      end
+        def method_missing(key, value = nil)
+          store key.to_sym, value
+        end
 
-      def lines
-        file_contents.lines.to_a
-      end
+        def lines
+          file_contents.lines.to_a
+        end
 
-      def file_contents
-        File.read(file_path)
-      rescue
-        String.new
-      end
+        def file_contents
+          File.read(file_path)
+        rescue
+          String.new
+        end
 
-      def file_path
-        File.expand_path(path)
-      end
+        def file_path
+          File.expand_path(path)
+        end
 
-      def path
-        @path ||= DEFAULT_PATHS.find { |path|
-          File.exist?(File.expand_path(path))
-        }
-      end
+        def path
+          @path ||= DEFAULT_PATHS.find { |path|
+            File.exist?(File.expand_path(path))
+          }
+        end
 
-      # Because it's common to set the local variable current_dir in a knife.rb
-      # and then interpolate that into strings, set it here because that's hard
-      # to parse.
-      def current_dir
-        File.dirname(file_path)
-      end
+        # Because it's common to set the local variable current_dir in a knife.rb
+        # and then interpolate that into strings, set it here because that's hard
+        # to parse.
+        def current_dir
+          File.dirname(file_path)
+        end
     end
   end
 end
