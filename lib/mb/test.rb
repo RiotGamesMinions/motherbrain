@@ -33,13 +33,8 @@ module MotherBrain
 
       def register_mocks
         return unless MB.testing?
-        MB.log.debug { "registering #{self.class}" }
         available_mocks.each do |mock|
-          MB.log.debug { mock }
           env = ENV["MB_TEST_#{type}_#{mock.upcase}"]
-          MB.log.debug { "#{mock} => #{env}" }
-          MB.log.debug { self }
-          MB.log.debug { ridley }
           self.send(mock, env) if env
         end
       end
@@ -57,15 +52,12 @@ module MotherBrain
         @ridley.should_receive(:alive?).and_return(true)
         @ridley.should_receive(:terminate).and_return(true)
         @ridley.should_receive(:url_prefix).and_return("http://chef.example.com")
-        p @ridley
         @ridley
       end
 
       def env(name)
-        p ridley
         ridley.should_receive(:get).with("environments/#{name}").
           and_return(stub(:response, :body => {}))
-        p :next
       end
 
       def cookbook(name)
