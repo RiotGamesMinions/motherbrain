@@ -3,8 +3,8 @@ require 'spec_helper'
 describe MB::Errors do
   subject { described_class }
 
-  describe "::errors" do
-    subject { described_class.errors }
+  describe "::error_codes" do
+    subject { described_class.error_codes }
 
     it "returns a Hash" do
       subject.should be_a(Hash)
@@ -18,7 +18,7 @@ describe MB::Errors do
       end
     end
 
-    after { subject.unregister(err_class) }
+    around { subject.unregister(err_class) }
 
     it "adds the error to the errors hash identified by the error_code" do
       subject.register(err_class)

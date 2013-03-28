@@ -2,28 +2,26 @@ module MotherBrain
   module Errors
     class << self
       # @return [Hash]
-      def errors
-        @errors ||= Hash.new
+      def error_codes
+        @error_codes ||= Hash.new
       end
-      alias_method :list, :errors
-      alias_method :map, :errors
 
       # @param [MBError] klass
       #
       # @raise [RuntimeError]
       def register(klass)
-        if errors.has_key?(klass.error_code)
+        if error_codes.has_key?(klass.error_code)
           msg = "Unable to register exception #{klass}. An exception with the error_code "
           msg << "#{klass.error_code} is already in use."
           raise RuntimeError, msg
         end
 
-        errors[klass.error_code] = klass
+        error_codes[klass.error_code] = klass
       end
 
       # @param [MBError] klass
       def unregister(klass)
-        errors.delete(klass.error_code)
+        error_codes.delete(klass.error_code)
       end
     end
   end
@@ -47,6 +45,8 @@ module MotherBrain
       def error_code(code = -1)
         return @error_code if @error_code
         @error_code = code
+        Errors.register(self)
+        @error_code
       end
     end
 
