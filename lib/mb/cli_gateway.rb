@@ -241,7 +241,8 @@ module MotherBrain
     method_option :force,
       type: :boolean,
       default: false,
-      desc: "create a new configuration file even if one already exists."
+      desc: "create a new configuration file even if one already exists.",
+      aliases: "-f"
     desc "configure", "create a new configuration file based on a set of interactive questions"
     def configure(path = MB::Config.default_path)
       path = File.expand_path(path)
