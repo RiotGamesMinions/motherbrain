@@ -3,12 +3,15 @@ module MotherBrain
   #
   # @author Justin Campbell <justin.campbell@riotgames.com>
   class Knife < Hash
-    DEFAULT_KNIFE_PATH = '~/.chef/knife.rb'
-
-    attr_reader :path
+    DEFAULT_PATHS = %w[
+      ./.chef/knife.rb
+      ~/.chef/knife.rb
+      /etc/chef/solo.rb
+      /etc/chef/client.rb
+    ]
 
     # @param [String] path
-    def initialize(path = DEFAULT_KNIFE_PATH)
+    def initialize(path = nil)
       @path = path
     end
 
@@ -48,6 +51,12 @@ module MotherBrain
 
     def file_path
       File.expand_path(path)
+    end
+
+    def path
+      @path ||= DEFAULT_PATHS.find { |path|
+        File.exist?(File.expand_path(path))
+      }
     end
 
     # Because it's common to set the local variable current_dir in a knife.rb
