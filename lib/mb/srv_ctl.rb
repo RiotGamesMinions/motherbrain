@@ -66,7 +66,7 @@ module MotherBrain
         options[:kill] ? ctl.stop : ctl.start
       rescue MB::MBError => e
         puts e
-        exit e.status_code
+        exit e.exit_code
       rescue Chozo::Errors::ConfigNotFound => e
         puts e
         exit 1
