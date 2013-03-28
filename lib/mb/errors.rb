@@ -37,6 +37,7 @@ module MotherBrain
   class ProvisionerNotRegistered < InternalError; end
   class RemoteScriptError < InternalError; end
   class RemoteCommandError < InternalError; end
+  class RemoteFileCopyError < InternalError; end
 
   class PluginSyntaxError < MBError; status_code(100); end
   class DuplicateGroup < PluginSyntaxError; end
