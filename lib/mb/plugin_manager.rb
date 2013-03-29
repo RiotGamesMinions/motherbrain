@@ -337,16 +337,28 @@ module MotherBrain
     def satisfy(plugin_name, constraint, options = {})
       options    = options.reverse_merge(remote: false)
       constraint = Solve::Constraint.new(constraint)
-      graph      = Solve::Graph.new
 
-      versions(plugin_name, options[:remote]).each do |version|
-        graph.artifacts(plugin_name, version)
+      # Optimize for equality operator. Don't need to find all of the versions if
+      # we only care about one.
+      version = if constraint.operator == "="
+        constrained_version = constraint.version.to_s
+        if options[:remote]
+          load_remote(plugin_name, constrained_version)
+        end
+        constrained_version
+      else
+        graph = Solve::Graph.new
+        versions(plugin_name, options[:remote]).each do |version|
+          graph.artifacts(plugin_name, version)
+        end
+
+        solution = Solve.it!(graph, [[plugin_name, constraint]])
+        solution[plugin_name]
       end
 
-      solution = Solve.it!(graph, [[plugin_name, constraint]])
-      version  = solution[plugin_name]
-
-      find(plugin_name, version, options)
+      # don't search the remote for the plugin again; we would have already done that by
+      # calling versions() and including our options.
+      find(plugin_name, version, remote: false)
     rescue Solve::Errors::NoSolutionError
       abort PluginNotFound.new(plugin_name, constraint)
     end

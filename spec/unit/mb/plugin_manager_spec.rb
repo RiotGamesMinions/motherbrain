@@ -352,36 +352,61 @@ describe MotherBrain::PluginManager do
     let(:plugin_id) { "rspec-test" }
     let(:versions) do
       [
-        double('p1', name: "rspec-test", version: "1.0.0"),
-        double('p2', name: "rspec-test", version: "1.2.3"),
-        double('p3', name: "rspec-test", version: "1.3.0")
+        "1.0.0",
+        "1.2.3",
+        "1.3.0"
       ]
     end
     let(:options) do
       {
-        remote: true
+        remote: false
       }
     end
 
-    context "when the given constraint tests anything but equality" do
+    context "when the remote has a plugin which satisfies the constraint" do
       let(:constraint) { ">= 1.2.3" }
+      let(:plugin) { double('plugin', name: 'nginx', version: '1.3.0') }
 
       before(:each) do
         subject.should_receive(:versions).with(plugin_id, options[:remote]).and_return(versions)
-        subject.should_receive(:find).with(plugin_id, "1.3.0").and_return(versions[2])
       end
 
       it "returns the best plugin for the given constraint" do
-        subject.satisfy(plugin_id, constraint, options).should eql(versions[2])
+        subject.should_receive(:find).with(plugin_id, "1.3.0", remote: false).and_return(plugin)
+        subject.satisfy(plugin_id, constraint, options).should eql(plugin)
       end
     end
 
-    context "when the given constraint tests equality" do
+    context "when given a constraint containing an eqluality operator" do
       let(:constraint) { "= 1.0.0" }
+
+      it "does not attempt to get a list of all versions" do
+        subject.should_not_receive(:versions)
+
+        subject.satisfy(plugin_id, constraint, options)
+      end
+
+      context "when the :remote option is set to true" do
+        before { options[:remote] = true }
+
+        it "attempts to eagerly load a plugin of the same name/version from the remote" do
+          subject.should_receive(:load_remote).with(plugin_id, "1.0.0")
+
+          subject.satisfy(plugin_id, constraint, options)
+        end
+      end
+    end
+
+    context "when the :remote option is set to true" do
+      let(:constraint) { "= 1.0.0" }
+
+      before do
+        options[:remote] = true
+      end
 
       it "attempts to load the matching plugin from the remote" do
         subject.should_receive(:load_remote).with(plugin_id, "1.0.0")
-        subject.should_receive(:find).with(plugin_id, "1.0.0").and_return(versions[0])
+        subject.should_receive(:find).with(plugin_id, "1.0.0", remote: false).and_return(versions[0])
 
         subject.satisfy(plugin_id, constraint, options)
       end
