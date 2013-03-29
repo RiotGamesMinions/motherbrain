@@ -116,25 +116,29 @@ module MotherBrain
 
     # Load all of the plugins from the Berkshelf
     #
-    # @param [Boolean] force (false)
-    def load_all_local(force = false)
+    # @options option [Boolean] :force (false)
+    def load_all_local(options = {})
+      options = options.reverse_merge(force: false)
+
       Berkshelf.cookbooks(with_plugin: true).each do |path|
-        load_local(path, force: force)
+        load_local(path, options)
       end
     end
 
     # Load all of the plugins from the remote Chef Server. Plugins with a name and version that have
     # already been loaded will not be loaded again unless forced.
     #
-    # @param [Boolean] force (false)
-    def load_all_remote(force = false)
+    # @options option [Boolean] :force (false)
+    def load_all_remote(options = {})
+      options = options.reverse_merge(force: false)
+
       cookbooks = ridley.cookbook.all.collect do |name, versions|
         versions.each do |version|
-          unless force
+          unless options[:force]
             next if find(name, version, remote: false)
           end
 
-          load_remote(name, version, force: force)
+          load_remote(name, version, options)
         end
       end
     end
@@ -310,7 +314,7 @@ module MotherBrain
     #
     # @return [Array<MotherBrain::Plugin>]
     def reload_local
-      load_all_local(true)
+      load_all_local(force: true)
     end
 
     # Remove the given plugin from the set of plugins
