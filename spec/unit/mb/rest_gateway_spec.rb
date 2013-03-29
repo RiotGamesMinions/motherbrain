@@ -405,7 +405,7 @@ describe MB::RestGateway do
         json = JSON.parse(last_response.body)
 
         json.should have_key("code")
-        json["code"].should eql(99)
+        json["code"].should eql(1000)
         json.should have_key("message")
         json["message"].should eql("a nice error message")
       end
