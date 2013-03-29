@@ -123,13 +123,18 @@ module MotherBrain
       end
     end
 
-    # Load all of the plugins from the remote Chef Server
-    def load_all_remote
-      ridley.cookbook.all.collect do |name, versions|
+    # Load all of the plugins from the remote Chef Server. Plugins with a name and version that have
+    # already been loaded will not be loaded again unless forced.
+    #
+    # @param [Boolean] force (false)
+    def load_all_remote(force = false)
+      cookbooks = ridley.cookbook.all.collect do |name, versions|
         versions.each do |version|
-          next if find(name, version)
+          unless force
+            next if find(name, version, remote: false)
+          end
 
-          load_remote(name, version)
+          load_remote(name, version, force: force)
         end
       end
     end
@@ -151,7 +156,7 @@ module MotherBrain
     def find(name, version = nil, options = {})
       options = options.reverse_merge(remote: false)
 
-      list(options[:remote]).sort.reverse.find do |plugin|
+      list(options).sort.reverse.find do |plugin|
         if version.nil?
           plugin.name == name
         else
@@ -271,12 +276,14 @@ module MotherBrain
 
     # A set of all the registered plugins
     #
-    # @param [Boolean] remote (false)
+    # @option options [Boolean] :remote (false)
     #   eargly search for plugins on the remote Chef server and include them in the returned list
     #
     # @return [Set<Plugin>]
-    def list(remote = false)
-      if remote
+    def list(options = {})
+      options = options.reverse_merge(remote: false)
+
+      if options[:remote]
         load_all_remote
       end
 
@@ -339,7 +346,7 @@ module MotherBrain
       solution = Solve.it!(graph, [[plugin_name, constraint]])
       version  = solution[plugin_name]
 
-      find(plugin_name, version)
+      find(plugin_name, version, options)
     rescue Solve::Errors::NoSolutionError
       abort PluginNotFound.new(plugin_name, constraint)
     end

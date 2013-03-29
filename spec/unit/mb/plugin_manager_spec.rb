@@ -339,11 +339,11 @@ describe MotherBrain::PluginManager do
       result.should each be_a(MB::Plugin)
     end
 
-    context "given 'true' for the remote parameter" do
+    context "given 'true' for the :remote option" do
       it "loads the remote plugins before returning" do
         subject.should_receive(:load_all_remote)
 
-        subject.list(true)
+        subject.list(remote: true)
       end
     end
   end
