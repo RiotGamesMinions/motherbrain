@@ -211,7 +211,7 @@ module MotherBrain
       add(plugin, options)
       plugin
     rescue PluginSyntaxError, PluginLoadError => ex
-      log.warn { "error loading local plugin: #{ex}" }
+      log.warn { "could not load local plugin at '#{path}': #{ex}" }
       nil
     end
     alias_method :load_file, :load_local
