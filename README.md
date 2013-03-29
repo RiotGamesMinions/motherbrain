@@ -50,19 +50,20 @@ $ mb plugins --remote
 
 ## Getting Started
 
-motherbrain comes with an `init` command to help you get started quickly. We'll
-be using the ohai cookbook for this tutorial:
+motherbrain comes with an `init` command to help you get started quickly. Let's
+pretend we have an app called MyFace, our hot new social network. We'll
+be using the myface cookbook for this tutorial:
 
 ```
-$ git clone https://github.com/opscode-cookbooks/ohai
-$ cd ohai
-ohai$
+$ git clone https://github.com/reset/myface-cookbook
+$ cd myface
+myface$
 ```
 
 We'll generate a new plugin for the cookbook we're developing:
 
 ```
-ohai$ mb init
+myface$ mb init
       create  bootstrap.json
       create  motherbrain.rb
 
@@ -71,13 +72,13 @@ motherbrain plugin created.
 Take a look at motherbrain.rb and bootstrap.json,
 and then bootstrap with:
 
-  mb ohai bootstrap bootstrap.json
+  mb myface bootstrap bootstrap.json
 
 To see all available commands, run:
 
-  mb ohai help
+  mb myface help
 
-ohai$
+myface$
 ```
 
 That command created a plugin for us, as well as told us about some commands we
@@ -88,16 +89,16 @@ run plugins from any cookbook on our Chef server.
 Lets take a look at all of the commands we can run on a plugin:
 
 ```
-ohai$ mb ohai
-using ohai (1.1.8)
+myface$ mb myface
+using myface (1.1.8)
 
 Tasks:
-  mb ohai app [COMMAND]       # Ohai application
-  mb ohai bootstrap MANIFEST  # Bootstrap a manifest of node groups
-  mb ohai help [COMMAND]      # Describe subcommands or one specific subcommand
-  mb ohai nodes               # List all nodes grouped by Component and Group
-  mb ohai provision MANIFEST  # Create a cluster of nodes and add them to a Chef environment
-  mb ohai upgrade             # Upgrade an environment to the specified versions
+  mb myface app [COMMAND]       # Myface application
+  mb myface bootstrap MANIFEST  # Bootstrap a manifest of node groups
+  mb myface help [COMMAND]      # Describe subcommands or one specific subcommand
+  mb myface nodes               # List all nodes grouped by Component and Group
+  mb myface provision MANIFEST  # Create a cluster of nodes and add them to a Chef environment
+  mb myface upgrade             # Upgrade an environment to the specified versions
 ```
 
 There are a few things plugins can do:
@@ -121,11 +122,11 @@ cluster_bootstrap do
 end
 
 component 'app' do
-  description "Ohai application"
+  description "Myface application"
   versioned
 
   group 'default' do
-    recipe 'ohai::default'
+    recipe 'myface::default'
   end
 end
 ```
@@ -138,7 +139,30 @@ A plugin consists of a few things:
   * `versioned` denotes that this component is versioned with an environment
     attribute
   * `group` declares a group of nodes
-    * `recipe` declares 
+    * `recipe` defines how we identify nodes in this group
+
+This plugin is enough to get our app running on a single node. Let's try it out.
+Edit `bootstrap.json` and fill in a hostname to bootstrap:
+
+```json
+{
+  "nodes": [
+    {
+      "groups": ["app::default"],
+        "hosts": ["box1"]
+    }
+  ]
+}
+```
+
+And then we'll bootstrap our plugin to the node:
+
+```
+knife environment create motherbrain_tutorial
+myface-cookbook$ mb myface bootstrap bootstrap.json -e motherbrain_tutorial
+
+```
+
 
 # Authors
 
