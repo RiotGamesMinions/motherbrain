@@ -9,7 +9,6 @@ require 'motherbrain'
 def setup_env
   require 'rspec'
   require 'aruba/cucumber'
-  require 'cucumber/rspec/doubles'
 
   Dir[File.join(File.expand_path("../../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
 
