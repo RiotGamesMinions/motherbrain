@@ -207,7 +207,7 @@ module MotherBrain
     def load_local(path, options = {})
       load_file(path, options)
     rescue PluginSyntaxError, PluginLoadError => ex
-      log.warn { "could not load local plugin at '#{path}': #{ex}" }
+      log.debug { "could not load local plugin at '#{path}': #{ex}" }
       nil
     end
 
@@ -246,7 +246,7 @@ module MotherBrain
 
         load_file(scratch_dir, options)
       rescue PluginSyntaxError, PluginLoadError => ex
-        log.warn { "could not load remote plugin #{name} (#{version}): #{ex}" }
+        log.debug { "could not load remote plugin #{name} (#{version}): #{ex}" }
         nil
       ensure
         FileUtils.rm_rf(scratch_dir)
