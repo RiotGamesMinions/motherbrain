@@ -84,7 +84,8 @@ module MotherBrain
     #
     # @raise [RemoteFileCopyError]
     def copy_file(local_file, remote_file, host, options = {})
-      options = options.reverse_merge(Application.config[:ssh].to_hash)
+      options            = options.reverse_merge(Application.config[:ssh].to_hash)
+      options[:paranoid] = false
 
       log.info { "Copying file '#{local_file}' to '#{host}:#{remote_file}'" }
 
