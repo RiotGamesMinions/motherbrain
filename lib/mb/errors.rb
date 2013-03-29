@@ -11,8 +11,8 @@ module MotherBrain
       # @raise [RuntimeError]
       def register(klass)
         if error_codes.has_key?(klass.error_code)
-          msg = "Unable to register exception #{klass}. An exception with the error_code "
-          msg << "#{klass.error_code} is already in use."
+          msg = "Unable to register exception #{klass}. The error_code #{klass.error_code} is already"
+          msg << " in use by #{error_codes[klass.error_code]}."
           raise RuntimeError, msg
         end
 

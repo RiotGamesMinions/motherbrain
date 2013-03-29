@@ -13,17 +13,15 @@ describe MB::Errors do
 
   describe "::register" do
     let(:err_class) do
-      Class.new(MB::MBError) do
-        error_code(-999)
-      end
+      double('error', error_code: -999)
     end
 
-    around { subject.unregister(err_class) }
+    before(:each) { subject.unregister(err_class) }
 
     it "adds the error to the errors hash identified by the error_code" do
       subject.register(err_class)
 
-      subject.errors[-999].should eql(err_class)
+      subject.error_codes[-999].should eql(err_class)
     end
 
     it "raises a RuntimeError if an exception attempts to register with an in-use error code" do
