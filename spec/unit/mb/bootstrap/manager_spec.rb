@@ -92,6 +92,7 @@ describe MB::Bootstrap::Manager do
 
   describe "#bootstrap" do
     before(:each) do
+      job_stub.stub(alive?: true)
       job_stub.stub(:set_status)
       job_stub.should_receive(:report_running)
     end
@@ -103,9 +104,18 @@ describe MB::Bootstrap::Manager do
 
       it "sets the job to failed and terminates it" do
         job_stub.should_receive(:report_failure)
-        job_stub.should_receive(:alive?) { true }
         job_stub.should_receive(:terminate)
         
+        manager.bootstrap(job_stub, environment, manifest, plugin)
+      end
+    end
+
+    context "when the given bootstrap manifest is invalid" do
+      it "sets the job to failed and terminates it" do
+        job_stub.should_receive(:report_failure)
+        job_stub.should_receive(:terminate)
+        manifest.should_receive(:validate!).with(plugin).and_raise(MB::InvalidBootstrapManifest)
+
         manager.bootstrap(job_stub, environment, manifest, plugin)
       end
     end
