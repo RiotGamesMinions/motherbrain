@@ -143,7 +143,7 @@ module MotherBrain
         end
 
         job.report_success
-      rescue ResourceLocked, BootstrapError, InvalidAttributesFile => ex
+      rescue ResourceLocked, BootstrapError, InvalidAttributesFile, InvalidBootstrapManifest => ex
         job.report_failure(ex)
       ensure
         job.terminate if job && job.alive?
