@@ -20,10 +20,6 @@ module MotherBrain
       app_root_path.join('spec/fixtures')
     end
 
-    def mocks_path
-      app_root_path.join('spec/mocks')
-    end
-
     def clean_tmp_path
       FileUtils.rm_rf(tmp_path)
       FileUtils.mkdir_p(tmp_path)
