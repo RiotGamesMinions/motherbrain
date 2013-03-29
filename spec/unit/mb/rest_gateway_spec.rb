@@ -130,13 +130,10 @@ describe MB::RestGateway do
         end
 
         before(:each) do
+          MB::PluginManager.instance.clear_plugins
           MB::PluginManager.instance.add(one)
           MB::PluginManager.instance.add(two)
           get '/plugins/apple'
-        end
-
-        after(:each) do
-          MB::PluginManager.instance.clear_plugins
         end
 
         it "returns 200" do

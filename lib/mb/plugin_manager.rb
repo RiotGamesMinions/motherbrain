@@ -60,7 +60,7 @@ module MotherBrain
         return reload(plugin)
       end
 
-      unless find(plugin.name, plugin.version).nil?
+      unless find(plugin.name, plugin.version, remote: false).nil?
         return nil
       end
 
@@ -274,6 +274,8 @@ module MotherBrain
 
     # A set of all the registered plugins
     #
+    # @option options [String] :name
+    #   filter the results to include only plugins of the given name
     # @option options [Boolean] :remote (false)
     #   eargly search for plugins on the remote Chef server and include them in the returned list
     #
@@ -285,7 +287,7 @@ module MotherBrain
         load_all_remote
       end
 
-      @plugins
+      options[:name].nil? ? @plugins : @plugins.select { |plugin| plugin.name == options[:name] }
     end
 
     # Remove and Add the given plugin from the set of plugins
