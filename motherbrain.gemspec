@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'reel', '>= 0.3.0'
   s.add_runtime_dependency 'grape', '>= 0.3.2'
   s.add_runtime_dependency 'net-ssh'
-  s.add_runtime_dependency 'net-scp'
+  s.add_runtime_dependency 'net-sftp'
   s.add_runtime_dependency 'solve', '>= 0.4.1'
   s.add_runtime_dependency 'ridley', '>= 0.8.1'
   s.add_runtime_dependency 'chozo', '~> 0.6.0'

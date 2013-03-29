@@ -117,7 +117,7 @@ module MotherBrain
 
           unless options[:environment_attributes_file].nil?
             job.set_status("Setting environment attributes from file")
-            set_environment_attributes_from_file(environment_name, options[:environment_attributes_file])
+            set_environment_attributes_from_file(environment, options[:environment_attributes_file])
           end
 
           while tasks = task_queue.shift
@@ -143,7 +143,7 @@ module MotherBrain
         end
 
         job.report_success
-      rescue ResourceLocked, BootstrapError, InvalidAttributesFile => ex
+      rescue ResourceLocked, BootstrapError, InvalidAttributesFile, InvalidBootstrapManifest => ex
         job.report_failure(ex)
       ensure
         job.terminate if job && job.alive?

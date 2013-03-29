@@ -18,7 +18,7 @@ group :development do
   gem 'aruba'
   gem 'coolline'
   gem 'cucumber'
-  gem 'debugger'
+  gem 'debugger', '>= 1.3.2'
   gem 'fuubar'
   gem 'json_spec'
   gem 'redcarpet', platforms: :ruby
