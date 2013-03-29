@@ -35,8 +35,7 @@ module MotherBrain
       #
       # @return [Integer]
       def exit_code(code = DEFAULT_EXIT_CODE)
-        return @exit_code if @exit_code
-        @exit_code = code
+        @exit_code ||= code
       end
 
       # @param [Integer] code
