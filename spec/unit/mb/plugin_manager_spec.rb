@@ -140,13 +140,11 @@ describe MotherBrain::PluginManager do
         end
       end
 
-      context "and one or more of the files is not transferred successfully" do
+      context "when the plugin is not downloaded successfully" do
         before(:each) { resource.stub(:download_file).and_return(nil) }
 
-        it "raises a PluginDownloadError" do
-          expect {
-            subject.load_remote(name, version)
-          }.to raise_error(MB::PluginDownloadError)
+        it "returns nil" do
+          subject.load_remote(name, version).should be_nil
         end
       end
     end
@@ -390,24 +388,69 @@ describe MotherBrain::PluginManager do
     end
   end
 
-  describe "#versions" do
-    let(:name) { "nginx" }
+  describe "#local_versions" do
+    before { MB::Berkshelf.stub(cookbooks_path: fixtures_path) }
 
-    before(:each) do
-      subject.stub(:list) do
-        [
-          double('pone', name: 'nginx'),
-          double('ptwo', name: 'other')
-        ]
+    context "when the local cache has at least one cookbook containing a plugin of the given name" do
+      it "returns an array containing a string for each" do
+        versions = subject.local_versions("myface")
+
+        versions.should have(1).item
+        versions.should each be_a(String)
       end
     end
 
-    it "returns an Array" do
-      subject.versions(name).should be_a(Array)
+    context "when the local cache does not have a cookbook containing a plugin of the given name" do
+      it "returns an empty array" do
+        subject.local_versions("nginx").should be_empty
+      end
+    end
+  end
+
+  describe "#remote_versions" do
+    pending
+  end
+
+  describe "#versions" do
+    let(:name) { "nginx" }
+    let(:local_versions) { [ "1.2.3", "2.0.0" ] }
+    let(:remote_versions) { [ "3.0.0" ] }
+
+    before do
+      subject.should_not_receive(:remote_versions)
     end
 
-    it "contains only plugins of the given name" do
-      subject.versions(name).should have(1).item
+    it "returns only the local plugins" do
+      subject.should_receive(:local_versions).with(name).and_return(local_versions)
+      subject.versions(name).should eql(local_versions)
+    end
+
+    context "when given 'true' for the remote argument" do
+      before do
+        subject.should_receive(:remote_versions).with(name).and_return(remote_versions)
+        subject.should_receive(:local_versions).with(name).and_return(local_versions)
+      end
+
+      it "includes the remote versions" do
+        subject.versions(name, true).should include(*remote_versions)
+      end
+
+      it "includes the local versions" do
+        subject.versions(name, true).should include(*local_versions)
+      end
+    end
+
+    context "when no plugins are found" do
+      before do
+        subject.stub(:local_versions).with(name) { Array.new }
+        subject.stub(:remote_versions).with(name) { Array.new }
+      end
+
+      it "raises a PluginNotFound error" do
+        expect {
+          subject.versions(name, true)
+        }.to raise_error(MB::PluginNotFound)
+      end
     end
   end
 end
