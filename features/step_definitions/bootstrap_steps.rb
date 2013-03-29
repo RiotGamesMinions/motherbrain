@@ -28,7 +28,6 @@ Given /^an extra bootstrap template$/ do
   File.open(@template, 'w+') {|f| f.write "echo 'HELLO'" }
 end
 
-
 When /^I bootstrap "(.*?)" with the extra bootstrap template$/ do |name|
   set_env "MB_TEST_INIT_ENV", "#{name}prod"
   set_env "MB_TEST_INIT_COOKBOOK", name
