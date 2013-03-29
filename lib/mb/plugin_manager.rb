@@ -399,7 +399,7 @@ module MotherBrain
     # @return [Array<String>]
     def remote_versions(name)
       chef_connection.cookbook.versions(name).collect do |version|
-        load_remote(name, version)
+        (plugin = load_remote(name, version)).nil? ? nil : plugin.version.to_s
       end.compact
     rescue Ridley::Errors::HTTPNotFound
       []

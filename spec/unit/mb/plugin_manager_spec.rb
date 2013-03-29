@@ -433,7 +433,64 @@ describe MotherBrain::PluginManager do
   end
 
   describe "#remote_versions" do
-    pending
+    let(:name) { "nginx" }
+    let(:chef_connection) { double('chef-connection') }
+
+    let(:versions) do
+      [
+        "1.0.0",
+        "2.0.0"
+      ]
+    end
+
+    before do
+      subject.stub(chef_connection: chef_connection)
+      chef_connection.stub_chain(:cookbook, :versions).with(name).and_return(versions)
+    end
+
+    it "attempts to load a plugin for every version of the cookbook present on the chef server" do
+      versions.each do |version|
+        subject.should_receive(:load_remote).with(name, version).and_return(nil)
+      end
+
+      subject.remote_versions(name)
+    end
+
+    context "when the cookbook versions on the remote contain a plugin" do
+      before do
+        versions.each do |version|
+          subject.should_receive(:load_remote).with(name, version).and_return(double(version: version))
+        end
+      end
+
+      it "returns an array of strings including the versions" do
+        subject.remote_versions(name).should include(*versions)
+      end
+    end
+
+    context "when the cookbook versions on the remote do not contain a plugin" do
+      before do
+        versions.each do |version|
+          subject.should_receive(:load_remote).with(name, version).and_return(nil)
+        end
+      end
+
+      it "returns an empty array of strings" do
+        subject.remote_versions(name).should be_empty
+      end
+    end
+
+    context "when the remote chef server does not contain any cookbooks of the given name" do
+      let(:versions) { Array.new }
+
+      before do
+        chef_connection.stub_chain(:cookbook, :versions).with(name).and_return(versions)
+      end
+
+      it "returns an empty array" do
+        subject.remote_versions(name).should be_empty
+      end
+    end
   end
 
   describe "#versions" do
