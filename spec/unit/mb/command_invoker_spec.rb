@@ -22,7 +22,7 @@ describe MB::CommandInvoker do
       it "completes the job as a failure" do
         job = subject.invoke_plugin(plugin_id, command_id, environment, options)
 
-        job.should complete_as(:failure, "No plugin named 'rspec-test' found")
+        job.should complete_as(:failure, "[err_code]: 3003 [message]: No plugin named 'rspec-test' found")
       end
     end
 

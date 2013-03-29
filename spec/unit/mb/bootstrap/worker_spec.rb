@@ -249,8 +249,8 @@ describe MB::Bootstrap::Worker do
           response[:status] == :error
         end
 
-        it "has the message from the raised exception for :message" do
-          response[:message].should eql(exception.message)
+        it "has the string representation of the raised exception for :message" do
+          response[:message].should eql(exception.to_s)
         end
       end
 
@@ -266,8 +266,8 @@ describe MB::Bootstrap::Worker do
           response[:status] == :error
         end
 
-        it "has the message from the raised exception for :message" do
-          response[:message].should eql(exception.message)
+        it "has the string representation of the raised exception for :message" do
+          response[:message].should eql(exception.to_s)
         end
       end
     end
