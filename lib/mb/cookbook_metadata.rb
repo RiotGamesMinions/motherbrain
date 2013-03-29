@@ -21,6 +21,7 @@ module MotherBrain
       end
 
       private
+
         def from_ruby_file(filepath)
           load { eval(File.read(filepath), binding, filepath, 1) }
         end

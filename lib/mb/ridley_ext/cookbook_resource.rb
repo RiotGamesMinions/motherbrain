@@ -5,9 +5,12 @@ module Ridley
     #
     # @return [Boolean]
     def has_motherbrain_plugin?
-      root_files.select do |file|
-        file[:name] == MB::Plugin::PLUGIN_FILENAME || file[:name] == MB::Plugin::RUBY_METADATA_FILENAME || file[:name] == MB::Plugin::JSON_METADATA_FILENAME
-      end.length == 2
+      plugin_file   = root_files.find { |file| file[:name] == MB::Plugin::PLUGIN_FILENAME }
+      metadata_file = root_files.find do |file|
+        file[:name] == MB::Plugin::RUBY_METADATA_FILENAME || file[:name] == MB::Plugin::JSON_METADATA_FILENAME
+      end
+
+      plugin_file && metadata_file
     end
   end
 end

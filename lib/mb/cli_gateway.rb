@@ -336,7 +336,7 @@ module MotherBrain
         MB.ui.say "\n"
       end
 
-      plugins = Application.plugin_manager.list(options[:remote])
+      plugins = plugin_manager.list(remote: options[:remote])
 
       if plugins.empty?
         errmsg = "No plugins found in your Berkshelf: '#{Application.plugin_manager.berkshelf_path}'"
