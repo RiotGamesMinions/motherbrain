@@ -5,7 +5,7 @@ describe MB::Plugin do
     MB::CookbookMetadata.new do
       name             "motherbrain"
       maintainer       "Jamie Winsor"
-      maintainer_email "jamie@vialstudios.com"
+      maintainer_email "reset@riotgames.com"
       license          "Apache 2.0"
       description      "Installs/Configures motherbrain"
       long_description "Installs/Configures motherbrain"
@@ -25,7 +25,7 @@ describe MB::Plugin do
 
       its(:name) { should eql('motherbrain') }
       its(:maintainer) { should eql('Jamie Winsor') }
-      its(:maintainer_email) { should eql('jamie@vialstudios.com') }
+      its(:maintainer_email) { should eql('reset@riotgames.com') }
       its(:license) { should eql('Apache 2.0') }
       its(:description) { should eql('Installs/Configures motherbrain') }
       its(:long_description) { should eql('Installs/Configures motherbrain') }

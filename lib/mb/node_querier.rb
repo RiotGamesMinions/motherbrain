@@ -1,7 +1,7 @@
-require 'net/scp'
+require 'net/sftp'
 
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class NodeQuerier
     class << self
       # @raise [Celluloid::DeadActorError] if Node Querier has not been started
@@ -15,6 +15,7 @@ module MotherBrain
     extend Forwardable
     include Celluloid
     include MB::Logging
+    include MB::Mixin::Services
 
     EMBEDDED_RUBY_PATH = "/opt/chef/embedded/bin/ruby".freeze
 
@@ -26,11 +27,19 @@ module MotherBrain
       log.info { "Node Querier starting..." }
     end
 
+    # List all of the nodes on the target Chef Server
+    #
+    # @return [Array<Hash>]
+    def list
+      chef_connection.node.all
+    end
+
     # Run an arbitrary SSH command on the target host
     #
     # @param [String] host
     #   hostname of the target node
     # @param [String] command
+    #
     # @option options [String] :user
     #   a shell user that will login to each node and perform the bootstrap command on (required)
     # @option options [String] :password
@@ -63,28 +72,28 @@ module MotherBrain
     # @param [String] local_file
     # @param [String] remote_file
     # @param [String] host
-    # @option options [Hash] :ssh
-    #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
-    #   * :password (String) the password for the shell user that will perform the bootstrap
-    #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
-    #   * :sudo (Boolean) [True] bootstrap with sudo
+    #
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (10.0)
+    #   timeout value for SSH bootstrap
+    #
+    # @raise [RemoteFileCopyError]
     def copy_file(local_file, remote_file, host, options = {})
-      options                  = options.reverse_merge(Application.config.slice(:ssh))
-      options[:ssh][:paranoid] = false
+      options            = options.reverse_merge(Application.config[:ssh].to_hash)
+      options[:paranoid] = false
 
-      scp_options = options.dup
-      scp_options[:ssh] = scp_options[:ssh].slice(*Net::SSH::VALID_OPTIONS)
+      log.info { "Copying file '#{local_file}' to '#{host}:#{remote_file}'" }
 
-      MB.log.debug "Copying file '#{local_file}' to '#{host}:#{remote_file}'"
-
-      if options[:ssh][:sudo]
-        tmp_location = "/home/#{options[:ssh][:user]}/#{File.basename(remote_file)}"
-        Net::SCP.upload!(host, nil, local_file, tmp_location, scp_options)
-        ssh_command(host, "mv #{tmp_location} #{remote_file}", options)
-      else
-        Net::SCP.upload!(host, nil, local_file, remote_file, scp_options)
+      Net::SFTP.start(host, options[:user], options.slice(*Net::SSH::VALID_OPTIONS)) do |sftp|
+        sftp.upload!(local_file, remote_file)
       end
+    rescue Net::SFTP::Exception, Net::SSH::AuthenticationFailed => ex
+      abort RemoteFileCopyError.new(ex.to_s)
     end
 
     # Write the given data to the filepath on the target host
@@ -92,12 +101,17 @@ module MotherBrain
     # @param [#to_s] data
     # @param [String] remote_file
     # @param [String] host
-    # @option options [Hash] :ssh
-    #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
-    #   * :password (String) the password for the shell user that will perform the bootstrap
-    #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    #   * :timeout (Float) [10.0] timeout value for SSH bootstrap
-    #   * :sudo (Boolean) [True] bootstrap with sudo
+    #
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (10.0)
+    #   timeout value for SSH bootstrap
+    #
+    # @raise [RemoteFileCopyError]
     def write_file(data, remote_file, host, options = {})
       file = FileSystem::Tempfile.new
       file.write(data.to_s)
@@ -171,6 +185,7 @@ module MotherBrain
     # Run Chef-Client on the target host
     #
     # @param [String] host
+    #
     # @option options [String] :user
     #   a shell user that will login to each node and perform the bootstrap command on (required)
     # @option options [String] :password
@@ -209,15 +224,22 @@ module MotherBrain
     # Place an encrypted data bag secret on the target host
     #
     # @param [String] host
+    #
     # @option options [String] :secret
     #   the encrypted data bag secret of the node querier's chef conn will be used
     #   as the default key
-    # @option options [Hash] :ssh
-    #   * :user (String) a shell user that will login to each node and perform the bootstrap command on (required)
-    #   * :password (String) the password for the shell user that will perform the bootstrap
-    #   * :keys (Array, String) an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    #   * :timeout (Float) [5.0] timeout value for SSH bootstrap
-    #   * :sudo (Boolean) [True] bootstrap with sudo
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (10.0)
+    #   timeout value for SSH bootstrap
+    # @option options [Boolean] :sudo
+    #   bootstrap with sudo
+    #
+    # @raise [RemoteFileCopyError]
     #
     # @return [Ridley::SSH::Response]
     def put_secret(host, options = {})
@@ -232,14 +254,55 @@ module MotherBrain
       copy_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options)
     end
 
+    # Check if the target host is registered with the Chef server. If the node does not have Chef and
+    # ruby installed by omnibus it will be considered unregistered.
+    #
+    # @example showing a node who is registered to Chef
+    #   node_querier.registered?("192.168.1.101") #=> true
+    # @example showing a node who does not have ruby or is not registered to Chef
+    #   node_querier.registered?("192.168.1.102") #=> false
+    #
+    # @param [String] host
+    #   public hostname of the target node
+    #
+    # @return [Boolean]
+    def registered?(host)
+      !registered_as(host).nil?
+    end
+
+    # Returns the client name the target node is registered to Chef with.
+    # 
+    # If the node does not have a client registered with the Chef server or if Chef and ruby were not installed
+    # by omnibus this function will return nil.
+    #
+    # @example showing a node who is registered to Chef
+    #   node_querier.registered_as("192.168.1.101") #=> "reset.riotgames.com"
+    # @example showing a node who does not have ruby or is not registered to Chef
+    #   node_querier.registered_as("192.168.1.102") #=> nil
+    #
+    # @param [String] host
+    #   public hostname of the target node
+    #
+    # @return [String, nil]
+    def registered_as(host)
+      if (client_id = node_name(host)).nil?
+        return nil
+      end
+
+      chef_connection.client.find(client_id).try(:name)
+    end
+
     private
 
       # An internal lifting function for {#ruby_script}. Any instance functions delegating to {#ruby_script}
       # should instead delegate to this internal function.
       def _ruby_script_(name, host, options = {})
         name    = name.split('.rb')[0]
-        script  = File.read(MB.scripts.join("#{name}.rb"))
-        command = "#{EMBEDDED_RUBY_PATH} -e '#{script}'"
+        lines   = File.readlines(MB.scripts.join("#{name}.rb"))
+
+        oneliner = lines.collect { |line| line.gsub('"', "'").strip.chomp }
+        command = "#{EMBEDDED_RUBY_PATH} -e \"#{oneliner.join(';')}\""
+
         status, response = ssh_command(host, command, options)
 
         case status

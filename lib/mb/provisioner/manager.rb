@@ -1,6 +1,6 @@
 module MotherBrain
   module Provisioner
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     #
     # Handles provisioning of nodes and joining them to a Chef Server. Requests are
     # delegated to a provisioner of the desired type or 'Environment Factory' by
@@ -131,6 +131,8 @@ module MotherBrain
       # @param [MB::Plugin] plugin
       #   the plugin we are creating these nodes for
       #
+      # @option options [String] :chef_version
+      #   version of Chef to install on the node
       # @option options [Hash] :component_versions (Hash.new)
       #   Hash of components and the versions to set them to
       # @option options [Hash] :cookbook_versions (Hash.new)

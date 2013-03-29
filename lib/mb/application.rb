@@ -72,6 +72,8 @@ module MotherBrain
 
           sleep 0.1 while supervisor.alive?
 
+          break if supervisor.interrupted
+
           log.fatal { "!!! #{self} crashed. Restarting..." }
         end
       end
@@ -86,6 +88,8 @@ module MotherBrain
     class SupervisionGroup < ::Celluloid::SupervisionGroup
       include Celluloid::Notifications
       include MB::Logging
+
+      attr_reader :interrupted
 
       def initialize(config)
         super(MB::Application.registry) do |s|
@@ -122,24 +126,14 @@ module MotherBrain
           unless interrupted
             @interrupted = true
 
-            reverse_terminate
+            terminate
           end
         end
-      end
-
-      # Terminate our child processes in reverse order
-      #
-      # @see https://github.com/celluloid/celluloid/pull/152
-      def reverse_terminate
-        @members.reverse_each(&:terminate)
-
-        terminate
       end
 
       private
 
         attr_reader :interrupt_mutex
-        attr_reader :interrupted
     end
   end
 end

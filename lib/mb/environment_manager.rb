@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class EnvironmentManager
     class << self
       # @raise [Celluloid::DeadActorError] if the environment manager has not been started

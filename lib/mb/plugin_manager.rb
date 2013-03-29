@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class PluginManager
     class << self
       # @raise [Celluloid::DeadActorError] if Node Querier has not been started

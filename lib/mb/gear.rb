@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   #
   # The base module for defining new Gears for a plugin. Any class including this module
   # and registered with {MotherBrain} as a {Gear} will be available for use in the plugin DSL.

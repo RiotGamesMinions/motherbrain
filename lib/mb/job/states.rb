@@ -1,6 +1,6 @@
 module MotherBrain
   class Job
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     #
     # A mixin to provide helper functions around the state of a Job, JobRecord, or
     # JobTicket. The helper functions are based on states set by {Job::StateMachine}

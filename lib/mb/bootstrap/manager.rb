@@ -1,6 +1,6 @@
 module MotherBrain
   module Bootstrap
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     class Manager
       class << self
         # @raise [Celluloid::DeadActorError] if Bootstrap Manager has not been started
@@ -46,7 +46,7 @@ module MotherBrain
       #   a hash of node level attributes to set on the bootstrapped nodes
       # @option options [Array] :run_list (Array.new)
       #   an initial run list to bootstrap with
-      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      # @option options [String] :chef_version
       #   version of Chef to install on the node
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node
@@ -117,12 +117,7 @@ module MotherBrain
 
           unless options[:environment_attributes_file].nil?
             job.set_status("Setting environment attributes from file")
-            begin
-              attribute_hash = MultiJson.decode(File.open(options[:environment_attributes_file]).read)
-              set_environment_attributes_from_hash(environment, attribute_hash)
-            rescue MultiJson::DecodeError => ex
-              abort InvalidAttributesFile.new(ex.to_s)
-            end
+            set_environment_attributes_from_file(environment, options[:environment_attributes_file])
           end
 
           while tasks = task_queue.shift
@@ -148,7 +143,7 @@ module MotherBrain
         end
 
         job.report_success
-      rescue ResourceLocked, BootstrapError => ex
+      rescue ResourceLocked, BootstrapError, InvalidAttributesFile, InvalidBootstrapManifest => ex
         job.report_failure(ex)
       ensure
         job.terminate if job && job.alive?
@@ -169,7 +164,7 @@ module MotherBrain
       #   a hash of attributes to use in the first Chef run
       # @option options [Array] :run_list (Array.new)
       #   an initial run list to bootstrap with
-      # @option options [String] :chef_version ({MB::CHEF_VERSION})
+      # @option options [String] :chef_version
       #   version of Chef to install on the node
       # @option options [Hash] :hints (Hash.new)
       #   a hash of Ohai hints to place on the bootstrapped node

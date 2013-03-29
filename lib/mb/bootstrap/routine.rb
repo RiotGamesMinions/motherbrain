@@ -1,6 +1,6 @@
 module MotherBrain
   module Bootstrap
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     class Routine
       # @return [MB::Plugin]
       attr_reader :plugin
@@ -52,7 +52,7 @@ module MotherBrain
           @task_procs = room.send(:task_procs)
         end
 
-      # @author Jamie Winsor <jamie@vialstudios.com>
+      # @author Jamie Winsor <reset@riotgames.com>
       # @api private
       class CleanRoom < CleanRoomBase
         def initialize(*args)

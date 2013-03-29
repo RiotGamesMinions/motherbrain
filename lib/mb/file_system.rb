@@ -1,7 +1,7 @@
 require 'tmpdir'
 
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   module FileSystem
     autoload :Tempfile, 'mb/file_system/tempfile'
 

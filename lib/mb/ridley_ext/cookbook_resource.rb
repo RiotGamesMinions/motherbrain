@@ -1,5 +1,5 @@
 module Ridley
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class CookbookResource < Ridley::Resource
     # Check if the cookbook has the required files to be a motherbrain plugin
     #

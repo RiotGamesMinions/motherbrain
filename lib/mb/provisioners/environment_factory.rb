@@ -3,7 +3,7 @@ EF::REST.set_logger(MB.logger)
 
 module MotherBrain
   module Provisioners
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     #
     # Provisioner adapter for Environment Factory. Node/Environment creation will be
     # delegated to an Environment Factory server.

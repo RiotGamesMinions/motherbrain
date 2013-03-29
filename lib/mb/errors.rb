@@ -1,20 +1,83 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  module Errors
+    class << self
+      # @return [Hash]
+      def error_codes
+        @error_codes ||= Hash.new
+      end
+
+      # @param [MBError] klass
+      #
+      # @raise [RuntimeError]
+      def register(klass)
+        if error_codes.has_key?(klass.error_code)
+          msg = "Unable to register exception #{klass}. The error_code #{klass.error_code} is already"
+          msg << " in use by #{error_codes[klass.error_code]}."
+          raise RuntimeError, msg
+        end
+
+        error_codes[klass.error_code] = klass
+      end
+
+      # @param [MBError] klass
+      def unregister(klass)
+        error_codes.delete(klass.error_code)
+      end
+    end
+  end
+
+  # @author Jamie Winsor <reset@riotgames.com>
   class MBError < StandardError
+    DEFAULT_EXIT_CODE = 1
+
     class << self
       # @param [Integer] code
-      def status_code(code)
-        define_method(:status_code) { code }
-        define_singleton_method(:status_code) { code }
+      #
+      # @return [Integer]
+      def exit_code(code = DEFAULT_EXIT_CODE)
+        @exit_code ||= code
+      end
+
+      # @param [Integer] code
+      #
+      # @return [Integer]
+      def error_code(code = -1)
+        return @error_code if @error_code
+        @error_code = code
+        Errors.register(self)
+        @error_code
       end
     end
 
-    alias_method :mesage, :to_s
+    # @param [String] message
+    def initialize(message = nil)
+      super(message)
+      @message = message
+    end
+
+    # @return [Integer]
+    def exit_code
+      self.class.exit_code
+    end
+
+    # @return [Integer]
+    def error_code
+      self.class.error_code
+    end
+
+    # @return [String]
+    def message
+      @message || self.class.to_s
+    end
+
+    def to_s
+      "[err_code]: #{error_code} [message]: #{message}"
+    end
 
     def to_hash
       {
-        code: status_code,
-        message: to_s
+        code: error_code,
+        message: message
       }
     end
 
@@ -27,53 +90,118 @@ module MotherBrain
     end
   end
 
-  class InternalError < MBError; status_code(99); end
-  class ArgumentError < InternalError; end
-  class AbstractFunction < InternalError; end
-  class ReservedGearKeyword < InternalError; end
-  class DuplicateGearKeyword < InternalError; end
-  class InvalidProvisionerClass < InternalError; end
-  class ProvisionerRegistrationError < InternalError; end
-  class ProvisionerNotRegistered < InternalError; end
-  class RemoteScriptError < InternalError; end
-  class RemoteCommandError < InternalError; end
+  # Internal errors
+  class InternalError < MBError
+    exit_code(99)
+    error_code(1000)
+  end
 
-  class PluginSyntaxError < MBError; status_code(100); end
-  class DuplicateGroup < PluginSyntaxError; end
-  class DuplicateChefAttribute < PluginSyntaxError; end
-  class ValidationFailed < PluginSyntaxError; end
-  class DuplicateAction < PluginSyntaxError; end
-  class DuplicateGear < PluginSyntaxError; end
-  class ActionNotFound < PluginSyntaxError; end
-  class GroupNotFound < PluginSyntaxError; end
+  class ArgumentError < InternalError
+    error_code(1001)
+  end
 
-  class PluginLoadError < MBError; status_code(101); end
+  class AbstractFunction < InternalError
+    error_code(1002)
+  end
+
+  class ReservedGearKeyword < InternalError
+    error_code(1003)
+  end
+
+  class DuplicateGearKeyword < InternalError
+    error_code(1004)
+  end
+
+  class InvalidProvisionerClass < InternalError
+    error_code(1005)
+  end
+
+  class ProvisionerRegistrationError < InternalError
+    error_code(1006)
+  end
+
+  class ProvisionerNotRegistered < InternalError
+    error_code(1007)
+  end
+
+  class RemoteScriptError < InternalError
+    error_code(1008)
+  end
+
+  class RemoteCommandError < InternalError
+    error_code(1009)
+  end
+
+  class RemoteFileCopyError < InternalError
+    error_code(1010)
+  end
+
+  class ActionNotSupported < InternalError
+    exit_code(103)
+    error_code(1011)
+  end
+
+  # Plugin loading errors
+  class PluginSyntaxError < MBError
+    exit_code(100)
+    error_code(2000)
+  end
+
+  class DuplicateGroup < PluginSyntaxError
+    error_code(2001)
+  end
+
+  class DuplicateChefAttribute < PluginSyntaxError
+    error_code(2002)
+  end
+
+  class ValidationFailed < PluginSyntaxError
+    error_code(2003)
+  end
+
+  class DuplicateAction < PluginSyntaxError
+    error_code(2004)
+  end
+
+  class DuplicateGear < PluginSyntaxError
+    error_code(2005)
+  end
+
+  class ActionNotFound < PluginSyntaxError
+    error_code(2006)
+  end
+
+  class GroupNotFound < PluginSyntaxError
+    error_code(2007)
+  end
+
+  class PluginLoadError < MBError
+    exit_code(101)
+    error_code(2008)
+  end
+
   class InvalidCookbookMetadata < PluginLoadError
+    error_code(2009)
     attr_reader :errors
-    
-    def initialize(errors)
-      @errors = errors
-    end
-  end
-
-  class ChefRunnerError < MBError; status_code(102); end
-  class NoValueForAddressAttribute < ChefRunnerError; end
-
-  class ActionNotSupported < MBError; status_code(103); end
-
-  class GearError < MBError; status_code(104); end
-
-  class ChefRunFailure < MBError
-    status_code(105)
 
     def initialize(errors)
       @errors = errors
     end
   end
-  class ChefTestRunFailure < ChefRunFailure; end
+
+  # Standard errors
+  class ChefRunnerError < MBError
+    exit_code(102)
+    error_code(3000)
+  end
+
+  class NoValueForAddressAttribute < ChefRunnerError
+    error_code(3001)
+  end
 
   class JobNotFound < MBError
-    status_code(106)
+    exit_code(106)
+    error_code(3002)
 
     attr_reader :job_id
 
@@ -81,13 +209,14 @@ module MotherBrain
       @job_id = id
     end
 
-    def to_s
+    def message
       "No job with ID: '#{job_id}' found"
     end
   end
 
   class PluginNotFound < MBError
-    status_code(107)
+    exit_code(107)
+    error_code(3003)
 
     attr_reader :name
     attr_reader :version
@@ -97,18 +226,26 @@ module MotherBrain
       @version = version
     end
 
-    def to_s
+    def message
       msg = "No plugin named '#{name}'"
       msg << " of version (#{version})" unless version.nil?
       msg << " found"
     end
   end
 
-  class NoBootstrapRoutine < MBError; status_code(108); end
-  class PluginDownloadError < MBError; status_code(109); end
+  class NoBootstrapRoutine < MBError
+    exit_code(108)
+    error_code(3004)
+  end
+
+  class PluginDownloadError < MBError
+    exit_code(109)
+    error_code(3005)
+  end
 
   class CommandNotFound < MBError
-    status_code(110)
+    exit_code(110)
+    error_code(3006)
 
     attr_reader :name
     attr_reader :parent
@@ -122,13 +259,14 @@ module MotherBrain
       @parent = parent
     end
 
-    def to_s
+    def message
       "#{parent.class} '#{parent}' does not have the command: '#{name}'"
     end
   end
 
   class ComponentNotFound < MBError
-    status_code(111)
+    exit_code(111)
+    error_code(3007)
 
     attr_reader :name
     attr_reader :plugin
@@ -140,17 +278,19 @@ module MotherBrain
       @plugin = plugin
     end
 
-    def to_s
+    def message
       "Plugin #{plugin} does not have the component: '#{name}'"
     end
   end
 
-  class ClusterBusy < MBError; status_code(10); end
-  class ClusterNotFound < MBError; status_code(11); end
-  class EnvironmentNotFound < MBError; status_code(12); end
+  class EnvironmentNotFound < MBError
+    exit_code(12)
+    error_code(3008)
+  end
 
   class InvalidConfig < MBError
-    status_code(13)
+    exit_code(13)
+    error_code(3009)
 
     # @return [ActiveModel::Errors]
     attr_reader :errors
@@ -160,7 +300,7 @@ module MotherBrain
       @errors = errors
     end
 
-    def to_s
+    def message
       msg = errors.collect do |key, messages|
         "* #{key}: #{messages.join(', ')}"
       end
@@ -170,17 +310,49 @@ module MotherBrain
     end
   end
 
-  class ConfigNotFound < MBError; status_code(14); end
-  class ConfigExists < MBError; status_code(15); end
-  class ChefConnectionError < MBError; status_code(16); end
-  class InvalidBootstrapManifest < MBError; status_code(17); end
-  class ResourceLocked < MBError; status_code(18); end
-  class InvalidProvisionManifest < MBError; status_code(19); end
-  class ManifestNotFound < MBError; status_code(20); end
-  class InvalidManifest < MBError; status_code(21); end
+  class ConfigNotFound < MBError
+    exit_code(14)
+    error_code(3010)
+  end
+
+  class ConfigExists < MBError
+    exit_code(15)
+    error_code(3011)
+  end
+
+  class ChefConnectionError < MBError
+    exit_code(16)
+    error_code(3012)
+  end
+
+  class InvalidBootstrapManifest < MBError
+    exit_code(17)
+    error_code(3013)
+  end
+
+  class ResourceLocked < MBError
+    exit_code(18)
+    error_code(3014)
+  end
+
+  class InvalidProvisionManifest < MBError
+    exit_code(19)
+    error_code(3015)
+  end
+
+  class ManifestNotFound < MBError
+    exit_code(20)
+    error_code(3016)
+  end
+
+  class InvalidManifest < MBError
+    exit_code(21)
+    error_code(3017)
+  end
 
   class ComponentNotVersioned < MBError
-    status_code(22)
+    exit_code(22)
+    error_code(3018)
 
     attr_reader :component_name
 
@@ -188,7 +360,7 @@ module MotherBrain
       @component_name = component_name
     end
 
-    def to_s
+    def message
       [
         "Component '#{component_name}' is not versioned",
         "You can version components with:",
@@ -198,25 +370,66 @@ module MotherBrain
     end
   end
 
-  class InvalidLockType < MBError; status_code(23); end
-  class BootstrapError < MBError; status_code(24); end
+  class InvalidLockType < MBError
+    exit_code(23)
+    error_code(3019)
+  end
+
+  class GearError < MBError
+    exit_code(104)
+    error_code(3020)
+  end
+
+  class ChefRunFailure < MBError
+    exit_code(105)
+    error_code(3021)
+
+    def initialize(errors)
+      @errors = errors
+    end
+  end
+
+  class ChefTestRunFailure < MBError
+    error_code(3022)
+  end
+
+  # Bootstrap errors
+  class BootstrapError < MBError
+    exit_code(24)
+    error_code(4000)
+  end
+
   class GroupBootstrapError < BootstrapError
+    error_code(4001)
     attr_reader :errors
 
     def initialize(errors)
       @errors = errors
     end
 
-    def to_s
+    def message
       group_err_count = errors.collect { |group, errors| "#{group} (#{errors.length} errors)" }.join(', ')
       "there were failures while bootstrapping some groups: #{group_err_count}"
     end
   end
-  class CookbookConstraintNotSatisfied < BootstrapError; end
-  class InvalidAttributesFile < BootstrapError; end
 
-  class ProvisionError < MBError; status_code(20); end
+  class CookbookConstraintNotSatisfied < BootstrapError
+    error_code(4002)
+  end
+
+  class InvalidAttributesFile < BootstrapError
+    error_code(4003)
+  end
+
+  # Provision errors
+  class ProvisionError < MBError
+    exit_code(20)
+    error_code(5000)
+  end
+
   class UnexpectedProvisionCount < ProvisionError
+    error_code(5001)
+
     attr_reader :expected
     attr_reader :got
 
@@ -225,7 +438,7 @@ module MotherBrain
       @got      = got
     end
 
-    def to_s
+    def message
       "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
     end
   end

@@ -3,7 +3,7 @@ require 'mb/api_client/middleware'
 
 module MotherBrain
   class ApiClient
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class Connection < Faraday::Connection
       include Celluloid

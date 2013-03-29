@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   module Provisioners
     DEFAULT_PROVISIONER_ID = :environment_factory
 

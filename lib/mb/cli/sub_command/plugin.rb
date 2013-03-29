@@ -54,6 +54,9 @@ module MotherBrain
               end
 
               if plugin.bootstrap_routine.present?
+                method_option :chef_version,
+                  type: :string,
+                  desc: "The version of Chef to bootstrap the node(s) with"
                 method_option :component_versions,
                   type: :hash,
                   desc: "The component versions to set with override attributes",
@@ -93,6 +96,9 @@ module MotherBrain
                   CliClient.new(job).display
                 end
 
+                method_option :chef_version,
+                  type: :string,
+                  desc: "The version of Chef to bootstrap the node(s) with"
                 method_option :component_versions,
                   type: :hash,
                   desc: "The component versions to set with override attributes",
@@ -160,7 +166,7 @@ module MotherBrain
                 define_method(:upgrade) do
                   upgrade_options = Hash.new.merge(options).deep_symbolize_keys
 
-                  job = Application.upgrade(
+                  job = upgrade_manager.async_upgrade(
                     environment.freeze,
                     plugin.freeze,
                     upgrade_options.freeze

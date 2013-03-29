@@ -2,7 +2,7 @@ require 'grape'
 require 'mb/api_validators'
 
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class Api < Grape::API
     helpers MB::Logging
     helpers MB::ApiHelpers
@@ -89,6 +89,7 @@ module MotherBrain
             requires :name, type: String, desc: "name of the plugin to use"
             optional :version, sem_ver: true, desc: "version of the plugin to use"
           end
+          optional :chef_version, type: String, desc: "version of Chef to install on the node(s)"
           optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
           optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
           optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
@@ -115,6 +116,7 @@ module MotherBrain
             requires :name, type: String, desc: "name of the plugin to use"
             optional :version, sem_ver: true, desc: "version of the plugin to use"
           end
+          optional :chef_version, type: String, desc: "version of Chef to install on the node(s)"
           optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
           optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
           optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
@@ -130,7 +132,7 @@ module MotherBrain
             params[:environment_id].freeze,
             manifest.freeze,
             plugin.freeze,
-            params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force, :bootstrap_proxy, :hints).freeze
+            params.slice(:chef_version, :component_versions, :cookbook_versions, :environment_attributes, :force, :bootstrap_proxy, :hints).freeze
           )
         end
 
@@ -168,7 +170,7 @@ module MotherBrain
           options = params.slice(:component_versions, :cookbook_versions, :environment_attributes, :force)
           plugin  = plugin_manager.find(params[:plugin][:name], params[:plugin][:version])
 
-          upgrade_manager.upgrade(params[:environment_id], plugin, options)
+          upgrade_manager.async_upgrade(params[:environment_id], plugin, options)
         end
 
         params do

@@ -1,6 +1,6 @@
 module MotherBrain
-  # @author Justin Campbell <justin@justincampbell.me>
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Justin Campbell <justin.campbell@riotgames.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   #
   # Allows for MotherBrain clients to lock a chef resource. A mutex is created
   # with a type and name. Sending #lock to the mutex will then store a data bag

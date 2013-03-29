@@ -1,6 +1,6 @@
 module MotherBrain
   class ApiClient
-    # @author Jamie Winsor <jamie@vialstudios.com>
+    # @author Jamie Winsor <reset@riotgames.com>
     class JobResource < ApiClient::Resource
       def active
         json_get("/jobs/active.json")

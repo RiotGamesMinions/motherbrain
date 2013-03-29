@@ -3,7 +3,7 @@ require 'spec_helper'
 describe MB::Upgrade::Worker do
   subject { worker }
 
-  let(:worker) { klass.new(environment_name, plugin, job, options).wrapped_object }
+  let(:worker) { klass.new(job, environment_name, plugin, options).wrapped_object }
 
   let(:component1) { MB::Component.new component_name }
   let(:component_name) { "component1" }
@@ -30,13 +30,13 @@ describe MB::Upgrade::Worker do
     plugin.stub(:component!).with(component_name).and_return(component1)
   end
 
+  after(:each) { job.terminate }
+
   its(:environment_name) { should == environment_name }
   its(:plugin) { should == plugin }
   its(:options) { should == options }
 
   describe "#run" do
-    after(:each) { job.terminate }
-
     subject(:run) { worker.run }
 
     it "wraps the upgrade in a lock" do
@@ -50,8 +50,8 @@ describe MB::Upgrade::Worker do
     end
 
     it "marks the job as 'running' and then 'success' if successful" do
-      job.should_receive(:report_running)
-      job.should_receive(:report_success)
+      job.should_receive(:report_running).ordered
+      job.should_receive(:report_success).ordered
 
       run
     end
@@ -140,6 +140,72 @@ describe MB::Upgrade::Worker do
         worker.should_receive(:set_cookbook_versions).ordered
 
         worker.should_not_receive :run_chef
+
+        run
+      end
+    end
+
+    context "when environment_attributes_file is passed as an option" do
+      let(:filepath) { double }
+
+      before do
+        options[:environment_attributes_file] = filepath
+      end
+
+      it "sets environment attributes on the environment with the contents of the file" do
+        worker.should_receive(:set_environment_attributes_from_file).with(environment_name, filepath).ordered
+
+        run
+      end
+
+      context "when the environment attributes file is invalid" do
+        it "sets the job to failed" do
+          worker.should_receive(:set_environment_attributes_from_file).and_raise(MB::InvalidAttributesFile)
+          run
+
+          job.should be_failure
+        end
+      end
+    end
+
+    context "when environment_attributes_file is not passed as an option" do
+      before do
+        options[:environment_attributes_file] = nil
+      end
+
+      it "does not set the environment attributes on the environment" do
+        worker.should_not_receive(:set_environment_attributes_file)
+
+        run
+      end
+    end
+
+    context "when environment_attributes is passed as an option" do
+      let(:env_attributes) do
+        {
+          "foo" => "bar",
+          "baz.quux" => 42
+        }
+      end
+
+      before do
+        options[:environment_attributes] = env_attributes
+      end
+
+      it "sets environment attributes on the environment" do
+        worker.should_receive(:set_environment_attributes).with(environment_name, env_attributes).ordered
+
+        run
+      end
+    end
+
+    context "when environment_attributes is not passed as an option" do
+      before do
+        options[:environment_attributes] = nil
+      end
+
+      it "does not set the environment attributes on the environment" do
+        worker.should_not_receive(:set_environment_attributes)
 
         run
       end

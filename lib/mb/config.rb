@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   class Config < Chozo::Config::JSON
     class << self
       # The default location for MotherBrain's config file

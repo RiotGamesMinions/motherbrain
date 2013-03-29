@@ -1,5 +1,5 @@
 module MotherBrain
-  # @author Jamie Winsor <jamie@vialstudios.com>
+  # @author Jamie Winsor <reset@riotgames.com>
   module Bootstrap
     autoload :BootTask, 'mb/bootstrap/boot_task'
     autoload :Manager, 'mb/bootstrap/manager'
