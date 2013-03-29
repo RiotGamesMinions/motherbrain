@@ -236,7 +236,7 @@ module MotherBrain
       namespace ':plugin_id' do
         desc "display all the versions of the given plugin"
         get do
-          plugin_manager.versions(params[:plugin_id])
+          plugin_manager.list(name: params[:plugin_id])
         end
 
         namespace 'latest' do

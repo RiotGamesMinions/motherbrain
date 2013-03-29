@@ -51,7 +51,7 @@ module MotherBrain
       # @raise [StandardError]
       # @see #initialize
       def wrap(error, options = {})
-        error_handler = new error, options
+        error_handler = new(error, options)
 
         raise error_handler.error, error_handler.message
       end

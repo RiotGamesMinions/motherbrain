@@ -45,7 +45,7 @@ module MotherBrain
 
         load(metadata) { eval(plugin_contents, binding, plugin_filename, 1) }
       rescue PluginSyntaxError => ex
-        ErrorHandler.wrap(ex, file_path: plugin_filename)
+        raise PluginSyntaxError, ErrorHandler.new(ex, file_path: plugin_filename).message
       end
 
       def key_for(name, version)

@@ -130,13 +130,10 @@ describe MB::RestGateway do
         end
 
         before(:each) do
+          MB::PluginManager.instance.clear_plugins
           MB::PluginManager.instance.add(one)
           MB::PluginManager.instance.add(two)
           get '/plugins/apple'
-        end
-
-        after(:each) do
-          MB::PluginManager.instance.clear_plugins
         end
 
         it "returns 200" do
@@ -148,17 +145,16 @@ describe MB::RestGateway do
         end
       end
 
-      context "when plugin not found" do
+      context "when no plugin versions are found for plugin" do
         before(:each) { get '/plugins/test' }
 
-        it "returns 404" do
-          last_response.status.should == 404
+        it "returns 200" do
+          last_response.status.should == 200
         end
 
-        it "has the error code for PluginNotFound" do
+        it "returns an empty array" do
           result = JSON.parse(last_response.body)
-          result.should have_key("code")
-          result["code"].should be_error_code(MB::PluginNotFound)
+          result.should be_empty
         end
       end
     end
