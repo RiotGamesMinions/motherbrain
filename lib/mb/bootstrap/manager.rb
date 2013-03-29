@@ -117,7 +117,7 @@ module MotherBrain
 
           unless options[:environment_attributes_file].nil?
             job.set_status("Setting environment attributes from file")
-            set_environment_attributes_from_file(environment_name, options[:environment_attributes_file])
+            set_environment_attributes_from_file(environment, options[:environment_attributes_file])
           end
 
           while tasks = task_queue.shift
