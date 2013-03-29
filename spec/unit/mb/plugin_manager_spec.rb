@@ -46,7 +46,7 @@ describe MotherBrain::PluginManager do
     end
 
     it "sends a load message to self with each plugin found in the berkshelf" do
-      subject.should_receive(:load_file).with(anything, force: false).exactly(count).times
+      subject.should_receive(:load_local).with(anything, force: false).exactly(count).times
 
       subject.load_all
     end
@@ -70,7 +70,7 @@ describe MotherBrain::PluginManager do
     end
   end
 
-  describe "#load_file" do
+  describe "#load_local" do
     let(:plugin) do
       metadata = MB::CookbookMetadata.new do
         name 'apple'
@@ -86,7 +86,7 @@ describe MotherBrain::PluginManager do
     end
 
     it "adds an instantiated plugin to the hash of plugins" do
-      subject.load_file(path)
+      subject.load_local(path)
 
       subject.list.should include(plugin)
     end

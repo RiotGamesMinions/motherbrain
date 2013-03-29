@@ -119,7 +119,7 @@ module MotherBrain
     # @param [Boolean] force (false)
     def load_all_local(force = false)
       Berkshelf.cookbooks(with_plugin: true).each do |path|
-        load_file(path, force: force)
+        load_local(path, force: force)
       end
     end
 
@@ -140,7 +140,7 @@ module MotherBrain
     end
 
     def load_local_plugin
-      load_file '.'
+      load_local '.'
     end
 
     # Find and return a registered plugin of the given name and version. If no version
@@ -205,16 +205,11 @@ module MotherBrain
     # @return [MB::Plugin, nil]
     #   returns the loaded plugin or nil if the plugin was not loaded successfully
     def load_local(path, options = {})
-      options = options.reverse_merge(force: true)
-      plugin  = Plugin.from_path(path.to_s)
-
-      add(plugin, options)
-      plugin
+      load_file(path, options)
     rescue PluginSyntaxError, PluginLoadError => ex
       log.warn { "could not load local plugin at '#{path}': #{ex}" }
       nil
     end
-    alias_method :load_file, :load_local
 
     # Load a plugin of the given name and version from the remote Chef server
     #
@@ -250,6 +245,9 @@ module MotherBrain
         end
 
         load_file(scratch_dir, options)
+      rescue PluginSyntaxError, PluginLoadError => ex
+        log.warn { "could not load remote plugin #{name} (#{version}): #{ex}" }
+        nil
       ensure
         FileUtils.rm_rf(scratch_dir)
       end
@@ -417,6 +415,29 @@ module MotherBrain
           MB::Berkshelf.init
           reload_all
         end
+      end
+
+    private
+
+      # Load a plugin from a file
+      #
+      # @param [#to_s] path
+      #   path to the file to load
+      #
+      # @option options [Boolean] :force (true)
+      #   load a plugin even if a plugin of the same name and version is already loaded
+      #
+      # @raise [PluginSyntaxError] if there was a syntax error in the plugin loaded
+      # @raise [PluginLoadError]
+      #
+      # @return [MB::Plugin]
+      #   the loaded plugin
+      def load_file(path, options = {})
+        options = options.reverse_merge(force: true)
+        plugin  = Plugin.from_path(path.to_s)
+
+        add(plugin, options)
+        plugin
       end
   end
 end
