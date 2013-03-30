@@ -98,80 +98,118 @@ describe MB::CliGateway do
 
     describe "::register_plugin" do
       let(:name) { "myface" }
-      let(:options) { {plugin_version: nil, environment: "test_env"} }
+      let(:description) { "Ivey should use SublimeText 2" }
+      let(:plugin) { MB::Plugin.new(metadata) }
       let(:metadata) do
         double('metadata',
           valid?: true,
           name: name,
-          description: "Ivey should use SublimeText 2"
+          description: description
         )
       end
 
-      let(:plugin) { MB::Plugin.new(metadata) }
-      let(:plugin_sub_command) { double(name: "#{name} sub command", plugin: name, version: options[:plugin_version]) }
+      it "registers a subcommand with self" do
+        subcommand = double
+        MB::Cli::SubCommand.should_receive(:new).with(plugin).and_return(subcommand)
+        subject.should_receive(:register_subcommand).with(subcommand)
 
-      before(:each) do
-        MB.ui.stub(:say)
+        subject.register_plugin(plugin)
       end
 
-      context "with a version" do
-        before(:each) do
-          options[:plugin_version] = "1.2.3"
+      it "returns a subcommand with the plugin set as #plugin" do
+        subject.register_plugin(plugin).plugin.should eql(plugin)
+      end
+
+      it "has a name matching the plugin" do
+        subject.register_plugin(plugin).name.should eql(name)
+      end
+
+      it "has a description matching the plugin" do
+        subject.register_plugin(plugin).description.should eql(description)
+      end
+    end
+
+    describe "::find_plugin" do
+      let(:plugin_manager) { double('plugin_manager') }
+      let(:name) { "myface" }
+      let(:options) do
+        {
+          plugin_version: nil,
+          environment: nil
+        }
+      end
+      let(:plugin) { double('asdf') }
+
+      subject { described_class.find_plugin(name, options) }
+      before { described_class.stub(plugin_manager: plugin_manager) }
+
+      context "given no value for :plugin_version or :environment" do
+        before do
+          options[:plugin_version] = nil
+          options[:environment] = nil
         end
 
-        context "that doesn't exist" do
-          before(:each) do
-            MB::Application.stub_chain(:plugin_manager, :find).and_return(nil)
-            MB::Application.stub_chain(:plugin_manager, :for_environment).and_return(nil)
-          end
+        it "finds a plugin on local and remote of the given name and latest version" do
+          plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(plugin)
 
-          it "should notify the user" do
-            MB.ui.should_receive(:say).with("No cookbook with myface (version 1.2.3) plugin was found in your Berkshelf.")
-            lambda {
-              subject.register_plugin name, options
-            }.should raise_error(SystemExit)
-          end
+          subject.should eql(plugin)
         end
 
-        context "that exists" do
-          before(:each) do
-            MB::Cli::SubCommand.stub(:fabricate).and_return(plugin_sub_command)
-            MB::Application.stub_chain(:plugin_manager, :find).and_return(plugin)
-            plugin_sub_command.stub(:plugin).and_return(plugin)
-          end
+        it "prints an error to the UI and exits if no plugin is found" do
+          plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(nil)
+          MB.ui.should_receive(:error).with(anything)
 
-          it "should register the plugin" do
-            subject.should_receive(:register)
-            subject.register_plugin name, options
-          end
+          expect {
+            subject
+          }.to raise_error(SystemExit)
         end
       end
 
-      context "without a version" do
-        context "that doesn't exist" do
-          before(:each) do
-            MB::Application.stub_chain(:plugin_manager, :find).and_return(nil)
-            MB::Application.stub_chain(:plugin_manager, :for_environment).and_return(nil)
-          end
+      context "given a value for :plugin_version" do
+        let(:plugin_version) { "1.2.3" }
+        before { options[:plugin_version] = plugin_version }
 
-          it "should notify the user" do
-            MB.ui.should_receive(:say).with("No cookbook with myface plugin was found for the test_env environment.")
-            lambda {
-              subject.register_plugin name, options
-            }.should raise_error(SystemExit)
-          end
+        it "finds a plugin on local and remote of the given name and version" do
+          plugin_manager.should_receive(:find).with(name, plugin_version, remote: true).and_return(plugin)
+
+          subject.should eql(plugin)
         end
 
-        context "that exists" do
-          before(:each) do
-            MB::Cli::SubCommand.stub(:fabricate).and_return(plugin_sub_command)
-            MB::Application.stub_chain(:plugin_manager, :for_environment).and_return(plugin)
-            plugin_sub_command.stub(:plugin).and_return(plugin)
+        it "prints an error to the UI and exits if no plugin is found" do
+          plugin_manager.should_receive(:find).with(name, plugin_version, remote: true).and_return(nil)
+          MB.ui.should_receive(:error).with(anything)
+
+          expect {
+            subject
+          }.to raise_error(SystemExit)
+        end
+      end
+
+      context "given a value for :environment" do
+        let(:environment) { "rspec-test" }
+        before { options[:environment] = environment }
+
+        it "finds the best suitable plugin for the environment" do
+          plugin_manager.should_receive(:for_environment).with(name, environment, remote: true).and_return(plugin)
+
+          subject.should eql(plugin)
+        end
+
+        context "when an environment of the given name is not found" do
+          before { plugin_manager.should_receive(:for_environment).and_raise(MB::EnvironmentNotFound) }
+
+          it "finds the latest plugin on local and remote of the given name" do
+            plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(plugin)
+
+            subject.should eql(plugin)
           end
 
-          it "should register the plugin" do
-            subject.should_receive(:register)
-            subject.register_plugin name, options
+          it "prints an error to the UI and exits if no plugin is found" do
+            plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(nil)
+
+            expect {
+              subject
+            }.to raise_error(SystemExit)
           end
         end
       end
