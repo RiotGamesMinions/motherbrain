@@ -122,7 +122,8 @@ module MotherBrain
           plugin = Application.plugin_manager.find(name, options[:plugin_version])
 
           unless plugin
-            MB.ui.say "No cookbook with #{name} (version #{options[:plugin_version]}) plugin was found in your Berkshelf."
+            MB.ui.say "The cookbook #{name} (version #{options[:plugin_version]}) did not contain a moatherbrain " +
+              "plugin or it was not found in your Berkshelf."
             exit 1
           end
         elsif options[:environment]
@@ -133,14 +134,15 @@ module MotherBrain
           end
 
           unless plugin
-            MB.ui.say "No cookbook with #{name} plugin was found for the #{options[:environment]} environment."
+            MB.ui.say "No versions of the #{name} cookbook contained a motherbrain  plugin that matched the " +
+              "requirements of the #{options[:environment]} environment."
             exit 1
           end
         else
           plugin = Application.plugin_manager.find(name)
 
           unless plugin
-            MB.ui.say "No cookbook with #{name} plugin was found in your Berkshelf."
+            MB.ui.say "No versions of the #{name} cookbook in your Berkshelf contained a motherbrain plugin."
             exit 1
           end
         end
