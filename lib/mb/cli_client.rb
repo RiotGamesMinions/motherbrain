@@ -30,7 +30,7 @@ module MotherBrain
       end
 
       if jobs_failed?
-        display_log_info
+        display_log_info if log_location
         abort
       end
     end
