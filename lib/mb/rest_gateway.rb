@@ -18,13 +18,24 @@ module MotherBrain
 
     DEFAULT_OPTIONS = {
       host: '0.0.0.0',
-      port: 1984,
+      port: 26100,
       quiet: false,
       workers: 10
     }.freeze
 
-    # @return [Hash]
-    attr_reader :options
+    VALID_OPTIONS = [
+      :host,
+      :port,
+      :quiet,
+      :workers
+    ].freeze
+
+    # @return [String]
+    attr_reader :host
+    # @return [Integer]
+    attr_reader :port
+    # @return [Integer]
+    attr_reader :workers
 
     def_delegator :handler, :rack_app
 
@@ -34,18 +45,23 @@ module MotherBrain
     end
 
     # @option options [String] :host ('0.0.0.0')
-    # @option options [Integer] :port (1984)
+    # @option options [Integer] :port (26100)
     # @option options [Boolean] :quiet (false)
     # @option options [Integer] :workers (10)
     def initialize(options = {})
-      @options       = DEFAULT_OPTIONS.merge(options)
-      @options[:app] = MB::Api.new
+      log.info { "REST Gateway starting..." }
 
-      @handler = ::Rack::Handler::Reel.new(@options)
-      @pool = ::Reel::RackWorker.pool(size: @options[:workers], args: [@handler])
+      options  = DEFAULT_OPTIONS.merge(options.slice(*VALID_OPTIONS))
+      options[:app] = MB::Api.new
 
-      log.info "MotherBrain REST Gatway: Listening on #{@options[:host]}:#{@options[:port]}"
-      super(@options[:host], @options[:port], &method(:on_connect))
+      @host    = options[:host]
+      @port    = options[:port]
+      @workers = options[:workers]
+      @handler = ::Rack::Handler::Reel.new(options)
+      @pool    = ::Reel::RackWorker.pool(size: @workers, args: [ @handler ])
+
+      log.info { "REST Gateway listening on #{@host}:#{@port}" }
+      super(@host, @port, &method(:on_connect))
     end
 
     # @param [Reel::Connection] connection
@@ -57,6 +73,7 @@ module MotherBrain
 
       # @return [Reel::RackWorker]
       attr_reader :pool
+      # @return [Rack::Handler::Reel]
       attr_reader :handler
   end
 end
