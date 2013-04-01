@@ -30,7 +30,7 @@ module MotherBrain
       end
 
       if jobs_failed?
-        display_log_info
+        display_log_info if log_location
         abort
       end
     end
@@ -51,7 +51,6 @@ module MotherBrain
       end
 
       def display_log_info
-        return unless log_location
         puts "#{left_space} [motherbrain] Log written to #{log_location}"
       end
 
