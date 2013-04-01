@@ -1,5 +1,5 @@
 ENV['RUBY_ENV'] ||= 'test'
-ENV['MOTHERBRAIN_PATH'] ||= File.join(File.expand_path(File.dirname(__FILE__)), ".mb")
+ENV['MOTHERBRAIN_PATH'] ||= File.join(File.expand_path(File.dirname(__FILE__)), "tmp/.mb")
 ENV['BERKSHELF_PATH'] ||= File.join(File.expand_path(File.dirname(__FILE__)), "tmp/.berkshelf")
 
 require 'rubygems'
