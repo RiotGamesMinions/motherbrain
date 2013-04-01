@@ -30,6 +30,7 @@ module MotherBrain
 
     finalizer do
       log.info { "REST Gateway stopping..." }
+      pool.terminate if pool && pool.alive?
     end
 
     # @option options [String] :host ('0.0.0.0')
@@ -41,9 +42,9 @@ module MotherBrain
       @options[:app] = MB::Api.new
 
       @handler = ::Rack::Handler::Reel.new(@options)
-      @pool = ::Reel::RackWorker.pool_link(size: @options[:workers], args: [@handler])
+      @pool = ::Reel::RackWorker.pool(size: @options[:workers], args: [@handler])
 
-      MB.log.info "MotherBrain REST Gatway: Listening on #{@options[:host]}:#{@options[:port]}"
+      log.info "MotherBrain REST Gatway: Listening on #{@options[:host]}:#{@options[:port]}"
       super(@options[:host], @options[:port], &method(:on_connect))
     end
 

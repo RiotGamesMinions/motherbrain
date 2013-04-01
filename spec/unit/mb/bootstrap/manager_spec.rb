@@ -59,7 +59,9 @@ describe MB::Bootstrap::Manager do
 
   let(:environment) { "test" }
   let(:server_url) { MB::Application.config.chef.api_url }
-  let(:job_stub) { stub(MB::Job) }
+  let(:job_stub) do
+    stub(MB::Job, alive?: true)
+  end
 
   before do
     stub_request(:get, File.join(server_url, "nodes")).
@@ -91,22 +93,69 @@ describe MB::Bootstrap::Manager do
   end
 
   describe "#bootstrap" do
+    let(:options) { Hash.new }
+
     before(:each) do
-      job_stub.stub(:set_status)
+      job_stub.stub(set_status: nil, report_success: nil)
       job_stub.should_receive(:report_running)
+      job_stub.should_receive(:terminate).once
+      manager.stub(concurrent_bootstrap: [])
     end
+
+    let(:run) { manager.bootstrap(job_stub, environment, manifest, plugin, options) }
 
     context "when the environment cannot be found" do
       before(:each) do
         manager.stub_chain(:chef_connection, :environment, :find).with(environment).and_return(nil)
       end
 
-      it "sets the job to failed and terminates it" do
+      it "sets the job to failed" do
+        job_stub.stub(alive?: true)
         job_stub.should_receive(:report_failure)
-        job_stub.should_receive(:alive?) { true }
-        job_stub.should_receive(:terminate)
         
-        manager.bootstrap(job_stub, environment, manifest, plugin)
+        run
+      end
+    end
+
+    context "when the given bootstrap manifest is invalid" do
+      it "sets the job to failed" do
+        job_stub.should_receive(:report_failure)
+        manifest.should_receive(:validate!).with(plugin).and_raise(MB::InvalidBootstrapManifest)
+
+        run
+      end
+    end
+
+    context "when :environment_attributes_file is passed as an option" do
+      let(:filepath) { double }
+
+      before do
+        options[:environment_attributes_file] = filepath
+      end
+
+      it "sets environment attributes on the environment with the contents of the file" do
+        manager.should_receive(:set_environment_attributes_from_file).with(environment, filepath)
+        run
+      end
+
+      context "when the environment attributes file is invalid" do
+        it "sets the job to failed" do
+          manager.should_receive(:set_environment_attributes_from_file).and_raise(MB::InvalidAttributesFile)
+          job_stub.should_receive(:report_failure)
+
+          run
+        end
+      end
+    end
+
+    context "when :environment_attributes_file is not passed as an option" do
+      before do
+        options[:environment_attributes_file] = nil
+      end
+
+      it "does not set the environment attributes on the environment" do
+        manager.should_not_receive(:set_environment_attributes_file)
+        run
       end
     end
   end

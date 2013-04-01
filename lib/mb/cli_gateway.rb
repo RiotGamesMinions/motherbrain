@@ -36,6 +36,58 @@ module MotherBrain
         config
       end
 
+      # Return the best plugin version for the given options.
+      #
+      # If no options are given, the latest version of the plugin will be loaded from either your
+      # Berkshelf or the remote Chef server. If no plugin is found then the CLI will exit with an error.
+      #
+      # Specifying an environment will cause this function to check with the target environment
+      # to see what plugin version is best suited be be returned for controlling that environment.
+      #
+      # If the specified environment does not exist then the latest plugin on the Chef server will be
+      # returned. If no plugin is found then the CLI will exit with an error.
+      #
+      # Specifying a plugin_version will cause this function to return only a the plugin matching that
+      # name and version. If no plugin is found then the CLI will exit with an error.
+      #
+      # @option options [String] :environment
+      # @option options [String] :plugin_version
+      #
+      # @return [MB::Plugin]
+      def find_plugin(name, options = {})
+        if options[:environment]
+          plugin = begin
+            plugin_manager.for_environment(name, options[:environment], remote: true)
+          rescue MotherBrain::EnvironmentNotFound => ex
+            plugin_manager.find(name, nil, remote: true)
+          end
+
+          unless plugin
+            MB.ui.error "No versions of the #{name} cookbook contained a motherbrain  plugin that matched the " +
+              "requirements of the #{options[:environment]} environment."
+            exit 1
+          end
+
+          plugin
+        else
+          plugin = plugin_manager.find(name, options[:plugin_version], remote: true)
+
+          unless plugin
+            err = if options[:plugin_version]
+              "The cookbook #{name} (version #{options[:plugin_version]}) did not contain a motherbrain " +
+              "plugin or it was not found in your Berkshelf."
+            else
+              "No versions of the #{name} cookbook in your Berkshelf contained a motherbrain plugin."
+            end
+
+            MB.ui.error(err)
+            exit 1
+          end
+
+          plugin
+        end
+      end
+
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
         config[:shell] ||= Thor::Base.shell.new
@@ -58,7 +110,8 @@ module MotherBrain
           if plugin_task?(args[0])
             name = args[0]
 
-            plugin = register_plugin(name, opts)
+            plugin = find_plugin(name, opts)
+            register_plugin(plugin)
 
             MB.ui.say "using #{plugin}"
             MB.ui.say ""
@@ -68,7 +121,7 @@ module MotherBrain
         dispatch(nil, given_args.dup, nil, config)
       rescue MB::MBError, Thor::Error => ex
         ENV["THOR_DEBUG"] == "1" ? (raise ex) : config[:shell].error(ex.message)
-        exit ex.respond_to?(:status_code) ? ex.status_code : 1
+        exit ex.respond_to?(:exit_code) ? ex.exit_code : MB::MBError::DEFAULT_EXIT_CODE
       rescue Errno::EPIPE
         # This happens if a thor command is piped to something like `head`,
         # which closes the pipe when it's done reading. This will also
@@ -109,45 +162,16 @@ module MotherBrain
         !non_plugin_tasks.find { |task| task == name }.present?
       end
 
-      # Load and register a plugin
+      # Create and register a sub command for the given plugin
       #
-      # @param [String] name
+      # @param [MB::Plugin] plugin
       #
-      # @option options [#to_s] :plugin_version
-      # @option options [#to_s] :environment
-      #
-      # @return [MB::Plugin]
-      def register_plugin(name, options = {})
-        if options[:plugin_version]
-          plugin = Application.plugin_manager.find(name, options[:plugin_version])
-
-          unless plugin
-            MB.ui.say "No cookbook with #{name} (version #{options[:plugin_version]}) plugin was found in your Berkshelf."
-            exit 1
-          end
-        elsif options[:environment]
-          begin
-            plugin = Application.plugin_manager.for_environment(name, options[:environment], remote: true)
-          rescue MotherBrain::EnvironmentNotFound => e
-            plugin = Application.plugin_manager.find(name)
-          end
-
-          unless plugin
-            MB.ui.say "No cookbook with #{name} plugin was found for the #{options[:environment]} environment."
-            exit 1
-          end
-        else
-          plugin = Application.plugin_manager.find(name)
-
-          unless plugin
-            MB.ui.say "No cookbook with #{name} plugin was found in your Berkshelf."
-            exit 1
-          end
-        end
-
-        self.register_subcommand MB::Cli::SubCommand.new(plugin)
-
-        plugin
+      # @return [MB::Cli::SubCommand]
+      #   the sub command generated and registered
+      def register_plugin(plugin)
+        sub_command = MB::Cli::SubCommand.new(plugin)
+        register_subcommand(sub_command)
+        sub_command
       end
 
       # Check if we should start the motherbrain application stack based on the 
@@ -336,7 +360,7 @@ module MotherBrain
         MB.ui.say "\n"
       end
 
-      plugins = Application.plugin_manager.list(options[:remote])
+      plugins = plugin_manager.list(remote: options[:remote])
 
       if plugins.empty?
         errmsg = "No plugins found in your Berkshelf: '#{Application.plugin_manager.berkshelf_path}'"
