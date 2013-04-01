@@ -29,7 +29,10 @@ module MotherBrain
         display_jobs
       end
 
-      abort if jobs_failed?
+      if jobs_failed?
+        display_log_info if log_location
+        abort
+      end
     end
 
     private
@@ -45,6 +48,10 @@ module MotherBrain
       # @return [Boolean]
       def debugging?
         MB.log.info?
+      end
+
+      def display_log_info
+        puts "#{left_space} [motherbrain] Log written to #{log_location}"
       end
 
       def display_jobs
@@ -67,11 +74,15 @@ module MotherBrain
         jobs.any?(&:failed?)
       end
 
+      def log_location
+        MotherBrain.logger.instance_variable_get(:@logdev).filename
+      end
+
       # @param [MotherBrain::Job] job
       def print_final_status(job)
         print_last_status(job)
 
-        msg = "#{SPACE * spinner.next.length} [#{job.type}] #{job.state.to_s.capitalize}"
+        msg = "#{left_space} [#{job.type}] #{job.state.to_s.capitalize}"
         msg << ": #{job.result}" if job.result
 
         puts msg
@@ -83,6 +94,10 @@ module MotherBrain
 
       def last_statuses
         @last_statuses ||= Hash.new
+      end
+
+      def left_space
+        SPACE * spinner.next.length
       end
 
       # @return [Enumerator]
@@ -122,7 +137,7 @@ module MotherBrain
       def print_last_status(job)
         clear_line
 
-        printf "\r#{SPACE * spinner.next.length} [#{job.type}] #{last_statuses[job]}\n"
+        printf "\r#{left_space} [#{job.type}] #{last_statuses[job]}\n"
       end
 
       def wait_for_jobs
