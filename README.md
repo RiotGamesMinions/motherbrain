@@ -39,7 +39,7 @@ Config written to: '~/.mb/config.json'
 ```
 
 You can verify that motherbrain is installed correctly and pointing to a Chef
-server my running `mb plugins --remote`:
+server by running `mb plugins --remote`:
 
 ```
 $ mb plugins --remote
