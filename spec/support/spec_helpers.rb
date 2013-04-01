@@ -5,7 +5,7 @@ module MotherBrain
     end
 
     def app_tmp_path
-      app_root_path.join('spec/.mb')
+      app_root_path.join('spec/tmp/.mb')
     end
 
     def berkshelf_path
@@ -22,8 +22,9 @@ module MotherBrain
 
     def clean_tmp_path
       FileUtils.rm_rf(tmp_path)
+      FileUtils.rm_rf(app_tmp_path)
       FileUtils.mkdir_p(tmp_path)
-      FileUtils.rm_rf("#{app_tmp_path}/*")
+      MB::FileSystem.init
     end
 
     def mb_config
