@@ -82,9 +82,10 @@ myface$
 ```
 
 That command created a plugin for us, as well as told us about some commands we
-can run. Notice that each command starts with the name of our plugin. Once
-we're done developing our plugin and we upload it to our Chef server, we can
-run plugins from any cookbook on our Chef server.
+can run. Plugins live within cookbooks in a file named `motherbrain.rb`. Notice
+that each command starts with the name of our plugin. Once we're done
+developing our plugin and we upload it to our Chef server, we can run plugins
+from any cookbook on our Chef server.
 
 Lets take a look at all of the commands we can run on a plugin:
 
