@@ -5,7 +5,7 @@ describe MB::ApiClient::ConfigResource do
 
   describe "#show" do
     before(:each) do
-      stub_request(:get, "http://0.0.0.0:1984/config.json").
+      stub_request(:get, "http://0.0.0.0:26100/config.json").
         to_return(status: 200, body: MB::Application.config.to_json)
     end
 

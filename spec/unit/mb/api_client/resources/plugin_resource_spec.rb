@@ -8,7 +8,7 @@ describe MB::ApiClient::PluginResource do
 
     context "when no version argument is given" do
       it "returns decoded JSON from /plugins/{plugin_id}/latest/commands.json" do
-        stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}/latest/commands.json").
+        stub_request(:get, "http://0.0.0.0:26100/plugins/#{plugin_id}/latest/commands.json").
           to_return(status: 200)
 
         subject.commands(plugin_id)
@@ -19,7 +19,7 @@ describe MB::ApiClient::PluginResource do
       let(:version) { "1.0.0" }
 
       it "returns decoded JSON from /plugins/{plugin_id}/{version}/commands.json" do
-        stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}/1_0_0/commands.json").
+        stub_request(:get, "http://0.0.0.0:26100/plugins/#{plugin_id}/1_0_0/commands.json").
           to_return(status: 200)
 
         subject.commands(plugin_id, version)
@@ -32,7 +32,7 @@ describe MB::ApiClient::PluginResource do
 
     context "when no version argument is given" do
       it "returns decoded JSON from /plugins/{plugin_id}/latest/components.json" do
-        stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}/latest/components.json").
+        stub_request(:get, "http://0.0.0.0:26100/plugins/#{plugin_id}/latest/components.json").
           to_return(status: 200)
 
         subject.components(plugin_id)
@@ -43,7 +43,7 @@ describe MB::ApiClient::PluginResource do
       let(:version) { "1.0.0" }
       
       it "returns decoded JSON from /plugins/{plugin_id}/{version}/components.json" do
-        stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}/1_0_0/components.json").
+        stub_request(:get, "http://0.0.0.0:26100/plugins/#{plugin_id}/1_0_0/components.json").
           to_return(status: 200)
 
         subject.components(plugin_id, version)
@@ -56,7 +56,7 @@ describe MB::ApiClient::PluginResource do
     let(:component_id) { "some-component" }
 
     it "returns decoded JSON from /plugins/{plugin_id}/{version}/components/{component_id}/commands.json" do
-      stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}/1_0_0/components/#{component_id}/commands.json").
+      stub_request(:get, "http://0.0.0.0:26100/plugins/#{plugin_id}/1_0_0/components/#{component_id}/commands.json").
         to_return(status: 200)
 
       subject.component_commands(plugin_id, "1.0.0", component_id)
@@ -64,7 +64,7 @@ describe MB::ApiClient::PluginResource do
 
     context "when a version argument of 'nil' is given" do
       it "returns decoded JSON from /plugins/{plugin_id}/latest/components/{component_id}/commands.json" do
-        stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}/latest/components/#{component_id}/commands.json").
+        stub_request(:get, "http://0.0.0.0:26100/plugins/#{plugin_id}/latest/components/#{component_id}/commands.json").
           to_return(status: 200)
 
         subject.component_commands(plugin_id, nil, component_id)
@@ -76,7 +76,7 @@ describe MB::ApiClient::PluginResource do
     let(:plugin_id) { "rspec-test" }
 
     it "returns decoded JSON from /plugins/{plugin_id}.json" do
-      stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}.json").to_return(status: 200)
+      stub_request(:get, "http://0.0.0.0:26100/plugins/#{plugin_id}.json").to_return(status: 200)
 
       subject.find(plugin_id)
     end
@@ -85,7 +85,7 @@ describe MB::ApiClient::PluginResource do
       let(:plugin_version) { "1.0.0" }
 
       it "returns decoded JSON from /plugins/{plugin_id}/{plugin_version}.json" do
-        stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}/1_0_0.json").to_return(status: 200)
+        stub_request(:get, "http://0.0.0.0:26100/plugins/#{plugin_id}/1_0_0.json").to_return(status: 200)
 
         subject.find(plugin_id, plugin_version)
       end
@@ -96,7 +96,7 @@ describe MB::ApiClient::PluginResource do
     let(:plugin_id) { "rspec-test" }
 
     it "returns decoded JSON from /plugins/{plugin_id}.json" do
-      stub_request(:get, "http://0.0.0.0:1984/plugins/#{plugin_id}/latest.json").to_return(status: 200)
+      stub_request(:get, "http://0.0.0.0:26100/plugins/#{plugin_id}/latest.json").to_return(status: 200)
 
       subject.latest(plugin_id)
     end
@@ -104,7 +104,7 @@ describe MB::ApiClient::PluginResource do
 
   describe "#list" do
     it "performs a GET request to /plugins.json" do
-      stub_request(:get, "http://0.0.0.0:1984/plugins.json").to_return(status: 200)
+      stub_request(:get, "http://0.0.0.0:26100/plugins.json").to_return(status: 200)
 
       subject.list
     end
