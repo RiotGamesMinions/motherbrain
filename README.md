@@ -155,14 +155,93 @@ Edit `bootstrap.json` and fill in a hostname to bootstrap:
 }
 ```
 
-And then we'll bootstrap our plugin to the node:
+And then we'll bootstrap our plugin to that node:
 
 ```
-knife environment create motherbrain_tutorial
+myface-cookbook$ knife environment create motherbrain_tutorial
 myface-cookbook$ mb myface bootstrap bootstrap.json -e motherbrain_tutorial
 
+using myface (0.4.1)
+
+  [bootstrap] searching for environment
+  [bootstrap] Locking chef_environment:motherbrain_tutorial
+  [bootstrap] performing bootstrap on group(s): ["app::default"]
+  [bootstrap] Unlocking chef_environment:motherbrain_tutorial
+  [bootstrap] Success
 ```
 
+That's it! But that's not much different from using `knife bootstrap`, and it
+took a lot more work.
+
+```
+myface-cookbook$ ls recipes/
+database.rb     default.rb      webserver.rb
+myface-cookbook$ cat recipes/default.rb
+include_recipe "myface::webserver"
+include_recipe "myface::database"
+```
+
+We're currently using the `default` recipe in our plugin, which ends up adding
+both the `webserver` and `database` recipes to our node's runlist. Let's change
+the automatically-generated plugin to better fit the architecture for our
+application:
+
+```rb
+cluster_bootstrap do
+  bootstrap 'app::db'
+  bootstrap 'app::web'
+end
+
+component 'app' do
+  description "Myface application"
+  versioned
+
+  group 'web' do
+    recipe 'myface::webserver'
+  end
+
+  group 'db' do
+    recipe 'myface::database'
+  end
+end
+```
+
+Note that we're bootstrapping the nodes in order, and since our web server
+depends on a database, we'll want to bootstrap the database first.
+
+And then change our bootstrap manifest to bootstrap 2 nodes instead of 1:
+
+```json
+{
+  "nodes": [
+    {
+      "groups": ["app::web"],
+      "hosts": ["box1"]
+    },
+    {
+      "groups": ["app::db"],
+      "hosts": ["box2"]
+    }
+  ]
+}
+```
+
+And then run the bootstrap again:
+
+```
+myface-cookbook$ mb myface bootstrap bootstrap.json -e motherbrain_tutorial
+
+using myface (0.4.1)
+
+  [bootstrap] searching for environment
+  [bootstrap] Locking chef_environment:motherbrain_tutorial
+  [bootstrap] performing bootstrap on group(s): ["app::db"]
+  [bootstrap] performing bootstrap on group(s): ["app::web"]
+  [bootstrap] Unlocking chef_environment:motherbrain_tutorial
+  [bootstrap] Success
+```
+
+That's it! We now have our application deployed to 2 nodes.
 
 # Authors
 
