@@ -29,7 +29,10 @@ module MotherBrain
         display_jobs
       end
 
-      abort if jobs_failed?
+      if jobs_failed?
+        display_log_info
+        abort
+      end
     end
 
     private
@@ -45,6 +48,10 @@ module MotherBrain
       # @return [Boolean]
       def debugging?
         MB.log.info?
+      end
+
+      def display_log_info
+        puts "#{left_space} [motherbrain] Log written to #{log_location}"
       end
 
       def display_jobs
@@ -65,6 +72,10 @@ module MotherBrain
 
       def jobs_failed?
         jobs.any?(&:failed?)
+      end
+
+      def log_location
+        MotherBrain.logger.instance_variable_get(:@logdev).filename
       end
 
       # @param [MotherBrain::Job] job
