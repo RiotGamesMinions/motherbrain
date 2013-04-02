@@ -73,6 +73,9 @@ module MotherBrain
                   type: :string,
                   desc: "Any additional attributes to set on the environment via a json file.",
                   aliases: "--attributes-file"
+                method_option :template,
+                  type: :string,
+                  desc: "Path to bootstrap template (ERB)"
                 method_option :force,
                   type: :boolean,
                   default: false,
@@ -116,6 +119,9 @@ module MotherBrain
                   type: :boolean,
                   desc: "Nodes will be created and added to the Chef environment but not bootstrapped",
                   default: false
+                method_option :template,
+                  type: :string,
+                  desc: "Path to bootstrap template (ERB)"
                 method_option :force,
                   type: :boolean,
                   default: false,

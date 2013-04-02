@@ -155,3 +155,9 @@ end
 
 # Alias for {MotherBrain}
 MB = MotherBrain
+if MB.testing?
+  require 'mb/test'
+else
+  class MB::Test ; end # Make the constant exist
+end
+

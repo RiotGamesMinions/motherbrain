@@ -80,6 +80,7 @@ module MotherBrain
 
       # Prepare the application and environment to run motherbrain
       def setup
+        MB::Test.mock(:setup) if MB.testing?
         MB::FileSystem.init
       end
     end
@@ -112,6 +113,7 @@ module MotherBrain
         @interrupt_mutex = Mutex.new
         @interrupted     = false
         subscribe(ConfigManager::UPDATE_MSG, :reconfigure)
+        MB::Test.mock(:init) if MB.testing?
       end
 
       def reconfigure(_msg, new_config)
