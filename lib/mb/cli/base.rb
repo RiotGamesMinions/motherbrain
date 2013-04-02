@@ -4,6 +4,7 @@ module MotherBrain
     class Base < Thor
       include Thor::Actions
       include MB::Mixin::CodedExit
+      include MB::Mixin::Services
 
       class << self
         # Registers a SubCommand with this Cli::Base class
