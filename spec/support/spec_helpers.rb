@@ -99,7 +99,21 @@ module MotherBrain
 
       if options[:with_plugin]
         File.open(File.join(cookbook_path, MB::Plugin::PLUGIN_FILENAME), 'w+') do |f|
-          f.write "# blank plugin"
+          f.write "# #{name} plugin\n"
+          if options[:with_bootstrap]
+            f.write <<-PLUGIN
+cluster_bootstrap do
+  bootstrap("#{name}::server")
+end
+
+component "#{name}" do
+  description "The #{name} service"
+  group "server" do
+    recipe "#{name}::server"
+  end
+end
+PLUGIN
+          end
         end
       end
 

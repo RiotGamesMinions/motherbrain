@@ -5,6 +5,7 @@ Feature: listing the plugins available to MotherBrain
 
   Background:
     Given a valid MotherBrain configuration
+    And I have an empty Berkshelf
 
   Scenario: listing all plugins
     Given a cookbook "pvpnet" at version "1.2.3" with a plugin
