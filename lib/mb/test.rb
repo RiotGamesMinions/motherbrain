@@ -63,6 +63,8 @@ module MotherBrain
       def cookbook(name)
         ridley.should_receive(:get).with("cookbooks").and_return(stub(:response, :body => {}))
         ridley.should_receive(:get).with("cookbooks/#{name}").and_return(stub(:response, :body => {}))
+        plugin = MB::Application.plugin_manager.find name
+        MB::Application.plugin_manager.should_receive(:for_environment).and_return(plugin)
       end
 
       def bootstrap(x)
