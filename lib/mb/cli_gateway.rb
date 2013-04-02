@@ -3,7 +3,6 @@ module MotherBrain
   class CliGateway < Cli::Base
     class << self
       include MB::Mixin::Services
-      include MB::Mixin::CodedExit
 
       def invoked_opts
         @invoked_opts ||= HashWithIndifferentAccess.new
