@@ -38,12 +38,12 @@ module MotherBrain
               raise RuntimeError, "Couldn't define sub-command task. Unknown scope #{command.scope} on command #{command}"
             end
 
-            environment = CliGateway.invoked_opts[:environment]
-            arguments   = command.execute.parameters.collect { |type, parameter| parameter }
+            environment  = CliGateway.invoked_opts[:environment]
+            execute_args = command.execute.parameters.collect { |type, parameter| parameter }
 
             usage = command.name
-            if arguments.any?
-              usage += " #{arguments.map(&:upcase).join(' ')}"
+            if execute_args.any?
+              usage += " #{execute_args.map(&:upcase).join(' ')}"
             end
 
             method_option :force,
@@ -52,17 +52,17 @@ module MotherBrain
               desc: "Run command even if the environment is locked",
               aliases: "-f"
             desc(usage, command.description)
-            define_method command.name.to_sym, ->(*arguments) do
+            define_method command.name.to_sym, ->(*task_args) do
               job = command_invoker.async_invoke(command.name,
                 plugin: plugin_name,
                 component: component_name,
                 version: plugin_version,
                 environment: environment,
-                arguments: arguments,
+                arguments: task_args,
                 force: options[:force]
               )
 
-              CliClient.new(job).display
+              display_job(job)
             end
           end
         end
