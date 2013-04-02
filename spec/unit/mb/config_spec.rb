@@ -9,10 +9,6 @@ describe MB::Config do
         @config = subject.new
       end
 
-      it "has a default value for chef.api_url" do
-        @config.chef.api_url.should eql("http://localhost:8080")
-      end
-
       it "has a default value for 'berkshelf.path'" do
         @config.berkshelf.path.should_not be_nil
       end

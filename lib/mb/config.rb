@@ -26,6 +26,10 @@ module MotherBrain
           raise InvalidConfig.new(config.errors)
         end
       end
+
+      def chef_config
+        MB::Chef::Config.new.parse
+      end
     end
 
     attribute 'berkshelf.path',
@@ -34,22 +38,26 @@ module MotherBrain
       required: true
 
     attribute 'chef.api_url',
-      default: "http://localhost:8080",
+      default: chef_config[:chef_server_url],
       type: String,
       required: true
 
     attribute 'chef.api_client',
+      default: chef_config[:node_name],
       type: String,
       required: true
 
     attribute 'chef.api_key',
+      default: chef_config[:client_key],
       type: String,
       required: true
 
     attribute 'chef.validator_client',
+      default: chef_config[:validation_client_name],
       type: String
 
     attribute 'chef.validator_path',
+      default: chef_config[:validation_key],
       type: String
 
     attribute 'chef.bootstrap_proxy',

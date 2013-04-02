@@ -16,6 +16,7 @@ require 'multi_json'
 require 'mb/version'
 require 'mb/errors'
 require 'mb/ridley_ext'
+require 'mb/thor_ext'
 
 # @author Jamie Winsor <reset@riotgames.com>
 module MotherBrain
@@ -27,6 +28,7 @@ module MotherBrain
   autoload :Application, 'mb/application'
   autoload :Berkshelf, 'mb/berkshelf'
   autoload :Bootstrap, 'mb/bootstrap'
+  autoload :Chef, 'mb/chef'
   autoload :ChefMutex, 'mb/chef_mutex'
   autoload :CleanRoomBase, 'mb/clean_room_base'
   autoload :Cli, 'mb/cli'
