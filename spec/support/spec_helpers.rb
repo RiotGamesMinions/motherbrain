@@ -47,7 +47,7 @@ module MotherBrain
             api_url: "https://ef.riotgames.com"
           },
           rest_gateway: {
-            port: 1985
+            port: 26100
           },
           plugin_manager: {
             eager_loading: false

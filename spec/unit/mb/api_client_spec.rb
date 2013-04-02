@@ -14,7 +14,7 @@ describe MB::ApiClient do
       end
 
       it "sets a default value for 'port' on the connection" do
-        subject.connection.port.should eql(1984)
+        subject.connection.port.should eql(26100)
       end
 
       it "uses the net_http_persistent adapter" do
