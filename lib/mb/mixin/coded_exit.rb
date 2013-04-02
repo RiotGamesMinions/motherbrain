@@ -27,7 +27,7 @@ module MotherBrain
       def exit_code_for(const_name)
         MB.const_get(const_name).exit_code
       end
-      alias_method :exit_code_for, :exit_status_for
+      alias_method :exit_status_for, :exit_code_for
     end
   end
 end
