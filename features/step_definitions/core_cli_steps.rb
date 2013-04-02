@@ -23,6 +23,5 @@ When /^I run a command that requires a config$/ do
 end
 
 Then /^the exit status should be the code for error "(.*?)"$/ do |konstant|
-  exit_status = MB.const_get(konstant).exit_code
-  assert_exit_status(exit_status)
+  assert_exit_status(exit_code_for(konstant))
 end

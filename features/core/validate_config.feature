@@ -10,14 +10,14 @@ Feature: listing the plugins available to MotherBrain
       """
       No configuration found at:
       """
-    And the exit status should be 1
+    And the exit status should be the code for error "ConfigNotFound"
 
   Scenario: validate that the configuration is valid
     Given an invalid MotherBrain configuration
     When I run a command that requires a config
     Then the output should contain:
       """
-      Invalid Configuration File
+      Invalid configuration file
       """
     And the exit status should be the code for error "InvalidConfig"
 

@@ -3,6 +3,7 @@ module MotherBrain
   class CliGateway < Cli::Base
     class << self
       include MB::Mixin::Services
+      include MB::Mixin::CodedExit
 
       def invoked_opts
         @invoked_opts ||= HashWithIndifferentAccess.new
@@ -16,8 +17,15 @@ module MotherBrain
 
         begin
           config = MB::Config.from_file file
-        rescue Chozo::Errors::ConfigNotFound => e
-          raise e.class.new "#{e.message}\nCreate one with `mb configure`"
+        rescue Chozo::Errors::InvalidConfig => ex
+          MB.ui.error "Invalid configuration file #{file}"
+          MB.ui.error ""
+          MB.ui.error ex.to_s
+          exit_with(InvalidConfig)
+        rescue Chozo::Errors::ConfigNotFound => ex
+          MB.ui.error "#{ex.message}"
+          MB.ui.error "Create one with `mb configure`"
+          exit_with(ConfigNotFound)
         end
 
         level = Logger::WARN

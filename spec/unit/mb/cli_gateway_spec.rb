@@ -19,16 +19,16 @@ describe MB::CliGateway do
           MB::ConfigManager.instance.config._attributes_.should eql(config._attributes_)
         end
 
-        it "raises a ConfigNotFound error when the specified path does not exist" do
+        it "exits with a ConfigNotFound error when the specified path does not exist" do
           lambda {
             invoker = subject.new([], config: tmp_path.join("not_there.json"))
-          }.should raise_error(Chozo::Errors::ConfigNotFound)
+          }.should exit_with(MB::ConfigNotFound)
         end
 
-        it "raises a ConfigNotFound error when the specified path is a directory" do
+        it "exits with a ConfigNotFound error when the specified path is a directory" do
           lambda {
             invoker = subject.new([], config: tmp_path)
-          }.should raise_error(Chozo::Errors::ConfigNotFound)
+          }.should exit_with(MB::ConfigNotFound)
         end
       end
     end
