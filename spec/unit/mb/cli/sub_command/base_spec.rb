@@ -14,41 +14,59 @@ describe MB::Cli::SubCommand::Base do
   end
 
   describe "::define_task" do
-    subject(:define_task) { thor_cli.send :define_task, command }
-
-    let(:command) {
+    let(:scope) { MB::Plugin.new(double('component', name: 'chat', version: "1.2.3", valid?: true)) }
+    let(:command) do
       MB::Command.new(:my_command, scope) do
         execute do
-          nil
+          # nothing
         end
       end
-    }
-
-    let(:my_command) { thor_cli.instance_method :my_command }
-
-    let(:scope) { stub(MB::Plugin) }
-
-    before do
-      define_task
     end
 
-    it "defines the command" do
-      my_command.parameters.should == []
+    subject do
+      thor_cli.define_task(command)
+      thor_cli
     end
 
-    context "with arguments" do
-      let(:command) {
+    let(:defined_task) { subject.tasks[command.name] }
+
+    it "adds a Thor task matching the name of the given command" do
+      defined_task.name.should eql(command.name)
+    end
+
+    it "has a description matching the description of given command" do
+      defined_task.description.should eql(command.description)
+    end
+
+    it "takes a variable amount of arguments" do
+      subject.instance_method(command.name.to_sym).parameters.should eql([[:rest, :arguments]])
+    end
+
+    context "when the execute block takes no arguments" do
+      let(:command) do
         MB::Command.new(:my_command, scope) do
-          execute do |a|
-            nil
+          execute do
+            # nothing
           end
         end
-      }
+      end
 
-      it "has an extra argument" do
-        my_command.parameters.should == [
-          [:req, :a]
-        ]
+      it "has a usage only containing the name of the task" do
+        defined_task.usage.should eql(command.name)
+      end
+    end
+
+    context "when the execute block takes additional arguments" do
+      let(:command) do
+        MB::Command.new(:my_command, scope) do
+          execute do |first, second, third|
+            # nothing
+          end
+        end
+      end
+
+      it "has a usage only containing the name of the task" do
+        defined_task.usage.should eql("#{command.name} FIRST SECOND THIRD")
       end
     end
   end
