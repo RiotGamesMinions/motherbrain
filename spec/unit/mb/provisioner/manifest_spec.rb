@@ -21,6 +21,11 @@ describe MB::Provisioner::Manifest do
 
   let(:valid_manifest) {
     {
+      options: {
+        image_id: "emi-1234ABCD",
+        key_name: "mb",
+        security_groups: ["foo", "bar"]
+      },
       nodes: [
         {
           type: "m1.large",
