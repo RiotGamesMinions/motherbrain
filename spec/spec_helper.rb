@@ -15,6 +15,7 @@ def setup_rspec
 
   RSpec.configure do |config|
     config.include JsonSpec::Helpers
+    config.include MotherBrain::Matchers
     config.include MotherBrain::SpecHelpers
     config.include MotherBrain::Mixin::Services
 

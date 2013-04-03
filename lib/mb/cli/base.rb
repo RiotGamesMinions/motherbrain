@@ -3,6 +3,9 @@ module MotherBrain
     # @author Jamie Winsor <reset@riotgames.com>
     class Base < Thor
       include Thor::Actions
+      include MB::Mixin::CodedExit
+
+      extend MB::Mixin::CodedExit
 
       class << self
         # Registers a SubCommand with this Cli::Base class
