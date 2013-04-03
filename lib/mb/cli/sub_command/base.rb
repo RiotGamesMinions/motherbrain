@@ -25,17 +25,12 @@ module MotherBrain
           #
           # @param [MB::Command] command
           def define_task(command)
-            case command.scope
-            when MB::Plugin
-              plugin_name    = command.scope.name
-              plugin_version = command.scope.version.to_s
-              component_name = nil
-            when MB::Component
-              plugin_name    = command.plugin.name
-              plugin_version = command.plugin.version.to_s
+            plugin_name    = command.plugin
+            plugin_version = command.plugin.version.to_s
+            component_name = nil
+
+            if command.type == :component
               component_name = command.scope.name
-            else
-              raise RuntimeError, "Couldn't define sub-command task. Unknown scope #{command.scope} on command #{command}"
             end
 
             environment  = CliGateway.invoked_opts[:environment]
