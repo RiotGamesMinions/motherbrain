@@ -100,6 +100,12 @@ module MotherBrain
           abort ProvisionError.new
         end
       end
+
+      def instances_as_manifest
+        instances.collect do |instance|
+          { instance_type: instance[:type], public_hostname: instance[:ipaddress] }
+        end
+      end
     end
   end
 end

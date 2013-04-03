@@ -143,6 +143,23 @@ describe MB::Provisioners::AWS do
         subject.instances.each {|i| i[:ipaddress].should be_nil }
       end
     end
+
+    describe "#instances_as_manifest" do
+      before do
+        subject.create_instances
+        subject.instances.each_with_index do |instance, idx|
+          instance[:ipaddress] = "172.16.1.#{idx+1}"
+        end
+      end
+
+      it "returns an array" do
+        subject.instances_as_manifest.should be_an(Array)
+      end
+
+      it "has 8 instances" do
+        subject.instances_as_manifest.should have(8).instances
+      end
+    end
   end
 
   describe "#down" do
