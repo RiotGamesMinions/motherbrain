@@ -13,6 +13,8 @@ module MotherBrain
       end
 
       module ClassMethods
+        # Exit the application with the exit status associated with the given motherbrain error
+        #
         # @param [String, #exit_code] obj
         #
         # @example exit the application with an exit status for InvalidConfig (14)
@@ -26,7 +28,10 @@ module MotherBrain
           Kernel.exit(exit_code)
         end
 
+        # Look up the exit status for motherbrain error matching the given name
+        #
         # @param [String] const_name
+        #   name of the error constant to lookup
         #
         # @example retrieving the exit status for MB::InvalidConfig
         #   exit_code_for("InvalidConfig") #=> 14
