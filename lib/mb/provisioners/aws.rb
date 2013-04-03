@@ -32,7 +32,7 @@ module MotherBrain
       def up(job, env_name, manifest, plugin, options = {})
         @manifest = manifest
         validate_options
-        run_instances
+        create_instances
         verify_instances
         instances_as_manifest
       end
@@ -72,6 +72,16 @@ module MotherBrain
           result[element[:type]] += element[:count].to_i
           result
         end
+      end
+
+      def create_instances
+        instance_counts.each do |instance_type, count|
+          run_instances instance_type, count
+        end
+      end
+
+      def run_instances(instance_type, count)
+        
       end
     end
   end

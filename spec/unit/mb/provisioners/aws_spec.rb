@@ -53,7 +53,7 @@ describe MB::Provisioners::AWS do
 
     it "does all the steps" do
       subject.should_receive(:validate_options).and_return(true)
-      subject.should_receive(:run_instances).and_return(true)
+      subject.should_receive(:create_instances).and_return(true)
       subject.should_receive(:verify_instances).and_return(true)
       subject.should_receive(:instances_as_manifest).and_return(response)
       subject.up(job, env_name, manifest, plugin, skip_bootstrap: true).should eq(response)
@@ -116,6 +116,13 @@ describe MB::Provisioners::AWS do
 
       it "counts the m1.small instances" do
         subject.instance_counts['m1.small'].should eq(2)
+      end
+    end
+
+    describe "#create_instances" do
+      it "makes calls by instance type" do
+        subject.should_receive(:run_instances).exactly(2).times.and_return(true)
+        subject.create_instances
       end
     end
   end
