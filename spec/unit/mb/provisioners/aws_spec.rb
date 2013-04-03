@@ -58,29 +58,26 @@ describe MB::Provisioners::AWS do
       subject.should_receive(:instances_as_manifest).and_return(response)
       subject.up(job, env_name, manifest, plugin, skip_bootstrap: true).should eq(response)
     end
+  end
 
-    context "#validate_options" do
+  context "with a manifest", :focus do
+    before do
+      subject.manifest = manifest
+    end
+
+    describe "#validate_options" do
       context "with a valid options hash in the manifest" do
-        before do
-          subject.manifest = manifest
-        end
-
         it "returns true" do
           subject.validate_options.should eq(true)
         end
-                
+        
         it "does not raise when SecurityGroups is not set" do
           subject.manifest[:options].delete :security_groups
           lambda { subject.validate_options.should eq(true) }.should_not raise_error(MB::InvalidProvisionManifest)
         end
-
       end
 
       context "with an invalid options hash in the manifest" do
-        before do
-          subject.manifest = manifest
-        end
-
         it "raises on no options" do
           subject.manifest.delete :options
           lambda { subject.validate_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
@@ -105,7 +102,20 @@ describe MB::Provisioners::AWS do
           subject.manifest[:options][:security_groups] = :fleeble
           lambda { subject.validate_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
         end
+      end
+    end
 
+    describe "#instance_counts" do
+      it "returns a Hash" do
+        subject.instance_counts.should be_a(Hash)
+      end
+
+      it "counts the m1.large instances" do
+        subject.instance_counts['m1.large'].should eq(6)
+      end
+
+      it "counts the m1.small instances" do
+        subject.instance_counts['m1.small'].should eq(2)
       end
     end
   end

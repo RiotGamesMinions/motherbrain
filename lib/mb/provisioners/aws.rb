@@ -66,6 +66,13 @@ module MotherBrain
         true
       end
 
+      def instance_counts
+        manifest[:nodes].inject({}) do |result, element|
+          result[element[:type]] ||= 0
+          result[element[:type]] += element[:count].to_i
+          result
+        end
+      end
     end
   end
 end
