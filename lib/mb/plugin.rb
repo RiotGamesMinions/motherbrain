@@ -289,7 +289,7 @@ module MotherBrain
 
       # @param [#to_s] name
       def component(name, &block)
-        real_model.add_component Component.new(name, &block)
+        real_model.add_component Component.new(name, real_model, &block)
       end
 
       def cluster_bootstrap(&block)

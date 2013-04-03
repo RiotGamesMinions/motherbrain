@@ -13,12 +13,16 @@ module MotherBrain
     attribute :version_attribute,
       type: String
 
+    # @return [MB::Plugin]
+    attr_reader :plugin
     attr_reader :groups
     attr_reader :commands
 
     # @param [#to_s] name
-    def initialize(name, &block)
+    # @param [MB::Plugin] plugin
+    def initialize(name, plugin, &block)
       set_attribute(:name, name.to_s)
+      @plugin   = plugin
       @groups   = Set.new
       @commands = Set.new
       @gears    = Hash.new

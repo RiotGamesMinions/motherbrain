@@ -3,11 +3,12 @@ require 'spec_helper'
 describe MB::Component do
   let(:environment) { 'mb-test' }
   let(:chef_conn) { double('chef_conn') }
+  let(:plugin) { double(MB::Plugin) }
 
   subject { component }
 
   let(:component) {
-    MB::Component.new("activemq") do
+    MB::Component.new("activemq", plugin) do
       group "masters" do
         # block
       end
@@ -21,7 +22,7 @@ describe MB::Component do
 
     context "with a description" do
       let(:component) {
-        MB::Component.new("activemq") do
+        MB::Component.new("activemq", plugin) do
           description "ActiveMQ"
         end
       }
@@ -32,7 +33,7 @@ describe MB::Component do
 
   describe "#groups" do
     subject do
-      MB::Component.new("activemq") do
+      MB::Component.new("activemq", plugin) do
         group "masters" do
           # block
         end
@@ -47,7 +48,7 @@ describe MB::Component do
 
   describe "#group" do
     subject do
-      MB::Component.new("activemq") do
+      MB::Component.new("activemq", plugin) do
         group "masters" do
           # block
         end
@@ -61,7 +62,7 @@ describe MB::Component do
 
   describe "#group!" do
     subject do
-      MB::Component.new("activemq") do
+      MB::Component.new("activemq", plugin) do
         group "masters" do
           # block
         end
@@ -93,7 +94,7 @@ describe MB::Component do
     subject { MB::Component }
 
     it "returns a Set of services" do
-      component = subject.new("activemq") do
+      component = subject.new("activemq", plugin) do
         service "masters" do
           # block
         end
@@ -103,7 +104,7 @@ describe MB::Component do
     end
 
     it "contains each service defined" do
-      component = subject.new("activemq") do
+      component = subject.new("activemq", plugin) do
         service "masters" do
           # block
         end
@@ -114,7 +115,7 @@ describe MB::Component do
 
     it "does not allow duplicate services" do
       lambda do
-        subject.new("activemq") do
+        subject.new("activemq", plugin) do
           service "masters" do
             # block
           end
@@ -130,7 +131,7 @@ describe MB::Component do
   describe "#versioned" do
     context "when passed nothing" do
       subject {
-        klass.new "component_name" do
+        klass.new("component_name", plugin) do
           versioned
         end
       }
@@ -140,7 +141,7 @@ describe MB::Component do
 
     context "when passed an attribute name" do
       subject {
-        klass.new "versioned_component" do
+        klass.new("versioned_component", plugin) do
           versioned_with "my.custom.attribute"
         end
       }

@@ -5,7 +5,7 @@ describe MB::Upgrade::Worker do
 
   let(:worker) { klass.new(job, environment_name, plugin, options).wrapped_object }
 
-  let(:component1) { MB::Component.new component_name }
+  let(:component1) { MB::Component.new(component_name, plugin) }
   let(:component_name) { "component1" }
   let(:component_versions) { { component_name => "1.2.3" } }
   let(:components) { [component1] }
