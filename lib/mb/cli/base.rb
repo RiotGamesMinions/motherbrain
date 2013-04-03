@@ -5,8 +5,6 @@ module MotherBrain
       include Thor::Actions
       include MB::Mixin::CodedExit
 
-      extend MB::Mixin::CodedExit
-
       class << self
         # Registers a SubCommand with this Cli::Base class
         #
