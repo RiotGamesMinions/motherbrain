@@ -8,7 +8,11 @@ module MotherBrain
       class << self
         def included(base)
           base.extend(ClassMethods)
-          base.include(ClassMethods)
+          base.send(:include, ClassMethods)
+        end
+
+        def extended(base)
+          base.send(:include, ClassMethods)
         end
       end
 
