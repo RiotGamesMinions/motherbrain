@@ -113,7 +113,7 @@ module MotherBrain
     def find(id)
       ridley.environment.find!(id)
     rescue Ridley::Errors::ResourceNotFound => ex
-      abort EnvironmentNotFound.new("no environment '#{id}' was found")
+      abort EnvironmentNotFound.new(id)
     end
 
     # Returns a list of environments present on the remote server

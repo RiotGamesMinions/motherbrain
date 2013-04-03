@@ -303,7 +303,8 @@ describe MotherBrain::PluginManager do
 
     context "when the environment does not exist" do
       before(:each) do
-        environment_manager.should_receive(:find).with(environment_id).and_raise(MB::EnvironmentNotFound)
+        environment_manager.should_receive(:find).with(environment_id).
+          and_raise(MB::EnvironmentNotFound.new(environment_id))
       end
 
       it "raises an EnvironmentNotFound error" do

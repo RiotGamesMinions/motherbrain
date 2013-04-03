@@ -58,7 +58,7 @@ describe MB::Upgrade::Worker do
 
     context "when an environment does not exist" do
       before do
-        worker.stub(:assert_environment_exists).and_raise(MB::EnvironmentNotFound)
+        worker.stub(:assert_environment_exists).and_raise(MB::EnvironmentNotFound.new(environment_name))
       end
 
       it "should set the job state to :failure" do

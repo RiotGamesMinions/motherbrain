@@ -68,7 +68,7 @@ module MotherBrain
       options[:chef_environment] = environment
 
       unless Application.ridley.environment.find(environment)
-        raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
+        raise EnvironmentNotFound.new(environment)
       end
 
       chef_synchronize(options) do
