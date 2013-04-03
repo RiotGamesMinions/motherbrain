@@ -25,3 +25,4 @@ TODO: Write usage instructions here
 * Jamie Winsor (<reset@riotgames.com>)
 * Jesse Howarth (<jhowarth@riotgames.com>)
 * Justin Campbell (<justin.campbell@riotgames.com>)
+* Michael Ivey (<michael.ivey@riotgames.com>)

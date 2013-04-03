@@ -2,12 +2,22 @@
 require File.expand_path('../lib/mb/version', __FILE__)
 
 Gem::Specification.new do |s|
-  s.authors       = ["Jamie Winsor", "Jesse Howarth", "Justin Campbell"]
-  s.email         = ["reset@riotgames.com", "jhowarth@riotgames.com", "justin.campbell@riotgames.com"]
+  s.authors       = [
+    "Jamie Winsor",
+    "Jesse Howarth",
+    "Justin Campbell",
+    "Michael Ivey"
+  ]
+  s.email         = [
+    "reset@riotgames.com",
+    "jhowarth@riotgames.com",
+    "justin.campbell@riotgames.com",
+    "michael.ivey@riotgames.com"
+  ]
   s.description   = %q{An orchestrator for Chef}
   s.summary       = s.description
   s.homepage      = "https://github.com/RiotGames/motherbrain"
-  s.license       = "All rights reserved"
+  s.license       = "Apache 2.0"
 
   s.files         = `git ls-files`.split($\)
   s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
