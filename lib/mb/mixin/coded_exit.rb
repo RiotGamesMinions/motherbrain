@@ -10,6 +10,10 @@ module MotherBrain
           base.extend(ClassMethods)
           base.send(:include, ClassMethods)
         end
+
+        def extended(base)
+          base.extend(ClassMethods)
+        end
       end
 
       module ClassMethods
