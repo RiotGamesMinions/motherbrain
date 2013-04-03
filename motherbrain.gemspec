@@ -32,4 +32,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ef-rest', '>= 0.1.0'
   s.add_runtime_dependency 'activesupport'
   s.add_runtime_dependency 'multi_json'
+  s.add_runtime_dependency 'fog', '~> 1.10.0'
 end

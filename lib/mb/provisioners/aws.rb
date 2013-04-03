@@ -1,4 +1,5 @@
 require 'active_support/inflector'
+require 'fog'
 
 module MotherBrain
   module Provisioners
@@ -13,6 +14,11 @@ module MotherBrain
       register_provisioner :aws
 
       attr_accessor :manifest
+      attr_accessor :instances
+
+      def initialize
+        @instances = []
+      end
 
       # Provision nodes in the environment based on the contents of the given manifest
       #
@@ -81,7 +87,18 @@ module MotherBrain
       end
 
       def run_instances(instance_type, count)
-        
+        response = Fog::Compute[:aws].run_instances options[:image_id], count, count, {
+          'InstanceType' => instance_type,
+          'Placement.AvailabilityZone' => options[:availability_zone],
+          'KeyName' => options[:key_name]
+        }
+        if response.status == 200
+          response.body["instancesSet"].each do |i|
+            self.instances << {type: i["instanceType"], id: i["instanceId"], ipaddress: nil, status: i["instanceState"]["code"]}
+          end
+        else
+          abort ProvisionError.new
+        end
       end
     end
   end

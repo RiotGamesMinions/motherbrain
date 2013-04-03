@@ -1,6 +1,11 @@
 require 'spec_helper'
 
 describe MB::Provisioners::AWS do
+  before(:all) do
+    Fog.mock!
+    Fog::Compute[:aws].create_key_pair('mb')
+  end
+
   let(:manifest) do
     MB::Provisioner::Manifest.new.from_json({
       options: {
@@ -123,6 +128,19 @@ describe MB::Provisioners::AWS do
       it "makes calls by instance type" do
         subject.should_receive(:run_instances).exactly(2).times.and_return(true)
         subject.create_instances
+      end
+    end
+
+    describe "#run_instances" do
+      before(:each) do
+        subject.run_instances "m1.large", 3
+      end
+
+      it "keeps track of the instances" do
+        subject.instances.should be_a(Array)
+        subject.instances.should have(3).instances
+        subject.instances.each {|i| i[:type].should eq("m1.large") }
+        subject.instances.each {|i| i[:ipaddress].should be_nil }
       end
     end
   end
