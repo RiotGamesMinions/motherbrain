@@ -132,7 +132,7 @@ PLUGIN
 
     def generate_invalid_config(path)
       FileUtils.rm_rf(path)
-      MB::Config.new.save(path)
+      File.write(path, "{asdf : }{")
     end
 
     def klass
