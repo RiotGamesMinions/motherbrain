@@ -16,15 +16,38 @@ module MotherBrain
       type: Proc,
       required: true
 
+    # @return [MB::Plugin, MB::Component]
+    attr_reader :scope
+    # @return [MB::Plugin]
+    attr_reader :plugin
+    # @return [Symbol]
+    attr_reader :type
+
     # @param [#to_s] name
     # @param [MB::Plugin, MB::Component] scope
     def initialize(name, scope, &block)
       set_attribute(:name, name.to_s)
       @scope = scope
 
+      case @scope
+      when MB::Plugin
+        @plugin = @scope
+        @type   = :plugin
+      when MB::Component
+        @plugin = @scope.plugin
+        @type   = :component
+      else
+        raise RuntimeError, "no matching command type for the given scope: #{scope}."
+      end
+
       if block_given?
         dsl_eval(&block)
       end
+    end
+
+    # @return [String]
+    def description
+      _attributes_.description || "run #{name} command on #{scope.name}"
     end
 
     # @return [Symbol]
@@ -56,8 +79,6 @@ module MotherBrain
     end
 
     private
-
-      attr_reader :scope
 
       def dsl_eval(&block)
         CleanRoom.new(self).instance_eval(&block)
