@@ -13,83 +13,114 @@ module MotherBrain
     include Celluloid
     include MB::Logging
     include MB::Mixin::Services
+    include MB::Mixin::Locks
 
     def initialize
       log.info { "Command Invoker starting..." }
     end
 
-    # Invoke a plugin level command on an environment
+    # Asynchronously invoke a command on a plugin or a component of a plugin
     #
-    # @param [String] plugin_id
-    # @param [String] command_id
-    # @param [String] environment_id
+    # @param [String] command_name
     #
-    # @option options [Array] :arguments
+    # @option options [String] :plugin
+    # @option options [String] :component (optional)
+    # @option options [String] :environment
+    # @option options [Array] :arguments (Array.new)
+    # @option options [Boolean] :force (false)
     #
-    # @raise [EnvironmentNotFound] if the given environment does not exist
-    # @raise [PluginNotFound] if a plugin of the given name is not found
-    # @raise [CommandNotfound] if the plugin does not have a command matching the given name
-    #
-    # @return [JobTicket]
-    def invoke_plugin(plugin_id, command_id, environment_id, options = {})
-      options = options.reverse_merge(arguments: Array.new)
-      job     = Job.new(:invoke_plugin)
-
-      async(:_invoke_plugin_, job, plugin_id, command_id, environment_id, options)
+    # @return [MB::Job]
+    def async_invoke(command_name, options = {})
+      job = Job.new(:invoke_command)
+      async(:invoke, job, command_name, options)
       job.ticket
     end
 
-    # Invoke a component level command on an environment
+    # Find a command to invoke
     #
-    # @param [String] plugin_id
-    # @param [String] component_id
-    # @param [String] command_id
-    # @param [String] environment_id
+    # @param [String] command_name
+    #   name of the command to find
     #
-    # @option options [Array] :arguments
+    # @option options [String] :plugin (required)
+    #   Plugin that the command belongs to
+    # @option options [String] :component (optional)
+    #   Name of the component that this command belongs to. If no component name is specified then
+    #   it is assumed that you are searching for a plugin level command and not a component level
+    #   command.
+    # @option options [String] :environment (optional)
+    #   The environment the command will be executed on. The best version of the command to run on
+    #   that environment will be returned. If no environment is specified the latest version of the
+    #   command will be returned.
     #
-    # @raise [EnvironmentNotFound] if the given environment does not exist
-    # @raise [PluginNotFound] if a plugin of the given name is not found
-    # @raise [ComponentNotFound] if the plugin does not have a component matching the given name
-    # @raise [CommandNotfound] if the plugin does not have a command matching the given name
+    # @raise [MB::PluginNotFound]
+    # @raise [MB::ComponentNotFound]
     #
-    # @return [JobTicket]
-    def invoke_component(plugin_id, component_id, command_id, environment_id, options = {})
-      options = options.reverse_merge(arguments: Array.new)
-      job     = Job.new(:invoke_component)
+    # @return [MB::Command]
+    def find_command(command_name, options = {})
+      plugin_name    = options[:plugin]
+      component_name = options[:component]
+      environment    = options[:environment]
 
-      async(:_invoke_component_, job, plugin_id, component_id, command_id, environment_id, options)
-      job.ticket
+      if plugin_name.nil?
+        raise ArgumentError
+      end
+
+      plugin = if environment
+        plugin_manager.for_environment(plugin_name, environment)
+      else
+        plugin_manager.latest(plugin_name)
+      end
+
+      if component_name
+        plugin.component!(component_name).command!(command_name)
+      else
+        plugin.command!(command_name)
+      end
     end
 
-    # Performs the heavy lifting for {#invoke_plugin}
+    # Invoke a command on a plugin or a component of a plugin
     #
-    # @api private
-    def _invoke_plugin_(job, plugin_id, command_id, environment_id, options)
-      job.report_running("determining plugin to activate for environment")
-      plugin  = plugin_manager.for_environment(plugin_id, environment_id)
-      command = plugin.command!(command_id)
-
-      job.status = "starting command execution"
-      command.invoke(environment_id, *options[:arguments])
-      job.report_success("finished executing command")
-    rescue MBError => ex
-      job.report_failure(ex.to_s)
-    end
-
-    # Performs the heavy lifting for {#invoke_component}
+    # @param [String] command_name
     #
-    # @api private
-    def _invoke_component_(job, plugin_id, component_id, command_id, environment_id, options = {})
-      job.report_running("determining plugin to activate for environment")
-      plugin  = plugin_manager.for_environment(plugin_id, environment_id)
-      command = plugin.component!(component_id).command!(command_id)
+    # @option options [String] :plugin
+    # @option options [String] :component (optional)
+    # @option options [String] :environment
+    # @option options [Array] :arguments (Array.new)
+    # @option options [Boolean] :force (false)
+    #
+    # @return [MB::Job]
+    def invoke(job, command_name, options = {})
+      options = options.reverse_merge(arguments: Array.new, force: false)
 
-      job.status = "starting command execution"
-      command.invoke(environment_id, *options[:arguments])
-      job.report_success("finished executing command")
-    rescue MBError => ex
+      if options[:plugin].nil?
+        raise RuntimeError, "must specify a plugin that the command belongs to"
+      end
+
+      if options[:environment].nil?
+        raise RuntimeError, "must specify an environment to run this command on"
+      end
+
+      job.report_running
+
+      job.set_status("finding environment")
+      environment_manager.find(options[:environment])
+
+      job.set_status("executing: #{command_name} with: #{options}")
+      command = find_command(command_name, options.slice(:plugin, :component, :environment))
+
+      chef_synchronize(chef_environment: options[:environment], force: options[:force], job: job) do
+        job.set_status("starting command execution")
+        command.invoke(options[:environment], *options[:arguments])
+      end
+
+      job.report_success("successfully executed command")
+    rescue PluginNotFound, ComponentNotFound, CommandNotFound, EnvironmentNotFound => ex
       job.report_failure(ex.to_s)
+    rescue => ex
+      job.report_failure(ex.to_s)
+      raise ex
+    ensure
+      job.terminate if job && job.alive?
     end
   end
 end
