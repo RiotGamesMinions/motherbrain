@@ -331,7 +331,7 @@ module MotherBrain
 
       MB.ui.say [
         "",
-        "MotherBrain plugin created.",
+        "motherbrain plugin created.",
         "",
         "Take a look at motherbrain.rb and bootstrap.json,",
         "and then bootstrap with:",
