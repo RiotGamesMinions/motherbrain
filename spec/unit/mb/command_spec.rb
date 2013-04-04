@@ -72,21 +72,6 @@ describe MB::Command do
   its(:execute) { should be_a Proc }
 
   describe "#invoke" do
-    subject(:invoke) { command.invoke(environment) }
-
-    let(:environment) { "production" }
-
-    context "if the environment does not exist" do
-      before do
-        MB::Application.stub_chain(:ridley, :server_url)
-        MB::Application.stub_chain(:ridley, :environment, :find).with(environment).and_return(nil)
-      end
-
-      it "raises an EnvironmentNotFound error" do
-        expect {
-          invoke
-        }.to raise_error(MB::EnvironmentNotFound)
-      end
-    end
+    pending
   end
 end
