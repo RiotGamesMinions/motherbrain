@@ -11,7 +11,7 @@ end
 trap 'HUP' do
   MB.log.info "Reloading configuration..."
   MB::ConfigManager.instance.reload
-end
+end if Signal.supported?('HUP')
 
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
