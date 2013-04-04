@@ -63,12 +63,7 @@ module MotherBrain
     #
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
     def invoke(environment, *args)
-      options = args.last.is_a?(Hash) ? args.pop : Hash.new
-      options[:chef_environment] = environment
-
       CommandRunner.new(environment, scope, execute, *args)
-    rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
-      raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
     end
 
     private
