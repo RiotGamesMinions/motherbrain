@@ -20,7 +20,7 @@ module MotherBrain
 
       # @param [MB::Job] job
       # @param [Array] arguments
-      def run(job, arguments = nil)
+      def run(job, arguments = Array.new)
         arguments ||= Array.new
 
         msg = "invoking #{command.type} command #{command.scope.name} #{command.name} on #{environment}"
