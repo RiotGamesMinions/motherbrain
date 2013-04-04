@@ -111,11 +111,9 @@ describe MB::Plugin do
     end
   end
 
-  describe "#to_s" do
-    subject do
-      described_class.new(metadata)
-    end
+  subject { described_class.new(metadata) }
 
+  describe "#to_s" do
     it "returns the name and version of the plugin" do
       subject.to_s.should eql("motherbrain (0.1.0)")
     end
@@ -208,6 +206,43 @@ describe MB::Plugin do
 
     it "includes a 'maintainer_email' field and value" do
       subject[:maintainer_email].should_not be_nil
+    end
+  end
+
+  describe "#command" do
+    let(:plugin) do
+      described_class.new(metadata) do
+        command "existing" do
+          # block
+        end
+      end
+    end
+
+    subject { plugin.command(name) }
+
+    context "when the component has a command matching the given name" do
+      let(:name) { "existing" }
+
+      it { should be_a(MB::Command) }
+      it { name.should eql("existing") }
+    end
+
+    context "when the component does not have a command matching the given name" do
+      let(:name) { "not-there" }
+
+      it { should be_nil }
+    end
+  end
+
+  describe "#command!" do
+    before do
+      subject.stub(command: nil)
+    end
+
+    it "raises a CommandNotFound error when no matching command is present" do
+      expect {
+        subject.command!("stop")
+      }.to raise_error(MB::CommandNotFound)
     end
   end
 end

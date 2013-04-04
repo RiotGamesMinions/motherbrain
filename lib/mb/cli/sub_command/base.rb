@@ -21,51 +21,45 @@ module MotherBrain
             raise AbstractFunction
           end
 
-          protected
+          # Define a new Thor task from the given {MotherBrain::Command}
+          #
+          # @param [MB::Command] command
+          def define_task(command)
+            plugin_name    = command.plugin.name
+            plugin_version = command.plugin.version.to_s
+            component_name = nil
 
-            # Define a new Thor task from the given {MotherBrain::Command}
-            #
-            # @param [MotherBrain::Command] command
-            def define_task(command)
-              environment = CliGateway.invoked_opts[:environment]
-              arguments = []
-
-              command.execute.parameters.each do |type, parameter|
-                arguments << parameter.to_s
-              end
-
-              description_string = arguments.map(&:upcase).join(" ")
-
-              if arguments.any?
-                arguments_string = arguments.join(", ")
-                command_code = <<-RUBY
-                  define_method(:#{command.name}) do |#{arguments_string}|
-                    command.invoke(
-                      environment,
-                      #{arguments_string},
-                      force: options[:force]
-                    )
-                  end
-                RUBY
-              else
-                command_code = <<-RUBY
-                  define_method(:#{command.name}) do
-                    command.invoke(
-                      environment,
-                      force: options[:force]
-                    )
-                  end
-                RUBY
-              end
-
-              method_option :force,
-                type: :boolean,
-                default: false,
-                desc: "Run command even if the environment is locked",
-                aliases: "-f"
-              desc("#{command.name} #{description_string}", command.description.to_s)
-              instance_eval command_code
+            if command.type == :component
+              component_name = command.scope.name
             end
+
+            environment  = CliGateway.invoked_opts[:environment]
+            execute_args = command.execute.parameters.collect { |type, parameter| parameter }
+
+            usage = command.name
+            if execute_args.any?
+              usage += " #{execute_args.map(&:upcase).join(' ')}"
+            end
+
+            method_option :force,
+              type: :boolean,
+              default: false,
+              desc: "Run command even if the environment is locked",
+              aliases: "-f"
+            desc(usage, command.description)
+            define_method command.name.to_sym, ->(*task_args) do
+              job = command_invoker.async_invoke(command.name,
+                plugin: plugin_name,
+                component: component_name,
+                version: plugin_version,
+                environment: environment,
+                arguments: task_args,
+                force: options[:force]
+              )
+
+              display_job(job)
+            end
+          end
         end
       end
     end

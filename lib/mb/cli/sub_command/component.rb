@@ -25,15 +25,13 @@ module MotherBrain
           def fabricate(component)
             environment = CliGateway.invoked_opts[:environment]
 
-            klass = Class.new(self) do
+            Class.new(self) do
               set_component(component)
-            end
 
-            klass.component.commands.each do |command|
-              klass.define_task(command)
-            end
+              component.commands.each do |command|
+                define_task(command)
+              end
 
-            klass.class_eval do
               desc("nodes", "List all nodes grouped by Group")
               define_method(:nodes) do
                 MB.ui.say "Listing nodes for '#{component.name}' in '#{environment}':"
@@ -43,8 +41,6 @@ module MotherBrain
                 MB.ui.say nodes.to_yaml
               end
             end
-
-            klass
           end
 
           # Set the component for this instance of the class and tailor the class for the

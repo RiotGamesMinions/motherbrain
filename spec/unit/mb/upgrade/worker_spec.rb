@@ -5,7 +5,7 @@ describe MB::Upgrade::Worker do
 
   let(:worker) { klass.new(job, environment_name, plugin, options).wrapped_object }
 
-  let(:component1) { MB::Component.new component_name }
+  let(:component1) { MB::Component.new(component_name, plugin) }
   let(:component_name) { "component1" }
   let(:component_versions) { { component_name => "1.2.3" } }
   let(:components) { [component1] }
@@ -58,7 +58,7 @@ describe MB::Upgrade::Worker do
 
     context "when an environment does not exist" do
       before do
-        worker.stub(:assert_environment_exists).and_raise(MB::EnvironmentNotFound)
+        worker.stub(:assert_environment_exists).and_raise(MB::EnvironmentNotFound.new(environment_name))
       end
 
       it "should set the job state to :failure" do

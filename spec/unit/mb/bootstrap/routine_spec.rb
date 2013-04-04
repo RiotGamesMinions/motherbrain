@@ -10,9 +10,9 @@ describe MB::Bootstrap::Routine do
     MB::Plugin.new(metadata)
   end
 
-  let(:activemq) { MB::Component.new('activemq') }
-  let(:mysql) { MB::Component.new('mysql') }
-  let(:nginx) { MB::Component.new('nginx') }
+  let(:activemq) { MB::Component.new('activemq', plugin) }
+  let(:mysql) { MB::Component.new('mysql', plugin) }
+  let(:nginx) { MB::Component.new('nginx', plugin) }
 
   let(:amq_master) { MB::Group.new('master') }
   let(:amq_slave) { MB::Group.new('slave') }

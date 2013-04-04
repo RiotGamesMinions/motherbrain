@@ -286,6 +286,16 @@ module MotherBrain
   class EnvironmentNotFound < MBError
     exit_code(12)
     error_code(3008)
+
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def message
+      "An environment named '#{name}' could not be found"
+    end
   end
 
   class InvalidConfig < MBError
