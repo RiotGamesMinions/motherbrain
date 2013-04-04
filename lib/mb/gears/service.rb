@@ -22,9 +22,11 @@ module MotherBrain
       attr_reader :name
       # @return [Set<Action>]
       attr_reader :actions
+      # @return [MB::Component]
+      attr_reader :component
 
-      # @param [#to_s] name
       # @param [MB::Component] component
+      # @param [#to_s] name
       def initialize(component, name, &block)
         @name      = name.to_s
         @component = component
@@ -67,11 +69,8 @@ module MotherBrain
 
       private
 
-        attr_reader :component
-
         def dsl_eval(&block)
           CleanRoom.new(self).instance_eval do
-            @component = component
             instance_eval(&block)
           end
         end
@@ -86,7 +85,7 @@ module MotherBrain
       class CleanRoom < CleanRoomBase
         # @param [String] name
         def action(name, &block)
-          real_model.add_action Action.new(name, component, &block)
+          real_model.add_action Action.new(name, real_model.component, &block)
         end
 
         private
@@ -97,6 +96,8 @@ module MotherBrain
       # @author Jamie Winsor <reset@riotgames.com>
       # @api private
       class Action
+        include MB::Mixin::Services
+
         # @return [String]
         attr_reader :name
         # @return [Set<Ridley::Node>]
@@ -118,26 +119,44 @@ module MotherBrain
 
         # Run this action on the specified nodes.
         #
-        # @param [Array<Ridley::Node>] nodes the nodes to run this action on
+        # @param [MB::Job] job
+        #   a job to update with status
+        # @param [String] environment
+        #   the environment this command is being run on
+        # @param [Array<Ridley::Node>]
+        #   nodes the nodes to run this action on
         #
         # @return [Service::Action]
-        def run(environment, nodes)
-          runner = ActionRunner.new(environment, nodes)
+        def run(job, environment, nodes)
+          job.set_status("running component: #{component.name} service action: #{name} on (#{nodes.length}) nodes")
+
+          runner = ActionRunner.new(job, environment, nodes)
           runner.instance_eval(&block)
 
+          job.set_status("performing a chef client run on #{nodes.length} nodes")
+          node_success = 0
+          node_failure = 0
+
           responses = nodes.collect do |node|
-            Application.node_querier.future.chef_run(node.public_hostname)
-          end.map(&:value)
+            node_querier.future.chef_run(node.public_hostname)
+          end.each do |future|
+            begin
+              future.value
+              node_success += 1
+            rescue RemoteCommandError => ex
+              node_failure += 1
+            end
+          end
 
-          response_set = Ridley::SSH::ResponseSet.new(responses)
-
-          if response_set.has_errors?
-            raise ChefRunFailure.new(response_set.failures)
+          if node_failure > 0
+            raise RemoteCommandError.new("chef client run failed on #{node_failure} nodes")
+          else
+            job.set_status("finished chef client run on #{node_success} nodes")
           end
 
           self
         ensure
-          runner.reset
+          runner.try(:reset)
         end
 
         private
@@ -151,6 +170,7 @@ module MotherBrain
         class ActionRunner
           include Logging
 
+          attr_reader :job
           attr_reader :environment
           attr_reader :nodes
 
@@ -159,7 +179,8 @@ module MotherBrain
 
           # @param [String] environment
           # @param [Array<Ridley::Node>] nodes
-          def initialize(environment, nodes)
+          def initialize(job, environment, nodes)
+            @job         = job
             @environment = environment
             @nodes       = Array(nodes)
             @resets      = []
@@ -176,7 +197,7 @@ module MotherBrain
           def environment_attribute(key, value, options = {})
             options[:toggle] ||= false
 
-            log.info "Setting environment attribute '#{key}' to '#{value}' on #{self.environment}"
+            job.set_status("Setting environment attribute '#{key}' to '#{value}' on #{self.environment}")
             set_environment_attribute(key, value, options)
           end
 
@@ -192,7 +213,7 @@ module MotherBrain
             options[:toggle] ||= false
 
             futures = self.nodes.collect do |l_node|
-              log.info "Setting node attribute '#{key}' to '#{value}' on #{l_node.name}"
+              job.set_status("Setting node attribute '#{key}' to '#{value}' on #{l_node.name}")
               Celluloid::Future.new {
                 set_node_attribute(l_node, key, value, options)
               }

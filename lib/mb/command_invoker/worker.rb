@@ -18,7 +18,7 @@ module MotherBrain
         @environment = environment
       end
 
-      # @param [MB::Job]
+      # @param [MB::Job] job
       # @param [Array] arguments
       def run(job, arguments = nil)
         arguments ||= Array.new
@@ -27,7 +27,7 @@ module MotherBrain
         msg << " with arguments: #{arguments}" if arguments.any?
         job.set_status(msg)
 
-        command.invoke(environment, *arguments)
+        command.invoke(job, environment, *arguments)
       end
     end
   end

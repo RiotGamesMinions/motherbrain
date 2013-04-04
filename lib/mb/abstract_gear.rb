@@ -21,7 +21,11 @@ module MotherBrain
 
     include Chozo::VariaModel
 
-    def run(environment, *args)
+    # @param [MB::Job] job
+    #   a job to update with status
+    # @param [String] environment
+    #   the environment this command is being run on
+    def run(job, environment, *args)
       raise AbstractFunction, "#run(environment, *args) must be implemented on #{self.class}"
     end
   end

@@ -25,7 +25,7 @@ describe MB::CommandInvoker::Worker do
     end
 
     it "invokes the command" do
-      command.should_receive(:invoke).with(environment)
+      command.should_receive(:invoke).with(job, environment)
 
       run
     end
@@ -34,7 +34,7 @@ describe MB::CommandInvoker::Worker do
       let(:arguments) { [1,2,3] }
 
       it "invokes the command with the additional arguments" do
-        command.should_receive(:invoke).with(environment, *arguments)
+        command.should_receive(:invoke).with(job, environment, *arguments)
 
         run
       end

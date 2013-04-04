@@ -17,6 +17,7 @@ describe MB::CommandRunner do
   let(:slave_group) { double('slave_group', nodes: [ node_3 ]) }
 
   let(:environment) { "rspec-test" }
+  let(:job) { double('job') }
 
   subject { MB::CommandRunner }
 
@@ -30,14 +31,14 @@ describe MB::CommandRunner do
         on("master_group")
       end
 
-      lambda { subject.new(environment, scope, command_block)}.should raise_error(MB::PluginSyntaxError)
+      lambda { subject.new(job, environment, scope, command_block)}.should raise_error(MB::PluginSyntaxError)
     end
 
     it "has a single group" do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(environment, master_group.nodes)
+        action.should_receive(:run).with(job, environment, master_group.nodes)
       end
 
       command_block = Proc.new do
@@ -46,7 +47,7 @@ describe MB::CommandRunner do
         end
       end
 
-      subject.new(environment, scope, command_block)
+      subject.new(job, environment, scope, command_block)
     end
 
     it "has multiple groups" do
@@ -54,7 +55,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(environment, nodes)
+        action.should_receive(:run).with(job, environment, nodes)
       end
 
       command_block = Proc.new do
@@ -63,7 +64,7 @@ describe MB::CommandRunner do
         end
       end
 
-      subject.new(environment, scope, command_block)
+      subject.new(job, environment, scope, command_block)
     end
 
     it "has multiple groups and an option" do
@@ -71,7 +72,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(environment, [anything()]).exactly(3).times
+        action.should_receive(:run).with(job, environment, [anything()]).exactly(3).times
       end
 
       command_block = Proc.new do
@@ -80,14 +81,14 @@ describe MB::CommandRunner do
         end
       end
 
-      subject.new(environment, scope, command_block)
+      subject.new(job, environment, scope, command_block)
     end
 
     it "can run on any 1 node" do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(environment, [anything()])
+        action.should_receive(:run).with(job, environment, [anything()])
       end
 
       command_block = Proc.new do
@@ -96,15 +97,15 @@ describe MB::CommandRunner do
         end
       end
 
-      subject.new(environment, scope, command_block)
+      subject.new(job, environment, scope, command_block)
     end
 
     it "can only run on one node at a time" do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(environment, [node_1])
-        action.should_receive(:run).with(environment, [node_2])
+        action.should_receive(:run).with(job, environment, [node_1])
+        action.should_receive(:run).with(job, environment, [node_2])
       end
 
       command_block = Proc.new do
@@ -113,7 +114,7 @@ describe MB::CommandRunner do
         end
       end
 
-      subject.new(environment, scope, command_block)
+      subject.new(job, environment, scope, command_block)
     end
 
     it "has multiple on blocks" do
@@ -121,9 +122,9 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(environment, [node_1])
-        action.should_receive(:run).with(environment, [node_2])
-        action.should_receive(:run).with(environment, [node_3])
+        action.should_receive(:run).with(job, environment, [node_1])
+        action.should_receive(:run).with(job, environment, [node_2])
+        action.should_receive(:run).with(job, environment, [node_3])
       end
 
       command_block = Proc.new do
@@ -136,7 +137,7 @@ describe MB::CommandRunner do
         end
       end
 
-      subject.new(environment, scope, command_block)
+      subject.new(job, environment, scope, command_block)
     end
   end
 
@@ -159,7 +160,7 @@ describe MB::CommandRunner do
         end
       end
 
-      subject.new(environment, scope, command_block)
+      subject.new(job, environment, scope, command_block)
     end
 
     context "when there are no nodes in the target groups" do
@@ -176,7 +177,7 @@ describe MB::CommandRunner do
 
         actions.each { |action| action.should_not_receive(:run) }
 
-        subject.new(environment, scope, command_block)
+        subject.new(job, environment, scope, command_block)
       end
     end
 
@@ -194,14 +195,14 @@ describe MB::CommandRunner do
           end
         end
 
-        subject.new(environment, scope, command_block)
+        subject.new(job, environment, scope, command_block)
       end
     end
   end
 
   describe "#component" do
     let(:component) { double('component', name: "foo") }
-    let(:proxy) { subject.new(environment, scope, Proc.new {}).component("foo") }
+    let(:proxy) { subject.new(job, environment, scope, Proc.new {}).component("foo") }
 
     before do
       scope.should_receive(:component).with("foo").and_return(component)

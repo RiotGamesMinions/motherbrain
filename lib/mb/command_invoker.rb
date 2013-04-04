@@ -115,7 +115,7 @@ module MotherBrain
       end
 
       job.report_success("successfully executed command")
-    rescue PluginNotFound, ComponentNotFound, CommandNotFound, EnvironmentNotFound => ex
+    rescue PluginNotFound, ComponentNotFound, CommandNotFound, EnvironmentNotFound, RemoteCommandError => ex
       job.report_failure(ex.to_s)
     ensure
       job.terminate if job.try(:alive?)
