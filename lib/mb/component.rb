@@ -74,6 +74,22 @@ module MotherBrain
       self.commands.find { |command| command.name == name }
     end
 
+    # Return a command from the component's list of commands. If a command is not found an exception will be rasied.
+    #
+    # @param [#to_s] name
+    #   name of the command to find and return
+    #
+    # @raise [CommandNotFound] if a command matching the given name is not found on this component
+    #
+    # @return [MB::Command]
+    def command!(name)
+      if (found = command(name)).nil?
+        raise CommandNotFound.new(name, self)
+      end
+
+      found
+    end
+
     # Run a command of the given name on the component.
     #
     # @param [String] environment

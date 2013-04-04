@@ -128,14 +128,30 @@ module MotherBrain
       component(name).present?
     end
 
-    # Find and return a command from the plugin's list of supported commands
+    # Return a command from the plugins list of commands.
     #
     # @param [#to_s] name
     #   name of the command to find and return
     #
-    # @return [MB::Command]
+    # @return [MB::Command, nil]
     def command(name)
       commands.find { |command| command.name == name.to_s }
+    end
+
+    # Return a command from the plugin's list of commands. If a command is not found an exception will be rasied.
+    #
+    # @param [#to_s] name
+    #   name of the command to find and return
+    #
+    # @raise [CommandNotFound] if a command matching the given name is not found on this plugin
+    #
+    # @return [MB::Command]
+    def command!(name)
+      if (found = command(name)).nil?
+        raise CommandNotFound.new(name, self)
+      end
+
+      found
     end
 
     # Finds the nodes for the given environment for each {Component} of the plugin groups them

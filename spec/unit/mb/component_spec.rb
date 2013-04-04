@@ -15,6 +15,43 @@ describe MB::Component do
     end
   }
 
+  describe "#command" do
+    let(:component) do
+      MB::Component.new("activemq", plugin) do
+        command "existing" do
+          # block
+        end
+      end
+    end
+
+    subject { component.command(name) }
+
+    context "when the component has a command matching the given name" do
+      let(:name) { "existing" }
+
+      it { should be_a(MB::Command) }
+      it { name.should eql("existing") }
+    end
+
+    context "when the component does not have a command matching the given name" do
+      let(:name) { "not-there" }
+
+      it { should be_nil }
+    end
+  end
+
+  describe "#command!" do
+    before do
+      subject.stub(command: nil)
+    end
+
+    it "raises a CommandNotFound error when no matching command is present" do
+      expect {
+        subject.command!("stop")
+      }.to raise_error(MB::CommandNotFound)
+    end
+  end
+
   describe "#description" do
     subject { component.description }
 
