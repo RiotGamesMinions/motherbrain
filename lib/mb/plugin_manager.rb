@@ -193,6 +193,21 @@ module MotherBrain
       abort ex
     end
 
+    # Return most current version of the plugin of the given name
+    #
+    # @param [String] name
+    #   name of the plugin
+    #
+    # @option options [Boolean] :remote (false)
+    #   include plugins on the remote Chef server which haven't been cached locally
+    #
+    # @return [MB::Plugin, nil]
+    def latest(name, options = {})
+      options = options.reverse_merge(remote: false)
+
+      list(name: name, remote: options[:remote]).sort.last
+    end
+
     # @return [Array<MotherBrain::Plugin>]
     def load_all
       load_all_local
@@ -283,7 +298,7 @@ module MotherBrain
     # @option options [Boolean] :remote (false)
     #   eargly search for plugins on the remote Chef server and include them in the returned list
     #
-    # @return [Set<Plugin>]
+    # @return [Set<MB::Plugin>]
     def list(options = {})
       options = options.reverse_merge(remote: false)
 
