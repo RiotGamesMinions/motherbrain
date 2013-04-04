@@ -86,7 +86,8 @@ describe MB::CommandInvoker do
     let(:component) { "default" }
     let(:environment) { "rspec-test" }
     let(:version) { "1.2.3" }
-    let(:job) { double(MB::Job) }
+    let(:job) { double(MB::Job, alive?: true, terminate: nil) }
+    let(:worker) { double('worker', alive?: true, terminate: nil) }
     let(:environment_manager) { double('env-man') }
     let(:options) do
       {
@@ -101,10 +102,11 @@ describe MB::CommandInvoker do
     let(:run) { subject.invoke(job, command_name, options) }
 
     before(:each) do
+      MB::CommandInvoker::Worker.stub(:new).and_return(worker)
       subject.stub(find: command, environment_manager: environment_manager, plugin_manager: plugin_manager)
-      job.stub(set_status: nil, alive?: true, report_running: nil, report_failure: nil, report_success: nil)
-      job.should_receive(:terminate).once
+      job.stub(set_status: nil, report_running: nil, report_failure: nil, report_success: nil)
       environment_manager.stub(find: nil)
+      worker.stub(run: nil)
     end
 
     it "wraps the invocation in a lock" do
@@ -120,8 +122,26 @@ describe MB::CommandInvoker do
       run
     end
 
-    it "delegates to the loaded command to invoke" do
-      command.should_receive(:invoke).with(environment, *options[:arguments])
+    it "terminates the running job on completion" do
+      job.should_receive(:terminate).once
+
+      run
+    end
+
+    it "creates a new worker to run the command in" do
+      MB::CommandInvoker::Worker.should_receive(:new).with(command, environment).and_return(worker)
+
+      run
+    end
+
+    it "runs the worker with the job and given arguments" do
+      worker.should_receive(:run).with(job, options[:arguments])
+
+      run
+    end
+
+    it "shuts the worker down after completion" do
+      worker.should_receive(:terminate).once
 
       run
     end

@@ -1,6 +1,8 @@
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   class CommandInvoker
+    autoload :Worker, 'mb/command_invoker/worker'
+
     class << self
       # @raise [Celluloid::DeadActorError] if command invoker has not been started
       #
@@ -106,20 +108,18 @@ module MotherBrain
       environment_manager.find(options[:environment])
 
       command = find(command_name, options[:plugin], options.slice(:component, :environment, :version))
+      worker  = Worker.new(command, options[:environment])
 
       chef_synchronize(chef_environment: options[:environment], force: options[:force], job: job) do
-        job.set_status("starting command invocation")
-        command.invoke(options[:environment], *options[:arguments])
+        worker.run(job, options[:arguments])
       end
 
       job.report_success("successfully executed command")
     rescue PluginNotFound, ComponentNotFound, CommandNotFound, EnvironmentNotFound => ex
       job.report_failure(ex.to_s)
-    rescue => ex
-      job.report_failure(ex.to_s)
-      raise ex
     ensure
-      job.terminate if job && job.alive?
+      job.terminate if job.try(:alive?)
+      worker.terminate if worker.try(:alive?)
     end
 
     private
