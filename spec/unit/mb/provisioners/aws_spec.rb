@@ -47,7 +47,7 @@ describe MB::Provisioners::AWS do
     ]
   end
 
-  describe "#up", :focus do
+  describe "#up" do
     let(:job) { double('job') }
     let(:env_name) { "mbtest" }
     let(:plugin) { double('plugin') }
@@ -137,18 +137,31 @@ describe MB::Provisioners::AWS do
       end
 
       it "keeps track of the instances" do
-        subject.instances.should be_a(Array)
+        subject.instances.should be_a(Hash)
         subject.instances.should have(3).instances
-        subject.instances.each {|i| i[:type].should eq("m1.large") }
-        subject.instances.each {|i| i[:ipaddress].should be_nil }
+        subject.instances.each {|k,i| i[:type].should eq("m1.large") }
+        subject.instances.each {|k,i| i[:ipaddress].should be_nil }
+      end
+    end
+
+    describe "#verify_instances" do
+      context "happy path" do
+        it "should check the instance status" do
+          subject.create_instances
+          subject.fog_connection.should_receive(:describe_instances).at_least(2).times.and_call_original
+          subject.verify_instances
+        end
+
+        
       end
     end
 
     describe "#instances_as_manifest" do
       before do
         subject.create_instances
-        subject.instances.each_with_index do |instance, idx|
-          instance[:ipaddress] = "172.16.1.#{idx+1}"
+        subject.instances.each do |instance_id, instance|
+          instance[:ipaddress] = "172.16.1.#{rand(253)+1}"
+          instance[:status]    = 16
         end
       end
 
