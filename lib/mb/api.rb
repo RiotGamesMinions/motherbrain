@@ -186,13 +186,15 @@ module MotherBrain
           params do
             requires :command_id, type: String, desc: "command name"
             optional :arguments, type: Array, desc: "optional array of arguments for the command"
+            optional :force, type: Boolean, desc: "force command an environment even if it is locked"
           end
           post ':command_id' do
-            command_invoker.invoke_plugin(
-              params[:plugin_id],
-              params[:command_id],
-              params[:environment_id],
-              params.slice(:arguments)
+            command_invoker.async_invoke(params[:command_id],
+              plugin: params[:plugin_id],
+              component: params[:component_id],
+              environment: params[:environment_id],
+              arguments: params[:arguments],
+              force: params[:force]
             )
           end
 

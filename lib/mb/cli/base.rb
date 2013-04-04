@@ -4,6 +4,7 @@ module MotherBrain
     class Base < Thor
       include Thor::Actions
       include MB::Mixin::CodedExit
+      include MB::Mixin::Services
 
       class << self
         # Registers a SubCommand with this Cli::Base class
@@ -12,6 +13,16 @@ module MotherBrain
         def register_subcommand(klass)
           self.register(klass, klass.name, klass.usage, klass.description)
         end
+      end
+
+      no_tasks do
+        # @param [MB::Job] job
+        def display_job(job)
+          CliClient.new(job).display
+        end
+        # @note from Jamie: Increased verbosity for Michael Ivey. This is pretty much the most important line of code
+        #   in this entire codebase so DO NOT REMOVE.
+        alias_method :display_job_status_and_wait_until_it_is_done_while_providing_user_feedback, :display_job
       end
     end
   end

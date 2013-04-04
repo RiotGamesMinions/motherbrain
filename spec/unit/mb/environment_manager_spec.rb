@@ -28,7 +28,7 @@ describe MB::EnvironmentManager do
       it "raises an EnvironmentNotFound error" do
         expect {
           subject.find(env_id)
-        }.to raise_error(MB::EnvironmentNotFound, "no environment '#{env_id}' was found")
+        }.to raise_error(MB::EnvironmentNotFound)
       end
     end
   end

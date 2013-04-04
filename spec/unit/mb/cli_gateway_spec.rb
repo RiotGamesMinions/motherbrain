@@ -196,7 +196,9 @@ describe MB::CliGateway do
         end
 
         context "when an environment of the given name is not found" do
-          before { plugin_manager.should_receive(:for_environment).and_raise(MB::EnvironmentNotFound) }
+          before do
+            plugin_manager.should_receive(:for_environment).and_raise(MB::EnvironmentNotFound.new(environment))
+          end
 
           it "finds the latest plugin on local and remote of the given name" do
             plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(plugin)

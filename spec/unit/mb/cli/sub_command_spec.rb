@@ -23,7 +23,7 @@ describe MB::Cli::SubCommand do
 
     context "given a MB::Component" do
       let(:plugin) { double('plugin') }
-      let(:component) { MB::Component.new(plugin) }
+      let(:component) { MB::Component.new(plugin, plugin) }
 
       it "returns an anonymous class whose superclass is MB::Cli::SubCommand::Component" do
         klass = subject.new(component)

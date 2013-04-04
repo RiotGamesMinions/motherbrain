@@ -31,6 +31,42 @@ describe MotherBrain::PluginManager do
 
   subject { described_class.new }
 
+  describe "#latest" do
+    let(:name) { "apple" }
+
+    let(:one) do
+      metadata = MB::CookbookMetadata.new do
+        name 'apple'
+        version '1.0.0'
+      end
+      MB::Plugin.new(metadata)
+    end
+    let(:two) do
+      metadata = MB::CookbookMetadata.new do
+        name 'apple'
+        version '2.0.0'
+      end
+      MB::Plugin.new(metadata)
+    end
+    let(:three) do
+      metadata = MB::CookbookMetadata.new do
+        name 'orange'
+        version '2.0.0'
+      end
+      MB::Plugin.new(metadata)
+    end
+
+    before(:each) do
+      subject.add(one)
+      subject.add(two)
+      subject.add(three)
+    end
+
+    it "returns the latest version of the plugin matching the given name" do
+      subject.latest(name).should eql(two)
+    end
+  end
+
   describe "#load_all" do
     let(:count) { 3 }
 
@@ -303,7 +339,8 @@ describe MotherBrain::PluginManager do
 
     context "when the environment does not exist" do
       before(:each) do
-        environment_manager.should_receive(:find).with(environment_id).and_raise(MB::EnvironmentNotFound)
+        environment_manager.should_receive(:find).with(environment_id).
+          and_raise(MB::EnvironmentNotFound.new(environment_id))
       end
 
       it "raises an EnvironmentNotFound error" do

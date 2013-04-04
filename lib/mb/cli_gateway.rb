@@ -2,8 +2,6 @@ module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   class CliGateway < Cli::Base
     class << self
-      include MB::Mixin::Services
-
       def invoked_opts
         @invoked_opts ||= HashWithIndifferentAccess.new
       end
@@ -221,8 +219,6 @@ module MotherBrain
       "lock",
       "unlock",
     ].freeze
-
-    include MB::Mixin::Services
 
     source_root File.join(__FILE__, '../../../templates')
 
