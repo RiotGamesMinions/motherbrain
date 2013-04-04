@@ -147,7 +147,9 @@ module MotherBrain
     #
     # @return [MB::Command]
     def command!(name)
-      if (found = command(name)).nil?
+      found = command(name)
+
+      if found.nil?
         raise CommandNotFound.new(name, self)
       end
 
