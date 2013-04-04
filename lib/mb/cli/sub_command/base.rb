@@ -25,7 +25,7 @@ module MotherBrain
           #
           # @param [MB::Command] command
           def define_task(command)
-            plugin_name    = command.plugin
+            plugin_name    = command.plugin.name
             plugin_version = command.plugin.version.to_s
             component_name = nil
 
