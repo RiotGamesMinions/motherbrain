@@ -38,8 +38,45 @@ describe MB::CommandInvoker do
     end
   end
 
-  describe "#find_command" do
-    pending
+  describe "#find" do
+    let(:command) { "stop" }
+    let(:plugin) { "test-plugin" }
+    let(:options) do
+      {
+        version: nil,
+        component: nil,
+        environment: nil
+      }
+    end
+
+    let(:run) { subject.find(command, plugin, options) }
+
+    it "delegates to #find_latest" do
+      subject.should_receive(:find_latest).with(command, plugin, options[:component])
+      run
+    end
+
+    context "when given a value for :version" do
+      before do
+        options[:version] = "1.2.3"
+      end
+
+      it "delegates to #for_version" do
+        subject.should_receive(:for_version).with(options[:version], command, plugin, options[:component])
+        run
+      end
+    end
+
+    context "when given a value for :environment" do
+      before do
+        options[:environment] = "test-env"
+      end
+
+      it "delegates to #for_environment" do
+        subject.should_receive(:for_environment).with(options[:environment], command, plugin, options[:component])
+        run
+      end
+    end
   end
 
   describe "#invoke" do
@@ -48,6 +85,7 @@ describe MB::CommandInvoker do
     let(:plugin) { "chat" }
     let(:component) { "default" }
     let(:environment) { "rspec-test" }
+    let(:version) { "1.2.3" }
     let(:job) { double(MB::Job) }
     let(:environment_manager) { double('env-man') }
     let(:options) do
@@ -55,6 +93,7 @@ describe MB::CommandInvoker do
         plugin: plugin,
         component: component,
         environment: environment,
+        version: version,
         arguments: Array.new
       }
     end
@@ -62,7 +101,7 @@ describe MB::CommandInvoker do
     let(:run) { subject.invoke(job, command_name, options) }
 
     before(:each) do
-      subject.stub(find_command: command, environment_manager: environment_manager)
+      subject.stub(find: command, environment_manager: environment_manager, plugin_manager: plugin_manager)
       job.stub(set_status: nil, alive?: true, report_running: nil, report_failure: nil, report_success: nil)
       job.should_receive(:terminate).once
       environment_manager.stub(find: nil)
@@ -93,10 +132,10 @@ describe MB::CommandInvoker do
         job.stub(:report_failure)
       end
 
-      it "raises a RuntimeError" do
+      it "raises a MB::ArgumentError" do
         expect {
           run
-        }.to raise_error(RuntimeError)
+        }.to raise_error(MB::ArgumentError)
       end
     end
 
@@ -104,7 +143,9 @@ describe MB::CommandInvoker do
       let(:exception) { MB::EnvironmentNotFound.new(environment) }
 
       before do
-        subject.should_receive(:find_command).and_raise(exception)
+        subject.should_receive(:find).
+          with(command_name, plugin, component: component, environment: environment, version: version).
+          and_raise(exception)
       end
 
       it "should set the job state to :failure" do
@@ -118,7 +159,9 @@ describe MB::CommandInvoker do
       let(:exception) { MB::PluginNotFound.new(plugin) }
 
       before do
-        subject.should_receive(:find_command).and_raise(exception)
+        subject.should_receive(:find).
+          with(command_name, plugin, component: component, environment: environment, version: version).
+          and_raise(exception)
       end
 
       it "sets the job to failure with a command not found message" do
@@ -132,7 +175,9 @@ describe MB::CommandInvoker do
       let(:exception) { MB::ComponentNotFound.new(component, plugin) }
 
       before do
-        subject.should_receive(:find_command).and_raise(exception)
+        subject.should_receive(:find).
+          with(command_name, plugin, component: component, environment: environment, version: version).
+          and_raise(exception)
       end
 
       it "sets the job to failure with a command not found message" do
@@ -146,7 +191,9 @@ describe MB::CommandInvoker do
       let(:exception) { MB::CommandNotFound.new(component, plugin) }
 
       before do
-        subject.should_receive(:find_command).and_raise(exception)
+        subject.should_receive(:find).
+          with(command_name, plugin, component: component, environment: environment, version: version).
+          and_raise(exception)
       end
 
       it "completes the job as a failure with a command not found message" do
