@@ -15,6 +15,7 @@ require 'multi_json'
 
 require 'mb/version'
 require 'mb/errors'
+require 'mb/core_ext'
 require 'mb/ridley_ext'
 require 'mb/thor_ext'
 
