@@ -54,8 +54,13 @@ module MotherBrain
 
         # Run this action on the specified nodes
         #
-        # @param [Array<Ridley::Node>] nodes the nodes to run this action on
-        def run(environment, nodes)
+        # @param [MB::Job] job
+        #   a job to update with status
+        # @param [String] environment
+        #   the environment this command is being run on
+        # @param [Array<Ridley::Node>] nodes
+        #   the nodes to run this action on
+        def run(job, environment, nodes)
           threads = []
 
           nodes.each do |node|

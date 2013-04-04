@@ -8,7 +8,7 @@ describe MB::AbstractGear do
   describe "#run" do
     it "raises an AbstractFunction error when not implemented" do
       lambda {
-        subject.run(double('environment'))
+        subject.run(double('job'), double('environment'))
       }.should raise_error(MB::AbstractFunction)
     end
   end
