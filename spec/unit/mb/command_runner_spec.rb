@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe MB::CommandRunner do
-  let(:scope) { double('plugin', name: "plugin") }
+  let(:scope) { MB::Plugin.new(double(valid?: true)) }
 
   let(:action_1) { double('action_1', name: "action 1") }
   let(:action_2) { double('action_2', name: "action 2") }
@@ -219,6 +219,25 @@ describe MB::CommandRunner do
     it "invokes the real component" do
       component.should_receive(:invoke).with(environment, "bar", [])
       proxy.invoke("bar")
+    end
+  end
+
+  describe "#command" do
+    let(:command) do
+      MB::Command.new("foo", scope) do
+        description "test command"
+        execute do
+          # nothing
+        end
+      end
+    end
+
+    before do
+      scope.should_receive(:command!).with("foo").and_return(command)
+    end
+
+    it "is invoked" do
+      subject.new(job, environment, scope, Proc.new {}).command("foo")
     end
   end
 end
