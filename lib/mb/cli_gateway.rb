@@ -95,7 +95,7 @@ module MotherBrain
 
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
-        config[:shell] ||= Thor::Base.shell.new
+        config[:shell] ||= MB::Cli::Base.shell.new
         args, opts = parse_args(given_args)
         invoked_opts.merge!(opts)
 
