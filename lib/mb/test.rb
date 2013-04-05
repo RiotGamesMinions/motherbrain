@@ -60,10 +60,14 @@ module MotherBrain
           and_return(stub(:response, :body => {}))
       end
 
-      def cookbook(name)
+      def cookbook(name, version = nil)
         ridley.should_receive(:get).with("cookbooks").and_return(stub(:response, :body => {}))
         ridley.should_receive(:get).with("cookbooks/#{name}").and_return(stub(:response, :body => {}))
-        plugin = MB::Application.plugin_manager.find name
+        plugin = if version.nil?
+          MB::Application.plugin_manager.latest(name)
+        else
+          MB::Application.plugin_manager.find(name, version)
+        end
         MB::Application.plugin_manager.should_receive(:for_environment).and_return(plugin)
       end
 
