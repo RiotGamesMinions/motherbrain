@@ -200,7 +200,7 @@ module MotherBrain
       options = options.reverse_merge(remote: false)
 
       potentials = local_versions(name)
-      potentials += chef_connection.cookbook.versions(name) if options[:remote]
+      potentials += remote_cookbook_versions(name) if options[:remote]
       potentials = potentials.collect { |version| Solve::Version.new(version) }.uniq.sort.reverse
 
       potentials.each do |version|
@@ -213,6 +213,8 @@ module MotherBrain
           return remote if remote
         end
       end
+
+      nil
     end
 
     # @return [Array<MotherBrain::Plugin>]
@@ -428,7 +430,7 @@ module MotherBrain
     #
     # @return [Array<String>]
     def remote_versions(name)
-      chef_connection.cookbook.versions(name).collect do |version|
+      remote_cookbook_versions(name).collect do |version|
         (plugin = load_remote(name, version)).nil? ? nil : plugin.version.to_s
       end.compact
     rescue Ridley::Errors::HTTPNotFound
@@ -470,6 +472,16 @@ module MotherBrain
 
         add(plugin, options)
         plugin
+      end
+
+      # List all the versions of the given cookbook on the remote Chef server
+      #
+      # @param [String] name
+      #   name of the cookbook to retrieve versions of
+      #
+      # @return [Array<String>]
+      def remote_cookbook_versions(name)
+        chef_connection.cookbook.versions(name)
       end
   end
 end

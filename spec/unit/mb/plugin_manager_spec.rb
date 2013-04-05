@@ -47,6 +47,16 @@ describe MotherBrain::PluginManager do
       subject.should_receive(:find).with(name, version, remote: false).and_return(plugin)
       subject.latest(name).should eql(plugin)
     end
+
+    context "when no suitable plugin can be found" do
+      before(:each) do
+        subject.stub(local_versions: [])
+      end
+
+      it "returns nil" do
+        subject.latest(name).should be_nil
+      end
+    end
   end
 
   describe "#load_all" do
