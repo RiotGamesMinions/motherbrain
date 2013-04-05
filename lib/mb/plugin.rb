@@ -5,13 +5,12 @@ module MotherBrain
       # Create a new plugin instance from the given content
       #
       # @param [MB::CookbookMetadata] metadata
-      # @param [Boolean] remote
       #
       # @raise [PluginLoadError]
       #
       # @yieldreturn [MotherBrain::Plugin]
-      def load(metadata, remote=false, &block)
-        new(metadata, remote, &block).validate!
+      def load(metadata, &block)
+        new(metadata, &block).validate!
       rescue PluginSyntaxError => ex
         ErrorHandler.wrap(ex)
       end
@@ -21,13 +20,11 @@ module MotherBrain
       # @param [#to_s] path
       #   a path to a directory containing a motherbrain plugin file and cookbook
       #   metadata file
-      # @param [Boolean] remote
-      #   a boolean value for whether this plugin is remote or local
-      # 
+      #
       # @raise [PluginLoadError]
       #
       # @return [MotherBrain::Plugin]
-      def from_path(path, remote=false)
+      def from_path(path)
         plugin_filename   = File.join(path, PLUGIN_FILENAME)
         ruby_metadata_filename = File.join(path, RUBY_METADATA_FILENAME)
         json_metadata_filename = File.join(path, JSON_METADATA_FILENAME)
@@ -46,7 +43,7 @@ module MotherBrain
           raise PluginLoadError, "Expected motherbrain plugin file at: #{plugin_filename}"
         end
 
-        load(metadata, remote) { eval(plugin_contents, binding, plugin_filename, 1) }
+        load(metadata) { eval(plugin_contents, binding, plugin_filename, 1) }
       rescue PluginSyntaxError => ex
         raise PluginSyntaxError, ErrorHandler.new(ex, file_path: plugin_filename).message
       end
@@ -82,8 +79,7 @@ module MotherBrain
     def_delegator :metadata, :version
 
     # @param [MB::CookbookMetadata] metadata
-    # @param [Boolean] remote
-    def initialize(metadata, remote=false, &block)
+    def initialize(metadata, &block)
       unless metadata.valid?
         raise InvalidCookbookMetadata.new(metadata.errors)
       end
@@ -92,7 +88,6 @@ module MotherBrain
       @components   = Set.new
       @commands     = Set.new
       @dependencies = HashWithIndifferentAccess.new
-      @remote       = remote
 
       if block_given?
         dsl_eval(&block)
@@ -102,11 +97,6 @@ module MotherBrain
     # @return [Symbol]
     def id
       self.class.key_for(self.name, self.version)
-    end
-
-    # @return [Boolean]
-    def remote?
-      @remote
     end
 
     # @param [#to_s] name
