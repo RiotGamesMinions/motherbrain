@@ -284,12 +284,12 @@ module MotherBrain
     # @return [Array<String>]
     def local_versions(name)
       local_versions = Berkshelf.cookbooks(with_plugin: true).collect do |path|
-        log.info { "looking in #{path} for plugins"}
         plugin = load_local(path)
         next if plugin.nil?
 
         plugin.name == name ? plugin.version.to_s : nil
       end.compact
+
       local_versions << load_local_plugin.version.to_s if local_plugin?
       local_versions
     end
@@ -405,7 +405,7 @@ module MotherBrain
       if all_versions.empty?
         abort PluginNotFound.new(name)
       end
-      
+
       all_versions
     end
 
