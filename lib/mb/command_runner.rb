@@ -137,7 +137,7 @@ module MotherBrain
     end
 
     def command(command_name)
-      scope.command!(command_name).invoke(environment)
+      scope.command!(command_name).invoke(job, environment)
     end
 
     private
