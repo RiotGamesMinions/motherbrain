@@ -280,14 +280,16 @@ describe MotherBrain::PluginManager do
       subject.add(three)
     end
 
-    context "when a version is given" do
-      it "returns the plugin of the given name and version" do
-        subject.find(one.name, one.version).should eql(one)
-      end
+    it "returns the plugin of the given name and version" do
+      subject.find(one.name, one.version).should eql(one)
+    end
 
-      it "returns nil if the plugin of a given name and version is not found" do
-        subject.find("glade", "3.2.4").should be_nil
-      end
+    it "returns nil if the plugin of a given name and version is not found" do
+      subject.find("glade", "3.2.4").should be_nil
+    end
+
+    it "returns the latest if a version is not passed" do
+      subject.find("apple").should eq(two)
     end
   end
 
