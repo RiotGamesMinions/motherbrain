@@ -382,10 +382,10 @@ describe MotherBrain::PluginManager do
       }
     end
 
-    context "when the remote has a plugin which satisfies the constraint" do
-      let(:constraint) { ">= 1.2.3" }
-      let(:plugin) { double('plugin', name: 'nginx', version: '1.3.0') }
+    let(:constraint) { ">= 1.2.3" }
+    let(:plugin) { double('plugin', name: plugin_id, version: '1.3.0') }
 
+    context "when given a non-wildcard, non-equality constraint" do
       before(:each) do
         subject.should_receive(:versions).with(plugin_id, options[:remote]).and_return(versions)
       end
@@ -416,18 +416,13 @@ describe MotherBrain::PluginManager do
       end
     end
 
-    context "when the :remote option is set to true" do
-      let(:constraint) { "= 1.0.0" }
+    context "when given a wild card constraint (>= 0.0.0)" do
+      let(:constraint) { ">= 0.0.0" }
 
-      before do
-        options[:remote] = true
-      end
+      it "returns the latest plugin" do
+        subject.should_receive(:latest).with(plugin_id, options).and_return(plugin)
 
-      it "attempts to load the matching plugin from the remote" do
-        subject.should_receive(:load_remote).with(plugin_id, "1.0.0")
-        subject.should_receive(:find).with(plugin_id, "1.0.0", remote: false).and_return(versions[0])
-
-        subject.satisfy(plugin_id, constraint, options)
+        subject.satisfy(plugin_id, constraint, options).should eql(plugin)
       end
     end
   end

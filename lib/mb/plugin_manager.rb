@@ -372,12 +372,10 @@ module MotherBrain
 
       # Optimize for equality operator. Don't need to find all of the versions if
       # we only care about one.
-      version = if constraint.operator == "="
-        constrained_version = constraint.version.to_s
-        if options[:remote]
-          load_remote(plugin_name, constrained_version)
-        end
-        constrained_version
+      if constraint.operator == "="
+        find(plugin_name, constraint.version, options.slice(:remote))
+      elsif constraint.to_s == ">= 0.0.0"
+        latest(plugin_name, options.slice(:remote))
       else
         graph = Solve::Graph.new
         versions(plugin_name, options[:remote]).each do |version|
@@ -385,12 +383,11 @@ module MotherBrain
         end
 
         solution = Solve.it!(graph, [[plugin_name, constraint]])
-        solution[plugin_name]
+        version  = solution[plugin_name]
+        # don't search the remote for the plugin again; we would have already done that by
+        # calling versions() and including a {remote: true} option.
+        find(plugin_name, version, remote: false)
       end
-
-      # don't search the remote for the plugin again; we would have already done that by
-      # calling versions() and including our options.
-      find(plugin_name, version, remote: false)
     rescue Solve::Errors::NoSolutionError
       abort PluginNotFound.new(plugin_name, constraint)
     end
