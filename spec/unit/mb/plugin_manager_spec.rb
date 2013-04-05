@@ -33,37 +33,19 @@ describe MotherBrain::PluginManager do
 
   describe "#latest" do
     let(:name) { "apple" }
+    let(:version) { "2.0.0" }
 
-    let(:one) do
-      metadata = MB::CookbookMetadata.new do
-        name 'apple'
-        version '1.0.0'
-      end
-      MB::Plugin.new(metadata)
-    end
-    let(:two) do
-      metadata = MB::CookbookMetadata.new do
-        name 'apple'
-        version '2.0.0'
-      end
-      MB::Plugin.new(metadata)
-    end
-    let(:three) do
-      metadata = MB::CookbookMetadata.new do
-        name 'orange'
-        version '2.0.0'
-      end
-      MB::Plugin.new(metadata)
+    let(:plugin) do
+      double('plugin', name: name, version: version)
     end
 
     before(:each) do
-      subject.add(one)
-      subject.add(two)
-      subject.add(three)
+      subject.stub(local_versions: ["1.0.0", version])
     end
 
-    it "returns the latest version of the plugin matching the given name" do
-      subject.latest(name).should eql(two)
+    it "searches the latest version of the plugin matching the given name" do
+      subject.should_receive(:find).with(name, version, remote: false).and_return(plugin)
+      subject.latest(name).should eql(plugin)
     end
   end
 
@@ -297,16 +279,6 @@ describe MotherBrain::PluginManager do
         subject.find("glade", "3.2.4").should be_nil
       end
     end
-
-    context "when no version is given" do
-      it "returns the latest version of the plugin" do
-        subject.find(two.name).should eql(two)
-      end
-
-      it "returns nil a plugin of the given name is not found" do
-        subject.find("glade").should be_nil
-      end
-    end
   end
 
   describe "#for_environment" do
@@ -369,10 +341,10 @@ describe MotherBrain::PluginManager do
   end
 
   describe "#list" do
-    it "returns a Set of plugins" do
+    it "returns an Array of plugins" do
       result = subject.list
 
-      result.should be_a(Set)
+      result.should be_a(Array)
       result.should each be_a(MB::Plugin)
     end
 

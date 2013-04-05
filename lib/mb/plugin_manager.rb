@@ -151,22 +151,16 @@ module MotherBrain
     # attribute is specified the latest version of the plugin is returned.
     #
     # @param [String] name
-    # @param [#to_s] version (nil)
+    # @param [#to_s] version
     #
     # @option options [Boolean] :remote (false)
     #   search for the plugin on the remote Chef Server if it isn't found locally
     #
-    # @return [Plugin, nil]
-    def find(name, version = nil, options = {})
+    # @return [MB::Plugin, nil]
+    def find(name, version, options = {})
       options = options.reverse_merge(remote: false)
 
-      list(options).sort.reverse.find do |plugin|
-        if version.nil?
-          plugin.name == name
-        else
-          plugin.name == name && plugin.version.to_s == version.to_s
-        end
-      end
+      list(name: name, remote: options[:remote]).find { |plugin| plugin.version.to_s == version.to_s }
     end
 
     # Determine the best version of a plugin to use when communicating to the given environment
@@ -205,7 +199,20 @@ module MotherBrain
     def latest(name, options = {})
       options = options.reverse_merge(remote: false)
 
-      list(name: name, remote: options[:remote]).sort.last
+      potentials = local_versions(name)
+      potentials += chef_connection.cookbook.versions(name) if options[:remote]
+      potentials = potentials.collect { |version| Solve::Version.new(version) }.uniq.sort.reverse
+
+      potentials.each do |version|
+        installed = find(name, version.to_s, remote: false)
+
+        return installed if installed
+
+        if options[:remote]
+          remote = load_remote(name, version.to_s)
+          return remote if remote
+        end
+      end
     end
 
     # @return [Array<MotherBrain::Plugin>]
@@ -301,7 +308,7 @@ module MotherBrain
     # @option options [Boolean] :remote (false)
     #   eargly search for plugins on the remote Chef server and include them in the returned list
     #
-    # @return [Set<MB::Plugin>]
+    # @return [Array<MB::Plugin>]
     def list(options = {})
       options = options.reverse_merge(remote: false)
 
@@ -309,7 +316,8 @@ module MotherBrain
         load_all_remote
       end
 
-      options[:name].nil? ? @plugins : @plugins.select { |plugin| plugin.name == options[:name] }
+      result = options[:name].nil? ? @plugins : @plugins.select { |plugin| plugin.name == options[:name] }
+      result.sort.reverse
     end
 
     # Remove and Add the given plugin from the set of plugins
