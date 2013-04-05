@@ -454,10 +454,32 @@ describe MotherBrain::PluginManager do
     before { MB::Berkshelf.stub(cookbooks_path: fixtures_path) }
 
     context "when the local cache has at least one cookbook containing a plugin of the given name" do
+
       it "returns an array containing a string for each" do
         versions = subject.local_versions("myface")
-
         versions.should have(1).item
+        versions.should each be_a(String)
+      end
+    end
+
+    context "when there is a plugin found by local_plugin?" do
+      let(:version) { "2.0.0" }
+      let(:plugin) { double('plugin', version: version)}
+
+      before(:each) do
+        subject.stub(:load_local_plugin).and_return(plugin)
+        subject.stub(:local_plugin?).and_return(true)
+      end
+      
+      it "returns an array containing the version of the local plugin" do
+        versions = subject.local_versions("my_local_plugin")
+        versions.should have(1).item
+        versions.should each be_a(String)
+      end
+
+      it "returns an array containing all the versions of the local plugin" do
+        versions = subject.local_versions("myface")
+        versions.should have(2).items
         versions.should each be_a(String)
       end
     end
