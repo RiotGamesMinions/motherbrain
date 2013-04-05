@@ -40,7 +40,7 @@ describe MotherBrain::PluginManager do
     end
 
     before(:each) do
-      subject.stub(local_versions: ["1.0.0", version])
+      subject.stub(list: [plugin])
     end
 
     it "searches the latest version of the plugin matching the given name" do
@@ -50,7 +50,7 @@ describe MotherBrain::PluginManager do
 
     context "when no suitable plugin can be found" do
       before(:each) do
-        subject.stub(local_versions: [])
+        subject.stub(list: [])
       end
 
       it "returns nil" do
@@ -432,6 +432,25 @@ describe MotherBrain::PluginManager do
     end
   end
 
+  describe "#local_cookbooks" do
+    before do
+      MB::Berkshelf.stub(cookbooks: Array.new)
+    end
+
+    context "when there is a plugin in the current working directory" do
+      before(:each) do
+        subject.stub(local_plugin?: true)
+      end
+      
+      it "returns an array containing a Pathname to the current working directory" do
+        result = subject.send(:local_cookbooks)
+        result.should have(1).item
+        result.first.should be_a(Pathname)
+        result.first.should eql(Pathname.pwd)
+      end
+    end
+  end
+
   describe "#local_versions" do
     before { MB::Berkshelf.stub(cookbooks_path: fixtures_path) }
 
@@ -439,28 +458,6 @@ describe MotherBrain::PluginManager do
       it "returns an array containing a string for each" do
         versions = subject.local_versions("myface")
         versions.should have(1).item
-        versions.should each be_a(String)
-      end
-    end
-
-    context "when there is a plugin found by local_plugin?" do
-      let(:version) { "2.0.0" }
-      let(:plugin) { double('plugin', version: version)}
-
-      before(:each) do
-        subject.stub(:load_local_plugin).and_return(plugin)
-        subject.stub(:local_plugin?).and_return(true)
-      end
-      
-      it "returns an array containing the version of the local plugin" do
-        versions = subject.local_versions("my_local_plugin")
-        versions.should have(1).item
-        versions.should each be_a(String)
-      end
-
-      it "returns an array containing all the versions of the local plugin" do
-        versions = subject.local_versions("myface")
-        versions.should have(2).items
         versions.should each be_a(String)
       end
     end

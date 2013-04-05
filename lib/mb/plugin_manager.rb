@@ -116,11 +116,11 @@ module MotherBrain
 
     # Load all of the plugins from the Berkshelf
     #
-    # @options option [Boolean] :force (false)
+    # @option options [Boolean] :force (false)
     def load_all_local(options = {})
       options = options.reverse_merge(force: false)
 
-      Berkshelf.cookbooks(with_plugin: true).each do |path|
+      local_cookbooks.each do |path|
         load_local(path, options)
       end
     end
@@ -128,16 +128,17 @@ module MotherBrain
     # Load all of the plugins from the remote Chef Server. Plugins with a name and version that have
     # already been loaded will not be loaded again unless forced.
     #
-    # @options option [Boolean] :force (false)
+    # @option options [String] :name
+    # @option options [Boolean] :force (false)
     def load_all_remote(options = {})
       options = options.reverse_merge(force: false)
 
-      cookbooks = ridley.cookbook.all.collect do |name, versions|
-        versions.each do |version|
-          unless options[:force]
-            next if find(name, version, remote: false)
-          end
-
+      if options[:name].present?
+        remote_cookbook_versions(name).collect do |version|
+          load_remote(name, version, options)
+        end
+      else
+        remote_cookbooks.collect do |name, version|
           load_remote(name, version, options)
         end
       end
@@ -147,8 +148,7 @@ module MotherBrain
       load_local '.'
     end
 
-    # Find and return a registered plugin of the given name and version. If no version
-    # attribute is specified the latest version of the plugin is returned.
+    # Find and return a registered plugin of the given name and version.
     #
     # @param [String] name
     # @param [#to_s] version
@@ -160,7 +160,16 @@ module MotherBrain
     def find(name, version, options = {})
       options = options.reverse_merge(remote: false)
 
-      list(name: name, remote: options[:remote]).find { |plugin| plugin.version.to_s == version.to_s }
+      installed = @plugins.find { |plugin| plugin.name == name && plugin.version.to_s == version.to_s }
+
+      return installed if installed
+
+      if options[:remote]
+        remote = load_remote(name, version.to_s)
+        return remote if remote
+      end
+
+      nil
     end
 
     # Determine the best version of a plugin to use when communicating to the given environment
@@ -199,19 +208,13 @@ module MotherBrain
     def latest(name, options = {})
       options = options.reverse_merge(remote: false)
 
-      potentials = local_versions(name)
+      potentials = list(name: name, remote: false).map(&:version)
       potentials += remote_cookbook_versions(name) if options[:remote]
       potentials = potentials.collect { |version| Solve::Version.new(version) }.uniq.sort.reverse
 
-      potentials.each do |version|
-        installed = find(name, version.to_s, remote: false)
-
-        return installed if installed
-
-        if options[:remote]
-          remote = load_remote(name, version.to_s)
-          return remote if remote
-        end
+      potentials.find do |version|
+        found = find(name, version.to_s, options.slice(:remote))
+        return found if found
       end
 
       nil
@@ -292,15 +295,12 @@ module MotherBrain
     #
     # @return [Array<String>]
     def local_versions(name)
-      local_versions = Berkshelf.cookbooks(with_plugin: true).collect do |path|
+      local_cookbooks.collect do |path|
         plugin = load_local(path)
         next if plugin.nil?
 
         plugin.name == name ? plugin.version.to_s : nil
       end.compact
-
-      local_versions << load_local_plugin.version.to_s if local_plugin?
-      local_versions
     end
 
     # A set of all the registered plugins
@@ -315,7 +315,7 @@ module MotherBrain
       options = options.reverse_merge(remote: false)
 
       if options[:remote]
-        load_all_remote
+        load_all_remote(options.slice(:name))
       end
 
       result = options[:name].nil? ? @plugins : @plugins.select { |plugin| plugin.name == options[:name] }
@@ -474,6 +474,13 @@ module MotherBrain
         plugin
       end
 
+      # @return [Array<Pathname>]
+      def local_cookbooks
+        paths = Berkshelf.cookbooks(with_plugin: true)
+        paths << Pathname.pwd if local_plugin?
+        paths
+      end
+
       # List all the versions of the given cookbook on the remote Chef server
       #
       # @param [String] name
@@ -482,6 +489,25 @@ module MotherBrain
       # @return [Array<String>]
       def remote_cookbook_versions(name)
         chef_connection.cookbook.versions(name)
+      end
+
+      # List all of the cookbooks and their versions present on the remote
+      #
+      # @example return value
+      #   {
+      #     "ant" => [
+      #       "0.10.1"
+      #     ],
+      #     "apache2" => [
+      #       "1.4.0"
+      #     ]
+      #   }
+      #
+      # @return [Hash]
+      #   a hash containing keys which represent cookbook names and values which contain
+      #   an array of strings representing the available versions
+      def remote_cookbooks
+        chef_connection.cookbook.all
       end
   end
 end
