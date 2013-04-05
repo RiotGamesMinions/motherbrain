@@ -127,7 +127,7 @@ module MotherBrain
             plugin = find_plugin(name, opts)
             register_plugin(plugin)
 
-            MB.ui.say "using #{plugin}"
+            MB.ui.say "using #{plugin.remote? ? "remote" : "local"} plugin: #{plugin}"
             MB.ui.say ""
           end
         end

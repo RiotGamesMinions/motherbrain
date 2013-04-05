@@ -29,7 +29,7 @@ describe MB::Plugin do
       its(:license) { should eql('Apache 2.0') }
       its(:description) { should eql('Installs/Configures motherbrain') }
       its(:long_description) { should eql('Installs/Configures motherbrain') }
-      its(:version) { subject.to_s.should eql('motherbrain (0.1.0)') }
+      its(:version) { subject.to_s.should eql('0.1.0') }
       its(:components) { should be_empty }
       its(:commands) { should be_empty }
       its(:dependencies) { should be_empty }
@@ -116,6 +116,12 @@ describe MB::Plugin do
   describe "#to_s" do
     it "returns the name and version of the plugin" do
       subject.to_s.should eql("motherbrain (0.1.0)")
+    end
+  end
+
+  describe "#remote?" do
+    it "returns false when the plugin is not remote" do
+      subject.remote?.should eql(false)
     end
   end
 

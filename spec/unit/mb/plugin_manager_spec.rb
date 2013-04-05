@@ -110,7 +110,7 @@ describe MotherBrain::PluginManager do
     let(:path) { '/tmp/one/apple-1.0.0' }
 
     before(:each) do
-      MB::Plugin.stub(:from_path).with(path).and_return(plugin)
+      MB::Plugin.stub(:from_path).with(path, false).and_return(plugin)
     end
 
     it "adds an instantiated plugin to the hash of plugins" do
