@@ -148,7 +148,9 @@ module MotherBrain
       load_local '.'
     end
 
-    # Find and return a registered plugin of the given name and version.
+    # Find and return a registered plugin of the given name and version. If no
+    # version attribute is specified the latest version of the plugin is
+    # returned.
     #
     # @param [String] name
     # @param [#to_s] version
