@@ -72,9 +72,9 @@ module MotherBrain
     def_delegator "MB::Application.instance", :application
     alias_method :app, :application
 
-    # @return [Thor::Shell::Color]
+    # @return [MB::Cli::Shell::Color, MB::Cli::Shell::Basic]
     def ui
-      @ui ||= Thor::Shell::Color.new
+      MB::Cli::Base.ui
     end
 
     # Path to the root directory of the MotherBrain application

@@ -35,11 +35,6 @@ module MotherBrain
           def deprecated(message)
             warn("[DEPRECATION] #{message}")
           end
-
-          def error(message = "")
-            raise AbstractFunction
-          end
-          alias_method :fatal, :error
         end
       end
     end
