@@ -189,7 +189,7 @@ module MotherBrain
     def for_environment(plugin_id, environment_id, options = {})
       options = options.reverse_merge(remote: false)
       environment = environment_manager.find(environment_id)
-      constraint  = environment.cookbook_versions[plugin_id] || "> 0.0.0"
+      constraint  = environment.cookbook_versions[plugin_id] || ">= 0.0.0"
 
       satisfy(plugin_id, constraint, options)
     rescue MotherBrain::EnvironmentNotFound => ex
