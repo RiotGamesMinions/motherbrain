@@ -236,13 +236,10 @@ module MotherBrain
     #
     # @option options [Boolean] :force (true)
     #   load a plugin even if a plugin of the same name and version is already loaded
-    # @option options [Boolean] :remote (false)
-    #   this plugin is either a remote or a local plugin  
     #
     # @return [MB::Plugin, nil]
     #   returns the loaded plugin or nil if the plugin was not loaded successfully
     def load_local(path, options = {})
-      options = options.merge(remote: false)
       load_file(path, options)
     rescue PluginSyntaxError, PluginLoadError => ex
       log.debug { "could not load local plugin at '#{path}': #{ex}" }
@@ -258,15 +255,12 @@ module MotherBrain
     #
     # @option options [Boolean] :force (false)
     #   load a plugin even if a plugin of the same name and version is already loaded
-    # @option options [Boolean] :remote (true)
-    #   this plugin is either a remote or a local plugin
     #
     # @return [MB::Plugin, nil]
     #   returns the loaded plugin or nil if the remote does not contain a plugin of the given
     #   name and version or if there was a failure loading the plugin
     def load_remote(name, version, options = {})
       options  = options.reverse_merge(force: false)
-      options  = options.merge(remote: true)
       resource = ridley.cookbook.find(name, version)
 
       return unless resource && resource.has_motherbrain_plugin?
@@ -467,8 +461,6 @@ module MotherBrain
       #
       # @option options [Boolean] :force (true)
       #   load a plugin even if a plugin of the same name and version is already loaded
-      # @option options [Boolean] :remote (false)
-      #   this plugin is either a remote or a local plugin
       #
       # @raise [PluginSyntaxError] if there was a syntax error in the plugin loaded
       # @raise [PluginLoadError]
@@ -476,8 +468,8 @@ module MotherBrain
       # @return [MB::Plugin]
       #   the loaded plugin
       def load_file(path, options = {})
-        options = options.reverse_merge(force: true, remote: false)
-        plugin  = Plugin.from_path(path.to_s, options[:remote])
+        options = options.reverse_merge(force: true)
+        plugin  = Plugin.from_path(path.to_s)
 
         add(plugin, options)
         plugin
