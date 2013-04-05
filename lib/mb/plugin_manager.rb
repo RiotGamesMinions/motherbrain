@@ -60,8 +60,8 @@ module MotherBrain
         return reload(plugin)
       end
 
-      unless find(plugin.name, plugin.version, remote: false).nil?
-        return nil
+      if find(plugin.name, plugin.version, remote: false)
+        return
       end
 
       @plugins.add(plugin)
@@ -259,9 +259,7 @@ module MotherBrain
       options  = options.reverse_merge(force: false)
       resource = ridley.cookbook.find(name, version)
 
-      unless resource && resource.has_motherbrain_plugin?
-        return nil
-      end
+      return unless resource && resource.has_motherbrain_plugin?
 
       begin
         scratch_dir   = FileSystem.tmpdir("cbplugin")
@@ -272,7 +270,7 @@ module MotherBrain
 
         unless resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, plugin_path)
           log.warn { "error loading remote plugin: failure downloading plugin file for #{resource.name}" }
-          return nil
+          return
         end
 
         load_file(scratch_dir, options)
@@ -297,9 +295,11 @@ module MotherBrain
     def local_versions(name)
       local_cookbooks.collect do |path|
         plugin = load_local(path)
-        next if plugin.nil?
+        next unless plugin
 
-        plugin.name == name ? plugin.version.to_s : nil
+        if plugin.name == name
+          plugin.version.to_s
+        end
       end.compact
     end
 
