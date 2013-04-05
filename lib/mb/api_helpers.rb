@@ -8,13 +8,13 @@ module MotherBrain
     #
     # @return [Plugin]
     def find_plugin!(name, version = nil)
-      plugin = if version.nil?
-        plugin_manager.latest(name)
-      else
+      plugin = if version
         plugin_manager.find(name, version)
+      else
+        plugin_manager.latest(name)
       end
 
-      if plugin.nil?
+      unless plugin
         raise PluginNotFound.new(name, version)
       end
 
@@ -27,7 +27,7 @@ module MotherBrain
     def find_job!(id)
       job = job_manager.find(id)
 
-      if job.nil?
+      unless job
         raise JobNotFound.new(id)
       end
 
