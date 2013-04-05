@@ -216,6 +216,22 @@ describe MB::CliGateway do
           end
         end
       end
+
+      context "given both a plugin version and environment" do
+        let(:environment) { "rspec-test" }
+        let(:plugin_version) { "1.2.3" }
+
+        before do
+          options[:environment] = environment
+          options[:plugin_version] = plugin_version
+        end
+
+        it "finds a plugin on local and remote of the given name and version" do
+          plugin_manager.should_receive(:find).with(name, plugin_version, remote: true).and_return(plugin)
+
+          subject.should eql(plugin)
+        end
+      end
     end
   end
 end
