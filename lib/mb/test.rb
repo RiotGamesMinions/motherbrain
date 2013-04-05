@@ -63,11 +63,7 @@ module MotherBrain
       def cookbook(name, version = nil)
         ridley.should_receive(:get).with("cookbooks").and_return(stub(:response, :body => {}))
         ridley.should_receive(:get).with("cookbooks/#{name}").and_return(stub(:response, :body => {}))
-        plugin = if version
-          MB::Application.plugin_manager.find(name, version)
-        else
-          MB::Application.plugin_manager.latest(name)
-        end
+        plugin = MB::Application.plugin_manager.find(name, version)
         MB::Application.plugin_manager.should_receive(:for_environment).and_return(plugin)
       end
 

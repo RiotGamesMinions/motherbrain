@@ -157,7 +157,9 @@ module MotherBrain
     #   search for the plugin on the remote Chef Server if it isn't found locally
     #
     # @return [MB::Plugin, nil]
-    def find(name, version, options = {})
+    def find(name, version = nil, options = {})
+      return latest(name) unless version
+
       options = options.reverse_merge(remote: false)
 
       installed = @plugins.find { |plugin| plugin.name == name && plugin.version.to_s == version.to_s }
