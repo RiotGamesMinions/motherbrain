@@ -7,8 +7,6 @@ module MotherBrain
       include MB::Mixin::Services
 
       class << self
-        include Thor::Shell
-
         # Registers a SubCommand with this Cli::Base class
         #
         # @param [MB::Cli::SubCommand] klass
