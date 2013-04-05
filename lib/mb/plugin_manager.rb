@@ -17,7 +17,7 @@ module MotherBrain
 
     # @return [Pathname]
     attr_reader :berkshelf_path
-    
+
     # Tracks when the plugin manager will attempt to load remote plugins from the Chef Server. If
     # remote loading is disabled this will return nil.
     #
@@ -408,7 +408,7 @@ module MotherBrain
       if remote
         all_versions += remote_versions(name)
       end
-      
+
       if all_versions.empty?
         abort PluginNotFound.new(name)
       end
