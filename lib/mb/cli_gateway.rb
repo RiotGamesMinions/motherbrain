@@ -62,9 +62,12 @@ module MotherBrain
       def find_plugin(name, options = {})
         if options[:environment]
           plugin = begin
+            ui.info "Determining best version of the #{name} plugin to use with the #{options[:environment]}" +
+              " environment. This may take a few seconds..."
             plugin_manager.for_environment(name, options[:environment], remote: true)
           rescue MotherBrain::EnvironmentNotFound => ex
-            ui.warn "No environment #{options[:environment]} was found. Finding the latest plugin instead."
+            ui.warn "No environment named #{options[:environment]} was found. Finding the latest version of the" +
+              " #{name} plugin instead. This may take a few seconds..."
             plugin_manager.latest(name, remote: true)
           end
 
@@ -86,6 +89,7 @@ module MotherBrain
 
           plugin
         else
+          ui.info "Finding the latest version of the #{name} plugin. This may take a few seconds..."
           plugin = plugin_manager.latest(name, remote: true)
 
           unless plugin
