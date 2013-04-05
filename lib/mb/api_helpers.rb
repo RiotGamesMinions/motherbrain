@@ -8,7 +8,11 @@ module MotherBrain
     #
     # @return [Plugin]
     def find_plugin!(name, version = nil)
-      plugin = plugin_manager.find(name, version)
+      plugin = if version.nil?
+        plugin_manager.latest(name)
+      else
+        plugin_manager.find(name, version)
+      end
 
       if plugin.nil?
         raise PluginNotFound.new(name, version)
