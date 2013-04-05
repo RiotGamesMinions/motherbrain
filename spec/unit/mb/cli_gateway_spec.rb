@@ -139,6 +139,7 @@ describe MB::CliGateway do
         }
       end
       let(:plugin) { double('asdf') }
+      let(:ui) { described_class.ui }
 
       subject { described_class.find_plugin(name, options) }
       before { described_class.stub(plugin_manager: plugin_manager) }
@@ -149,15 +150,15 @@ describe MB::CliGateway do
           options[:environment] = nil
         end
 
-        it "finds a plugin on local and remote of the given name and latest version" do
-          plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(plugin)
+        it "finds the installed or remote latest version of the plugin with the given name" do
+          plugin_manager.should_receive(:latest).with(name, remote: true).and_return(plugin)
 
           subject.should eql(plugin)
         end
 
         it "prints an error to the UI and exits if no plugin is found" do
-          plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(nil)
-          MB.ui.should_receive(:error).with(anything)
+          plugin_manager.should_receive(:latest).with(name, remote: true).and_return(nil)
+          ui.should_receive(:error).with(anything)
 
           expect {
             subject
@@ -177,7 +178,7 @@ describe MB::CliGateway do
 
         it "prints an error to the UI and exits if no plugin is found" do
           plugin_manager.should_receive(:find).with(name, plugin_version, remote: true).and_return(nil)
-          MB.ui.should_receive(:error).with(anything)
+          ui.should_receive(:error).with(anything)
 
           expect {
             subject
@@ -201,13 +202,13 @@ describe MB::CliGateway do
           end
 
           it "finds the latest plugin on local and remote of the given name" do
-            plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(plugin)
+            plugin_manager.should_receive(:latest).with(name, remote: true).and_return(plugin)
 
             subject.should eql(plugin)
           end
 
           it "prints an error to the UI and exits if no plugin is found" do
-            plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(nil)
+            plugin_manager.should_receive(:latest).with(name, remote: true).and_return(nil)
 
             expect {
               subject

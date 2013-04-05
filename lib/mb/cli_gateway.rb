@@ -15,13 +15,13 @@ module MotherBrain
         begin
           config = MB::Config.from_file file
         rescue Chozo::Errors::InvalidConfig => ex
-          MB.ui.error "Invalid configuration file #{file}"
-          MB.ui.error ""
-          MB.ui.error ex.to_s
+          ui.error "Invalid configuration file #{file}"
+          ui.error ""
+          ui.error ex.to_s
           exit_with(InvalidConfig)
         rescue Chozo::Errors::ConfigNotFound => ex
-          MB.ui.error "#{ex.message}"
-          MB.ui.error "Create one with `mb configure`"
+          ui.error "#{ex.message}"
+          ui.error "Create one with `mb configure`"
           exit_with(ConfigNotFound)
         end
 
@@ -64,29 +64,34 @@ module MotherBrain
           plugin = begin
             plugin_manager.for_environment(name, options[:environment], remote: true)
           rescue MotherBrain::EnvironmentNotFound => ex
-            plugin_manager.find(name, nil, remote: true)
+            ui.warn "No environment #{options[:environment]} was found. Finding the latest plugin instead."
+            plugin_manager.latest(name, remote: true)
           end
 
           unless plugin
-            MB.ui.error "No versions of the #{name} cookbook contained a motherbrain  plugin that matched the " +
-              "requirements of the #{options[:environment]} environment."
-            exit 1
+            ui.error "No versions of the #{name} cookbook contained a motherbrain plugin that matched the" +
+              " requirements of the #{options[:environment]} environment."
+            exit(1)
+          end
+
+          plugin
+        elsif options[:plugin_version]
+          plugin = plugin_manager.find(name, options[:plugin_version], remote: true)
+
+          unless plugin
+            ui.error "The cookbook #{name} (version #{options[:plugin_version]}) did not contain a motherbrain" +
+              " plugin or it was not found in your Berkshelf or on the remote."
+            exit(1)
           end
 
           plugin
         else
-          plugin = plugin_manager.find(name, options[:plugin_version], remote: true)
+          plugin = plugin_manager.latest(name, remote: true)
 
           unless plugin
-            err = if options[:plugin_version]
-              "The cookbook #{name} (version #{options[:plugin_version]}) did not contain a motherbrain " +
-              "plugin or it was not found in your Berkshelf."
-            else
-              "No versions of the #{name} cookbook in your Berkshelf contained a motherbrain plugin."
-            end
-
-            MB.ui.error(err)
-            exit 1
+            ui.error "No versions of the #{name} cookbook in your Berkshelf or on the remote contained a" +
+              " motherbrain plugin."
+            exit(1)
           end
 
           plugin
