@@ -402,13 +402,24 @@ module MotherBrain
       type: :boolean,
       desc: "Should we verify SSL connections?",
       default: false
+    method_option :yes,
+      type: :boolean,
+      default: false,
+      desc: "Don't confirm, just destroy the environment",
+      aliases: '-y'
     desc "destroy", "Destroy a provisioned environment"
     def destroy
       destroy_options = Hash.new.merge(options).deep_symbolize_keys
 
-      job = provisioner.async_destroy(options[:environment], destroy_options)
+      dialog = "This will destroy the '#{options[:environment]}' environment.\nAre you sure? (yes|no): "
+      really_destroy = options[:yes] || MB.ui.yes?(dialog)
 
-      CliClient.new(job).display
+      if really_destroy
+        job = provisioner.async_destroy(options[:environment], destroy_options)
+        CliClient.new(job).display
+      else
+        MB.ui.say("Aborting destruction of '#{options[:environment]}'")
+      end
     end
 
     desc "version", "Display version and license information"
