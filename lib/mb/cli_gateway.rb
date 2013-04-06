@@ -412,13 +412,13 @@ module MotherBrain
       destroy_options = Hash.new.merge(options).deep_symbolize_keys
 
       dialog = "This will destroy the '#{options[:environment]}' environment.\nAre you sure? (yes|no): "
-      really_destroy = options[:yes] || MB.ui.yes?(dialog)
+      really_destroy = options[:yes] || ui.yes?(dialog)
 
       if really_destroy
         job = provisioner.async_destroy(options[:environment], destroy_options)
         CliClient.new(job).display
       else
-        MB.ui.say("Aborting destruction of '#{options[:environment]}'")
+        ui.say("Aborting destruction of '#{options[:environment]}'")
       end
     end
 
