@@ -62,15 +62,11 @@ module MotherBrain
                 "A node entry in a provision manifest needs to contain a key 'groups' with a value."
             end
 
-            type = node[:type]
-            count = node[:count]
+            type   = node[:type]
+            count  = node[:count]
             groups = node[:groups]
 
-            if type.nil?
-              raise InvalidProvisionManifest
-            end
-
-            unless type.match(/\w+\.\w+/)
+            unless type.to_s.match(/\w+\.\w+/)
               raise InvalidProvisionManifest,
                 "Provision manifest contained an entry not in the proper format: '#{type}'. Expected: 'a1.size'"
             end
