@@ -321,6 +321,18 @@ describe MotherBrain::PluginManager do
       end
     end
 
+    context "when the environment exists but does not have a lock" do
+      before do
+        environment.stub(cookbook_versions: Hash.new)
+        environment_manager.should_receive(:find).with(environment_id).and_return(environment)
+      end
+
+      it "satisfies the environment using a wildcard constraint (>= 0.0.0)" do
+        subject.should_receive(:satisfy).with(plugin_id, ">= 0.0.0", options)
+        subject.for_environment(plugin_id, environment_id, options)
+      end
+    end
+
     context "when the environment does not exist" do
       before(:each) do
         environment_manager.should_receive(:find).with(environment_id).
@@ -331,18 +343,6 @@ describe MotherBrain::PluginManager do
         expect {
           subject.for_environment(plugin_id, environment_id)
         }.to raise_error(MB::EnvironmentNotFound)
-      end
-    end
-
-    context "when the environment exists but does not have a lock" do
-      before do
-        environment.stub(cookbook_versions: Hash.new)
-        environment_manager.should_receive(:find).with(environment_id).and_return(environment)
-      end
-
-      it "satisfies the environment using a wildcard constraint (>= 0.0.0)" do
-        subject.should_receive(:satisfy).with(plugin_id, ">= 0.0.0", options)
-        subject.for_environment(plugin_id, environment_id, options)
       end
     end
   end
