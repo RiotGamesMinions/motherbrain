@@ -1,6 +1,14 @@
 require 'spec_helper'
 
 describe MB::CliGateway do
+  let(:ui) { described_class.ui }
+
+  before do
+    ui.stub :error
+    ui.stub :info
+    ui.stub :say
+  end
+
   describe "ClassMethods" do
     subject { described_class }
 
@@ -139,7 +147,6 @@ describe MB::CliGateway do
         }
       end
       let(:plugin) { double('asdf') }
-      let(:ui) { described_class.ui }
 
       subject { described_class.find_plugin(name, options) }
       before { described_class.stub(plugin_manager: plugin_manager) }
