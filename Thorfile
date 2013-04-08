@@ -23,6 +23,11 @@ class Default < Thor
     Rake::Task["install"].execute
   end
 
+  desc "generate_man_pages", "Generate man pages"
+  def generate_man_pages
+    run "bundle exec ronn *.ronn"
+  end
+
   desc "release", "Create tag v#{MotherBrain::VERSION} and build and push MotherBrain-#{MotherBrain::VERSION}.gem to gem in a box"
   def release
     unless clean?
