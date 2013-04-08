@@ -39,6 +39,8 @@ else
 
   Spork.each_run do
     require 'motherbrain'
+
+    World(MB::Mixin::CodedExit)
   end
 end
 

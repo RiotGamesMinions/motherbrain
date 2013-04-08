@@ -12,8 +12,8 @@ describe MB::Provisioner::Manifest do
     MB::Plugin.new(metadata)
   }
 
-  let(:activemq) { MB::Component.new('activemq') }
-  let(:nginx) { MB::Component.new('nginx') }
+  let(:activemq) { MB::Component.new('activemq', plugin) }
+  let(:nginx) { MB::Component.new('nginx', plugin) }
 
   let(:amq_master) { MB::Group.new('master') }
   let(:amq_slave) { MB::Group.new('slave') }
@@ -55,7 +55,7 @@ describe MB::Provisioner::Manifest do
   describe "ClassMethods" do
     subject { described_class }
 
-    describe "::validate" do
+    describe "::validate!" do
       it "returns true if the manifest is valid" do
         subject.validate!(valid_manifest, plugin).should be_true
       end
@@ -135,6 +135,44 @@ describe MB::Provisioner::Manifest do
           lambda {
             subject.validate!(invalid_manifest, plugin)
           }.should raise_error(MB::InvalidProvisionManifest)
+        end
+      end
+
+      context "when type is not provided or nil" do
+        let(:invalid_manifest) {
+          {
+            nodes: [
+              {
+                count: 1,
+                groups: "activemq::slave"
+              }
+            ]
+          }
+        }
+
+        it "raises an InvalidProvisionManifest error" do
+          expect {
+            subject.validate!(invalid_manifest, plugin)
+          }.to raise_error(MB::InvalidProvisionManifest)
+        end
+      end
+
+      context "when group is nil" do
+        let(:invalid_manifest) {
+          {
+            nodes: [
+              {
+                type: "m1.large",
+                count: 1
+              }
+            ]
+          }
+        }
+
+        it "raises an InvalidProvisionManifest error" do
+          expect {
+            subject.validate!(invalid_manifest, plugin)
+          }.to raise_error(MB::InvalidProvisionManifest)
         end
       end
     end

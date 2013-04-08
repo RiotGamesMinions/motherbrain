@@ -24,7 +24,8 @@ module MotherBrain
     #     }
     # @param [Array] args
     #   any additional arguments to pass to the execution block
-    def initialize(environment, scope, execute, *args)
+    def initialize(job, environment, scope, execute, *args)
+      @job         = job
       @environment = environment
       @scope       = scope
       @on_procs    = []
@@ -114,7 +115,7 @@ module MotherBrain
       @on_procs << lambda do
         node_groups.each do |nodes|
           actions.each do |action|
-            action.run(environment, nodes)
+            action.run(job, environment, nodes)
           end
         end
       end
@@ -136,8 +137,12 @@ module MotherBrain
     end
 
     def command(command_name)
-      scope.command!(command_name).invoke(environment)
+      scope.command!(command_name).invoke(job, environment)
     end
+
+    private
+
+      attr_reader :job
 
     # @author Jamie Winsor <reset@riotgames.com>
     # @api private
@@ -150,8 +155,8 @@ module MotherBrain
           clean_room = self
 
           klass.instance_eval do
-            define_method :run do |*args, &block|
-              clean_room.send(:actions) << action = action(*args, &block)
+            define_method :run, ->(job, *args, &block) do
+              clean_room.send(:actions) << action = action(job, *args, &block)
               action
             end
           end
@@ -159,7 +164,7 @@ module MotherBrain
       end
 
       Gear.all.each do |klass|
-        define_method Gear.get_fun(klass) do |*args|
+        define_method Gear.get_fun(klass), ->(*args) do
           real_model.send(Gear.get_fun(klass), *args)
         end
       end

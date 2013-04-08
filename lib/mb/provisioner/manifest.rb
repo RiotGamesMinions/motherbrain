@@ -52,11 +52,21 @@ module MotherBrain
                 "The provisioner manifest needs to have an array of hashes at 'nodes', but there was a #{node.class}: #{node.inspect}"
             end
 
-            type = node[:type]
-            count = node[:count]
+            unless node.has_key?(:type) && !node[:type].nil?
+              raise InvalidProvisionManifest,
+                "A node entry in a provision manifest needs to contain key 'type' with a value."
+            end
+
+            unless node.has_key?(:groups) && !node[:groups].nil?
+              raise InvalidProvisionManifest,
+                "A node entry in a provision manifest needs to contain a key 'groups' with a value."
+            end
+
+            type   = node[:type]
+            count  = node[:count]
             groups = node[:groups]
 
-            unless type.match(/\w+\.\w+/)
+            unless type.to_s.match(/\w+\.\w+/)
               raise InvalidProvisionManifest,
                 "Provision manifest contained an entry not in the proper format: '#{type}'. Expected: 'a1.size'"
             end

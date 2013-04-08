@@ -1,6 +1,14 @@
 require 'spec_helper'
 
 describe MB::CliGateway do
+  let(:ui) { described_class.ui }
+
+  before do
+    ui.stub :error
+    ui.stub :info
+    ui.stub :say
+  end
+
   describe "ClassMethods" do
     subject { described_class }
 
@@ -19,16 +27,16 @@ describe MB::CliGateway do
           MB::ConfigManager.instance.config._attributes_.should eql(config._attributes_)
         end
 
-        it "raises a ConfigNotFound error when the specified path does not exist" do
+        it "exits with a ConfigNotFound error when the specified path does not exist" do
           lambda {
             invoker = subject.new([], config: tmp_path.join("not_there.json"))
-          }.should raise_error(Chozo::Errors::ConfigNotFound)
+          }.should exit_with(MB::ConfigNotFound)
         end
 
-        it "raises a ConfigNotFound error when the specified path is a directory" do
+        it "exits with a ConfigNotFound error when the specified path is a directory" do
           lambda {
             invoker = subject.new([], config: tmp_path)
-          }.should raise_error(Chozo::Errors::ConfigNotFound)
+          }.should exit_with(MB::ConfigNotFound)
         end
       end
     end
@@ -149,15 +157,15 @@ describe MB::CliGateway do
           options[:environment] = nil
         end
 
-        it "finds a plugin on local and remote of the given name and latest version" do
-          plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(plugin)
+        it "finds the installed or remote latest version of the plugin with the given name" do
+          plugin_manager.should_receive(:latest).with(name, remote: true).and_return(plugin)
 
           subject.should eql(plugin)
         end
 
         it "prints an error to the UI and exits if no plugin is found" do
-          plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(nil)
-          MB.ui.should_receive(:error).with(anything)
+          plugin_manager.should_receive(:latest).with(name, remote: true).and_return(nil)
+          ui.should_receive(:error).with(anything)
 
           expect {
             subject
@@ -177,7 +185,7 @@ describe MB::CliGateway do
 
         it "prints an error to the UI and exits if no plugin is found" do
           plugin_manager.should_receive(:find).with(name, plugin_version, remote: true).and_return(nil)
-          MB.ui.should_receive(:error).with(anything)
+          ui.should_receive(:error).with(anything)
 
           expect {
             subject
@@ -196,21 +204,39 @@ describe MB::CliGateway do
         end
 
         context "when an environment of the given name is not found" do
-          before { plugin_manager.should_receive(:for_environment).and_raise(MB::EnvironmentNotFound) }
+          before do
+            plugin_manager.should_receive(:for_environment).and_raise(MB::EnvironmentNotFound.new(environment))
+          end
 
           it "finds the latest plugin on local and remote of the given name" do
-            plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(plugin)
+            plugin_manager.should_receive(:latest).with(name, remote: true).and_return(plugin)
 
             subject.should eql(plugin)
           end
 
           it "prints an error to the UI and exits if no plugin is found" do
-            plugin_manager.should_receive(:find).with(name, nil, remote: true).and_return(nil)
+            plugin_manager.should_receive(:latest).with(name, remote: true).and_return(nil)
 
             expect {
               subject
             }.to raise_error(SystemExit)
           end
+        end
+      end
+
+      context "given both a plugin version and environment" do
+        let(:environment) { "rspec-test" }
+        let(:plugin_version) { "1.2.3" }
+
+        before do
+          options[:environment] = environment
+          options[:plugin_version] = plugin_version
+        end
+
+        it "finds a plugin on local and remote of the given name and version" do
+          plugin_manager.should_receive(:find).with(name, plugin_version, remote: true).and_return(plugin)
+
+          subject.should eql(plugin)
         end
       end
     end

@@ -45,8 +45,13 @@ module MotherBrain
 
         # Run this action on the specified nodes.
         #
-        # @param [Array<Ridley::Node>] nodes the nodes to run this action on
-        def run(environment, nodes)
+        # @param [MB::Job] job
+        #   a job to update with status
+        # @param [String] environment
+        #   the environment this command is being run on
+        # @param [Array<Ridley::Node>] nodes
+        #   the nodes to run this action on
+        def run(job, environment, nodes)
           nodes.each do |node|
             connection = JMX::MBean.connection(host: node.public_hostname, port: port)
             mbean = JMX::MBean.find_by_name(object_name, connection: connection)
