@@ -34,6 +34,13 @@ def setup_rspec
     config.before(:each) do
       clean_tmp_path
     end
+
+    config.around do |example|
+      $stdout.should_not_receive :write
+      $stderr.should_not_receive :write
+
+      example.run
+    end
   end
 end
 
