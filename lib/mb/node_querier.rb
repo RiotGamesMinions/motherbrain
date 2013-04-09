@@ -134,7 +134,7 @@ module MotherBrain
       log.info { "Running Chef client on: #{host}" }
 
       status, response = Ridley::HostConnector.best_connector_for(host, options) do |host_connector|
-        host_connector.chef_client
+        host_connector.new(node, options).chef_client
       end
 
       case status
