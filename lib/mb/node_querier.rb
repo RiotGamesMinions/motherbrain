@@ -17,8 +17,6 @@ module MotherBrain
     include MB::Logging
     include MB::Mixin::Services
 
-    EMBEDDED_RUBY_PATH = "/opt/chef/embedded/bin/ruby".freeze
-
     finalizer do
       log.info { "Node Querier stopping..." }
     end
@@ -32,94 +30,6 @@ module MotherBrain
     # @return [Array<Hash>]
     def list
       chef_connection.node.all
-    end
-
-    # Run an arbitrary SSH command on the target host
-    #
-    # @param [String] host
-    #   hostname of the target node
-    # @param [String] command
-    #
-    # @option options [String] :user
-    #   a shell user that will login to each node and perform the bootstrap command on (required)
-    # @option options [String] :password
-    #   the password for the shell user that will perform the bootstrap
-    # @option options [Array, String] :keys
-    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    # @option options [Float] :timeout (10.0)
-    #   timeout value for SSH bootstrap
-    # @option options [Boolean] :sudo (true)
-    #   bootstrap with sudo
-    #
-    # @return [Array]
-    def ssh_command(host, command, options = {})
-      options            = options.reverse_merge(Application.config[:ssh].to_hash)
-      options[:paranoid] = false
-
-      if options[:sudo]
-        command = "sudo -i #{command}"
-      end
-
-      worker   = Ridley::HostConnector::SSH::Worker.new(host, options)
-      response = worker.run(command)
-      worker.terminate
-
-      response
-    end
-
-    # Copy a file from the local filesystem to the filepath on the target host
-    #
-    # @param [String] local_file
-    # @param [String] remote_file
-    # @param [String] host
-    #
-    # @option options [String] :user
-    #   a shell user that will login to each node and perform the bootstrap command on (required)
-    # @option options [String] :password
-    #   the password for the shell user that will perform the bootstrap
-    # @option options [Array, String] :keys
-    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    # @option options [Float] :timeout (10.0)
-    #   timeout value for SSH bootstrap
-    #
-    # @raise [RemoteFileCopyError]
-    def copy_file(local_file, remote_file, host, options = {})
-      options            = options.reverse_merge(Application.config[:ssh].to_hash)
-      options[:paranoid] = false
-
-      log.info { "Copying file '#{local_file}' to '#{host}:#{remote_file}'" }
-
-      Net::SFTP.start(host, options[:user], options.slice(*Net::SSH::VALID_OPTIONS)) do |sftp|
-        sftp.upload!(local_file, remote_file)
-      end
-    rescue Net::SFTP::Exception, Net::SSH::AuthenticationFailed => ex
-      abort RemoteFileCopyError.new(ex.to_s)
-    end
-
-    # Write the given data to the filepath on the target host
-    #
-    # @param [#to_s] data
-    # @param [String] remote_file
-    # @param [String] host
-    #
-    # @option options [String] :user
-    #   a shell user that will login to each node and perform the bootstrap command on (required)
-    # @option options [String] :password
-    #   the password for the shell user that will perform the bootstrap
-    # @option options [Array, String] :keys
-    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    # @option options [Float] :timeout (10.0)
-    #   timeout value for SSH bootstrap
-    #
-    # @raise [RemoteFileCopyError]
-    def write_file(data, remote_file, host, options = {})
-      file = FileSystem::Tempfile.new
-      file.write(data.to_s)
-      file.close
-
-      copy_file(file.path, remote_file, host, options)
-    ensure
-      file.unlink
     end
 
     # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
@@ -154,9 +64,22 @@ module MotherBrain
     #
     # @return [String]
     def ruby_script(name, host, options = {})
-      _ruby_script_(name, host, options = {})
-    rescue MB::RemoteScriptError => ex
-      abort(ex)
+      name    = name.split('.rb')[0]
+      lines   = File.readlines(MB.scripts.join("#{name}.rb"))
+      command_lines = lines.collect { |line| line.gsub('"', "'").strip.chomp }
+
+      status, response = Ridley::HostConnector.best_connector_for(host, options) do |host_connector|
+        host_connector.ruby_script(command_lines)
+      end
+
+      case status
+      when :ok
+        response.stdout.chomp
+      when :error
+        raise MB::RemoteScriptError.new(response.stderr.chomp)
+      else
+        raise ArgumentError, "unknown status returned from #ruby_script: #{status}"
+      end
     end
 
     # Return the Chef node_name of the target host. A nil value is returned if a
@@ -177,7 +100,7 @@ module MotherBrain
     #
     # @return [String, nil]
     def node_name(host, options = {})
-      _ruby_script_('node_name', host, options)
+      ruby_script('node_name', host, options)
     rescue MB::RemoteScriptError
       nil
     end
@@ -305,28 +228,5 @@ module MotherBrain
 
       chef_connection.client.find(client_id).try(:name)
     end
-
-    private
-
-      # An internal lifting function for {#ruby_script}. Any instance functions delegating to {#ruby_script}
-      # should instead delegate to this internal function.
-      def _ruby_script_(name, host, options = {})
-        name    = name.split('.rb')[0]
-        lines   = File.readlines(MB.scripts.join("#{name}.rb"))
-
-        oneliner = lines.collect { |line| line.gsub('"', "'").strip.chomp }
-        command = "#{EMBEDDED_RUBY_PATH} -e \"#{oneliner.join(';')}\""
-
-        status, response = ssh_command(host, command, options)
-
-        case status
-        when :ok
-          response.stdout.chomp
-        when :error
-          raise MB::RemoteScriptError.new(response.stderr.chomp)
-        else
-          raise ArgumentError, "unknown status returned from #ssh_command: #{status}"
-        end
-      end
   end
 end

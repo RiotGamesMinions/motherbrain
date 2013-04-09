@@ -14,7 +14,8 @@ describe MB::NodeQuerier do
 
   describe "#ruby_script" do
     it "raises a RemoteScriptError if there was an error executing the script" do
-      subject.stub(:ssh_command).and_return([:error, double('response', stderr: 'error_message')])
+      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)      
+      Ridley::HostConnector::SSH.stub(:ruby_script).and_return([:error, double('response', stderr: 'error_message')])
 
       expect {
         subject.ruby_script('node_name', double('host'))
@@ -24,13 +25,15 @@ describe MB::NodeQuerier do
 
   describe "#node_name" do
     it "returns the response of the successfully run script" do
-      subject.should_receive(:_ruby_script_).and_return('my_node')
+      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)      
+      Ridley::HostConnector::SSH.stub(:ruby_script).and_return([:ok, double('response', stdout: 'my_node')])
 
       subject.node_name(double('host')).should eql('my_node')
     end
 
     it "returns nil if there was an error in remote execution" do
-      subject.should_receive(:_ruby_script_).and_raise(MB::RemoteScriptError)
+      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)      
+      Ridley::HostConnector::SSH.stub(:ruby_script).and_return([:error, double('response', stderr: 'error_message')])
 
       subject.node_name(double('host')).should be_nil
     end
@@ -73,7 +76,7 @@ describe MB::NodeQuerier do
     end
 
     it "returns a Ridley::HostConnector::Response after a successful execution" do
-      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)      
+      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)
       Ridley::HostConnector::SSH.stub(:put_secret).and_return([:ok, Ridley::HostConnector::Response.new(host)])
 
       subject.put_secret(host, options).should be_a(Ridley::HostConnector::Response)
