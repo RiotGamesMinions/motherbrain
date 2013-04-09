@@ -60,6 +60,33 @@ describe MB::NodeQuerier do
     end
   end
 
+  describe "#put_secret" do
+    let(:host) { "192.168.1.1" }
+    let(:options) do 
+      {
+        secret: File.join(fixtures_path, "fake_key.pem")
+      }
+    end
+
+    it "returns nil when there is no file at the secret path" do
+      subject.put_secret(nil, {}).should be_nil
+    end
+
+    it "returns a Ridley::HostConnector::Response after a successful execution" do
+      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)      
+      Ridley::HostConnector::SSH.stub(:put_secret).and_return([:ok, Ridley::HostConnector::Response.new(host)])
+
+      subject.put_secret(host, options).should be_a(Ridley::HostConnector::Response)
+    end
+
+    it "returns nil after an error" do
+      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)      
+      Ridley::HostConnector::SSH.stub(:put_secret).and_return([:error, Ridley::HostConnector::Response.new(host)])
+     
+      subject.put_secret(host, options).should be_nil
+    end
+  end
+
   describe "#registered?" do
     let(:host) { "192.168.1.1" }
     let(:node_name) { "reset.riotgames.com" }

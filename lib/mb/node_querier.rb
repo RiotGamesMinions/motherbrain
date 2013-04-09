@@ -209,7 +209,10 @@ module MotherBrain
       end
 
       log.info { "Running Chef client on: #{host}" }
-      status, response = ssh_command(host, "chef-client", options)
+
+      status, response = Ridley::HostConnector.best_connector_for(host, options) do |host_connector|
+        host_connector.chef_client
+      end
 
       case status
       when :ok
@@ -251,7 +254,18 @@ module MotherBrain
         return nil
       end
 
-      copy_file(options[:secret], '/etc/chef/encrypted_data_bag_secret', host, options)
+      status, response = Ridley::HostConnector.best_connector_for(host, options) do |host_connector|
+        host_connector.put_secret(options[:secret])
+      end
+
+      case status
+      when :ok
+        log.info { "Successfully put secret file on: #{host}" }
+        response
+      when :error
+        log.info { "Failed to put secret file on: #{host}" }
+        nil
+      end
     end
 
     # Check if the target host is registered with the Chef server. If the node does not have Chef and
