@@ -3,6 +3,10 @@ source "http://gems.riotgames.com"
 
 gemspec
 
+if File.exists?('Gemfile.local') then
+  eval File.read('Gemfile.local'), nil, 'Gemfile.local'
+end
+
 platforms :ruby do
   gem 'mysql2'
   gem 'yajl-ruby'

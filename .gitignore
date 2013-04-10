@@ -20,3 +20,4 @@ tmp
 *.sw[op]
 rerun.txt
 .rspec
+Gemfile.local
