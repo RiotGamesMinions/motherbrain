@@ -110,8 +110,8 @@ describe MB::Bootstrap::Worker do
       ]
     end
 
-    let(:response_1) { Ridley::SSH::Response.new("cloud-1.riotgames.com", exit_code: 0) }
-    let(:response_set) { Ridley::SSH::ResponseSet.new([response_1])}
+    let(:response_1) { Ridley::HostConnector::Response.new("cloud-1.riotgames.com", exit_code: 0) }
+    let(:response_set) { Ridley::HostConnector::ResponseSet.new([response_1])}
 
     before do
       subject.stub(chef_connection: chef_connection)
