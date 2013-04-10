@@ -78,8 +78,17 @@ describe MB::Provisioners::AWS do
     context "access keys" do
       context "without manifest keys" do
         before do
+          ENV['EC2_ACCESS_KEY'] = ENV['EC2_SECRET_KEY'] = ENV['AWS_ACCESS_KEY'] = ENV['AWS_SECRET_KEY'] = nil
           subject.manifest.options.delete :access_key
           subject.manifest.options.delete :secret_key
+        end
+
+        it "should error on access_key" do
+          lambda { subject.access_key }.should raise_error(MB::InvalidProvisionManifest)
+        end
+
+        it "should error on secret_key" do
+          lambda { subject.secret_key }.should raise_error(MB::InvalidProvisionManifest)
         end
 
         context "with Euca environment variables" do

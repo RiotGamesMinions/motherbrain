@@ -22,6 +22,32 @@ module MotherBrain
         @__tries = 5
       end
 
+      def access_key
+        if manifest && manifest.options && manifest.options[:access_key]
+          manifest.options[:access_key]
+        elsif ENV['AWS_ACCESS_KEY']
+          ENV['AWS_ACCESS_KEY']
+        elsif ENV['EC2_ACCESS_KEY']
+          ENV['EC2_ACCESS_KEY']
+        else
+          raise InvalidProvisionManifest,
+            "The provisioner manifest options hash needs a key 'access_key' or the AWS_ACCESS_KEY or EC2_ACCESS_KEY variables need to be set"
+        end
+      end
+
+      def secret_key
+        if manifest && manifest.options && manifest.options[:secret_key]
+          manifest.options[:secret_key]
+        elsif ENV['AWS_SECRET_KEY']
+          ENV['AWS_SECRET_KEY']
+        elsif ENV['EC2_SECRET_KEY']
+          ENV['EC2_SECRET_KEY']
+        else
+          raise InvalidProvisionManifest,
+            "The provisioner manifest options hash needs a key 'secret_key' or the AWS_SECRET_KEY or EC2_SECRET_KEY variables need to be set"
+        end
+      end
+
       # Provision nodes in the environment based on the contents of the given manifest
       #
       # @param [Job] job
@@ -48,7 +74,7 @@ module MotherBrain
       end
 
       def down(job, env_name)
-        abort ProvisionError.new
+        raise ProvisionError.new
       end
 
       def fog_connection
@@ -104,7 +130,7 @@ module MotherBrain
             self.instances[i["instanceId"]] = {type: i["instanceType"], ipaddress: nil, status: i["instanceState"]["code"]}
           end
         else
-          abort AWSRunInstancesError.new, response.error
+          raise AWSRunInstancesError, response.error
         end
       end
 
