@@ -3,7 +3,6 @@ require 'spec_helper'
 describe MB::Provisioners::AWS do
   before(:all) do
     Fog.mock!
-    Fog::Compute[:aws].create_key_pair('mb')
   end
 
   let(:job) { double('job') }
@@ -72,6 +71,7 @@ describe MB::Provisioners::AWS do
     before do
       subject.manifest = manifest
       subject.job = job
+      subject.fog_connection.create_key_pair('mb') rescue Fog::Compute::AWS::Error
       job.stub(:set_status)
     end
 

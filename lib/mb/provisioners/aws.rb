@@ -78,7 +78,9 @@ module MotherBrain
       end
 
       def fog_connection
-        @__fog_connection ||= Fog::Compute[:aws]
+        @__fog_connection ||= Fog::Compute.new(:provider => 'aws',
+                                               :aws_access_key_id => access_key,
+                                               :aws_secret_access_key => secret_key)
       end
 
       def validate_manifest_options
