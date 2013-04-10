@@ -1,3 +1,9 @@
+# 0.4.1
+
+* Fix remote command failures when executing as sudo. This manifested itself as a Ruby timeout issue on some machines.
+* Add additional validations to provision manifests
+* Add confirmation dialog on environment destroy
+
 # 0.4.0
 
 * Optimize plugin selection and loading at runtime
