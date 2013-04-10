@@ -6,6 +6,8 @@ describe MB::Provisioners::AWS do
     Fog::Compute[:aws].create_key_pair('mb')
   end
 
+  let(:job) { double('job') }
+
   let(:manifest) do
     MB::Provisioner::Manifest.new.from_json({
       options: {
@@ -48,7 +50,6 @@ describe MB::Provisioners::AWS do
   end
 
   describe "#up" do
-    let(:job) { double('job') }
     let(:env_name) { "mbtest" }
     let(:plugin) { double('plugin') }
 
@@ -68,6 +69,8 @@ describe MB::Provisioners::AWS do
   context "with a manifest", :focus do
     before do
       subject.manifest = manifest
+      subject.job = job
+      job.stub(:set_status)
     end
 
     describe "#validate_manifest_options" do

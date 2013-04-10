@@ -15,6 +15,7 @@ module MotherBrain
 
       attr_accessor :manifest
       attr_accessor :instances
+      attr_accessor :job
 
       def initialize
         @instances = {}
@@ -38,6 +39,8 @@ module MotherBrain
       # @return [Array<Hash>]
       def up(job, env_name, manifest, plugin, options = {})
         @manifest = manifest
+        @job = job
+        job.set_status "starting provision"
         validate_manifest_options
         create_instances
         verify_instances
@@ -53,6 +56,7 @@ module MotherBrain
       end
 
       def validate_manifest_options
+        job.set_status "validating manifest options"
         unless manifest.options
           raise InvalidProvisionManifest,
             "The provisioner manifest needs to have a key 'options' containing a hash of AWS options."
@@ -82,12 +86,14 @@ module MotherBrain
       end
 
       def create_instances
+        job.set_status "creating instances"
         instance_counts.each do |instance_type, count|
           run_instances instance_type, count
         end
       end
 
       def run_instances(instance_type, count)
+        job.set_status "creating #{count} #{instance_type} instance#{count > 1 ? 's' : ''}"
         response = fog_connection.run_instances manifest.options[:image_id], count, count, {
           'InstanceType' => instance_type,
           'Placement.AvailabilityZone' => manifest.options[:availability_zone],
@@ -98,7 +104,7 @@ module MotherBrain
             self.instances[i["instanceId"]] = {type: i["instanceType"], ipaddress: nil, status: i["instanceState"]["code"]}
           end
         else
-          abort ProvisionError.new
+          abort AWSRunInstancesError.new, response.error
         end
       end
 
@@ -115,6 +121,7 @@ module MotherBrain
       end
 
       def verify_instances
+        job.set_status "waiting for instances to be ready"
         return if pending_instances.empty?
         begin
           response = fog_connection.describe_instances('instance-id'=> pending_instances)
@@ -131,7 +138,11 @@ module MotherBrain
           sleep 1 if keep_trying?
         end
         next_try
-        verify_instances if keep_trying?
+        if keep_trying?
+          verify_instances
+        else
+          job.set_status "giving up on instances :-("
+        end
       end
 
       def instances_as_manifest
@@ -139,6 +150,16 @@ module MotherBrain
           { instance_type: instance[:type], public_hostname: instance[:ipaddress] }
         end
       end
+    end
+  end
+
+  module Errors
+    class AWSProvisionError < ProvisionError
+      error_code(5200)
+    end
+
+    class AWSRunInstancesError < AWSProvisionError
+      error_code(5201)
     end
   end
 end
