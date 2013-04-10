@@ -60,8 +60,8 @@ module MotherBrain
         command = "sudo -i #{command}"
       end
 
-      worker   = Ridley::SSH::Worker.new(options)
-      response = worker.run(host, command)
+      worker   = Ridley::HostConnector::SSH::Worker.new(host, options)
+      response = worker.run(command)
       worker.terminate
 
       response
@@ -200,7 +200,7 @@ module MotherBrain
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
     # @raise [RemoteCommandError] if given a blank or nil hostname
     #
-    # @return [Ridley::SSH::Response]
+    # @return [Ridley::HostConnector::Response]
     def chef_run(host, options = {})
       options = options.dup
 
@@ -241,7 +241,7 @@ module MotherBrain
     #
     # @raise [RemoteFileCopyError]
     #
-    # @return [Ridley::SSH::Response]
+    # @return [Ridley::HostConnector::Response]
     def put_secret(host, options = {})
       options = options.reverse_merge(
         secret: Application.config.chef.encrypted_data_bag_secret_path
