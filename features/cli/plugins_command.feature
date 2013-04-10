@@ -17,8 +17,8 @@ Feature: listing the plugins available to MotherBrain
       
       ** listing local plugins...
 
+      pvpnet: 1.2.3, 2.3.4
       league: 1.0.0
-      pvpnet: 2.3.4, 1.2.3
       """
     And the exit status should be 0
 

@@ -3,16 +3,54 @@ require 'spec_helper'
 describe MB::Component do
   let(:environment) { 'mb-test' }
   let(:chef_conn) { double('chef_conn') }
+  let(:plugin) { double(MB::Plugin) }
 
   subject { component }
 
   let(:component) {
-    MB::Component.new("activemq") do
+    MB::Component.new("activemq", plugin) do
       group "masters" do
         # block
       end
     end
   }
+
+  describe "#command" do
+    let(:component) do
+      MB::Component.new("activemq", plugin) do
+        command "existing" do
+          # block
+        end
+      end
+    end
+
+    subject { component.command(name) }
+
+    context "when the component has a command matching the given name" do
+      let(:name) { "existing" }
+
+      it { should be_a(MB::Command) }
+      it { name.should eql("existing") }
+    end
+
+    context "when the component does not have a command matching the given name" do
+      let(:name) { "not-there" }
+
+      it { should be_nil }
+    end
+  end
+
+  describe "#command!" do
+    before do
+      subject.stub(command: nil)
+    end
+
+    it "raises a CommandNotFound error when no matching command is present" do
+      expect {
+        subject.command!("stop")
+      }.to raise_error(MB::CommandNotFound)
+    end
+  end
 
   describe "#description" do
     subject { component.description }
@@ -21,7 +59,7 @@ describe MB::Component do
 
     context "with a description" do
       let(:component) {
-        MB::Component.new("activemq") do
+        MB::Component.new("activemq", plugin) do
           description "ActiveMQ"
         end
       }
@@ -32,7 +70,7 @@ describe MB::Component do
 
   describe "#groups" do
     subject do
-      MB::Component.new("activemq") do
+      MB::Component.new("activemq", plugin) do
         group "masters" do
           # block
         end
@@ -47,7 +85,7 @@ describe MB::Component do
 
   describe "#group" do
     subject do
-      MB::Component.new("activemq") do
+      MB::Component.new("activemq", plugin) do
         group "masters" do
           # block
         end
@@ -61,7 +99,7 @@ describe MB::Component do
 
   describe "#group!" do
     subject do
-      MB::Component.new("activemq") do
+      MB::Component.new("activemq", plugin) do
         group "masters" do
           # block
         end
@@ -85,15 +123,11 @@ describe MB::Component do
     pending
   end
 
-  describe "#invoke" do
-    pending
-  end
-
   describe "#service" do
     subject { MB::Component }
 
     it "returns a Set of services" do
-      component = subject.new("activemq") do
+      component = subject.new("activemq", plugin) do
         service "masters" do
           # block
         end
@@ -103,7 +137,7 @@ describe MB::Component do
     end
 
     it "contains each service defined" do
-      component = subject.new("activemq") do
+      component = subject.new("activemq", plugin) do
         service "masters" do
           # block
         end
@@ -114,7 +148,7 @@ describe MB::Component do
 
     it "does not allow duplicate services" do
       lambda do
-        subject.new("activemq") do
+        subject.new("activemq", plugin) do
           service "masters" do
             # block
           end
@@ -130,7 +164,7 @@ describe MB::Component do
   describe "#versioned" do
     context "when passed nothing" do
       subject {
-        klass.new "component_name" do
+        klass.new("component_name", plugin) do
           versioned
         end
       }
@@ -140,7 +174,7 @@ describe MB::Component do
 
     context "when passed an attribute name" do
       subject {
-        klass.new "versioned_component" do
+        klass.new("versioned_component", plugin) do
           versioned_with "my.custom.attribute"
         end
       }

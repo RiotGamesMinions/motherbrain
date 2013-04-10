@@ -31,6 +31,34 @@ describe MotherBrain::PluginManager do
 
   subject { described_class.new }
 
+  describe "#latest" do
+    let(:name) { "apple" }
+    let(:version) { "2.0.0" }
+
+    let(:plugin) do
+      double('plugin', name: name, version: version)
+    end
+
+    before(:each) do
+      subject.stub(list: [plugin])
+    end
+
+    it "searches the latest version of the plugin matching the given name" do
+      subject.should_receive(:find).with(name, version, remote: false).and_return(plugin)
+      subject.latest(name).should eql(plugin)
+    end
+
+    context "when no suitable plugin can be found" do
+      before(:each) do
+        subject.stub(list: [])
+      end
+
+      it "returns nil" do
+        subject.latest(name).should be_nil
+      end
+    end
+  end
+
   describe "#load_all" do
     let(:count) { 3 }
 
@@ -252,24 +280,16 @@ describe MotherBrain::PluginManager do
       subject.add(three)
     end
 
-    context "when a version is given" do
-      it "returns the plugin of the given name and version" do
-        subject.find(one.name, one.version).should eql(one)
-      end
-
-      it "returns nil if the plugin of a given name and version is not found" do
-        subject.find("glade", "3.2.4").should be_nil
-      end
+    it "returns the plugin of the given name and version" do
+      subject.find(one.name, one.version).should eql(one)
     end
 
-    context "when no version is given" do
-      it "returns the latest version of the plugin" do
-        subject.find(two.name).should eql(two)
-      end
+    it "returns nil if the plugin of a given name and version is not found" do
+      subject.find("glade", "3.2.4").should be_nil
+    end
 
-      it "returns nil a plugin of the given name is not found" do
-        subject.find("glade").should be_nil
-      end
+    it "returns the latest if a version is not passed" do
+      subject.find("apple").should eq(two)
     end
   end
 
@@ -301,9 +321,22 @@ describe MotherBrain::PluginManager do
       end
     end
 
+    context "when the environment exists but does not have a lock" do
+      before do
+        environment.stub(cookbook_versions: Hash.new)
+        environment_manager.should_receive(:find).with(environment_id).and_return(environment)
+      end
+
+      it "satisfies the environment using a wildcard constraint (>= 0.0.0)" do
+        subject.should_receive(:satisfy).with(plugin_id, ">= 0.0.0", options)
+        subject.for_environment(plugin_id, environment_id, options)
+      end
+    end
+
     context "when the environment does not exist" do
       before(:each) do
-        environment_manager.should_receive(:find).with(environment_id).and_raise(MB::EnvironmentNotFound)
+        environment_manager.should_receive(:find).with(environment_id).
+          and_raise(MB::EnvironmentNotFound.new(environment_id))
       end
 
       it "raises an EnvironmentNotFound error" do
@@ -332,10 +365,10 @@ describe MotherBrain::PluginManager do
   end
 
   describe "#list" do
-    it "returns a Set of plugins" do
+    it "returns an Array of plugins" do
       result = subject.list
 
-      result.should be_a(Set)
+      result.should be_a(Array)
       result.should each be_a(MB::Plugin)
     end
 
@@ -363,10 +396,10 @@ describe MotherBrain::PluginManager do
       }
     end
 
-    context "when the remote has a plugin which satisfies the constraint" do
-      let(:constraint) { ">= 1.2.3" }
-      let(:plugin) { double('plugin', name: 'nginx', version: '1.3.0') }
+    let(:constraint) { ">= 1.2.3" }
+    let(:plugin) { double('plugin', name: plugin_id, version: '1.3.0') }
 
+    context "when given a non-wildcard, non-equality constraint" do
       before(:each) do
         subject.should_receive(:versions).with(plugin_id, options[:remote]).and_return(versions)
       end
@@ -397,18 +430,32 @@ describe MotherBrain::PluginManager do
       end
     end
 
-    context "when the :remote option is set to true" do
-      let(:constraint) { "= 1.0.0" }
+    context "when given a wild card constraint (>= 0.0.0)" do
+      let(:constraint) { ">= 0.0.0" }
 
-      before do
-        options[:remote] = true
+      it "returns the latest plugin" do
+        subject.should_receive(:latest).with(plugin_id, options).and_return(plugin)
+
+        subject.satisfy(plugin_id, constraint, options).should eql(plugin)
       end
+    end
+  end
 
-      it "attempts to load the matching plugin from the remote" do
-        subject.should_receive(:load_remote).with(plugin_id, "1.0.0")
-        subject.should_receive(:find).with(plugin_id, "1.0.0", remote: false).and_return(versions[0])
+  describe "#local_cookbooks" do
+    before do
+      MB::Berkshelf.stub(cookbooks: Array.new)
+    end
 
-        subject.satisfy(plugin_id, constraint, options)
+    context "when there is a plugin in the current working directory" do
+      before(:each) do
+        subject.stub(local_plugin?: true)
+      end
+      
+      it "returns an array containing a Pathname to the current working directory" do
+        result = subject.send(:local_cookbooks)
+        result.should have(1).item
+        result.first.should be_a(Pathname)
+        result.first.should eql(Pathname.pwd)
       end
     end
   end
@@ -419,7 +466,6 @@ describe MotherBrain::PluginManager do
     context "when the local cache has at least one cookbook containing a plugin of the given name" do
       it "returns an array containing a string for each" do
         versions = subject.local_versions("myface")
-
         versions.should have(1).item
         versions.should each be_a(String)
       end

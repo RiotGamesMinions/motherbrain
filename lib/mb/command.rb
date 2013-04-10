@@ -16,15 +16,38 @@ module MotherBrain
       type: Proc,
       required: true
 
+    # @return [MB::Plugin, MB::Component]
+    attr_reader :scope
+    # @return [MB::Plugin]
+    attr_reader :plugin
+    # @return [Symbol]
+    attr_reader :type
+
     # @param [#to_s] name
     # @param [MB::Plugin, MB::Component] scope
     def initialize(name, scope, &block)
       set_attribute(:name, name.to_s)
       @scope = scope
 
+      case @scope
+      when MB::Plugin
+        @plugin = @scope
+        @type   = :plugin
+      when MB::Component
+        @plugin = @scope.plugin
+        @type   = :component
+      else
+        raise RuntimeError, "no matching command type for the given scope: #{scope}."
+      end
+
       if block_given?
         dsl_eval(&block)
       end
+    end
+
+    # @return [String]
+    def description
+      _attributes_.description || "run #{name} command on #{scope.name}"
     end
 
     # @return [Symbol]
@@ -34,30 +57,19 @@ module MotherBrain
 
     # Run the command on the given environment
     #
+    # @param [MB::Job] job
+    #   a job to update with progress
     # @param [String] environment
     #   the environment to invoke the command on
     # @param [Array] args
+    #   additional arguments to pass to the command
     #
-    # @raise [MB::EnvironmentNotFound] if the target environment does not exist
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
-    def invoke(environment, *args)
-      options = args.last.is_a?(Hash) ? args.pop : Hash.new
-      options[:chef_environment] = environment
-
-      unless Application.ridley.environment.find(environment)
-        raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
-      end
-
-      chef_synchronize(options) do
-        CommandRunner.new(environment, scope, execute, *args)
-      end
-    rescue Faraday::Error::ClientError, Ridley::Errors::RidleyError => e
-      raise ChefConnectionError, "Could not connect to Chef server '#{Application.ridley.server_url}': #{e}"
+    def invoke(job, environment, *args)
+      CommandRunner.new(job, environment, scope, execute, *args)
     end
 
     private
-
-      attr_reader :scope
 
       def dsl_eval(&block)
         CleanRoom.new(self).instance_eval(&block)

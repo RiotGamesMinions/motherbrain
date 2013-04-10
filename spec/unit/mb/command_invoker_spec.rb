@@ -12,79 +12,214 @@ describe MB::CommandInvoker do
     }
   end
 
-  describe "#invoke_plugin" do
-    context "when a plugin of the given name/version is not loaded" do
-      before(:each) do
-        plugin_manager.should_receive(:for_environment).with(plugin_id, environment)
-          .and_raise(MB::PluginNotFound.new(plugin_id))
+  subject { described_class.new }
+  after { subject.terminate if subject && subject.alive? }
+
+  describe "#async_invoke" do
+    let(:job_ticket) { double(MB::JobRecord) }
+    let(:job) { double(MB::Job, ticket: job_ticket) }
+    let(:command_name) { "stop" }
+    let(:options) { Hash.new }
+
+    before do
+      MB::Job.stub(:new).and_return(job)
+    end
+
+    it "asynchronously calls {#invoke}" do
+      subject.should_receive(:async).with(:invoke, job, command_name, options)
+
+      subject.async_invoke(command_name, options)
+    end
+
+    it "returns a JobRecord" do
+      subject.stub(:async).with(:invoke, job, command_name, options)
+
+      subject.async_invoke(command_name, options).should eql(job_ticket)
+    end
+  end
+
+  describe "#find" do
+    let(:command) { "stop" }
+    let(:plugin) { "test-plugin" }
+    let(:options) do
+      {
+        version: nil,
+        component: nil,
+        environment: nil
+      }
+    end
+
+    let(:run) { subject.find(command, plugin, options) }
+
+    it "delegates to #find_latest" do
+      subject.should_receive(:find_latest).with(command, plugin, options[:component])
+      run
+    end
+
+    context "when given a value for :version" do
+      before do
+        options[:version] = "1.2.3"
       end
 
-      it "completes the job as a failure" do
-        job = subject.invoke_plugin(plugin_id, command_id, environment, options)
-
-        job.should complete_as(:failure, "[err_code]: 3003 [message]: No plugin named 'rspec-test' found")
+      it "delegates to #for_version" do
+        subject.should_receive(:for_version).with(options[:version], command, plugin, options[:component])
+        run
       end
     end
 
-    context "when the plugin does not have the specified command" do
-      let(:plugin) { double('plugin') }
-
-      before(:each) do
-        plugin_manager.should_receive(:for_environment).with(plugin_id, environment).and_return(plugin)
-        plugin.should_receive(:command!).with(command_id).and_raise(MB::CommandNotFound.new(command_id, plugin))
+    context "when given a value for :environment" do
+      before do
+        options[:environment] = "test-env"
       end
 
-      it "completes the job as a failure" do
-        job = subject.invoke_plugin(plugin_id, command_id, environment, options)
-
-        job.should complete_as(:failure)
+      it "delegates to #for_environment" do
+        subject.should_receive(:for_environment).with(options[:environment], command, plugin, options[:component])
+        run
       end
     end
   end
 
-  describe "#invoke_component" do
-    let(:plugin) { double('plugin') }
-    let(:component) { double('component') }
+  describe "#invoke" do
+    let(:command_name) { "stop" }
+    let(:command) { double(invoke: nil) }
+    let(:plugin) { "chat" }
+    let(:component) { "default" }
+    let(:environment) { "rspec-test" }
+    let(:version) { "1.2.3" }
+    let(:job) { double(MB::Job, alive?: true, terminate: nil) }
+    let(:worker) { double('worker', alive?: true, terminate: nil) }
+    let(:environment_manager) { double('env-man') }
+    let(:options) do
+      {
+        plugin: plugin,
+        component: component,
+        environment: environment,
+        version: version,
+        arguments: Array.new
+      }
+    end
 
-    context "when a plugin of the given name/version is not loaded" do
-      before(:each) do
-        plugin_manager.should_receive(:for_environment).with(plugin_id, environment).
-          and_raise(MB::PluginNotFound.new(plugin_id))
+    let(:run) { subject.invoke(job, command_name, options) }
+
+    before(:each) do
+      MB::CommandInvoker::Worker.stub(:new).and_return(worker)
+      subject.stub(find: command, environment_manager: environment_manager, plugin_manager: plugin_manager)
+      job.stub(set_status: nil, report_running: nil, report_failure: nil, report_success: nil)
+      environment_manager.stub(find: nil)
+      worker.stub(run: nil)
+    end
+
+    it "wraps the invocation in a lock" do
+      MB::ChefMutex.any_instance.should_receive :synchronize
+
+      run
+    end
+
+    it "marks the job as running and then a success on success" do
+      job.should_receive(:report_running).ordered
+      job.should_receive(:report_success).ordered
+
+      run
+    end
+
+    it "terminates the running job on completion" do
+      job.should_receive(:terminate).once
+
+      run
+    end
+
+    it "creates a new worker to run the command in" do
+      MB::CommandInvoker::Worker.should_receive(:new).with(command, environment).and_return(worker)
+
+      run
+    end
+
+    it "runs the worker with the job and given arguments" do
+      worker.should_receive(:run).with(job, options[:arguments])
+
+      run
+    end
+
+    it "shuts the worker down after completion" do
+      worker.should_receive(:terminate).once
+
+      run
+    end
+
+    context "when the plugin option is nil" do
+      before do
+        options[:plugin] = nil
+        job.stub(:report_failure)
       end
 
-      it "completes the job as a failure" do
-        job = subject.invoke_component(plugin_id, component_id, command_id, environment, options)
-
-        job.should complete_as(:failure)
+      it "raises a MB::ArgumentError" do
+        expect {
+          run
+        }.to raise_error(MB::ArgumentError)
       end
     end
 
-    context "when the plugin does not have the specified component" do
-      let(:plugin) { double('plugin') }
+    context "when the target environment does not exist" do
+      let(:exception) { MB::EnvironmentNotFound.new(environment) }
 
-      before(:each) do
-        plugin_manager.should_receive(:for_environment).with(plugin_id, environment).and_return(plugin)
-        plugin.should_receive(:component!).with(component_id).and_raise(MB::ComponentNotFound.new(component_id, plugin))
+      before do
+        subject.should_receive(:find).
+          with(command_name, plugin, component: component, environment: environment, version: version).
+          and_raise(exception)
       end
 
-      it "completes the job as a failure" do
-        job = subject.invoke_component(plugin_id, component_id, command_id, environment, options)
+      it "should set the job state to :failure" do
+        job.should_receive(:report_failure).with(exception.to_s)
 
-        job.should complete_as(:failure)
+        run
       end
     end
 
-    context "when the component does not have the specified command" do
-      before(:each) do
-        plugin_manager.should_receive(:for_environment).with(plugin_id, environment).and_return(plugin)
-        plugin.should_receive(:component!).with(component_id).and_return(component)
-        component.should_receive(:command!).with(command_id).and_raise(MB::CommandNotFound.new(command_id, plugin))
+    context "when a plugin of the given name is not found" do
+      let(:exception) { MB::PluginNotFound.new(plugin) }
+
+      before do
+        subject.should_receive(:find).
+          with(command_name, plugin, component: component, environment: environment, version: version).
+          and_raise(exception)
       end
 
-      it "completes the job as a failure" do
-        job = subject.invoke_component(plugin_id, component_id, command_id, environment, options)
+      it "sets the job to failure with a command not found message" do
+        job.should_receive(:report_failure).with(exception.to_s)
 
-        job.should complete_as(:failure)
+        run
+      end
+    end
+
+    context "when a component of the given name is not found" do
+      let(:exception) { MB::ComponentNotFound.new(component, plugin) }
+
+      before do
+        subject.should_receive(:find).
+          with(command_name, plugin, component: component, environment: environment, version: version).
+          and_raise(exception)
+      end
+
+      it "sets the job to failure with a command not found message" do
+        job.should_receive(:report_failure).with(exception.to_s)
+
+        run
+      end
+    end
+
+    context "when a plugin command for the given plugin is not found" do
+      let(:exception) { MB::CommandNotFound.new(component, plugin) }
+
+      before do
+        subject.should_receive(:find).
+          with(command_name, plugin, component: component, environment: environment, version: version).
+          and_raise(exception)
+      end
+
+      it "completes the job as a failure with a command not found message" do
+        job.should_receive(:report_failure).with(exception.to_s)
+
+        run
       end
     end
   end

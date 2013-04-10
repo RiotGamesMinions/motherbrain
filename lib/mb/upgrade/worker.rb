@@ -98,7 +98,7 @@ module MotherBrain
         # @raise [EnvironmentNotFound]
         def assert_environment_exists
           unless chef_connection.environment.find(environment_name)
-            raise EnvironmentNotFound, "Environment '#{environment_name}' not found"
+            raise EnvironmentNotFound.new(environment_name)
           end
         end
 

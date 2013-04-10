@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe MB::Gear::Service do
   let(:component) { double('component', name: 'test-component') }
+  let(:job) { double('job', set_status: nil) }
 
   describe "Class" do
     subject { MB::Gear::Service }
@@ -127,7 +128,7 @@ describe MB::Gear::Service do
         MB::Application.node_querier.should_receive(:chef_run).with(node_3.public_hostname).
           and_return(chef_success)
 
-        subject.run(environment, nodes)
+        subject.run(job, environment, nodes)
       end
 
       context "when an environment attribute is specified" do
@@ -143,7 +144,7 @@ describe MB::Gear::Service do
         it "sets an environment attribute" do
           runner.should_receive(:environment_attribute).with(key, value)
 
-          subject.run(environment, [])
+          subject.run(job, environment, [])
         end
 
         context "when toggle: true" do
@@ -156,7 +157,7 @@ describe MB::Gear::Service do
           it "sets an environment attribute and then sets it back" do
             runner.should_receive(:environment_attribute).with(key, value, toggle: true)
 
-            subject.run(environment, [])
+            subject.run(job, environment, [])
           end
         end
       end
@@ -174,7 +175,7 @@ describe MB::Gear::Service do
           MB::Application.node_querier.should_receive(:chef_run).exactly(3).times.and_return(chef_success)
           runner.should_receive(:node_attribute).with(key, value, toggle: true)
 
-          subject.run(environment, nodes)
+          subject.run(job, environment, nodes)
         end
       end
     end

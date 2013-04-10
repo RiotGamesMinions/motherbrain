@@ -2,8 +2,6 @@ module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   class CliGateway < Cli::Base
     class << self
-      include MB::Mixin::Services
-
       def invoked_opts
         @invoked_opts ||= HashWithIndifferentAccess.new
       end
@@ -16,8 +14,15 @@ module MotherBrain
 
         begin
           config = MB::Config.from_file file
-        rescue Chozo::Errors::ConfigNotFound => e
-          raise e.class.new "#{e.message}\nCreate one with `mb configure`"
+        rescue Chozo::Errors::InvalidConfig => ex
+          ui.error "Invalid configuration file #{file}"
+          ui.error ""
+          ui.error ex.to_s
+          exit_with(InvalidConfig)
+        rescue Chozo::Errors::ConfigNotFound => ex
+          ui.error "#{ex.message}"
+          ui.error "Create one with `mb configure`"
+          exit_with(ConfigNotFound)
         end
 
         level = Logger::WARN
@@ -55,33 +60,42 @@ module MotherBrain
       #
       # @return [MB::Plugin]
       def find_plugin(name, options = {})
-        if options[:environment]
+        if options[:plugin_version]
+          plugin = plugin_manager.find(name, options[:plugin_version], remote: true)
+
+          unless plugin
+            ui.error "The cookbook #{name} (version #{options[:plugin_version]}) did not contain a motherbrain" +
+              " plugin or it was not found in your Berkshelf or on the remote."
+            exit(1)
+          end
+
+          plugin
+        elsif options[:environment]
           plugin = begin
+            ui.info "Determining best version of the #{name} plugin to use with the #{options[:environment]}" +
+              " environment. This may take a few seconds..."
             plugin_manager.for_environment(name, options[:environment], remote: true)
           rescue MotherBrain::EnvironmentNotFound => ex
-            plugin_manager.find(name, nil, remote: true)
+            ui.warn "No environment named #{options[:environment]} was found. Finding the latest version of the" +
+              " #{name} plugin instead. This may take a few seconds..."
+            plugin_manager.latest(name, remote: true)
           end
 
           unless plugin
-            MB.ui.error "No versions of the #{name} cookbook contained a motherbrain  plugin that matched the " +
-              "requirements of the #{options[:environment]} environment."
-            exit 1
+            ui.error "No versions of the #{name} cookbook contained a motherbrain plugin that matched the" +
+              " requirements of the #{options[:environment]} environment."
+            exit(1)
           end
 
           plugin
         else
-          plugin = plugin_manager.find(name, options[:plugin_version], remote: true)
+          ui.info "Finding the latest version of the #{name} plugin. This may take a few seconds..."
+          plugin = plugin_manager.latest(name, remote: true)
 
           unless plugin
-            err = if options[:plugin_version]
-              "The cookbook #{name} (version #{options[:plugin_version]}) did not contain a motherbrain " +
-              "plugin or it was not found in your Berkshelf."
-            else
-              "No versions of the #{name} cookbook in your Berkshelf contained a motherbrain plugin."
-            end
-
-            MB.ui.error(err)
-            exit 1
+            ui.error "No versions of the #{name} cookbook in your Berkshelf or on the remote contained a" +
+              " motherbrain plugin."
+            exit(1)
           end
 
           plugin
@@ -90,7 +104,7 @@ module MotherBrain
 
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
-        config[:shell] ||= Thor::Base.shell.new
+        config[:shell] ||= MB::Cli::Base.shell.new
         args, opts = parse_args(given_args)
         invoked_opts.merge!(opts)
 
@@ -215,8 +229,6 @@ module MotherBrain
       "unlock",
     ].freeze
 
-    include MB::Mixin::Services
-
     source_root File.join(__FILE__, '../../../templates')
 
     def initialize(args = [], options = {}, config = {})
@@ -331,7 +343,7 @@ module MotherBrain
 
       MB.ui.say [
         "",
-        "MotherBrain plugin created.",
+        "motherbrain plugin created.",
         "",
         "Take a look at motherbrain.rb and bootstrap.json,",
         "and then bootstrap with:",
@@ -390,13 +402,24 @@ module MotherBrain
       type: :boolean,
       desc: "Should we verify SSL connections?",
       default: false
+    method_option :yes,
+      type: :boolean,
+      default: false,
+      desc: "Don't confirm, just destroy the environment",
+      aliases: '-y'
     desc "destroy", "Destroy a provisioned environment"
     def destroy
       destroy_options = Hash.new.merge(options).deep_symbolize_keys
 
-      job = provisioner.async_destroy(options[:environment], destroy_options)
+      dialog = "This will destroy the '#{options[:environment]}' environment.\nAre you sure? (yes|no): "
+      really_destroy = options[:yes] || ui.yes?(dialog)
 
-      CliClient.new(job).display
+      if really_destroy
+        job = provisioner.async_destroy(options[:environment], destroy_options)
+        CliClient.new(job).display
+      else
+        ui.say("Aborting destruction of '#{options[:environment]}'")
+      end
     end
 
     desc "version", "Display version and license information"

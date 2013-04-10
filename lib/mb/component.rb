@@ -13,12 +13,16 @@ module MotherBrain
     attribute :version_attribute,
       type: String
 
+    # @return [MB::Plugin]
+    attr_reader :plugin
     attr_reader :groups
     attr_reader :commands
 
     # @param [#to_s] name
-    def initialize(name, &block)
+    # @param [MB::Plugin] plugin
+    def initialize(name, plugin, &block)
       set_attribute(:name, name.to_s)
+      @plugin   = plugin
       @groups   = Set.new
       @commands = Set.new
       @gears    = Hash.new
@@ -70,13 +74,22 @@ module MotherBrain
       self.commands.find { |command| command.name == name }
     end
 
-    # Run a command of the given name on the component.
+    # Return a command from the component's list of commands. If a command is not found an exception will be rasied.
     #
-    # @param [String] environment
-    # @param [String, Symbol] name
-    # @param [Array] args
-    def invoke(environment, name, *args)
-      self.command(name).invoke(environment, args)
+    # @param [#to_s] name
+    #   name of the command to find and return
+    #
+    # @raise [CommandNotFound] if a command matching the given name is not found on this component
+    #
+    # @return [MB::Command]
+    def command!(name)
+      found = command(name)
+
+      if found.nil?
+        raise CommandNotFound.new(name, self)
+      end
+
+      found
     end
 
     # Finds the nodes for the given environment for each {Group} and groups them
@@ -112,7 +125,7 @@ module MotherBrain
     # @return [Hash]
     def nodes(environment)
       unless Application.ridley.environment.find(environment)
-        raise EnvironmentNotFound, "Environment: '#{environment}' not found on '#{Application.ridley.server_url}'"
+        raise EnvironmentNotFound.new(environment)
       end
 
       {}.tap do |nodes|
