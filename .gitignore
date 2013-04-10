@@ -19,3 +19,4 @@ features/support/ef.token
 tmp
 *.sw[op]
 rerun.txt
+.rspec
