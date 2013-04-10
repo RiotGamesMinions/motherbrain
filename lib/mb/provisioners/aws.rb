@@ -38,7 +38,7 @@ module MotherBrain
       # @return [Array<Hash>]
       def up(job, env_name, manifest, plugin, options = {})
         @manifest = manifest
-        validate_options
+        validate_manifest_options
         create_instances
         verify_instances
         instances_as_manifest
@@ -48,28 +48,24 @@ module MotherBrain
         abort ProvisionError.new
       end
 
-      def options
-        manifest[:options]
-      end
-
       def fog_connection
         @__fog_connection ||= Fog::Compute[:aws]
       end
 
-      def validate_options
-        unless options
+      def validate_manifest_options
+        unless manifest.options
           raise InvalidProvisionManifest,
             "The provisioner manifest needs to have a key 'options' containing a hash of AWS options."
         end
 
         [:image_id, :key_name, :availability_zone].each do |key|
-          unless options[key]
+          unless manifest.options[key]
             raise InvalidProvisionManifest,
               "The provisioner manifest options hash needs a key '#{key}' with the AWS #{key.to_s.camelize}"
           end
         end
 
-        if options[:security_groups] && !options[:security_groups].is_a?(Array)
+        if manifest.options[:security_groups] && !manifest.options[:security_groups].is_a?(Array)
           raise InvalidProvisionManifest,
             "The provisioner manifest options hash key 'security_groups' needs an array of security group names"
         end
@@ -92,10 +88,10 @@ module MotherBrain
       end
 
       def run_instances(instance_type, count)
-        response = fog_connection.run_instances options[:image_id], count, count, {
+        response = fog_connection.run_instances manifest.options[:image_id], count, count, {
           'InstanceType' => instance_type,
-          'Placement.AvailabilityZone' => options[:availability_zone],
-          'KeyName' => options[:key_name]
+          'Placement.AvailabilityZone' => manifest.options[:availability_zone],
+          'KeyName' => manifest.options[:key_name]
         }
         if response.status == 200
           response.body["instancesSet"].each do |i|

@@ -57,7 +57,7 @@ describe MB::Provisioners::AWS do
     end
 
     it "does all the steps" do
-      subject.should_receive(:validate_options).and_return(true)
+      subject.should_receive(:validate_manifest_options).and_return(true)
       subject.should_receive(:create_instances).and_return(true)
       subject.should_receive(:verify_instances).and_return(true)
       subject.should_receive(:instances_as_manifest).and_return(response)
@@ -70,42 +70,42 @@ describe MB::Provisioners::AWS do
       subject.manifest = manifest
     end
 
-    describe "#validate_options" do
+    describe "#validate_manifest_options" do
       context "with a valid options hash in the manifest" do
         it "returns true" do
-          subject.validate_options.should eq(true)
+          subject.validate_manifest_options.should eq(true)
         end
         
         it "does not raise when SecurityGroups is not set" do
           subject.manifest[:options].delete :security_groups
-          lambda { subject.validate_options.should eq(true) }.should_not raise_error(MB::InvalidProvisionManifest)
+          lambda { subject.validate_manifest_options.should eq(true) }.should_not raise_error(MB::InvalidProvisionManifest)
         end
       end
 
       context "with an invalid options hash in the manifest" do
         it "raises on no options" do
           subject.manifest.delete :options
-          lambda { subject.validate_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
+          lambda { subject.validate_manifest_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
         end
 
         it "raises on no ImageId" do
           subject.manifest[:options].delete :image_id
-          lambda { subject.validate_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
+          lambda { subject.validate_manifest_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
         end
 
         it "raises on no KeyName" do
           subject.manifest[:options].delete :key_name
-          lambda { subject.validate_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
+          lambda { subject.validate_manifest_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
         end
 
         it "raises on no AvailabilityZone" do
           subject.manifest[:options].delete :availability_zone
-          lambda { subject.validate_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
+          lambda { subject.validate_manifest_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
         end
         
         it "raises on SecurityGroups not being an array" do
           subject.manifest[:options][:security_groups] = :fleeble
-          lambda { subject.validate_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
+          lambda { subject.validate_manifest_options.should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
         end
       end
     end

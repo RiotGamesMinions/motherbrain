@@ -89,6 +89,11 @@ module MotherBrain
       self[:nodes] || []
     end
 
+    # @return [Hash]
+    def options
+      self[:options]
+    end
+
     # Returns the number of nodes expected to be created by this manifest regardless of type
     #
     # @return [Integer]
