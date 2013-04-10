@@ -11,6 +11,8 @@ describe MB::Provisioners::AWS do
   let(:manifest) do
     MB::Provisioner::Manifest.new.from_json({
       options: {
+        access_key: "ABCDEFG",
+        secret_key: "abcdefgh123456789",
         image_id: "emi-1234ABCD",
         key_name: "mb",
         security_groups: ["foo", "bar"],
@@ -71,6 +73,46 @@ describe MB::Provisioners::AWS do
       subject.manifest = manifest
       subject.job = job
       job.stub(:set_status)
+    end
+
+    context "access keys" do
+      context "without manifest keys" do
+        before do
+          subject.manifest.options.delete :access_key
+          subject.manifest.options.delete :secret_key
+        end
+
+        context "with Euca environment variables" do
+          before do
+            ENV['EC2_ACCESS_KEY'] = 'EC2ABCDEFG'
+            ENV['EC2_SECRET_KEY'] = 'EC2abcdefgh123456789'
+          end
+
+          it "should get from the Euca environment variables" do
+            subject.access_key.should eq('EC2ABCDEFG')
+            subject.secret_key.should eq('EC2abcdefgh123456789')
+          end
+        end
+
+        context "with AWS environment variables" do
+          before do
+            ENV['AWS_ACCESS_KEY'] = 'AWSABCDEFG'
+            ENV['AWS_SECRET_KEY'] = 'AWSabcdefgh123456789'
+          end
+
+          it "should get from the AWS environment variables" do
+            subject.access_key.should eq('AWSABCDEFG')
+            subject.secret_key.should eq('AWSabcdefgh123456789')
+          end
+        end
+      end
+
+      context "with manifest keys" do
+        it "should get from the manifest options" do
+          subject.access_key.should eq('ABCDEFG')
+          subject.secret_key.should eq('abcdefgh123456789')
+        end
+      end
     end
 
     describe "#validate_manifest_options" do
