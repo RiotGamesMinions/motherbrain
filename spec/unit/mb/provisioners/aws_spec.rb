@@ -6,6 +6,12 @@ describe MB::Provisioners::AWS do
   end
 
   let(:job) { double('job') }
+  before(:each) do
+    job.stub(:set_status)
+  end
+
+  let(:env_name) { "mbtest" }
+  let(:plugin) { double('plugin') }
 
   let(:manifest) do
     MB::Provisioner::Manifest.new.from_json({
@@ -50,14 +56,31 @@ describe MB::Provisioners::AWS do
     ]
   end
 
-  describe "#up" do
-    let(:env_name) { "mbtest" }
-    let(:plugin) { double('plugin') }
-
-    before(:each) do
-      job.stub(:set_status)
+  let(:aws_nodes) do
+    1.upto(3).collect do |n|
+      Ridley::NodeResource.new(:client,
+                               name: "awsnode#{n}",
+                               automatic: {
+                                 ec2: {
+                                   instance_id: "i-ABCDEFG#{n}"
+                                 }
+                               })
     end
+  end
 
+  let(:euca_nodes) do
+    1.upto(3).collect do |n|
+      Ridley::NodeResource.new(:client,
+                               name: "eucanode#{n}",
+                               automatic: {
+                                 eucalyptus: {
+                                   instance_id: "i-EBCDEFG#{n}"
+                                 }
+                               })
+    end
+  end
+
+  describe "#up" do
     it "does all the steps" do
       subject.should_receive(:validate_manifest_options).and_return(true)
       subject.should_receive(:create_instances).and_return(true)
@@ -67,7 +90,15 @@ describe MB::Provisioners::AWS do
     end
   end
 
-  context "with a manifest", :focus do
+  describe "#down" do
+    it "does all the steps" do
+      subject.should_receive(:terminate_instances).and_return(true)
+      subject.should_receive(:delete_environment).and_return(true)
+      subject.down(job, env_name).should eq(true)
+    end
+  end
+
+  context "with a manifest" do
     before do
       subject.manifest = manifest
       subject.job = job
@@ -229,21 +260,51 @@ describe MB::Provisioners::AWS do
     end
   end
 
-  describe "#down" do
-    let(:job) { double('job') }
-    let(:env_name) { "mbtest" }
-
-    before(:each) do
-      job.stub(:set_status)
+  describe "#instance_ids" do
+    before do
+      subject.env_name = env_name
     end
 
-    it "sends a destroy command to environment factory with the given environment" do
-      connection = double('connection')
-      subject.stub(:connection) { connection }
-      subject.should_receive(:destroyed?).with(env_name).and_return(true)
-      connection.stub_chain(:environment, :destroy).with(env_name).and_return(Hash.new)
+    context "AWS" do
+      before do
+        subject.ridley.should_receive(:search).with(:node, "chef_environment:#{env_name}").and_return(aws_nodes)
+      end
 
-      subject.down(job, env_name)
+      it "should find 3 instances" do
+        subject.instance_ids.should have(3).instances
+      end
+
+      it "should find all 3" do
+        instance_ids = subject.instance_ids
+        ["i-ABCDEFG1", "i-ABCDEFG2", "i-ABCDEFG3"].each do |i|
+          instance_ids.should include(i)
+        end
+      end
+    end
+
+    context "Eucalyptus" do
+      before do
+        subject.ridley.should_receive(:search).with(:node, "chef_environment:#{env_name}").and_return(euca_nodes)
+      end
+
+      it "should find 3 instances" do
+        subject.instance_ids.should have(3).instances
+      end
+
+      it "should find all 3" do
+        instance_ids = subject.instance_ids
+        ["i-EBCDEFG1", "i-EBCDEFG2", "i-EBCDEFG3"].each do |i|
+          instance_ids.should include(i)
+        end
+      end
+    end
+  end
+
+  describe "#terminate_instances" do
+    it "should call Fog" do
+      subject.should_receive(:instance_ids).and_return(["i-ABCD1234"])
+      subject.fog_connection.should_receive(:terminate_instances).with(["i-ABCD1234"])
+      subject.terminate_instances
     end
   end
 end

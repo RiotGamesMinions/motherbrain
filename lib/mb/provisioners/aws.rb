@@ -15,6 +15,7 @@ module MotherBrain
       attr_accessor :manifest
       attr_accessor :instances
       attr_accessor :job
+      attr_accessor :env_name
 
       def initialize
         @instances = {}
@@ -73,7 +74,10 @@ module MotherBrain
       end
 
       def down(job, env_name)
-        raise ProvisionError.new
+        @job = job
+        @env_name = env_name
+        terminate_instances
+        delete_environment(env_name)
       end
 
       def fog_connection
@@ -176,6 +180,22 @@ module MotherBrain
         instances.collect do |instance_id, instance|
           { instance_type: instance[:type], public_hostname: instance[:ipaddress] }
         end
+      end
+
+      def instance_ids
+        # TODO: throw up hands if AWS and Euca nodes in same env
+        nodes = ridley.search(:node, "chef_environment:#{env_name}")
+        nodes.collect do |node|
+          instance_id = nil
+          [:ec2, :eucalyptus].each do |k|
+            instance_id = node.automatic[k][:instance_id] if node.automatic.has_key?(k)
+          end
+          instance_id
+        end
+      end
+
+      def terminate_instances
+        fog_connection.terminate_instances instance_ids
       end
     end
   end
