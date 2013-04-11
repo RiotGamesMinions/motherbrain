@@ -77,5 +77,9 @@ module MotherBrain
     def down(job, env_name)
       raise AbstractFunction
     end
+
+    def delete_environment(env_name)
+      ridley.environment.delete(env_name)
+    end
   end
 end
