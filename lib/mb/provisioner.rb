@@ -59,7 +59,7 @@ module MotherBrain
     #
     # @return [Array]
     #   an array of hashes representing nodes generated of given sizes
-    def up(environment, manifest)
+    def up(job, env_name, manifest, plugin, options = {})
       raise AbstractFunction
     end
 
@@ -72,7 +72,7 @@ module MotherBrain
     #   if a caught error occurs during provisioning
     #
     # @return [Boolean]
-    def down(environment)
+    def down(job, env_name)
       raise AbstractFunction
     end
   end
