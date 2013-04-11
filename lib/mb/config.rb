@@ -84,6 +84,16 @@ module MotherBrain
       default: 10.0,
       type: [ Integer, Float ]
 
+    attribute 'winrm.user',
+      type: String
+
+    attribute 'winrm.password',
+      type: String
+
+    attribute 'winrm.port',
+      default: 5985,
+      type: Integer
+
     attribute 'ssl.verify',
       default: true,
       type: Boolean
@@ -202,6 +212,7 @@ module MotherBrain
         ridley_opts[:validator_path] = self.chef.validator_path
         ridley_opts[:validator_client] = self.chef.validator_client
         ridley_opts[:ssh] = self.ssh
+        ridley_opts[:winrm] = self.winrm
         ridley_opts[:ssl] = {
           verify: self.ssl.verify
         }

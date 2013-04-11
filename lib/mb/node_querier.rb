@@ -69,7 +69,7 @@ module MotherBrain
       command_lines = lines.collect { |line| line.gsub('"', "'").strip.chomp }
 
       status, response = Ridley::HostConnector.best_connector_for(host, options) do |host_connector|
-        host_connector.ruby_script(command_lines)
+        host_connector::Worker.new(host, options).ruby_script(command_lines)
       end
 
       case status
@@ -134,7 +134,7 @@ module MotherBrain
       log.info { "Running Chef client on: #{host}" }
 
       status, response = Ridley::HostConnector.best_connector_for(host, options) do |host_connector|
-        host_connector.new(node, options).chef_client
+        host_connector::Worker.new(host, options).chef_client
       end
 
       case status
@@ -178,7 +178,7 @@ module MotherBrain
       end
 
       status, response = Ridley::HostConnector.best_connector_for(host, options) do |host_connector|
-        host_connector.put_secret(options[:secret])
+        host_connector::Worker.new(host, options).put_secret(options[:secret])
       end
 
       case status
@@ -204,7 +204,7 @@ module MotherBrain
     #
     # @return [Boolean]
     def registered?(host)
-      !registered_as(host).nil?
+      !!registered_as(host)
     end
 
     # Returns the client name the target node is registered to Chef with.

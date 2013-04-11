@@ -1,7 +1,13 @@
 require 'spec_helper'
 
 describe MB::NodeQuerier do
-  subject { described_class.new }
+  subject { node_querier }
+
+  let(:node_querier) { described_class.new }
+
+  before do
+    Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)
+  end
 
   describe "#list" do
     it "returns a list of nodes from the motherbrain's chef connection" do
@@ -13,29 +19,47 @@ describe MB::NodeQuerier do
   end
 
   describe "#ruby_script" do
-    it "raises a RemoteScriptError if there was an error executing the script" do
-      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)      
-      Ridley::HostConnector::SSH.stub(:ruby_script).and_return([:error, double('response', stderr: 'error_message')])
+    subject { ruby_script }
 
-      expect {
-        subject.ruby_script('node_name', double('host'))
-      }.to raise_error(MB::RemoteScriptError, 'error_message')
+    let(:response) { [:ok, double('response', stdout: 'my_node')] }
+    let(:ruby_script) { node_querier.ruby_script('node_name', double('host')) }
+
+    before do
+      Ridley::HostConnector::SSH::Worker.stub_chain(:new, :ruby_script).and_return(response)
+    end
+    
+    it "returns the response of the successfully run script" do
+      ruby_script.should eq('my_node')
+    end
+
+    context "when error..." do
+      let(:response) { [:error, double('response', stderr: 'error_message')] }
+
+      it "raises a RemoteScriptError if there was an error executing the script" do
+        expect {
+          ruby_script
+        }.to raise_error(MB::RemoteScriptError, 'error_message')
+      end
     end
   end
 
   describe "#node_name" do
-    it "returns the response of the successfully run script" do
-      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)      
-      Ridley::HostConnector::SSH.stub(:ruby_script).and_return([:ok, double('response', stdout: 'my_node')])
+    subject(:node_name) { node_querier.node_name(host) }
 
-      subject.node_name(double('host')).should eql('my_node')
+    let(:host) { "12.34.56.78" }
+    let(:node) { "my_node" }
+
+    it "calls ruby_script with node_name and returns a response" do
+      node_querier.should_receive(:ruby_script).with('node_name', host, {}).and_return(node)
+      node_name.should eq(node)
     end
 
-    it "returns nil if there was an error in remote execution" do
-      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)      
-      Ridley::HostConnector::SSH.stub(:ruby_script).and_return([:error, double('response', stderr: 'error_message')])
+    context "with a remote script error" do
+      before do
+        node_querier.stub(:ruby_script).and_raise(MB::RemoteScriptError)
+      end
 
-      subject.node_name(double('host')).should be_nil
+      it { should be_nil }
     end
   end
 
@@ -54,29 +78,34 @@ describe MB::NodeQuerier do
   end
 
   describe "#put_secret" do
+    subject { put_secret }
+
+    let(:put_secret) { node_querier.put_secret(host, options) }
     let(:host) { "192.168.1.1" }
     let(:options) do 
       {
         secret: File.join(fixtures_path, "fake_key.pem")
       }
     end
+    let(:response) { [:ok, Ridley::HostConnector::Response.new(host)] }
 
-    it "returns nil when there is no file at the secret path" do
-      subject.put_secret(nil, {}).should be_nil
-    end
-
-    it "returns a Ridley::HostConnector::Response after a successful execution" do
+    before do
       Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)
-      Ridley::HostConnector::SSH.stub(:put_secret).and_return([:ok, Ridley::HostConnector::Response.new(host)])
-
-      subject.put_secret(host, options).should be_a(Ridley::HostConnector::Response)
+      Ridley::HostConnector::SSH::Worker.stub_chain(:new, :put_secret).and_return(response)
     end
 
-    it "returns nil after an error" do
-      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)      
-      Ridley::HostConnector::SSH.stub(:put_secret).and_return([:error, Ridley::HostConnector::Response.new(host)])
-     
-      subject.put_secret(host, options).should be_nil
+    it { should be_a(Ridley::HostConnector::Response) }
+
+    context "when there is no file at the secret path" do
+      let(:options) { {} }
+      
+      it { should be_nil }
+    end
+
+    context "when an error occurs" do
+      let(:response) { [:error, Ridley::HostConnector::Response.new(host)] }
+
+      it { should be_nil }
     end
   end
 

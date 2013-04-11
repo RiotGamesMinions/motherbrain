@@ -271,6 +271,26 @@ describe MB::Config do
     end
   end
 
+  describe "#winrm" do
+    subject { winrm }
+
+    let(:winrm) { mb_config[:winrm] }
+    let(:mb_config) {
+      MB::Config.new.tap do |o|
+        o.winrm.user = "Administrator"
+        o.winrm.password = "secret"
+      end
+    }
+
+    it { should eq(mb_config.winrm) }
+
+    it "has valid config options" do
+      expect(winrm.user).to eq("Administrator")
+      expect(winrm.password).to eq("secret")
+      expect(winrm.port).to eq(5985)
+    end
+  end
+
   describe "#to_json" do
     it "should not include the 'id' attribute" do
       subject.to_json.should_not have_json_path('id')
@@ -336,6 +356,10 @@ describe MB::Config do
 
     it "returns a hash with a 'ssh' key" do
       subject.should have_key(:ssh)
+    end
+
+    it "returns a hash with a 'winrm' key" do
+      subject.should have_key(:winrm)
     end
 
     describe "'ssh' key" do

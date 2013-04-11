@@ -120,7 +120,7 @@ module MotherBrain
         end
 
         @nodes ||= hosts.collect do |host|
-          [ host, node_querier.registered_as(host) ]
+          [ host, node_querier.future(:registered_as, host) ]
         end.collect do |host, client_name|
           {
             hostname: host,
