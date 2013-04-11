@@ -68,10 +68,9 @@ module MotherBrain
       lines   = File.readlines(MB.scripts.join("#{name}.rb"))
       command_lines = lines.collect { |line| line.gsub('"', "'").strip.chomp }
 
-      status, response = Ridley::HostConnector.best_connector_for(host, options) do |host_connector|
-        host_connector::Worker.new(host, options).ruby_script(command_lines)
-      end
-
+      configured_worker = chef_connection.node.configured_worker_for(host)
+      status, response = configured_worker.ruby_script(command_lines)
+      
       case status
       when :ok
         response.stdout.chomp
@@ -133,9 +132,8 @@ module MotherBrain
 
       log.info { "Running Chef client on: #{host}" }
 
-      status, response = Ridley::HostConnector.best_connector_for(host, options) do |host_connector|
-        host_connector::Worker.new(host, options).chef_client
-      end
+      configured_worker = chef_connection.node.configured_worker_for(host)
+      status, response = configured_worker.chef_client
 
       case status
       when :ok
@@ -177,9 +175,8 @@ module MotherBrain
         return nil
       end
 
-      status, response = Ridley::HostConnector.best_connector_for(host, options) do |host_connector|
-        host_connector::Worker.new(host, options).put_secret(options[:secret])
-      end
+      configured_worker = chef_connection.node.configured_worker_for(host)
+      status, response = configured_worker.put_secret(options[:secret])
 
       case status
       when :ok

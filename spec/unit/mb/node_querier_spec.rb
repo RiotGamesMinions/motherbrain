@@ -5,10 +5,6 @@ describe MB::NodeQuerier do
 
   let(:node_querier) { described_class.new }
 
-  before do
-    Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)
-  end
-
   describe "#list" do
     it "returns a list of nodes from the motherbrain's chef connection" do
       nodes = double
@@ -23,19 +19,21 @@ describe MB::NodeQuerier do
 
     let(:response) { [:ok, double('response', stdout: 'my_node')] }
     let(:ruby_script) { node_querier.ruby_script('node_name', double('host')) }
+    let(:ssh_worker) { Ridley::HostConnector::SSH::Worker.new(double('host')) }
 
     before do
-      Ridley::HostConnector::SSH::Worker.stub_chain(:new, :ruby_script).and_return(response)
+      ssh_worker.stub(ruby_script: response)
+      node_querier.stub_chain(:chef_connection, :node, :configured_worker_for).and_return(ssh_worker)
     end
     
     it "returns the response of the successfully run script" do
       ruby_script.should eq('my_node')
     end
 
-    context "when error..." do
+    context "when an error occurs" do
       let(:response) { [:error, double('response', stderr: 'error_message')] }
 
-      it "raises a RemoteScriptError if there was an error executing the script" do
+      it "raises a RemoteScriptError" do
         expect {
           ruby_script
         }.to raise_error(MB::RemoteScriptError, 'error_message')
@@ -64,16 +62,38 @@ describe MB::NodeQuerier do
   end
 
   describe "#chef_run" do
-    it "raises a RemoteCommandError if given a nil hostname" do
-      expect {
-        subject.chef_run(nil)
-      }.to raise_error(MB::RemoteCommandError)
+    subject { chef_run }
+
+    let(:chef_run) { node_querier.chef_run(host) }
+    let(:host) { "192.168.1.1" }
+    let(:response) { [:ok, Ridley::HostConnector::Response.new(host)] }
+    let(:ssh_worker) { Ridley::HostConnector::SSH::Worker.new(double('host')) }
+
+    before do
+      ssh_worker.stub(chef_client: response)
+      node_querier.stub_chain(:chef_connection, :node, :configured_worker_for).and_return(ssh_worker)
     end
 
-    it "raises a RemoteCommandError if given a blank hostname" do
-      expect {
-        subject.chef_run("")
-      }.to raise_error(MB::RemoteCommandError)
+    it { should be_a(Ridley::HostConnector::Response) }
+
+    context "when hostname is nil" do
+      let(:host) { nil }
+
+      it "raises a RemoteCommandError" do
+        expect {
+          chef_run
+        }.to raise_error(MB::RemoteCommandError)
+      end
+    end
+
+    context "when hostname is blank" do
+      let(:host) { "" }
+
+      it "raises a RemoteCommandError" do
+        expect {
+          chef_run
+        }.to raise_error(MB::RemoteCommandError)
+      end
     end
   end
 
@@ -88,10 +108,11 @@ describe MB::NodeQuerier do
       }
     end
     let(:response) { [:ok, Ridley::HostConnector::Response.new(host)] }
+    let(:ssh_worker) { Ridley::HostConnector::SSH::Worker.new(double('host')) }
 
     before do
-      Ridley::HostConnector.stub(:best_connector_for).and_yield(Ridley::HostConnector::SSH)
-      Ridley::HostConnector::SSH::Worker.stub_chain(:new, :put_secret).and_return(response)
+      ssh_worker.stub(put_secret: response)
+      node_querier.stub_chain(:chef_connection, :node, :configured_worker_for).and_return(ssh_worker)
     end
 
     it { should be_a(Ridley::HostConnector::Response) }
