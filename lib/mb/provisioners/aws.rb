@@ -9,7 +9,6 @@ module MotherBrain
     #
     class AWS
       include Provisioner
-      include MB::Logging
       
       register_provisioner :aws
 

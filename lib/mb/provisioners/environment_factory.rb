@@ -58,7 +58,6 @@ module MotherBrain
       end
 
       include Provisioner
-      include MB::Logging
 
       register_provisioner :environment_factory,
         default: true

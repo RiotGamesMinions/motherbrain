@@ -8,6 +8,8 @@ module MotherBrain
       def included(base)
         base.extend(ClassMethods)
         base.send(:include, Celluloid)
+        base.send(:include, MB::Logging)
+        base.send(:include, MB::Mixin::Services)
       end
     end
 
