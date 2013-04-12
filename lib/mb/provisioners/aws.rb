@@ -19,7 +19,7 @@ module MotherBrain
 
       def initialize(options = {})
         @instances = {}
-        @__tries = 5
+        @__tries = 60
       end
 
       def access_key
@@ -137,23 +137,29 @@ module MotherBrain
 
       def run_instances(instance_type, count)
         job.set_status "creating #{count} #{instance_type} instance#{count > 1 ? 's' : ''}"
-        response = fog_connection.run_instances manifest.options[:image_id], count, count, {
-          'InstanceType' => instance_type,
-          'Placement.AvailabilityZone' => manifest.options[:availability_zone],
-          'KeyName' => manifest.options[:key_name]
-        }
+        begin
+          response = fog_connection.run_instances manifest.options[:image_id], count, count, {
+            'InstanceType' => instance_type,
+            'Placement.AvailabilityZone' => manifest.options[:availability_zone],
+            'KeyName' => manifest.options[:key_name]
+          }
+          log.debug response.inspect
+        rescue Fog::Compute::AWS::Error => e
+          job.set_status "Error: #{e}"
+          raise e
+        end
         if response.status == 200
           response.body["instancesSet"].each do |i|
             self.instances[i["instanceId"]] = {type: i["instanceType"], ipaddress: nil, status: i["instanceState"]["code"]}
           end
         else
-          raise AWSRunInstancesError, response.error
+          raise MB::Errors::AWSRunInstancesError, response.error
         end
       end
 
       def pending_instances
-        instances.select {|i,d| d[:status] == 0}.keys
-      end
+        instances.select {|i,d| d[:status].to_i != 16}.keys
+       end
 
       def keep_trying?
         @__tries > 0
@@ -165,26 +171,36 @@ module MotherBrain
 
       def verify_instances
         job.set_status "waiting for instances to be ready"
+        log.debug "pending_instances: #{pending_instances.inspect}"
         return if pending_instances.empty?
         begin
           response = fog_connection.describe_instances('instance-id'=> pending_instances)
-          if response.status == 200 && response.body["instancesSet"]
-            response.body["instancesSet"].each do |i|
+          log.debug response.inspect
+          if response.status == 200 && response.body["reservationSet"]
+            reserved_instances = response.body["reservationSet"].collect {|x| x["instancesSet"] }.flatten
+            reserved_instances.each do |i|
+              log.debug i.inspect
               self.instances[i["instanceId"]][:status]    = i["instanceState"]["code"]
               self.instances[i["instanceId"]][:ipaddress] = i["ipAddress"]
             end
+            log.debug "pending_instances: #{pending_instances.inspect}"
+            log.debug "instances: #{instances.inspect}"
             return true if pending_instances.empty?
+            sleep 10 if keep_trying?
           else
             sleep 1 if keep_trying?
           end
         rescue Fog::Compute::AWS::NotFound
-          sleep 1 if keep_trying?
+          sleep 10 if keep_trying?
         end
         next_try
         if keep_trying?
           verify_instances
         else
-          job.set_status "giving up on instances :-("
+          log.debug "Instances: #{instances.inspect}"
+          raise MB::Errors::AWSRunInstancesError, "giving up on instances :-("
+        end
+      end
         end
       end
 
