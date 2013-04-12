@@ -86,7 +86,7 @@ describe MB::Provisioners::AWS do
       subject.should_receive(:validate_manifest_options).and_return(true)
       subject.should_receive(:create_instances).and_return(true)
       subject.should_receive(:verify_instances).and_return(true)
-      subject.should_receive(:verify_ssh).and_return(true)
+      subject.should_receive(:verify_connection).and_return(true)
       subject.should_receive(:instances_as_manifest).and_return(response)
       subject.up(job, env_name, manifest, plugin, skip_bootstrap: true).should eq(response)
     end
@@ -249,12 +249,12 @@ describe MB::Provisioners::AWS do
     end
 
         
-    describe "#verify_ssh" do
+    describe "#verify_connection" do
       it "should wait for SSH" do
         instances = subject.create_instances job, manifest, fog
         subject.verify_instances job, fog, instances
         Fog.should_receive(:wait_for)
-        subject.verify_ssh job, fog, instances
+        subject.verify_connection job, fog, instances
       end
     end
 

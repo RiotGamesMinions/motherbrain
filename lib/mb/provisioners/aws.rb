@@ -35,7 +35,7 @@ module MotherBrain
         validate_manifest_options(job, manifest)
         instances = create_instances(job, manifest, fog)
         verified_instances = verify_instances(job, fog, instances)
-        verify_ssh(job, fog, verified_instances)
+        verify_connection(job, fog, verified_instances)
         instances_as_manifest(verified_instances)
       end
 
@@ -251,8 +251,9 @@ module MotherBrain
         # @param [Job] job
         # @param [AWS::Compute] fog
         # @param [Hash] instances
-        def verify_ssh(job, fog, instances)
+        def verify_connection(job, fog, instances)
           # TODO: remember working ones, only keep checking pending ones
+          # TODO: windows support
           servers = instances.collect {|i,d| fog.servers.get(i) }
           Fog.wait_for do
             job.set_status "waiting for instances to be SSHable"
