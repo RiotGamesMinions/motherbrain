@@ -113,9 +113,8 @@ module MotherBrain
         worker.down(job, environment)
 
         job.report_success("environment destroyed")
-      rescue ProvisionError => ex
+      rescue => ex
         job.report_failure(ex)
-        log_exception(ex)
       ensure
         job.terminate if job && job.alive?
       end
@@ -158,7 +157,7 @@ module MotherBrain
 
         worker = self.class.new_provisioner(options)
         Provisioner::Manifest.validate!(manifest, plugin)
-        
+
         response = worker.up(job, environment, manifest, plugin, options.slice(*WORKER_OPTS))
 
         if options[:skip_bootstrap]
@@ -167,9 +166,8 @@ module MotherBrain
           bootstrap_manifest = Bootstrap::Manifest.from_provisioner(response, manifest)
           bootstrapper.bootstrap(job, environment, bootstrap_manifest, plugin, options)
         end
-      rescue ProvisionError => ex
+      rescue => ex
         job.report_failure(ex)
-        log_exception(ex)
       ensure
         job.terminate if job && job.alive?
       end

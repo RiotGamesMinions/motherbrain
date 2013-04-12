@@ -120,7 +120,7 @@ module MotherBrain
           app_config.validate!
           @app = MB::Application.run!(app_config)
 
-          # If the first argument is the name of a plugin, register that plugin and use it. 
+          # If the first argument is the name of a plugin, register that plugin and use it.
           if plugin_task?(args[0])
             name = args[0]
 
@@ -133,9 +133,9 @@ module MotherBrain
         end
 
         dispatch(nil, given_args.dup, nil, config)
-      rescue MB::MBError, Thor::Error => ex
-        ENV["THOR_DEBUG"] == "1" ? (raise ex) : config[:shell].error(ex.message)
-        exit ex.respond_to?(:exit_code) ? ex.exit_code : MB::MBError::DEFAULT_EXIT_CODE
+      rescue MBError => ex
+        ui.error ex
+        exit_with(ex)
       rescue Errno::EPIPE
         # This happens if a thor command is piped to something like `head`,
         # which closes the pipe when it's done reading. This will also
@@ -157,7 +157,7 @@ module MotherBrain
         if ENVIRONMENT_TASKS.include?(args.first)
           return true
         end
-        
+
         if args.count == 1
           return false
         end
@@ -188,12 +188,12 @@ module MotherBrain
         sub_command
       end
 
-      # Check if we should start the motherbrain application stack based on the 
-      # arguments passed to the CliGateway. The application stack won't be started 
+      # Check if we should start the motherbrain application stack based on the
+      # arguments passed to the CliGateway. The application stack won't be started
       # if the first argument is a member of {SKIP_CONFIG_TASKS}.
-      # 
+      #
       # @param [Array] args
-      # 
+      #
       # @return [Boolean]
       def start_mb_application?(args)
         args.any? && !SKIP_CONFIG_TASKS.include?(args[0])
@@ -377,11 +377,11 @@ module MotherBrain
 
       if plugins.empty?
         errmsg = "No plugins found in your Berkshelf: '#{Application.plugin_manager.berkshelf_path}'"
-        
+
         if options[:remote]
           errmsg << " or on remote: '#{Application.config.chef.api_url}'"
         end
-        
+
         MB.ui.say errmsg
         exit(0)
       end
