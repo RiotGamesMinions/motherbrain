@@ -78,6 +78,10 @@ module MotherBrain
       raise AbstractFunction
     end
 
+    # Delete an environment from Chef server
+    #
+    # @param [String] env_name
+    #   name of the environment to remove
     def delete_environment(env_name)
       ridley.environment.delete(env_name)
     end
