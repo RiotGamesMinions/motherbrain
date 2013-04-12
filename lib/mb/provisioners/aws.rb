@@ -48,6 +48,17 @@ module MotherBrain
         end
       end
 
+      def endpoint
+        if manifest && manifest.options && manifest.options[:endpoint]
+          manifest.options[:endpoint]
+        elsif ENV['EC2_URL']
+          ENV['EC2_URL']
+        else
+          raise InvalidProvisionManifest,
+            "The provisioner manifest options hash needs a key 'endpoint' or the EC2_URL variable needs to be set"
+        end
+      end
+
       # Provision nodes in the environment based on the contents of the given manifest
       #
       # @param [Job] job
@@ -83,7 +94,8 @@ module MotherBrain
       def fog_connection
         @__fog_connection ||= Fog::Compute.new(:provider => 'aws',
                                                :aws_access_key_id => access_key,
-                                               :aws_secret_access_key => secret_key)
+                                               :aws_secret_access_key => secret_key,
+                                               :endpoint => endpoint)
       end
 
       def validate_manifest_options

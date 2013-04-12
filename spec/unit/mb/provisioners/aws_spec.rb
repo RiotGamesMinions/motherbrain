@@ -18,6 +18,7 @@ describe MB::Provisioners::AWS do
       options: {
         access_key: "ABCDEFG",
         secret_key: "abcdefgh123456789",
+        endpoint: "http://euca.example.com/services/Eucalyptus",
         image_id: "emi-1234ABCD",
         key_name: "mb",
         security_groups: ["foo", "bar"],
@@ -85,6 +86,7 @@ describe MB::Provisioners::AWS do
       subject.should_receive(:validate_manifest_options).and_return(true)
       subject.should_receive(:create_instances).and_return(true)
       subject.should_receive(:verify_instances).and_return(true)
+      subject.should_receive(:verify_ssh).and_return(true)
       subject.should_receive(:instances_as_manifest).and_return(response)
       subject.up(job, env_name, manifest, plugin, skip_bootstrap: true).should eq(response)
     end
@@ -106,12 +108,13 @@ describe MB::Provisioners::AWS do
       job.stub(:set_status)
     end
 
-    context "access keys" do
+    context "auth settings" do
       context "without manifest keys" do
         before do
-          ENV['EC2_ACCESS_KEY'] = ENV['EC2_SECRET_KEY'] = ENV['AWS_ACCESS_KEY'] = ENV['AWS_SECRET_KEY'] = nil
+          ENV['EC2_ACCESS_KEY'] = ENV['EC2_SECRET_KEY'] = ENV['AWS_ACCESS_KEY'] = ENV['AWS_SECRET_KEY'] = ENV['EC2_URL'] = nil
           subject.manifest.options.delete :access_key
           subject.manifest.options.delete :secret_key
+          subject.manifest.options.delete :endpoint
         end
 
         it "should error on access_key" do
@@ -122,15 +125,21 @@ describe MB::Provisioners::AWS do
           lambda { subject.secret_key }.should raise_error(MB::InvalidProvisionManifest)
         end
 
+        it "should error on endpoint" do
+          lambda { subject.secret_key }.should raise_error(MB::InvalidProvisionManifest)
+        end
+
         context "with Euca environment variables" do
           before do
             ENV['EC2_ACCESS_KEY'] = 'EC2ABCDEFG'
             ENV['EC2_SECRET_KEY'] = 'EC2abcdefgh123456789'
+            ENV['EC2_URL']        = 'http://euca2.example.com/services/Eucalyptus'
           end
 
           it "should get from the Euca environment variables" do
             subject.access_key.should eq('EC2ABCDEFG')
             subject.secret_key.should eq('EC2abcdefgh123456789')
+            subject.endpoint.should eq('http://euca2.example.com/services/Eucalyptus')
           end
         end
 
@@ -138,11 +147,13 @@ describe MB::Provisioners::AWS do
           before do
             ENV['AWS_ACCESS_KEY'] = 'AWSABCDEFG'
             ENV['AWS_SECRET_KEY'] = 'AWSabcdefgh123456789'
+            ENV['EC2_URL']        = 'http://ec2.ap-southeast-1.amazonaws.com'
           end
 
           it "should get from the AWS environment variables" do
             subject.access_key.should eq('AWSABCDEFG')
             subject.secret_key.should eq('AWSabcdefgh123456789')
+            subject.endpoint.should eq('http://ec2.ap-southeast-1.amazonaws.com')
           end
         end
       end
@@ -151,6 +162,7 @@ describe MB::Provisioners::AWS do
         it "should get from the manifest options" do
           subject.access_key.should eq('ABCDEFG')
           subject.secret_key.should eq('abcdefgh123456789')
+          subject.endpoint.should eq('http://euca.example.com/services/Eucalyptus')
         end
       end
     end
