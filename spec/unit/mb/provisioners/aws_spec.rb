@@ -248,8 +248,20 @@ describe MB::Provisioners::AWS do
           subject.fog_connection.should_receive(:describe_instances).at_least(2).times.and_call_original
           subject.verify_instances
         end
+      end
+    end
 
         
+    describe "#verify_ssh" do
+      before do
+        subject.create_instances
+        subject.verify_instances
+      end
+
+      let(:instance) { double("aws_instance") }
+      it "should wait for SSH" do
+        Fog.should_receive(:wait_for)
+        subject.verify_ssh
       end
     end
 

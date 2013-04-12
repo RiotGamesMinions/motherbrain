@@ -81,6 +81,7 @@ module MotherBrain
         validate_manifest_options
         create_instances
         verify_instances
+        verify_ssh
         instances_as_manifest
       end
 
@@ -201,6 +202,17 @@ module MotherBrain
           raise MB::Errors::AWSRunInstancesError, "giving up on instances :-("
         end
       end
+
+      def verify_ssh
+        # TODO: remember working ones, only keep checking pending ones
+        servers = instances.collect {|i,d| fog_connection.servers.get(i) }
+        Fog.wait_for do
+          job.set_status "waiting for instances to be SSHable"
+          servers.all? do |s|
+            s.username = Application.config[:ssh][:user]
+            s.private_key_path = Application.config[:ssh][:keys].first
+            s.sshable?
+          end
         end
       end
 
