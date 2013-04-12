@@ -96,7 +96,7 @@ module MotherBrain
       else
         job.report_success("finished chef client run on #{node_success} nodes")
       end
-    rescue EnvironmentNotFound, ResourceLocked => ex
+    rescue => ex
       job.report_failure(ex)
     ensure
       job.terminate if job && job.alive?
