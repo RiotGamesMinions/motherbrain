@@ -12,50 +12,41 @@ module MotherBrain
       
       register_provisioner :aws
 
-      attr_accessor :manifest
-      attr_accessor :instances
-      attr_accessor :job
-      attr_accessor :env_name
 
       def initialize(options = {})
-        @instances = {}
-        @__tries = 60
       end
 
-      def access_key
-        if manifest && manifest.options && manifest.options[:access_key]
+      def access_key(manifest=nil)
+        if manifest && manifest.options[:access_key]
           manifest.options[:access_key]
         elsif ENV['AWS_ACCESS_KEY']
           ENV['AWS_ACCESS_KEY']
         elsif ENV['EC2_ACCESS_KEY']
           ENV['EC2_ACCESS_KEY']
         else
-          raise InvalidProvisionManifest,
-            "The provisioner manifest options hash needs a key 'access_key' or the AWS_ACCESS_KEY or EC2_ACCESS_KEY variables need to be set"
+          abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'access_key' or the AWS_ACCESS_KEY or EC2_ACCESS_KEY variables need to be set")
         end
       end
 
-      def secret_key
-        if manifest && manifest.options && manifest.options[:secret_key]
+      def secret_key(manifest=nil)
+        if manifest && manifest.options[:secret_key]
           manifest.options[:secret_key]
         elsif ENV['AWS_SECRET_KEY']
           ENV['AWS_SECRET_KEY']
         elsif ENV['EC2_SECRET_KEY']
           ENV['EC2_SECRET_KEY']
         else
-          raise InvalidProvisionManifest,
-            "The provisioner manifest options hash needs a key 'secret_key' or the AWS_SECRET_KEY or EC2_SECRET_KEY variables need to be set"
+          abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'secret_key' or the AWS_SECRET_KEY or EC2_SECRET_KEY variables need to be set")
         end
       end
 
-      def endpoint
-        if manifest && manifest.options && manifest.options[:endpoint]
+      def endpoint(manifest=nil)
+        if manifest && manifest.options[:endpoint]
           manifest.options[:endpoint]
         elsif ENV['EC2_URL']
           ENV['EC2_URL']
         else
-          raise InvalidProvisionManifest,
-            "The provisioner manifest options hash needs a key 'endpoint' or the EC2_URL variable needs to be set"
+          abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'endpoint' or the EC2_URL variable needs to be set")
         end
       end
 
@@ -75,53 +66,45 @@ module MotherBrain
       #
       # @return [Array<Hash>]
       def up(job, env_name, manifest, plugin, options = {})
-        @manifest = manifest
-        @job = job
         job.set_status "starting provision"
-        validate_manifest_options
-        create_instances
-        verify_instances
-        verify_ssh
-        instances_as_manifest
+        fog = fog_connection(manifest)
+        validate_manifest_options(job, manifest)
+        instances = create_instances(job, manifest, fog)
+        verified_instances = verify_instances(job, fog, instances)
+        verify_ssh(job, fog, verified_instances)
+        instances_as_manifest(verified_instances)
       end
 
       def down(job, env_name)
-        @job = job
-        @env_name = env_name
-        terminate_instances
+        fog = fog_connection
+        terminate_instances(job, fog, env_name)
+        job.set_status "deleting chef_environment:#{env_name}"
         delete_environment(env_name)
       end
 
-      def fog_connection
-        @__fog_connection ||= Fog::Compute.new(:provider => 'aws',
-                                               :aws_access_key_id => access_key,
-                                               :aws_secret_access_key => secret_key,
-                                               :endpoint => endpoint)
+      def fog_connection(manifest=nil)
+        Fog::Compute.new(provider: 'aws',
+                         aws_access_key_id: access_key(manifest),
+                         aws_secret_access_key: secret_key(manifest),
+                         endpoint: endpoint(manifest))
       end
 
-      def validate_manifest_options
+      def validate_manifest_options(job, manifest)
         job.set_status "validating manifest options"
-        unless manifest.options
-          raise InvalidProvisionManifest,
-            "The provisioner manifest needs to have a key 'options' containing a hash of AWS options."
-        end
-
         [:image_id, :key_name, :availability_zone].each do |key|
           unless manifest.options[key]
-            raise InvalidProvisionManifest,
-              "The provisioner manifest options hash needs a key '#{key}' with the AWS #{key.to_s.camelize}"
+            abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key '#{key}' with the AWS #{key.to_s.camelize}")
           end
         end
 
         if manifest.options[:security_groups] && !manifest.options[:security_groups].is_a?(Array)
-          raise InvalidProvisionManifest,
-            "The provisioner manifest options hash key 'security_groups' needs an array of security group names"
+          abort InvalidProvisionManifest.new("The provisioner manifest options hash key 'security_groups' needs an array of security group names")
         end
 
         true
       end
 
-      def instance_counts
+      def instance_counts(manifest)
         manifest[:nodes].inject({}) do |result, element|
           result[element[:type]] ||= 0
           result[element[:type]] += element[:count].to_i
@@ -129,83 +112,77 @@ module MotherBrain
         end
       end
 
-      def create_instances
+      def create_instances(job, manifest, fog)
         job.set_status "creating instances"
-        instance_counts.each do |instance_type, count|
-          run_instances instance_type, count
+        instances = {}
+        instance_counts(manifest).each do |instance_type, count|
+          run_instances job, fog, instances, instance_type, count, manifest.options
         end
+        instances
       end
 
-      def run_instances(instance_type, count)
+      def run_instances(job, fog, instances, instance_type, count, options)
         job.set_status "creating #{count} #{instance_type} instance#{count > 1 ? 's' : ''}"
         begin
-          response = fog_connection.run_instances manifest.options[:image_id], count, count, {
+          response = fog.run_instances options[:image_id], count, count, {
             'InstanceType' => instance_type,
-            'Placement.AvailabilityZone' => manifest.options[:availability_zone],
-            'KeyName' => manifest.options[:key_name]
+            'Placement.AvailabilityZone' => options[:availability_zone],
+            'KeyName' => options[:key_name]
           }
           log.debug response.inspect
         rescue Fog::Compute::AWS::Error => e
           job.set_status "Error: #{e}"
-          raise e
+          abort AWSRunInstancesError.new(e)
         end
         if response.status == 200
           response.body["instancesSet"].each do |i|
-            self.instances[i["instanceId"]] = {type: i["instanceType"], ipaddress: nil, status: i["instanceState"]["code"]}
+            instances[i["instanceId"]] = {type: i["instanceType"], ipaddress: nil, status: i["instanceState"]["code"]}
           end
         else
-          raise MB::Errors::AWSRunInstancesError, response.error
+          abort AWSRunInstancesError, response.error
         end
+        instances
       end
 
-      def pending_instances
+      def pending_instances(instances)
         instances.select {|i,d| d[:status].to_i != 16}.keys
-       end
-
-      def keep_trying?
-        @__tries > 0
       end
 
-      def next_try
-        @__tries -= 1
-      end
-
-      def verify_instances
+      def verify_instances(job, fog, instances, tries=10)
+        if tries <= 0
+          jog.debug "Giving up. instances: #{instances.inspect}"
+          abort AWSRunInstancesError, "giving up on instances :-("
+        end
         job.set_status "waiting for instances to be ready"
-        log.debug "pending_instances: #{pending_instances.inspect}"
-        return if pending_instances.empty?
+        pending = pending_instances(instances)
+        return if pending.empty?
+        log.info "pending instances: #{pending.join(',')}"
         begin
-          response = fog_connection.describe_instances('instance-id'=> pending_instances)
+          response = fog.describe_instances('instance-id'=> pending)
           log.debug response.inspect
           if response.status == 200 && response.body["reservationSet"]
             reserved_instances = response.body["reservationSet"].collect {|x| x["instancesSet"] }.flatten
             reserved_instances.each do |i|
               log.debug i.inspect
-              self.instances[i["instanceId"]][:status]    = i["instanceState"]["code"]
-              self.instances[i["instanceId"]][:ipaddress] = i["ipAddress"]
+              instances[i["instanceId"]][:status]    = i["instanceState"]["code"]
+              instances[i["instanceId"]][:ipaddress] = i["ipAddress"]
             end
-            log.debug "pending_instances: #{pending_instances.inspect}"
-            log.debug "instances: #{instances.inspect}"
-            return true if pending_instances.empty?
-            sleep 10 if keep_trying?
+            log.debug "instances: #{instances}"
+            still_pending = pending_instances(instances)
+            return instances if still_pending.empty?
+            sleep 10
           else
-            sleep 1 if keep_trying?
+            sleep 1
           end
         rescue Fog::Compute::AWS::NotFound
-          sleep 10 if keep_trying?
+          sleep 10
         end
-        next_try
-        if keep_trying?
-          verify_instances
-        else
-          log.debug "Instances: #{instances.inspect}"
-          raise MB::Errors::AWSRunInstancesError, "giving up on instances :-("
-        end
+        verify_instances(job, fog, instances, tries-1)
       end
 
-      def verify_ssh
+      def verify_ssh(job, fog, instances)
         # TODO: remember working ones, only keep checking pending ones
-        servers = instances.collect {|i,d| fog_connection.servers.get(i) }
+        servers = instances.collect {|i,d| fog.servers.get(i) }
         Fog.wait_for do
           job.set_status "waiting for instances to be SSHable"
           servers.all? do |s|
@@ -216,13 +193,13 @@ module MotherBrain
         end
       end
 
-      def instances_as_manifest
+      def instances_as_manifest(instances)
         instances.collect do |instance_id, instance|
           { instance_type: instance[:type], public_hostname: instance[:ipaddress] }
         end
       end
 
-      def instance_ids
+      def instance_ids(env_name)
         # TODO: throw up hands if AWS and Euca nodes in same env
         nodes = ridley.search(:node, "chef_environment:#{env_name}")
         nodes.collect do |node|
@@ -234,20 +211,20 @@ module MotherBrain
         end
       end
 
-      def terminate_instances
-        fog_connection.terminate_instances instance_ids
+      def terminate_instances(job, fog, env_name)
+        ids = instance_ids(env_name)
+        job.set_status "Terminating #{ids.join(',')}"
+        fog.terminate_instances ids
       end
     end
   end
 
-  module Errors
-    class AWSProvisionError < ProvisionError
-      error_code(5200)
-    end
+  class AWSProvisionError < ProvisionError
+    error_code(5200)
+  end
 
-    class AWSRunInstancesError < AWSProvisionError
-      error_code(5201)
-    end
+  class AWSRunInstancesError < AWSProvisionError
+    error_code(5201)
   end
 end
 
