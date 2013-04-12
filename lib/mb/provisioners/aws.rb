@@ -190,7 +190,6 @@ module MotherBrain
             }
             log.debug response.inspect
           rescue Fog::Compute::AWS::Error => e
-            job.set_status "Error: #{e}"
             abort AWSRunInstancesError.new(e)
           end
           if response.status == 200
@@ -198,7 +197,7 @@ module MotherBrain
               instances[i["instanceId"]] = {type: i["instanceType"], ipaddress: nil, status: i["instanceState"]["code"]}
             end
           else
-            abort AWSRunInstancesError, response.error
+            abort AWSRunInstancesError.new(response.error)
           end
           instances
         end
@@ -218,8 +217,8 @@ module MotherBrain
         # @return [Hash]
         def verify_instances(job, fog, instances, tries=10)
           if tries <= 0
-            jog.debug "Giving up. instances: #{instances.inspect}"
-            abort AWSRunInstancesError, "giving up on instances :-("
+            job.debug "Giving up. instances: #{instances.inspect}"
+            abort AWSInstanceTimeoutError.new("giving up on instances :-(")
           end
           job.set_status "waiting for instances to be ready"
           pending = pending_instances(instances)
@@ -306,6 +305,10 @@ module MotherBrain
 
   class AWSRunInstancesError < AWSProvisionError
     error_code(5201)
+  end
+
+  class AWSInstanceTimeoutError < AWSRunInstancesError
+    error_code(5202)
   end
 end
 
