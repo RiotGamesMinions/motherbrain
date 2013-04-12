@@ -17,7 +17,7 @@ module MotherBrain
       attr_accessor :job
       attr_accessor :env_name
 
-      def initialize
+      def initialize(options = {})
         @instances = {}
         @__tries = 5
       end
