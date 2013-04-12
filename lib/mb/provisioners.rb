@@ -21,7 +21,7 @@ module MotherBrain
         end
 
         if options[:default]
-          unless default.nil?
+          unless @default_id.nil?
             raise ProvisionerRegistrationError, "A default provisioner has already been defined (#{default_id})"
           end
 
