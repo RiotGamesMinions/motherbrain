@@ -230,7 +230,6 @@ module MotherBrain
             if response.status == 200 && response.body["reservationSet"]
               reserved_instances = response.body["reservationSet"].collect {|x| x["instancesSet"] }.flatten
               reserved_instances.each do |i|
-                log.debug i.inspect
                 instances[i["instanceId"]][:status]    = i["instanceState"]["code"]
                 instances[i["instanceId"]][:ipaddress] = i["ipAddress"]
               end
