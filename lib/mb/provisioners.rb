@@ -78,6 +78,7 @@ module MotherBrain
       # @return [Set]
       #   an empty Set
       def clear!
+        @default_id = nil
         @all = Set.new
       end
 
