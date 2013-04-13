@@ -32,55 +32,6 @@ module MotherBrain
       chef_connection.node.all
     end
 
-    # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
-    # that are located in the Mother Brain scripts directory can be used and they should
-    # be identified just by their filename minus the extension
-    #
-    # @example
-    #   node_querier.ruby_script('node_name', '33.33.33.10') => 'vagrant.localhost'
-    #
-    # @param [String] name
-    #   name of the script to run on the target node
-    # @param [String] host
-    #   hostname of the target node
-    #   the MotherBrain scripts directory
-    # @option options [String] :user
-    #   a shell user that will login to each node and perform the bootstrap command on (required)
-    # @option options [String] :password
-    #   the password for the shell user that will perform the bootstrap
-    # @option options [Array, String] :keys
-    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
-    # @option options [Float] :timeout (10.0)
-    #   timeout value for SSH bootstrap
-    # @option options [Boolean] :sudo (true)
-    #   bootstrap with sudo
-    #
-    # @raise [RemoteScriptError] if there was an error in execution
-    #
-    # @note
-    #   Use {#_ruby_script_} if the caller of this function is same actor as the receiver. You will
-    #   not be able to rescue from the RemoteScriptError thrown by {#ruby_script} but you will
-    #   be able to rescue from {#_ruby_script_}.
-    #
-    # @return [String]
-    def ruby_script(name, host, options = {})
-      name    = name.split('.rb')[0]
-      lines   = File.readlines(MB.scripts.join("#{name}.rb"))
-      command_lines = lines.collect { |line| line.gsub('"', "'").strip.chomp }
-
-      configured_worker = chef_connection.node.configured_worker_for(host)
-      status, response = configured_worker.ruby_script(command_lines)
-      
-      case status
-      when :ok
-        response.stdout.chomp
-      when :error
-        raise MB::RemoteScriptError.new(response.stderr.chomp)
-      else
-        raise ArgumentError, "unknown status returned from #ruby_script: #{status}"
-      end
-    end
-
     # Return the Chef node_name of the target host. A nil value is returned if a
     # node_name cannot be determined
     #
@@ -132,8 +83,7 @@ module MotherBrain
 
       log.info { "Running Chef client on: #{host}" }
 
-      configured_worker = chef_connection.node.configured_worker_for(host)
-      status, response = configured_worker.chef_client
+      status, response = chef_connection.node.chef_run(host)
 
       case status
       when :ok
@@ -175,8 +125,7 @@ module MotherBrain
         return nil
       end
 
-      configured_worker = chef_connection.node.configured_worker_for(host)
-      status, response = configured_worker.put_secret(options[:secret])
+      status, response = chef_connection.node.put_secret(host, options[:secret])
 
       case status
       when :ok
@@ -185,6 +134,26 @@ module MotherBrain
       when :error
         log.info { "Failed to put secret file on: #{host}" }
         nil
+      end
+    end
+
+    # Executes the given command on the host using the best worker
+    # available for the host. 
+    #
+    # @param [String] host
+    # @param [String] command
+    # 
+    # @return [Ridley::HostConnection::Response]
+    def execute_command(host, command)
+      status, response = chef_connection.node.execute_command(host, command)
+
+      case status
+      when :ok
+        log.info { "Successfully executed command on: #{host}" }
+        response
+      when :error
+        log.info { "Failed to execute command on: #{host}" }
+        abort RemoteCommandError.new(response.stderr.chomp)
       end
     end
 
@@ -225,5 +194,54 @@ module MotherBrain
 
       chef_connection.client.find(client_id).try(:name)
     end
+
+    private
+      # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
+      # that are located in the Mother Brain scripts directory can be used and they should
+      # be identified just by their filename minus the extension
+      #
+      # @example
+      #   node_querier.ruby_script('node_name', '33.33.33.10') => 'vagrant.localhost'
+      #
+      # @param [String] name
+      #   name of the script to run on the target node
+      # @param [String] host
+      #   hostname of the target node
+      #   the MotherBrain scripts directory
+      # @option options [String] :user
+      #   a shell user that will login to each node and perform the bootstrap command on (required)
+      # @option options [String] :password
+      #   the password for the shell user that will perform the bootstrap
+      # @option options [Array, String] :keys
+      #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+      # @option options [Float] :timeout (10.0)
+      #   timeout value for SSH bootstrap
+      # @option options [Boolean] :sudo (true)
+      #   bootstrap with sudo
+      #
+      # @raise [RemoteScriptError] if there was an error in execution
+      #
+      # @note
+      #   Use {#_ruby_script_} if the caller of this function is same actor as the receiver. You will
+      #   not be able to rescue from the RemoteScriptError thrown by {#ruby_script} but you will
+      #   be able to rescue from {#_ruby_script_}.
+      #
+      # @return [String]
+      def ruby_script(name, host, options = {})
+        name    = name.split('.rb')[0]
+        lines   = File.readlines(MB.scripts.join("#{name}.rb"))
+        command_lines = lines.collect { |line| line.gsub('"', "'").strip.chomp }
+
+        status, response = chef_connection.node.ruby_script(host, command_lines)
+
+        case status
+        when :ok
+          response.stdout.chomp
+        when :error
+          raise RemoteScriptError.new(response.stderr.chomp)
+        else
+          raise ArgumentError, "unknown status returned from #ruby_script: #{status}"
+        end
+      end
   end
 end

@@ -4,6 +4,7 @@ describe MB::NodeQuerier do
   subject { node_querier }
 
   let(:node_querier) { described_class.new }
+  let(:host) { "192.168.1.1" }
 
   describe "#list" do
     it "returns a list of nodes from the motherbrain's chef connection" do
@@ -18,12 +19,10 @@ describe MB::NodeQuerier do
     subject { ruby_script }
 
     let(:response) { [:ok, double('response', stdout: 'my_node')] }
-    let(:ruby_script) { node_querier.ruby_script('node_name', double('host')) }
-    let(:ssh_worker) { Ridley::HostConnector::SSH::Worker.new(double('host')) }
+    let(:ruby_script) { node_querier.send(:ruby_script, 'node_name', double('host')) }
 
     before do
-      ssh_worker.stub(ruby_script: response)
-      node_querier.stub_chain(:chef_connection, :node, :configured_worker_for).and_return(ssh_worker)
+      node_querier.stub_chain(:chef_connection, :node, :ruby_script).and_return(response)
     end
     
     it "returns the response of the successfully run script" do
@@ -36,7 +35,7 @@ describe MB::NodeQuerier do
       it "raises a RemoteScriptError" do
         expect {
           ruby_script
-        }.to raise_error(MB::RemoteScriptError, 'error_message')
+        }.to raise_error(MB::RemoteScriptError)
       end
     end
   end
@@ -44,7 +43,6 @@ describe MB::NodeQuerier do
   describe "#node_name" do
     subject(:node_name) { node_querier.node_name(host) }
 
-    let(:host) { "12.34.56.78" }
     let(:node) { "my_node" }
 
     it "calls ruby_script with node_name and returns a response" do
@@ -65,13 +63,10 @@ describe MB::NodeQuerier do
     subject { chef_run }
 
     let(:chef_run) { node_querier.chef_run(host) }
-    let(:host) { "192.168.1.1" }
     let(:response) { [:ok, Ridley::HostConnector::Response.new(host)] }
-    let(:ssh_worker) { Ridley::HostConnector::SSH::Worker.new(double('host')) }
 
     before do
-      ssh_worker.stub(chef_client: response)
-      node_querier.stub_chain(:chef_connection, :node, :configured_worker_for).and_return(ssh_worker)
+      node_querier.stub_chain(:chef_connection, :node, :chef_run).and_return(response)
     end
 
     it { should be_a(Ridley::HostConnector::Response) }
@@ -101,18 +96,15 @@ describe MB::NodeQuerier do
     subject { put_secret }
 
     let(:put_secret) { node_querier.put_secret(host, options) }
-    let(:host) { "192.168.1.1" }
     let(:options) do 
       {
         secret: File.join(fixtures_path, "fake_key.pem")
       }
     end
     let(:response) { [:ok, Ridley::HostConnector::Response.new(host)] }
-    let(:ssh_worker) { Ridley::HostConnector::SSH::Worker.new(double('host')) }
 
     before do
-      ssh_worker.stub(put_secret: response)
-      node_querier.stub_chain(:chef_connection, :node, :configured_worker_for).and_return(ssh_worker)
+      node_querier.stub_chain(:chef_connection, :node, :put_secret).and_return(response)
     end
 
     it { should be_a(Ridley::HostConnector::Response) }
@@ -130,8 +122,30 @@ describe MB::NodeQuerier do
     end
   end
 
+  describe "#execute_command" do
+    subject { execute_command }
+
+    let(:execute_command) { node_querier.execute_command(host, command) }
+    let(:command) { "echo 'hello!'" }
+    let(:response) { [:ok, Ridley::HostConnector::Response.new(host)] }
+
+    before do
+      node_querier.stub_chain(:chef_connection, :node, :execute_command).and_return(response)
+    end
+
+    it { should be_a(Ridley::HostConnector::Response) }
+
+    context "when an error occurs" do
+      let(:response) { [:error, double('error', stderr: 'error_message')] }
+
+      it "aborts a RemoteCommandError" do
+        node_querier.should_receive(:abort).with(MB::RemoteCommandError.new(response[1].stderr))
+        execute_command
+      end
+    end
+  end
+
   describe "#registered?" do
-    let(:host) { "192.168.1.1" }
     let(:node_name) { "reset.riotgames.com" }
 
     it "returns true if the target node is registered with the Chef server" do
@@ -148,7 +162,6 @@ describe MB::NodeQuerier do
   end
 
   describe "#registered_as" do
-    let(:host) { "192.168.1.1" }
     let(:node_name) { "reset.riotgames.com" }
     let(:client) { double('client', name: node_name) }
 
