@@ -220,9 +220,9 @@ module MotherBrain
             log.debug "Giving up. instances: #{instances.inspect}"
             abort AWSInstanceTimeoutError.new("giving up on instances :-(")
           end
-          job.set_status "waiting for instances to be ready"
           pending = pending_instances(instances)
           return if pending.empty?
+          job.set_status "waiting for #{pending.size} instance#{pending.size > 1 ? 's' : ''} to be ready"
           log.info "pending instances: #{pending.join(',')}"
           begin
             response = fog.describe_instances('instance-id'=> pending)
