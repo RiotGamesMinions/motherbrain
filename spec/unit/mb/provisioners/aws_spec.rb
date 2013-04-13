@@ -1,6 +1,11 @@
 require 'spec_helper'
 
 describe MB::Provisioners::AWS do
+  # We test a lot of the guts
+  saved_private_instance_methods = MB::Provisioners::AWS.private_instance_methods
+  before { MB::Provisioners::AWS.class_eval { public *saved_private_instance_methods } }
+  after { MB::Provisioners::AWS.class_eval { private *saved_private_instance_methods } }
+
   before(:all) do
     Fog.mock!
   end
