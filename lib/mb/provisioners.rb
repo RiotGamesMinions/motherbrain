@@ -21,7 +21,7 @@ module MotherBrain
         end
 
         if options[:default]
-          unless default.nil?
+          unless @default_id.nil?
             raise ProvisionerRegistrationError, "A default provisioner has already been defined (#{default_id})"
           end
 
@@ -68,7 +68,9 @@ module MotherBrain
       #
       # @return [Class, nil]
       def default
-        self.default_id ? get(self.default_id) : nil
+        # TODO: make this better
+        _default_id = ENV['MB_DEFAULT_PROVISIONER'] || self.default_id
+        _default_id ? get(_default_id) : nil
       end
 
       # Clears all of the registered Provisioners.
@@ -76,6 +78,7 @@ module MotherBrain
       # @return [Set]
       #   an empty Set
       def clear!
+        @default_id = nil
         @all = Set.new
       end
 
