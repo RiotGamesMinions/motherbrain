@@ -6,6 +6,9 @@ module MotherBrain
     #
     # @example valid manifest structure
     #   {
+    #     "options": {
+    #       "provisioner_specific_option": "yellow",
+    #     },
     #     "nodes": [
     #       {
     #         "groups": ["activemq::master"],

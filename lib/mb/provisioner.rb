@@ -8,6 +8,8 @@ module MotherBrain
       def included(base)
         base.extend(ClassMethods)
         base.send(:include, Celluloid)
+        base.send(:include, MB::Logging)
+        base.send(:include, MB::Mixin::Services)
       end
     end
 
@@ -59,7 +61,7 @@ module MotherBrain
     #
     # @return [Array]
     #   an array of hashes representing nodes generated of given sizes
-    def up(environment, manifest)
+    def up(job, env_name, manifest, plugin, options = {})
       raise AbstractFunction
     end
 
@@ -72,8 +74,16 @@ module MotherBrain
     #   if a caught error occurs during provisioning
     #
     # @return [Boolean]
-    def down(environment)
+    def down(job, env_name)
       raise AbstractFunction
+    end
+
+    # Delete an environment from Chef server
+    #
+    # @param [String] env_name
+    #   name of the environment to remove
+    def delete_environment(env_name)
+      ridley.environment.delete(env_name)
     end
   end
 end
