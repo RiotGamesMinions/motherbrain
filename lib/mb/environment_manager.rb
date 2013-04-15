@@ -116,6 +116,17 @@ module MotherBrain
       abort EnvironmentNotFound.new(id)
     end
 
+    # Creates an environment
+    #
+    # @param [#to_s] environment_name
+    #
+    # @return [Ridley::EnvironmentResource]
+    def create(name)
+      ridley.environment.create(name: name)
+    rescue => error
+      abort error
+    end
+
     # Returns a list of environments present on the remote server
     #
     # @return [Array<Ridley::EnvironmentResource>]
