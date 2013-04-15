@@ -18,13 +18,13 @@ describe MB::NodeQuerier do
   describe "#ruby_script" do
     subject { ruby_script }
 
-    let(:response) { [:ok, double('response', stdout: 'my_node')] }
+    let(:response) { [ :ok, double('response', stdout: 'my_node') ] }
     let(:ruby_script) { node_querier.send(:ruby_script, 'node_name', double('host')) }
 
     before do
       node_querier.stub_chain(:chef_connection, :node, :ruby_script).and_return(response)
     end
-    
+
     it "returns the response of the successfully run script" do
       ruby_script.should eq('my_node')
     end
@@ -36,6 +36,16 @@ describe MB::NodeQuerier do
         expect {
           ruby_script
         }.to raise_error(MB::RemoteScriptError)
+      end
+    end
+
+    context "when ridley returns an unknown status" do
+      let(:response) { [ :unknown, double ] }
+
+      it "rasies a RuntimeError" do
+        expect {
+          ruby_script
+        }.to raise_error(RuntimeError)
       end
     end
   end
@@ -96,7 +106,7 @@ describe MB::NodeQuerier do
     subject { put_secret }
 
     let(:put_secret) { node_querier.put_secret(host, options) }
-    let(:options) do 
+    let(:options) do
       {
         secret: File.join(fixtures_path, "fake_key.pem")
       }
@@ -111,7 +121,7 @@ describe MB::NodeQuerier do
 
     context "when there is no file at the secret path" do
       let(:options) { {} }
-      
+
       it { should be_nil }
     end
 

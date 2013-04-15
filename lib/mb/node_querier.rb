@@ -138,11 +138,11 @@ module MotherBrain
     end
 
     # Executes the given command on the host using the best worker
-    # available for the host. 
+    # available for the host.
     #
     # @param [String] host
     # @param [String] command
-    # 
+    #
     # @return [Ridley::HostConnection::Response]
     def execute_command(host, command)
       status, response = chef_connection.node.execute_command(host, command)
@@ -174,7 +174,7 @@ module MotherBrain
     end
 
     # Returns the client name the target node is registered to Chef with.
-    # 
+    #
     # If the node does not have a client registered with the Chef server or if Chef and ruby were not installed
     # by omnibus this function will return nil.
     #
@@ -196,6 +196,7 @@ module MotherBrain
     end
 
     private
+
       # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
       # that are located in the Mother Brain scripts directory can be used and they should
       # be identified just by their filename minus the extension
