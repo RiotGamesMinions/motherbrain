@@ -220,6 +220,7 @@ module MotherBrain
       #   bootstrap with sudo
       #
       # @raise [RemoteScriptError] if there was an error in execution
+      # @raise [RuntimeError] if an unknown response is returned from Ridley
       #
       # @note
       #   Use {#_ruby_script_} if the caller of this function is same actor as the receiver. You will
@@ -240,7 +241,7 @@ module MotherBrain
         when :error
           raise RemoteScriptError.new(response.stderr.chomp)
         else
-          raise ArgumentError, "unknown status returned from #ruby_script: #{status}"
+          raise RuntimeError, "unknown status returned from #ruby_script: #{status}"
         end
       end
   end
