@@ -235,6 +235,8 @@ module MotherBrain
       super
       opts = self.options.dup
 
+      validate_environment
+
       unless SKIP_CONFIG_TASKS.include?(config[:current_task].try(:name))
         self.class.configure(opts)
       end
@@ -444,6 +446,28 @@ module MotherBrain
     end
 
     private
+
+      def validate_environment
+        return if testing?
+
+        environment_name = options[:environment]
+
+        return unless environment_name
+
+        environment_manager.find(environment_name)
+      rescue EnvironmentNotFound
+        message = "Environment #{environment_name} not found, would you like to create it?"
+
+        case ask(message, limited_to: %w[y n q], default: 'y')
+        when 'y' then environment_manager.create(environment_name)
+        when 'n' then warn "Not creating environment"
+        when 'q' then MB::Application.instance.interrupt
+        end
+      end
+
+      def testing?
+        MB.testing?
+      end
 
       def version_header
         "MotherBrain (#{MB::VERSION})"
