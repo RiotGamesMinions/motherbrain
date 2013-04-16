@@ -30,7 +30,7 @@ describe MB::Upgrade::Worker do
     plugin.stub(:component!).with(component_name).and_return(component1)
   end
 
-  after(:each) { job.terminate }
+  after(:each) { job.terminate if job.alive? }
 
   its(:environment_name) { should == environment_name }
   its(:plugin) { should == plugin }
