@@ -68,13 +68,8 @@ module MotherBrain
       #
       # @return [Class, nil]
       def default
-        # TODO: make this better
         _default_id = ENV['MB_DEFAULT_PROVISIONER'] || self.default_id
-        if _default_id
-          get!(_default_id)
-        else
-          raise ProvisionerNotRegistered, "No default provisioner has been registered"
-        end
+        get!(_default_id) if _default_id
       end
 
       # Clears all of the registered Provisioners.
