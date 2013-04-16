@@ -87,7 +87,7 @@ describe MB::Cli::SubCommand::Base do
 
       it "asynchronously runs the command invocation" do
         command_invoker.should_receive(:async_invoke).with("my_command", anything()).and_return(job)
-        
+
         subject.my_command
       end
 

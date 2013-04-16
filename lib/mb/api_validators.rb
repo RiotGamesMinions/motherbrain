@@ -9,7 +9,7 @@ module MotherBrain
     class SemVer < Grape::Validations::Validator
       def validate_param!(attr_name, params)
         return nil if params[attr_name].nil?
-        
+
         ver_string = params[attr_name].gsub('_', '.')
         Solve::Version.split(ver_string)
         params[attr_name] = ver_string
