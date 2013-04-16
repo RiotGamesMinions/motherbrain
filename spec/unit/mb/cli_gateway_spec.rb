@@ -313,7 +313,7 @@ describe MB::CliGateway do
         end
 
         it "exits the cli" do
-          MB::Application.instance.should_receive(:interrupt)
+          cli_gateway.should_receive(:abort)
 
           validate_environment
         end
