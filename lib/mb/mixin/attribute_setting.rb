@@ -182,7 +182,7 @@ module MotherBrain
           result
         end
 
-        # Expand the "latest" cookbook versions to the latest verison number 
+        # Expand the "latest" cookbook versions to the latest verison number
         # for the cookbook
         #
         # @param [Hash] cookbook_versions
@@ -194,7 +194,7 @@ module MotherBrain
         #     "league" => "1.74.2",
         #     "pvpnet" => "latest"
         #   )
-        # 
+        #
         #   # => {"league" => "1.74.2", "pvpnet" => "3.1.0"}
         def expand_latest_versions(cookbook_versions)
           expanded_cookbook_versions = cookbook_versions.map do |name, version|
@@ -221,7 +221,7 @@ module MotherBrain
         #     "league" => "1.74.2",
         #     "pvpnet" => ">= 1.2.3"
         #   )
-        #   
+        #
         #   # => { "league" => "= 1.74.2", "pvpnet" => ">= 1.2.3" }
         #
         # @return [Hash]

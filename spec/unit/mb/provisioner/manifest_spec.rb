@@ -97,7 +97,7 @@ describe MB::Provisioner::Manifest do
 
       context "when groups is not in {group}::{group} format" do
         let(:invalid_manifest) {
-          { 
+          {
             nodes: [
               {
                 type: "m1.large",

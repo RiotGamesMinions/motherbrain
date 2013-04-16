@@ -69,7 +69,7 @@ describe MB::CliGateway do
           subject.requires_environment?(["myface"]).should be_false
         end
       end
-      
+
       context "plugin command" do
         it "should require an environment for bootstrap" do
           subject.requires_environment?(["myface", "bootstrap"]).should be_true

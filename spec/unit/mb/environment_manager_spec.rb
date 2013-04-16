@@ -16,7 +16,7 @@ describe MB::EnvironmentManager do
     pending
   end
 
-  describe "#find" do    
+  describe "#find" do
     context "when the environment is not present on the remote Chef server" do
       let(:env_id) { "rspec" }
 
