@@ -154,7 +154,7 @@ component "webserver" do
   # ...
   service "apache" do
     # ...
-  end  
+  end
 end
 ```
 
@@ -163,7 +163,7 @@ end
 Actions provide a way of interacting with the chef server to change the state of a service. Following the block, `chef-client` will be run on the nodes matched by the `group`.
 
 ```ruby
-service "apache" do        
+service "apache" do
   action :start do
     node_attribute 'myface.apache.enable', true
     node_attribute 'myface.apache.start', true

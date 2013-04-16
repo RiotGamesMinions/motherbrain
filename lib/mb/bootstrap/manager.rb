@@ -98,7 +98,7 @@ module MotherBrain
 
         job.set_status("Starting bootstrap of nodes on: #{environment}")
         task_queue = plugin.bootstrap_routine.task_queue.dup
-        
+
         chef_synchronize(chef_environment: environment, force: options[:force], job: job) do
           if options[:component_versions].any?
             job.set_status("Setting component versions")
@@ -143,7 +143,7 @@ module MotherBrain
         end
 
         job.report_success
-      rescue ResourceLocked, BootstrapError, InvalidAttributesFile, InvalidBootstrapManifest => ex
+      rescue => ex
         job.report_failure(ex)
       ensure
         job.terminate if job && job.alive?

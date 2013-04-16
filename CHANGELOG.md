@@ -1,3 +1,8 @@
+# 0.4.2
+
+* CliGateway will no longer hang if an unexpected error occurs during execution
+* Improve output of exceptions raised outside the scope of an executing Job
+
 # 0.4.1
 
 * Fix remote command failures when executing as sudo. This manifested itself as a Ruby timeout issue on some machines.

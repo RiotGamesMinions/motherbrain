@@ -14,7 +14,7 @@ Feature: listing the plugins available to MotherBrain
     When I run the "plugins" command
     Then the output should contain:
       """
-      
+
       ** listing local plugins...
 
       pvpnet: 1.2.3, 2.3.4

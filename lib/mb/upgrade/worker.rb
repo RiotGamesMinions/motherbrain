@@ -89,8 +89,10 @@ module MotherBrain
 
         job.status = "Finishing up"
         job.report_success
-      rescue EnvironmentNotFound, InvalidAttributesFile => ex
+      rescue => ex
         job.report_failure(ex)
+      ensure
+        job.terminate if job && job.alive?
       end
 
       private

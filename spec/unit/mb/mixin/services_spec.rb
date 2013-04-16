@@ -35,7 +35,7 @@ describe MB::Mixin::Services do
     it "returns an instance of MB::JobManager" do
       subject.job_manager.should be_a(MB::JobManager)
     end
-  end 
+  end
 
   describe "#provisioner_manager" do
     it "returns an instance of MB::Provisioner::Manager" do

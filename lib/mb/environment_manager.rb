@@ -69,7 +69,7 @@ module MotherBrain
       job.report_running("finding environment")
       environment = find(id)
 
-      chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do        
+      chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
         job.set_status("saving updated environment")
         environment.default_attributes.deep_merge!(options[:attributes])
         environment.save
@@ -96,7 +96,7 @@ module MotherBrain
       else
         job.report_success("finished chef client run on #{node_success} nodes")
       end
-    rescue EnvironmentNotFound, ResourceLocked => ex
+    rescue => ex
       job.report_failure(ex)
     ensure
       job.terminate if job && job.alive?
