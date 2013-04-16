@@ -460,7 +460,7 @@ module MotherBrain
 
         case ask(message, limited_to: %w[y n q], default: 'y')
         when 'y' then environment_manager.create(environment_name)
-        when 'n' then warn "Not creating environment"
+        when 'n' then ui.warn "Not creating environment"
         when 'q' then MB::Application.instance.interrupt
         end
       end
