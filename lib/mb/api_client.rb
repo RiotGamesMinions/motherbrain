@@ -6,7 +6,7 @@ module MotherBrain
     autoload :Connection, 'mb/api_client/connection'
     autoload :Middleware, 'mb/api_client/middleware'
     autoload :Resource, 'mb/api_client/resource'
-    
+
     require 'mb/api_client/resources'
 
     class << self

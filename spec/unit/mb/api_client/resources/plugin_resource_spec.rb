@@ -41,7 +41,7 @@ describe MB::ApiClient::PluginResource do
 
     context "when a version argument is given" do
       let(:version) { "1.0.0" }
-      
+
       it "returns decoded JSON from /plugins/{plugin_id}/{version}/components.json" do
         stub_request(:get, "http://0.0.0.0:26100/plugins/#{plugin_id}/1_0_0/components.json").
           to_return(status: 200)

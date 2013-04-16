@@ -271,7 +271,7 @@ module MotherBrain
     end
 
     # Returns the client name the target node is registered to Chef with.
-    # 
+    #
     # If the node does not have a client registered with the Chef server or if Chef and ruby were not installed
     # by omnibus this function will return nil.
     #

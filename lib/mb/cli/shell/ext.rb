@@ -28,7 +28,7 @@ module MotherBrain
           end
           alias_method :info, :say
 
-          def warn(message)          
+          def warn(message)
             say(message, :yellow)
           end
 

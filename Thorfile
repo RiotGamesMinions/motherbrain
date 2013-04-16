@@ -89,7 +89,7 @@ class Default < Thor
     def clean?
       sh_with_excode("git diff --exit-code")[1] == 0
     end
-    
+
     def tag_version
       sh "git tag -a -m \"Version #{MotherBrain::VERSION}\" #{MotherBrain::VERSION}"
       say "Tagged: #{MotherBrain::VERSION}", :green
