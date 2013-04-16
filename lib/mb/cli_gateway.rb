@@ -456,7 +456,7 @@ module MotherBrain
 
         environment_manager.find(environment_name)
       rescue EnvironmentNotFound
-        message = "Environment #{environment_name} not found, would you like to create it?"
+        message = "Environment '#{environment_name}' does not exist, would you like to create it?"
 
         case ask(message, limited_to: %w[y n q], default: 'y')
         when 'y' then environment_manager.create(environment_name)
