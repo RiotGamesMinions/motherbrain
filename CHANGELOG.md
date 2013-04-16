@@ -1,3 +1,8 @@
+# 0.5.0
+
+* Experimental AWS provisioner. Enable by setting the env variable MB_DEFAULT_PROVISIONER=aws. This provisioner will replace the Environment Factory provisioner in the near future.
+* Initial support for Windows bootstrapping and provisioning
+
 # 0.4.2
 
 * CliGateway will no longer hang if an unexpected error occurs during execution
