@@ -177,7 +177,7 @@ module MotherBrain
         #
         # @return [Hash]
         def run_instances(job, fog, instances, instance_type, count, options)
-          job.set_status "creating #{count} #{instance_type} instance#{count > 1 ? 's' : ''}"
+          job.set_status "creating #{count} #{instance_type} instance#{count > 1 ? 's' : ''} on #{fog.instance_variable_get(:@host)}"
           begin
             response = fog.run_instances options[:image_id], count, count, {
               'InstanceType' => instance_type,
