@@ -104,13 +104,9 @@ module MotherBrain
         #
         # @return [String]
         def endpoint(manifest=nil)
-          if manifest && manifest.options[:endpoint]
-            manifest.options[:endpoint]
-          elsif ENV['EC2_URL']
-            ENV['EC2_URL']
-          else
-            abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'endpoint' or the EC2_URL variable needs to be set")
-          end
+          manifest_options = manifest ? manifest.options : {}
+
+          manifest_options[:endpoint] || ENV['EC2_URL']
         end
 
         # @param [Provisioner::Manifest] manifest
