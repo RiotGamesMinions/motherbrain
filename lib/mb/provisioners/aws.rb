@@ -250,7 +250,7 @@ module MotherBrain
           # TODO: windows support
           servers = instances.collect {|i,d| fog.servers.get(i) }
           Fog.wait_for do
-            job.set_status "waiting for instances to be SSHable"
+            job.set_status "waiting for instances to be SSH-able"
             servers.all? do |s|
               s.username = Application.config[:ssh][:user]
               s.private_key_path = Application.config[:ssh][:keys].first
