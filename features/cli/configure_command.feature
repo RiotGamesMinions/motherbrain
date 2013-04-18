@@ -9,8 +9,6 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
     And I type "https://api.opscode.com/organizations/vialstudio"
     And I type "reset"
     And I type "/Users/reset/.chef/reset.pem"
-    And I type "root"
-    And I type "secretpass"
     Then the output should contain:
       """
       Config written to:
@@ -20,8 +18,6 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
       | chef.api_url     | https://api.opscode.com/organizations/vialstudio |
       | chef.api_client  | reset                                            |
       | chef.api_key     | /Users/reset/.chef/reset.pem                     |
-      | ssh.user         | root                                             |
-      | ssh.password     | secretpass                                       |
 
   Scenario: attempting to generate a new config when one already exists
     Given a valid MotherBrain configuration
@@ -39,8 +35,6 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
     And I type "https://api.opscode.com/organizations/vialstudio"
     And I type "reset"
     And I type "/Users/reset/.chef/reset.pem"
-    And I type "root"
-    And I type "secretpass"
     Then the output should contain:
       """
       Config written to:
@@ -50,5 +44,3 @@ Feature: configuring the MotherBrain (MB) command line interface (CLI)
       | chef.api_url     | https://api.opscode.com/organizations/vialstudio |
       | chef.api_client  | reset                                            |
       | chef.api_key     | /Users/reset/.chef/reset.pem                     |
-      | ssh.user         | root                                             |
-      | ssh.password     | secretpass                                       |
