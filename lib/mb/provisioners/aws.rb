@@ -104,13 +104,9 @@ module MotherBrain
         #
         # @return [String]
         def endpoint(manifest=nil)
-          if manifest && manifest.options[:endpoint]
-            manifest.options[:endpoint]
-          elsif ENV['EC2_URL']
-            ENV['EC2_URL']
-          else
-            abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'endpoint' or the EC2_URL variable needs to be set")
-          end
+          manifest_options = manifest ? manifest.options : {}
+
+          manifest_options[:endpoint] || ENV['EC2_URL']
         end
 
         # @param [Provisioner::Manifest] manifest
@@ -181,7 +177,7 @@ module MotherBrain
         #
         # @return [Hash]
         def run_instances(job, fog, instances, instance_type, count, options)
-          job.set_status "creating #{count} #{instance_type} instance#{count > 1 ? 's' : ''}"
+          job.set_status "creating #{count} #{instance_type} instance#{count > 1 ? 's' : ''} on #{fog.instance_variable_get(:@host)}"
           begin
             response = fog.run_instances options[:image_id], count, count, {
               'InstanceType' => instance_type,
@@ -254,7 +250,7 @@ module MotherBrain
           # TODO: windows support
           servers = instances.collect {|i,d| fog.servers.get(i) }
           Fog.wait_for do
-            job.set_status "waiting for instances to be SSHable"
+            job.set_status "waiting for instances to be SSH-able"
             servers.all? do |s|
               s.username = Application.config[:ssh][:user]
               s.private_key_path = Application.config[:ssh][:keys].first
