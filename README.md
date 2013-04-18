@@ -14,7 +14,7 @@ motherbrain to create and control an entire application environment.
 Install motherbrain via RubyGems:
 
 ```sh
-gem install mb
+gem install motherbrain
 ```
 
 If your cookbook has a Gemfile, you'll probably want to add motherbrain there
