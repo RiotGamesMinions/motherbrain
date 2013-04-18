@@ -283,6 +283,22 @@ describe MB::CliGateway do
         )
       end
 
+      it "doesn't ask the user and raises an error" do
+        cli_gateway.should_not_receive(:ask)
+
+        -> { validate_environment }.should raise_error(MB::EnvironmentNotFound)
+      end
+    end
+
+    context "if the environment does not exist and given a create task" do
+      let(:args) { ["bootstrap"] }
+
+      before do
+        environment_manager.stub(:find).and_raise(
+          MB::EnvironmentNotFound.new("nope")
+        )
+      end
+
       context "if the user responds yes" do
         before do
           cli_gateway.stub ask: "y"

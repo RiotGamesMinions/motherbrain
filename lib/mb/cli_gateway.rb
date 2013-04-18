@@ -229,6 +229,11 @@ module MotherBrain
       "unlock",
     ].freeze
 
+    CREATE_ENVIRONMENT_TASKS = [
+      "bootstrap",
+      "provision"
+    ].freeze
+
     source_root File.join(__FILE__, '../../../templates')
 
     def initialize(args = [], options = {}, config = {})
@@ -456,8 +461,13 @@ module MotherBrain
 
         environment_manager.find(environment_name)
       rescue EnvironmentNotFound
-        message = "Environment '#{environment_name}' does not exist, would you like to create it?"
+        raise unless CREATE_ENVIRONMENT_TASKS.include?(args.first)
 
+        prompt_to_create_environment environment_name
+      end
+
+      def prompt_to_create_environment(environment_name)
+        message = "Environment '#{environment_name}' does not exist, would you like to create it?"
         case ask(message, limited_to: %w[y n q], default: 'y')
         when 'y' then environment_manager.create(environment_name)
         when 'n' then ui.warn "Not creating environment"
