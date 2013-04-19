@@ -36,4 +36,17 @@ describe MB::EnvironmentManager do
   describe "#list" do
     pending
   end
+
+  describe "#create" do
+    let(:environment_name) { "rspec" }
+
+    before do
+      MB::Application.ridley.stub_chain(:environment, :create).
+        with(name: environment_name).and_return(name: environment_name)
+    end
+
+    it "creates an environment" do
+      subject.create(environment_name).should eq(name: environment_name)
+    end
+  end
 end
