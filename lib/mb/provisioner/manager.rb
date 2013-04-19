@@ -145,15 +145,16 @@ module MotherBrain
       # @option options [Boolean] :force (false)
       #   force provisioning nodes to the environment even if the environment is locked
       def provision(job, environment, manifest, plugin, options = {})
+        job.report_running("preparing to provision")
+
         options = options.reverse_merge(
           component_versions: Hash.new,
           cookbook_versions: Hash.new,
           environment_attributes: Hash.new,
           skip_bootstrap: false,
-          force: false
+          force: false,
+          with: manifest.options[:provisioner]
         )
-
-        job.report_running("preparing to provision")
 
         worker = self.class.new_provisioner(options)
         Provisioner::Manifest.validate!(manifest, plugin)

@@ -259,7 +259,7 @@ describe MB::Provisioners::AWS do
         instances = subject.create_instances job, manifest, fog
         subject.verify_instances job, fog, instances
         Fog.should_receive(:wait_for)
-        subject.verify_connection job, fog, instances
+        subject.verify_connection job, fog, manifest, instances
       end
     end
 
