@@ -120,6 +120,8 @@ module MotherBrain
           app_config.validate!
           @app = MB::Application.run!(app_config)
 
+          MB::Logging.add_argument_header
+
           # If the first argument is the name of a plugin, register that plugin and use it.
           if plugin_task?(args[0])
             name = args[0]
