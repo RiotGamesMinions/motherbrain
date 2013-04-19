@@ -9,6 +9,32 @@ module MotherBrain
     class << self
       include Logger::Severity
 
+      # Places the arguments given surrounded by whitespace at the top of the
+      # logfile. This makes it easier to scan logs for the beginning of a
+      # command.
+      def add_argument_header
+        return if dev == STDOUT
+
+        logger.unknown nil
+        logger.unknown nil
+        logger.unknown ARGV.join(" ")
+        logger.unknown nil
+      end
+
+      # Returns the currrent logging device
+      #
+      # @return [IO, nil]
+      def dev
+        logdev.dev
+      end
+
+      # Returns the filename of the current logger
+      #
+      # @return [String, nil]
+      def filename
+        logdev.filename
+      end
+
       # @return [Logger]
       def logger
         @logger ||= setup
@@ -69,6 +95,10 @@ module MotherBrain
       end
 
       private
+
+        def logdev
+          logger.instance_variable_get(:@logdev)
+        end
 
         # Stores and returns an updated hash, so that #setup can be called
         # multiple times
