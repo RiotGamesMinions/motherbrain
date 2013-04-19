@@ -69,7 +69,7 @@ module MotherBrain
       job.report_running("finding environment")
       environment = find(id)
 
-      chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do        
+      chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
         job.set_status("saving updated environment")
         environment.default_attributes.deep_merge!(options[:attributes])
         environment.save
@@ -114,6 +114,17 @@ module MotherBrain
       ridley.environment.find!(id)
     rescue Ridley::Errors::ResourceNotFound => ex
       abort EnvironmentNotFound.new(id)
+    end
+
+    # Creates an environment
+    #
+    # @param [#to_s] environment_name
+    #
+    # @return [Ridley::EnvironmentResource]
+    def create(name)
+      ridley.environment.create(name: name)
+    rescue => error
+      abort error
     end
 
     # Returns a list of environments present on the remote server

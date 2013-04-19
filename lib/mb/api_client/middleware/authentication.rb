@@ -5,7 +5,7 @@ module MotherBrain::ApiClient::Middleware
 
     def call(env)
       env[:request_headers] = default_headers.merge(env[:request_headers])
-      
+
       log.debug { "==> performing un-authenticated motherbrain request" }
       log.debug { "request env: #{env}" }
 

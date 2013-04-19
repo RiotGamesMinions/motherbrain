@@ -105,7 +105,7 @@ module MotherBrain
             version: options[:version]
           }
         )
-        
+
         json_post("/environments/#{id}.json", MultiJson.encode(body))
       end
 

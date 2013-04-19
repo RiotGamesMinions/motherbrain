@@ -28,7 +28,7 @@ describe MB::Cli::SubCommand::Plugin do
     describe "::fabricate" do
       it "returns an anonymous class with a superclass of MB::Cli::SubCommand::Plugin" do
         klass = subject.fabricate(plugin)
-        
+
         klass.superclass.should eql(MB::Cli::SubCommand::Plugin)
         klass.should be_a(Class)
       end

@@ -27,8 +27,8 @@ describe MB::Provisioners::AWS do
         image_id: "emi-1234ABCD",
         key_name: "mb",
         security_groups: ["foo", "bar"],
-        availability_zone: "riot1"                                                
-      },                                                
+        availability_zone: "riot1"
+      },
       nodes: [
         {
           type: "m1.large",
@@ -177,7 +177,7 @@ describe MB::Provisioners::AWS do
         it "returns true" do
           subject.validate_manifest_options(job,manifest).should eq(true)
         end
-        
+
         it "does not raise when SecurityGroups is not set" do
           manifest[:options].delete :security_groups
           lambda { subject.validate_manifest_options(job,manifest).should eq(true) }.should_not raise_error(MB::InvalidProvisionManifest)
@@ -204,7 +204,7 @@ describe MB::Provisioners::AWS do
           manifest[:options].delete :availability_zone
           lambda { subject.validate_manifest_options(job,manifest).should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
         end
-        
+
         it "raises on SecurityGroups not being an array" do
           manifest[:options][:security_groups] = :fleeble
           lambda { subject.validate_manifest_options(job,manifest).should eq(true) }.should raise_error(MB::InvalidProvisionManifest)
@@ -253,13 +253,13 @@ describe MB::Provisioners::AWS do
       end
     end
 
-        
+
     describe "#verify_connection" do
       it "should wait for SSH" do
         instances = subject.create_instances job, manifest, fog
         subject.verify_instances job, fog, instances
         Fog.should_receive(:wait_for)
-        subject.verify_connection job, fog, instances
+        subject.verify_connection job, fog, manifest, instances
       end
     end
 

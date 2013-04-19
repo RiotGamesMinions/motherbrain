@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'net-ssh'
   s.add_runtime_dependency 'net-sftp'
   s.add_runtime_dependency 'solve', '>= 0.4.1'
-  s.add_runtime_dependency 'ridley', '>= 0.10.0.rc1'
+  s.add_runtime_dependency 'ridley', '>= 0.10.0.rc3'
   s.add_runtime_dependency 'chozo', '~> 0.6.0'
   s.add_runtime_dependency 'activesupport'
   s.add_runtime_dependency 'thor', '~> 0.18.0'

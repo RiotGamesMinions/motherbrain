@@ -112,7 +112,7 @@ describe MB::Bootstrap::Manager do
       it "sets the job to failed" do
         job_stub.stub(alive?: true)
         job_stub.should_receive(:report_failure)
-        
+
         run
       end
     end

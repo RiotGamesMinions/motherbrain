@@ -16,7 +16,7 @@ describe MB::EnvironmentManager do
     pending
   end
 
-  describe "#find" do    
+  describe "#find" do
     context "when the environment is not present on the remote Chef server" do
       let(:env_id) { "rspec" }
 
@@ -35,5 +35,18 @@ describe MB::EnvironmentManager do
 
   describe "#list" do
     pending
+  end
+
+  describe "#create" do
+    let(:environment_name) { "rspec" }
+
+    before do
+      MB::Application.ridley.stub_chain(:environment, :create).
+        with(name: environment_name).and_return(name: environment_name)
+    end
+
+    it "creates an environment" do
+      subject.create(environment_name).should eq(name: environment_name)
+    end
   end
 end

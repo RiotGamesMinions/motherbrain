@@ -65,7 +65,7 @@ describe MotherBrain::PluginManager do
     before(:each) do
       subject.clear_plugins
       paths = Array.new
-      
+
       count.times do
         paths << generate_cookbook(SecureRandom.hex(16), with_plugin: true)
       end
@@ -208,7 +208,7 @@ describe MotherBrain::PluginManager do
     context "when the plugin is already added" do
       it "returns nil" do
         subject.add(plugin)
-        
+
         subject.add(plugin).should be_nil
       end
 
@@ -450,7 +450,7 @@ describe MotherBrain::PluginManager do
       before(:each) do
         subject.stub(local_plugin?: true)
       end
-      
+
       it "returns an array containing a Pathname to the current working directory" do
         result = subject.send(:local_cookbooks)
         result.should have(1).item
