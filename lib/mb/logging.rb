@@ -9,6 +9,20 @@ module MotherBrain
     class << self
       include Logger::Severity
 
+      # Returns the currrent logging device
+      #
+      # @return [IO, nil]
+      def dev
+        logdev.dev
+      end
+
+      # Returns the filename of the current logger
+      #
+      # @return [String, nil]
+      def filename
+        logdev.filename
+      end
+
       # @return [Logger]
       def logger
         @logger ||= setup
@@ -69,6 +83,10 @@ module MotherBrain
       end
 
       private
+
+        def logdev
+          logger.instance_variable_get(:@logdev)
+        end
 
         # Stores and returns an updated hash, so that #setup can be called
         # multiple times
