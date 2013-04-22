@@ -75,7 +75,7 @@ module MotherBrain
       end
 
       def log_location
-        MotherBrain.logger.instance_variable_get(:@logdev).filename
+        MB::Logging.filename
       end
 
       # @param [MotherBrain::Job] job
