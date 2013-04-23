@@ -253,8 +253,8 @@ module MotherBrain
           Fog.wait_for do
             job.set_status "waiting for instances to be SSH-able"
             servers.all? do |s|
-              s.username = manifest_options[:ssh_user] || Application.config[:ssh][:user]
-              s.private_key_path = manifest_options[:ssh_key] || Application.config[:ssh][:keys].first
+              s.username = manifest_options[:ssh][:user] || Application.config[:ssh][:user]
+              s.private_key_path = manifest_options[:ssh][:keys].first || Application.config[:ssh][:keys].first
               s.sshable?
             end
           end
