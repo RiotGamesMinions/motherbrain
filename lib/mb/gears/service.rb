@@ -135,26 +135,7 @@ module MotherBrain
 
           return self unless run_chef
 
-          job.set_status("performing a chef client run on #{nodes.length} nodes")
-          node_success = 0
-          node_failure = 0
-
-          responses = nodes.collect do |node|
-            node_querier.future.chef_run(node.public_hostname)
-          end.each do |future|
-            begin
-              future.value
-              node_success += 1
-            rescue RemoteCommandError => ex
-              node_failure += 1
-            end
-          end
-
-          if node_failure > 0
-            raise RemoteCommandError.new("chef client run failed on #{node_failure} nodes")
-          else
-            job.set_status("finished chef client run on #{node_success} nodes")
-          end
+          node_querier.bulk_chef_run job, nodes
 
           self
         ensure
