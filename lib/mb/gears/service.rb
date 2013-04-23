@@ -127,11 +127,13 @@ module MotherBrain
         #   nodes the nodes to run this action on
         #
         # @return [Service::Action]
-        def run(job, environment, nodes)
+        def run(job, environment, nodes, run_chef = true)
           job.set_status("running component: #{component.name} service action: #{name} on (#{nodes.length}) nodes")
 
           runner = ActionRunner.new(job, environment, nodes)
           runner.instance_eval(&block)
+
+          return self unless run_chef
 
           job.set_status("performing a chef client run on #{nodes.length} nodes")
           node_success = 0

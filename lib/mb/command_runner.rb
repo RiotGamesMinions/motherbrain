@@ -1,6 +1,8 @@
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   class CommandRunner
+    include MB::Mixin::Services
+
     # @return [String]
     attr_reader :environment
     # @return [MB::Plugin, MB::Component]
@@ -63,11 +65,35 @@ module MotherBrain
 
     # Run the block asynchronously.
     def async(&block)
+      @nodes = []
+
       @async = true
       instance_eval(&block)
       @async = false
 
       run
+
+      job.set_status("performing a chef client run on #{@nodes.length} nodes")
+
+      node_success = 0
+      node_failure = 0
+
+      @nodes.collect do |node|
+        node_querier.future.chef_run(node.public_hostname)
+      end.each do |future|
+        begin
+          future.value
+          node_success += 1
+        rescue RemoteCommandError => ex
+          node_failure += 1
+        end
+      end
+
+      if node_failure > 0
+        raise RemoteCommandError.new("chef client run failed on #{node_failure} nodes")
+      else
+        job.set_status("finished chef client run on #{node_success} nodes")
+      end
     end
 
     # Run the block specified on the nodes in the groups specified.
@@ -112,15 +138,19 @@ module MotherBrain
       options[:max_concurrent] ||= nodes.count
       node_groups = nodes.each_slice(options[:max_concurrent]).to_a
 
+      run_chef = !async?
+
       @on_procs << lambda do
         node_groups.each do |nodes|
           actions.each do |action|
-            action.run(job, environment, nodes)
+            action.run(job, environment, nodes, run_chef)
           end
         end
       end
 
-      unless async?
+      if async?
+        @nodes |= nodes
+      else
         run
       end
     end
