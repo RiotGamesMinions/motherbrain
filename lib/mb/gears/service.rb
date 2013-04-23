@@ -133,9 +133,9 @@ module MotherBrain
           runner = ActionRunner.new(job, environment, nodes)
           runner.instance_eval(&block)
 
-          return self unless run_chef
-
-          node_querier.bulk_chef_run job, nodes
+          if run_chef
+            node_querier.bulk_chef_run job, nodes
+          end
 
           self
         ensure
