@@ -211,7 +211,7 @@ module MotherBrain
         # @param [Fixnum] tries
         #
         # @return [Hash]
-        def verify_instances(job, fog, instances, tries=10)
+        def verify_instances(job, fog, instances, tries=15)
           if tries <= 0
             log.debug "Giving up. instances: #{instances.inspect}"
             abort AWSInstanceTimeoutError.new("giving up on instances :-(")
