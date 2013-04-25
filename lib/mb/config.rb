@@ -84,6 +84,9 @@ module MotherBrain
       default: 10.0,
       type: [ Integer, Float ]
 
+    attribute 'ssh.verbose',
+      type: String
+
     attribute 'winrm.user',
       type: String
 
@@ -216,6 +219,7 @@ module MotherBrain
         ridley_opts[:ssl] = {
           verify: self.ssl.verify
         }
+        ridley_opts[:ssh][:verbose] = ridley_opts[:ssh][:verbose].to_sym if ridley_opts[:ssh][:verbose]
       end
     end
 
