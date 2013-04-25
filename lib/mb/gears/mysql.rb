@@ -19,6 +19,8 @@ module MotherBrain
       end
 
       class Action
+        include MB::Mixin::Services
+
         # @return [String]
         attr_reader :sql
         # @return [Hash]
@@ -138,8 +140,8 @@ module MotherBrain
           def credentials(environment)
             return @credentials if @credentials
 
-            data_bag = Application.ridley.data_bag.find!(data_bag_spec[:name])
-            dbi = data_bag.encrypted_item.find!(environment).attributes
+            data_bag = ridley.data_bag.find(data_bag_spec[:name])
+            dbi = data_bag.item.find(environment).decrypt
 
             @credentials = Hash[data_bag_keys.map { |key, dbi_key| [key, dbi.dig(dbi_key)] }]
 

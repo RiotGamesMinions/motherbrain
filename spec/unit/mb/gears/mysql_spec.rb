@@ -55,15 +55,18 @@ describe MB::Gear::Mysql::Action do
   describe "#connection_info" do
     let(:node) { double("node", public_hostname: "some.node.com") }
     let(:data_bag_item) { double("data_bag_item") }
+    let(:data_bag) { double("data_bag") }
     subject { described_class.new(sql, base_options) }
 
     before(:each) do
-      Ridley::DataBagResource.stub_chain(:find!, :encrypted_item, :find!).and_return(data_bag_item)
+      ridley = subject.ridley
+      ridley.stub_chain(:data_bag, :find).and_return(data_bag)
+      data_bag.stub_chain(:item, :find).and_return(data_bag_item)
     end
 
     context "the data bag is empty" do
       before(:each) do
-        data_bag_item.stub(:attributes).and_return({})
+        data_bag_item.stub(:decrypt).and_return({})
       end
 
       it "should raise a GearError" do
@@ -74,7 +77,7 @@ describe MB::Gear::Mysql::Action do
     context "the data bag is not empty" do
       before(:each) do
         data_bag_hash = {username: "user", password: "pass", database: "db", port: 3306}
-        data_bag_item.stub(:attributes).and_return(data_bag_hash)
+        data_bag_item.stub(:decrypt).and_return(data_bag_hash)
       end
 
       it "should have a host" do
