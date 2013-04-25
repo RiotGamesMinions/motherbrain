@@ -21,7 +21,7 @@ describe MB::EnvironmentManager do
       let(:env_id) { "rspec" }
 
       before(:each) do
-        MB::Application.ridley.stub_chain(:environment, :find!).
+        MB::Application.ridley.stub_chain(:environment, :find).
           with(env_id).and_raise(Ridley::Errors::ResourceNotFound)
       end
 
