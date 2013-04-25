@@ -36,7 +36,7 @@ module MotherBrain
         log.info "Setting component versions #{component_versions}"
 
         chef_connection.sync do
-          env = environment.find!(env_id)
+          env = environment.find(env_id)
           env.override_attributes.merge!(override_attributes)
           env.save
         end
@@ -61,11 +61,10 @@ module MotherBrain
       def set_cookbook_versions(env_id, cookbook_versions)
         cookbook_versions = expand_constraints(expand_latest_versions(cookbook_versions))
         satisfies_constraints?(cookbook_versions)
-
         log.info "Setting cookbook versions #{cookbook_versions}"
 
         chef_connection.sync do
-          env = environment.find!(env_id)
+          env = environment.find(env_id)
           env.cookbook_versions.merge!(cookbook_versions)
           env.save
         end
@@ -116,7 +115,7 @@ module MotherBrain
         log.info "Setting environment attributes: #{new_attributes}"
 
         chef_connection.sync do
-          env = environment.find!(env_id)
+          env = environment.find(env_id)
           env.override_attributes.deep_merge!(new_attributes)
           env.save
         end
