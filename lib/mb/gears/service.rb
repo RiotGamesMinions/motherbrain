@@ -228,7 +228,7 @@ module MotherBrain
 
             def set_environment_attribute(key, value, options)
               Application.ridley.sync do
-                obj = environment.find!(self.environment)
+                obj = environment.find(self.environment)
 
                 if options[:toggle]
                   original_value = obj.override_attributes.dig(key)
@@ -251,7 +251,7 @@ module MotherBrain
             #   set this node attribute only for a single chef run (default: false)
             def set_node_attribute(l_node, key, value, options = {})
               Application.ridley.sync do
-                obj = node.find!(l_node.name)
+                obj = node.find(l_node.name)
 
                 if options[:toggle]
                   original_value = obj.normal.dig(key)
