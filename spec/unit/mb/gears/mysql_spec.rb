@@ -59,8 +59,7 @@ describe MB::Gear::Mysql::Action do
     subject { described_class.new(sql, base_options) }
 
     before(:each) do
-      ridley = subject.ridley
-      ridley.stub_chain(:data_bag, :find).and_return(data_bag)
+      subject.ridley.stub_chain(:data_bag, :find).and_return(data_bag)
       data_bag.stub_chain(:item, :find).and_return(data_bag_item)
     end
 
