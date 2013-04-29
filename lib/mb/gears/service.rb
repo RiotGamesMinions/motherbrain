@@ -226,10 +226,18 @@ module MotherBrain
 
           private
 
-            def set_environment_attribute(key, value, options)
+            # @param [String] key
+            # @param [String] value
+            #
+            # @option options [Boolean] :toggle
+            #   set this node attribute only for a single chef run
+            #
+            # @raise [MB::EnvironmentNotFound] if the given environment is not found
+            def set_environment_attribute(key, value, options = {})
               Application.ridley.sync do
-                obj = environment.find(self.environment)
-                raise EnvironmentNotFound(self.environment) unless obj
+                unless obj = environment.find(self.environment)
+                  raise EnvironmentNotFound.new(self.environment)
+                end
 
                 if options[:toggle]
                   original_value = obj.override_attributes.dig(key)
@@ -249,7 +257,7 @@ module MotherBrain
             # @param [Object] value
             #
             # @option options [Boolean] :toggle
-            #   set this node attribute only for a single chef run (default: false)
+            #   set this node attribute only for a single chef run
             def set_node_attribute(l_node, key, value, options = {})
               Application.ridley.sync do
                 obj = node.find(l_node.name)

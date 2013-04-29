@@ -38,8 +38,10 @@ module MotherBrain
         log.info "Setting component versions #{component_versions}"
 
         chef_connection.sync do
-          env = environment.find(env_id)
-          raise EnvironmentNotFound(env_id) unless env
+          unless env = environment.find(env_id)
+            raise EnvironmentNotFound.new(env_id)
+          end
+
           env.override_attributes.merge!(override_attributes)
           env.save
         end
@@ -69,8 +71,10 @@ module MotherBrain
         log.info "Setting cookbook versions #{cookbook_versions}"
 
         chef_connection.sync do
-          env = environment.find(env_id)
-          raise EnvironmentNotFound(env_id) unless env
+          unless env = environment.find(env_id)
+            raise EnvironmentNotFound.new(env_id)
+          end
+
           env.cookbook_versions.merge!(cookbook_versions)
           env.save
         end
@@ -123,8 +127,10 @@ module MotherBrain
         log.info "Setting environment attributes: #{new_attributes}"
 
         chef_connection.sync do
-          env = environment.find(env_id)
-          raise EnvironmentNotFound(env_id) unless env
+          unless env = environment.find(env_id)
+            raise EnvironmentNotFound.new(env_id)
+          end
+
           env.override_attributes.deep_merge!(new_attributes)
           env.save
         end

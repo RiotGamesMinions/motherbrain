@@ -111,8 +111,10 @@ module MotherBrain
     #
     # @return [Ridley::EnvironmentResource]
     def find(id)
-      environment = ridley.environment.find(id)
-      abort EnvironmentNotFound.new(id) unless environment
+      unless environment = ridley.environment.find(id)
+        abort EnvironmentNotFound.new(id)
+      end
+
       environment
     end
 

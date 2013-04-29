@@ -141,8 +141,10 @@ module MotherBrain
           def credentials(environment)
             return @credentials if @credentials
 
-            data_bag = ridley.data_bag.find(data_bag_spec[:name])
-            raise DataBagNotFound(data_bag_spec[:name]) unless data_bag
+            unless data_bag = ridley.data_bag.find(data_bag_spec[:name])
+              raise DataBagNotFound.new(data_bag_spec[:name])
+            end
+
             dbi = data_bag.item.find(environment).decrypt
 
             @credentials = Hash[data_bag_keys.map { |key, dbi_key| [key, dbi.dig(dbi_key)] }]
