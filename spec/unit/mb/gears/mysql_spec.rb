@@ -94,6 +94,31 @@ describe MB::Gear::Mysql::Action do
         connection_info[:port].should == 3306
       end
     end
+
+    context "when the data bag does not exist" do
+      before do
+        subject.should_receive(:credentials).with(environment).and_raise(MB::DataBagNotFound.new("kittens"))
+      end
+
+      it "raises a GearError" do
+        expect {
+          subject.connection_info(environment, node)
+        }.to raise_error(MB::GearError)
+      end
+    end
+
+    context "when the data bag item does not exist" do
+      before do
+        subject.should_receive(:credentials).with(environment).
+          and_raise(MB::DataBagItemNotFound.new("kittens", "puppies"))
+      end
+
+      it "raises a GearError" do
+        expect {
+          subject.connection_info(environment, node)
+        }.to raise_error(MB::GearError)
+      end
+    end
   end
 
   describe "#data_bag_keys" do

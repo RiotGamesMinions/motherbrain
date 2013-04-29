@@ -458,8 +458,23 @@ module MotherBrain
     end
   end
 
-  class DataBagNotFound < ChefError
+  class EnvironmentNotFound < MBError
+    exit_code(12)
     error_code(9002)
+
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def message
+      "An environment named '#{name}' could not be found"
+    end
+  end
+
+  class DataBagNotFound < ChefError
+    error_code(9003)
 
     attr_reader :name
 
@@ -472,18 +487,19 @@ module MotherBrain
     end
   end
 
-  class EnvironmentNotFound < MBError
-    exit_code(12)
-    error_code(9003)
+  class DataBagItemNotFound < ChefError
+    error_code(9004)
 
-    attr_reader :name
+    attr_reader :data_bag_name
+    attr_reader :item_name
 
-    def initialize(name)
-      @name = name
+    def initialize(data_bag_name, item_name)
+      @data_bag_name = data_bag_name
+      @item_name     = item_name
     end
 
     def message
-      "An environment named '#{name}' could not be found"
+      "An item named '#{item_name}' was not found in the '#{data_bag_name}' data bag."
     end
   end
 end

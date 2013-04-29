@@ -76,12 +76,18 @@ module MotherBrain
 
         # The MySQL connection information/credentials for the specified node.
         #
+        # @param [String] environment
+        #   name of the environment to retrieve credentials from
         # @param [Ridley::Node] node
         #   the node to to find connection information for
+        #
+        # @raise [MB::GearError] if the MySQL credentials cannot be found or are malformed
         #
         # @return [Hash] MySQL connection information for the node
         def connection_info(environment, node)
           credentials(environment).merge(host: node.public_hostname)
+        rescue MB::DataBagNotFound, MB::DataBagItemNotFound => ex
+          raise MB::GearError.new(ex)
         end
 
         # @return [Hash] The keys used to look up MySQL connection information in a data bag item.
@@ -134,8 +140,12 @@ module MotherBrain
 
           # Retrieves the MySQL credentials from the data bag.
           #
+          # @param [String] environment
+          #
           # @raise [MB::DataBagNotFound] if the data bag is not found
-          # @raise [MB::ArgumentError] if any MySQL credentials are missing
+          # @raise [MB::DataBagItemNotFound] if an item with the name of the given environment is not found
+          #   in the credentials data bag
+          # @raise [MB::GearError] if any MySQL credentials are missing
           #
           # @return [Hash] MySQL credentials
           def credentials(environment)
@@ -145,7 +155,11 @@ module MotherBrain
               raise DataBagNotFound.new(data_bag_spec[:name])
             end
 
-            dbi = data_bag.item.find(environment).decrypt
+            unless dbi = data_bag.item.find(environment)
+              raise DataBagItemNotFound.new(data_bag_spec[:name], environment)
+            end
+
+            dbi = dbi.decrypt
 
             @credentials = Hash[data_bag_keys.map { |key, dbi_key| [key, dbi.dig(dbi_key)] }]
 
