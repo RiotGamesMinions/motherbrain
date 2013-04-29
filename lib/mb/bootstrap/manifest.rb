@@ -41,6 +41,7 @@ module MotherBrain
           new.tap do |boot_manifest|
             boot_manifest.path    = path
             boot_manifest[:nodes] = Array.new
+            boot_manifest[:options] = provisioner_manifest[:options]
 
             attributes.node_groups.each do |node_group|
               instance_type = node_group[:type]

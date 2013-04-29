@@ -1,3 +1,9 @@
+# 0.5.1
+
+* Explicit lock to stable version of Ridley
+* Provisioner type can be configured in manifest
+* Logging improvements
+
 # 0.5.0
 
 * Experimental AWS provisioner. Enable by setting the env variable MB_DEFAULT_PROVISIONER=aws. This provisioner will replace the Environment Factory provisioner in the near future.
