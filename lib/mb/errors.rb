@@ -298,6 +298,21 @@ module MotherBrain
     end
   end
 
+  class DataBagNotFound < MBError
+    exit_code(25)
+    error_code(3023)
+
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def message
+      "A Data Bag named '#{name}' could not be found"
+    end
+  end
+
   class InvalidConfig < MBError
     exit_code(13)
     error_code(3009)

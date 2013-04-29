@@ -152,10 +152,9 @@ describe MB::CommandInvoker do
         job.stub(:report_failure)
       end
 
-      it "raises a MB::ArgumentError" do
-        expect {
-          run
-        }.to raise_error(MB::ArgumentError)
+      it "aborts with a MB::ArgumentError" do
+        subject.should_receive(:abort).with( kind_of(MB::ArgumentError) )
+        run
       end
     end
 
@@ -169,7 +168,7 @@ describe MB::CommandInvoker do
       end
 
       it "should set the job state to :failure" do
-        job.should_receive(:report_failure).with(exception.to_s)
+        job.should_receive(:report_failure).with(exception)
 
         run
       end
@@ -185,7 +184,7 @@ describe MB::CommandInvoker do
       end
 
       it "sets the job to failure with a command not found message" do
-        job.should_receive(:report_failure).with(exception.to_s)
+        job.should_receive(:report_failure).with(exception)
 
         run
       end
@@ -201,7 +200,7 @@ describe MB::CommandInvoker do
       end
 
       it "sets the job to failure with a command not found message" do
-        job.should_receive(:report_failure).with(exception.to_s)
+        job.should_receive(:report_failure).with(exception)
 
         run
       end
@@ -217,7 +216,7 @@ describe MB::CommandInvoker do
       end
 
       it "completes the job as a failure with a command not found message" do
-        job.should_receive(:report_failure).with(exception.to_s)
+        job.should_receive(:report_failure).with(exception)
 
         run
       end

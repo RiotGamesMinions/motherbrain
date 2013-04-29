@@ -134,6 +134,7 @@ module MotherBrain
 
           # Retrieves the MySQL credentials from the data bag.
           #
+          # @raise [MB::DataBagNotFound] if the data bag is not found
           # @raise [MB::ArgumentError] if any MySQL credentials are missing
           #
           # @return [Hash] MySQL credentials
@@ -141,6 +142,7 @@ module MotherBrain
             return @credentials if @credentials
 
             data_bag = ridley.data_bag.find(data_bag_spec[:name])
+            raise DataBagNotFound(data_bag_spec[:name]) unless data_bag
             dbi = data_bag.item.find(environment).decrypt
 
             @credentials = Hash[data_bag_keys.map { |key, dbi_key| [key, dbi.dig(dbi_key)] }]

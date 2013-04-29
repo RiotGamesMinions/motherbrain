@@ -229,6 +229,7 @@ module MotherBrain
             def set_environment_attribute(key, value, options)
               Application.ridley.sync do
                 obj = environment.find(self.environment)
+                raise EnvironmentNotFound(self.environment) unless obj
 
                 if options[:toggle]
                   original_value = obj.override_attributes.dig(key)

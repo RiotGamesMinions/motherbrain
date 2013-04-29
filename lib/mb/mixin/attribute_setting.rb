@@ -19,6 +19,8 @@ module MotherBrain
       # @param [Hash] component_versions
       #   Hash of components and the versions to set them to
       #
+      # @raise [MB::EnvironmentNotFound] if the environment does not exist
+      #
       # @example setting the versions of multiple components on an environment
       #
       #   set_component_versions("test-environment",
@@ -37,6 +39,7 @@ module MotherBrain
 
         chef_connection.sync do
           env = environment.find(env_id)
+          raise EnvironmentNotFound(env_id) unless env
           env.override_attributes.merge!(override_attributes)
           env.save
         end
@@ -49,6 +52,8 @@ module MotherBrain
       #   the name identifier of the environment to modify
       # @param [Hash] cookbook_versions
       #   Hash of cookbooks and the versions to set them to
+      #
+      # @raise [MB::EnvironmentNotFound] if the environment does not exist
       #
       # @example setting cookbook versions on an environment
       #
@@ -65,6 +70,7 @@ module MotherBrain
 
         chef_connection.sync do
           env = environment.find(env_id)
+          raise EnvironmentNotFound(env_id) unless env
           env.cookbook_versions.merge!(cookbook_versions)
           env.save
         end
@@ -103,6 +109,8 @@ module MotherBrain
       # @param [Hash] new_attributes
       #   Hash of attributes to set on the environment
       #
+      # @raise [MB::EnvironmentNotFound] if the environment does not exist
+      #
       # @example setting multiple attributes on an environment
       #
       #   set_environment_attributes_from_hash("test-environment",
@@ -116,6 +124,7 @@ module MotherBrain
 
         chef_connection.sync do
           env = environment.find(env_id)
+          raise EnvironmentNotFound(env_id) unless env
           env.override_attributes.deep_merge!(new_attributes)
           env.save
         end
