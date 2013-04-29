@@ -19,7 +19,7 @@ describe MB::Bootstrap::Manager do
         group "master"
       end
 
-      cluster_bootstrap do
+      stack_order do
         async do
           bootstrap("activemq::master")
           bootstrap("activemq::slave")

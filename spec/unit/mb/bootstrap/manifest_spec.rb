@@ -51,7 +51,7 @@ describe MB::Bootstrap::Manifest do
           group "master"
         end
 
-        cluster_bootstrap do
+        stack_order do
           bootstrap("activemq::master")
           bootstrap("nginx::master")
         end
