@@ -219,6 +219,8 @@ module MotherBrain
             attributes: boot_task.group_object.chef_attributes
           )
 
+          worker_options.merge!(manifest[:options])
+
           workers << worker = Worker.new(nodes)
 
           job.set_status("performing bootstrap on group(s): #{groups}")

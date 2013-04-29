@@ -149,6 +149,12 @@ describe MB::Bootstrap::Manifest do
     let(:provisioner_manifest) {
       MB::Provisioner::Manifest.new(
         {
+          options: {
+            ssh: {
+              user: "root",
+              password: "secret"
+            }
+          },
           nodes: [
             {
               type: "m1.large",
@@ -201,6 +207,15 @@ describe MB::Bootstrap::Manifest do
           ]
         }
       ]
+    end
+
+    it "copies the options key" do
+      subject[:options].should == {
+        ssh: {
+          user: "root",
+          password: "secret"
+        }
+      }
     end
 
     context "multiple nodes of the same type returned by the provisioner" do
