@@ -467,4 +467,24 @@ module MotherBrain
       "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
     end
   end
+
+  # Chef errors
+  class ChefError < MBError
+    exit_code(26)
+    error_code(9000)
+  end
+
+  class NodeNotFound < ChefError
+    error_code(9001)
+
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def message
+      "A node named '#{name}' could not be found on the Chef server"
+    end
+  end
 end

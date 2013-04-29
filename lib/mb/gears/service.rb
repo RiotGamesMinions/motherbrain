@@ -226,6 +226,8 @@ module MotherBrain
 
           private
 
+            attr_reader :component
+
             # @param [String] key
             # @param [String] value
             #
@@ -260,7 +262,9 @@ module MotherBrain
             #   set this node attribute only for a single chef run
             def set_node_attribute(l_node, key, value, options = {})
               Application.ridley.sync do
-                obj = node.find(l_node.name)
+                unless obj = node.find(l_node.name)
+                  raise NodeNotFound.new(l_node.name)
+                end
 
                 if options[:toggle]
                   original_value = obj.normal.dig(key)
@@ -271,8 +275,6 @@ module MotherBrain
                 obj.save
               end
             end
-
-            attr_reader :component
         end
       end
     end
