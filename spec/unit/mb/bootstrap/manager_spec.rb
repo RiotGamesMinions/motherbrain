@@ -169,15 +169,33 @@ describe MB::Bootstrap::Manager do
     }
     let(:group_object_stub) { double('group_object', run_list: nil, chef_attributes: nil) }
     let(:options) { Hash.new }
-    let(:worker_stub) { double('worker', alive?: nil, future: nil) }
+    let(:worker_stub) { double('worker', alive?: nil, future: double('future', value: nil)) }
 
     before do
       manifest.stub(:hosts_for_groups).and_return("amq1.riotgames.com")
       MB::Bootstrap::Worker.stub(:new).and_return(worker_stub)
+      options.merge!(run_list: group_object_stub.run_list, attributes: group_object_stub.chef_attributes)
     end
 
-    it "works when the manifest options are empty" do
-      concurrent_bootstrap
-    end    
+    context "when there are no nodes in the manifest" do
+      let(:log_stub) { double('log') }
+
+      before do
+        manifest.stub(:hosts_for_groups).and_return(Array.new)
+        subject.stub(:log).and_return(log_stub)
+      end
+
+      it "logs a message that this boot_task will be skipped" do
+        log_stub.should_receive(:info)
+        concurrent_bootstrap
+      end
+    end
+
+    context "when the manifest has no :options" do
+      it "calls :run on the future with options" do
+        worker_stub.should_receive(:future).with(:run, options)
+        concurrent_bootstrap
+      end
+    end
   end
 end
