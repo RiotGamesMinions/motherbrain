@@ -147,13 +147,19 @@ describe MB::CommandInvoker do
     end
 
     context "when the plugin option is nil" do
-      before do
-        options[:plugin] = nil
-        job.stub(:report_failure)
-      end
+      before { options[:plugin] = nil }
 
-      it "aborts with a MB::ArgumentError" do
-        subject.should_receive(:abort).with( kind_of(MB::ArgumentError) )
+      it "sets the job to failure" do
+        job.should_receive(:report_failure)
+        run
+      end
+    end
+
+    context "when the environment option is nil" do
+      before { options[:environment] = nil }
+
+      it "sets the job to failure" do
+        job.should_receive(:report_failure)
         run
       end
     end

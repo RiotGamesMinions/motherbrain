@@ -90,18 +90,20 @@ module MotherBrain
     #
     # @raise [MB::ArgumentError]
     #
-    # @return [MB::Job]
+    # @return [Boolean]
     def invoke(job, command_name, options = {})
       options = options.reverse_merge(arguments: Array.new, force: false)
 
       job.report_running
 
       if options[:plugin].nil?
-        abort MB::ArgumentError.new("must specify a plugin that the command belongs to")
+        job.report_failure MB::ArgumentError.new("must specify a plugin that the command belongs to")
+        return false
       end
 
       if options[:environment].nil?
-        abort MB::ArgumentError.new("must specify an environment to run this command on")
+        job.report_failure MB::ArgumentError.new("must specify an environment to run this command on")
+        return false
       end
 
       job.set_status("finding environment")
@@ -115,8 +117,10 @@ module MotherBrain
       end
 
       job.report_success("successfully executed command")
+      true
     rescue => ex
       job.report_failure(ex)
+      false
     ensure
       job.terminate if job && job.alive?
       worker.terminate if worker && worker.alive?
