@@ -154,7 +154,7 @@ module MotherBrain
           cookbook_versions: Hash.new,
           environment_attributes: Hash.new,
           skip_bootstrap: false,
-          with: manifest.options[:provisioner],
+          with: manifest.provisioner,
           force: false
         )
 
