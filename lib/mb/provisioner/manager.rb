@@ -33,6 +33,8 @@ module MotherBrain
         #   see {choose_provisioner} and the initializer provisioner you are attempting to
         #   initialize
         #
+        # @raise [ProvisionerNotRegistered] if no provisioner is registered with the given ID
+        #
         # @return [~Provisioner]
         def new_provisioner(options)
           choose_provisioner(options[:with]).new(options.except(:with))
@@ -152,8 +154,8 @@ module MotherBrain
           cookbook_versions: Hash.new,
           environment_attributes: Hash.new,
           skip_bootstrap: false,
-          force: false,
-          with: manifest.options[:provisioner]
+          with: manifest.provisioner,
+          force: false
         )
 
         worker = self.class.new_provisioner(options)
