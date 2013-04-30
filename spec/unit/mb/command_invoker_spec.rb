@@ -147,15 +147,20 @@ describe MB::CommandInvoker do
     end
 
     context "when the plugin option is nil" do
-      before do
-        options[:plugin] = nil
-        job.stub(:report_failure)
-      end
+      before { options[:plugin] = nil }
 
-      it "raises a MB::ArgumentError" do
-        expect {
-          run
-        }.to raise_error(MB::ArgumentError)
+      it "sets the job to failure" do
+        job.should_receive(:report_failure)
+        run
+      end
+    end
+
+    context "when the environment option is nil" do
+      before { options[:environment] = nil }
+
+      it "sets the job to failure" do
+        job.should_receive(:report_failure)
+        run
       end
     end
 
@@ -169,7 +174,7 @@ describe MB::CommandInvoker do
       end
 
       it "should set the job state to :failure" do
-        job.should_receive(:report_failure).with(exception.to_s)
+        job.should_receive(:report_failure).with(exception)
 
         run
       end
@@ -185,7 +190,7 @@ describe MB::CommandInvoker do
       end
 
       it "sets the job to failure with a command not found message" do
-        job.should_receive(:report_failure).with(exception.to_s)
+        job.should_receive(:report_failure).with(exception)
 
         run
       end
@@ -201,7 +206,7 @@ describe MB::CommandInvoker do
       end
 
       it "sets the job to failure with a command not found message" do
-        job.should_receive(:report_failure).with(exception.to_s)
+        job.should_receive(:report_failure).with(exception)
 
         run
       end
@@ -217,7 +222,7 @@ describe MB::CommandInvoker do
       end
 
       it "completes the job as a failure with a command not found message" do
-        job.should_receive(:report_failure).with(exception.to_s)
+        job.should_receive(:report_failure).with(exception)
 
         run
       end

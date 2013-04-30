@@ -97,11 +97,11 @@ module MotherBrain
       job.report_running
 
       if options[:plugin].nil?
-        abort MB::ArgumentError.new("must specify a plugin that the command belongs to")
+        raise MB::ArgumentError.new("must specify a plugin that the command belongs to")
       end
 
       if options[:environment].nil?
-        abort MB::ArgumentError.new("must specify an environment to run this command on")
+        raise MB::ArgumentError.new("must specify an environment to run this command on")
       end
 
       job.set_status("finding environment")
