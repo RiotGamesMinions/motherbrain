@@ -161,6 +161,24 @@ describe MB::Bootstrap::Manager do
   end
 
   describe "#concurrent_bootstrap" do
-    pending
+    let(:concurrent_bootstrap) { manager.concurrent_bootstrap(job_stub, manifest, boot_tasks, options) }
+    let(:boot_tasks) { 
+      double('boot_task', 
+        groups: nil,
+        group_object: group_object_stub)
+    }
+    let(:group_object_stub) { double('group_object', run_list: nil, chef_attributes: nil) }
+    let(:options) {  }
+    let(:worker_stub) { double('worker', future: nil) }
+
+    before do
+      manifest.stub(:hosts_for_groups).and_return("amq1.riotgames.com")
+      MB::Bootstrap::Worker.stub(:new).and_return(worker_stub)
+    end
+
+    it "works when the manifest options are empty" do
+
+      concurrent_bootstrap
+    end    
   end
 end
