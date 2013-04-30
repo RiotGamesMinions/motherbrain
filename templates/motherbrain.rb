@@ -8,7 +8,7 @@
 
 # When bootstrapping a cluster for the first time, you'll need to specify which
 # components and groups you want to bootstrap.
-cluster_bootstrap do
+stack_order do
 <% config[:groups].each do |group| -%>
   bootstrap 'app::<%= group %>'
 <% end -%>

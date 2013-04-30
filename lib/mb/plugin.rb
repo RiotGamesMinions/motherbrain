@@ -310,8 +310,13 @@ module MotherBrain
         real_model.add_component Component.new(name, real_model, &block)
       end
 
-      def cluster_bootstrap(&block)
+      def stack_order(&block)
         real_model.bootstrap_routine = Bootstrap::Routine.new(real_model, &block)
+      end
+
+      def cluster_bootstrap(&block)
+        warn "#{real_model}: cluster_bootstrap is now stack_order, and will be removed in motherbrain 1.0"
+        stack_order(&block)
       end
     end
   end
