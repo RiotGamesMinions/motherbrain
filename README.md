@@ -123,7 +123,7 @@ to any of those bulletpoints. Let's take a look at the plugin our `init`
 command created:
 
 ```rb
-cluster_bootstrap do
+stack_order do
   bootstrap 'app::default'
 end
 
@@ -139,7 +139,7 @@ end
 
 A plugin consists of a few things:
 
-* `cluster_bootstrap` declares the order to bootstrap component groups
+* `stack_order` declares the order to bootstrap component groups
 * `component` creates a namespace for different parts of your application
   * `description` provides a friendly summary of the component
   * `versioned` denotes that this component is versioned with an environment
@@ -193,7 +193,7 @@ the automatically-generated plugin to better fit the architecture for our
 application:
 
 ```rb
-cluster_bootstrap do
+stack_order do
   bootstrap 'app::db'
   bootstrap 'app::web'
 end

@@ -35,10 +35,10 @@ describe MB::Plugin do
       its(:dependencies) { should be_empty }
       its(:bootstrap_routine) { should be_nil }
 
-      context "when a cluster_bootstrap block is present" do
+      context "when a stack_order block is present" do
         subject do
           described_class.load(metadata) do
-            cluster_bootstrap do
+            stack_order do
               # empty routine
             end
           end
