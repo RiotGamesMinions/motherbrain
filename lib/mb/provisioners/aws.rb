@@ -6,14 +6,12 @@ module MotherBrain
     # @author Michael Ivey <michael.ivey@riotgames.com>
     #
     # Provisioner adapter for AWS/Eucalyptus
-    #
     class AWS
       include Provisioner
 
       register_provisioner :aws
 
-      def initialize(options = {})
-      end
+      def initialize(options = {}); end
 
       # Provision nodes in the environment based on the contents of the given manifest
       #
@@ -39,25 +37,12 @@ module MotherBrain
         instances_as_manifest(verified_instances)
       end
 
-      # Tear down the given environment and the nodes in it
-      #
-      # @param [Job] job
-      #   a job to track the progress of this action
-      # @param [String] env_name
-      #   the name of the environment to destroy
-      #
-      # @raise [MB::ProvisionError]
-      #   if a caught error occurs during provisioning
-      #
-      # @return [Boolean]
-      def down(job, env_name)
-        fog = fog_connection
-        terminate_instances(job, fog, env_name)
-        job.set_status "deleting chef_environment:#{env_name}"
-        delete_environment(env_name)
+      def down(*args)
+        raise RuntimeError, "not yet implemented"
       end
 
       private
+
         # Find an appropriate AWS/Euca access key
         # Will look in manifest (if provided), and common environment
         # variables used by AWS and Euca tools
@@ -65,7 +50,7 @@ module MotherBrain
         # @param [Provisioner::Manifest] manifest
         #
         # @return [String]
-        def access_key(manifest=nil)
+        def access_key(manifest = nil)
           if manifest && manifest.options[:access_key]
             manifest.options[:access_key]
           elsif ENV['AWS_ACCESS_KEY']
@@ -84,7 +69,7 @@ module MotherBrain
         # @param [Provisioner::Manifest] manifest
         #
         # @return [String]
-        def secret_key(manifest=nil)
+        def secret_key(manifest = nil)
           if manifest && manifest.options[:secret_key]
             manifest.options[:secret_key]
           elsif ENV['AWS_SECRET_KEY']
@@ -103,7 +88,7 @@ module MotherBrain
         # @param [Provisioner::Manifest] manifest
         #
         # @return [String]
-        def endpoint(manifest=nil)
+        def endpoint(manifest = nil)
           manifest_options = manifest ? manifest.options : {}
 
           manifest_options[:endpoint] || ENV['EC2_URL']
@@ -113,10 +98,12 @@ module MotherBrain
         #
         # @return [Fog::Compute]
         def fog_connection(manifest=nil)
-          Fog::Compute.new(provider: 'aws',
-                           aws_access_key_id: access_key(manifest),
-                           aws_secret_access_key: secret_key(manifest),
-                           endpoint: endpoint(manifest))
+          Fog::Compute.new(
+            provider: 'aws',
+            aws_access_key_id: access_key(manifest),
+            aws_secret_access_key: secret_key(manifest),
+            endpoint: endpoint(manifest)
+          )
         end
 
         # @param [Job] job
@@ -127,7 +114,7 @@ module MotherBrain
         # @return [Boolean]
         def validate_manifest_options(job, manifest)
           job.set_status "validating manifest options"
-          [:image_id, :key_name, :availability_zone].each do |key|
+          [ :image_id, :key_name, :availability_zone ].each do |key|
             unless manifest.options[key]
               abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key '#{key}' with the AWS #{key.to_s.camelize}")
             end
@@ -202,7 +189,7 @@ module MotherBrain
         #
         # @return [Array]
         def pending_instances(instances)
-          instances.select {|i,d| d[:status].to_i != 16}.keys
+          instances.select { |i,d| d[:status].to_i != 16 }.keys
         end
 
         # @param [Job] job
@@ -211,7 +198,7 @@ module MotherBrain
         # @param [Fixnum] tries
         #
         # @return [Hash]
-        def verify_instances(job, fog, instances, tries=15)
+        def verify_instances(job, fog, instances, tries = 15)
           if tries <= 0
             log.debug "Giving up. instances: #{instances.inspect}"
             abort AWSInstanceTimeoutError.new("giving up on instances :-(")
@@ -307,4 +294,3 @@ module MotherBrain
     error_code(5202)
   end
 end
-
