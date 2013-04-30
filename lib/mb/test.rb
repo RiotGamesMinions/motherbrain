@@ -20,7 +20,7 @@ module MotherBrain
       end
 
       def initialize
-        RSpec::Mocks.setup(self)
+        ::RSpec::Mocks.setup(self)
       end
 
       def type
