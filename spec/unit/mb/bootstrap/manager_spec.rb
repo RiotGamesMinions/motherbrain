@@ -168,7 +168,7 @@ describe MB::Bootstrap::Manager do
         group_object: group_object_stub)
     }
     let(:group_object_stub) { double('group_object', run_list: nil, chef_attributes: nil) }
-    let(:options) {  }
+    let(:options) { Hash.new }
     let(:worker_stub) { double('worker', future: nil) }
 
     before do
