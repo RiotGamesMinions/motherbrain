@@ -39,25 +39,12 @@ module MotherBrain
         instances_as_manifest(verified_instances)
       end
 
-      # Tear down the given environment and the nodes in it
-      #
-      # @param [Job] job
-      #   a job to track the progress of this action
-      # @param [String] env_name
-      #   the name of the environment to destroy
-      #
-      # @raise [MB::ProvisionError]
-      #   if a caught error occurs during provisioning
-      #
-      # @return [Boolean]
-      def down(job, env_name)
-        fog = fog_connection
-        terminate_instances(job, fog, env_name)
-        job.set_status "deleting chef_environment:#{env_name}"
-        delete_environment(env_name)
+      def down(*args)
+        raise RuntimeError, "not yet implemented"
       end
 
       private
+
         # Find an appropriate AWS/Euca access key
         # Will look in manifest (if provided), and common environment
         # variables used by AWS and Euca tools
