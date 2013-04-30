@@ -4,6 +4,11 @@ motherbrain is an orchestration framework for Chef. In the same way that you
 would use Chef's Knife command to create a single node, you can use
 motherbrain to create and control an entire application environment.
 
+## Other Documentation
+
+* [Plugin DSL](PLUGINS.md)
+* [Testing with Vagrant](VAGRANT.md)
+
 ## Requirements
 
 * Ruby 1.9.3+
