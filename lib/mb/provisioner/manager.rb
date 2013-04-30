@@ -33,6 +33,8 @@ module MotherBrain
         #   see {choose_provisioner} and the initializer provisioner you are attempting to
         #   initialize
         #
+        # @raise [ProvisionerNotRegistered] if no provisioner is registered with the given ID
+        #
         # @return [~Provisioner]
         def new_provisioner(options)
           chosen = choose_provisioner(options[:with])
