@@ -10,7 +10,7 @@ describe MB::Job do
       subject { described_class.new(type) }
 
       before(:each) { subject }
-      after(:each) { subject.terminate }
+      after(:each) { subject.terminate if subject.alive? }
 
       it "starts in PENDING state" do
         subject.should be_pending
