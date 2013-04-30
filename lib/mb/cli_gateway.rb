@@ -152,7 +152,7 @@ module MotherBrain
         Celluloid.shutdown
       end
 
-      # Does this invocation require an environment?
+      # Does the given argument array require a named argument for environment?
       #
       # @param [Array<String>] args the CLI arguments
       #
@@ -164,12 +164,17 @@ module MotherBrain
           return true
         end
 
+        if SKIP_ENVIRONMENT_TASKS.include?(args.first)
+          return false
+        end
+
         if args.count == 1
           return false
         end
 
-        # All plugin commands require an environment except for help.
-        return !args.include?("help")
+        # All commands/subcommands require an environment unless specified in
+        # the {SKIP_ENVIRONMENT_TASKS} constant array.
+        true
       end
 
       # Did the user call a plugin task?
@@ -235,6 +240,11 @@ module MotherBrain
       "unlock",
     ].freeze
 
+    SKIP_ENVIRONMENT_TASKS = [
+      "help",
+      "environment"
+    ].freeze
+
     CREATE_ENVIRONMENT_TASKS = [
       "bootstrap",
       "provision"
@@ -252,6 +262,8 @@ module MotherBrain
         self.class.configure(opts)
       end
     end
+
+    register Cli::SubCommand::Environment, :environment, "environment", "Environment level commands"
 
     map 'ver' => :version
 
@@ -310,34 +322,6 @@ module MotherBrain
       config.save
 
       MB.ui.say "Config written to: '#{path}'"
-    end
-
-    method_option :force,
-      type: :boolean,
-      default: false,
-      desc: "perform the configuration even if the environment is locked"
-    desc "configure_environment MANIFEST", "configure a Chef environment"
-    def configure_environment(attributes_file)
-      attributes_file = File.expand_path(attributes_file)
-
-      begin
-        content = File.read(attributes_file)
-      rescue Errno::ENOENT
-        MB.ui.say "No attributes file found at: '#{attributes_file}'"
-        exit(1)
-      end
-
-      begin
-        attributes = MultiJson.decode(content)
-      rescue MultiJson::DecodeError => ex
-        MB.ui.say "Error decoding JSON from: '#{attributes_file}'"
-        MB.ui.say ex
-        exit(1)
-      end
-
-      job = environment_manager.async_configure(options[:environment], attributes: attributes, force: options[:force])
-
-      CliClient.new(job).display
     end
 
     desc "init [PATH]", "Create a MotherBrain plugin for the current cookbook"
@@ -440,20 +424,6 @@ module MotherBrain
       MB.ui.say version_header
       MB.ui.say "\n"
       MB.ui.say license
-    end
-
-    desc "lock", "Lock an environment"
-    def lock
-      job = lock_manager.async_lock(options[:environment])
-
-      CliClient.new(job).display
-    end
-
-    desc "unlock", "Unlock an environment"
-    def unlock
-      job = lock_manager.async_unlock(options[:environment])
-
-      CliClient.new(job).display
     end
 
     private

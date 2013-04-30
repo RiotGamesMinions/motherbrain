@@ -6,6 +6,7 @@ module MotherBrain
     module SubCommand
       autoload :Base, 'mb/cli/sub_command/base'
       autoload :Component, 'mb/cli/sub_command/component'
+      autoload :Environment, 'mb/cli/sub_command/environment'
       autoload :Plugin, 'mb/cli/sub_command/plugin'
 
       class << self
