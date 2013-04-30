@@ -12,7 +12,7 @@ describe MB::Upgrade::Worker do
   let(:cookbook_versions) { { "ohai" => "1.2.3" } }
   let(:environment) { stub }
   let(:environment_name) { "rspec-test" }
-  let(:job) { MB::Job.new(:upgrade) }
+  let(:job) { job_double }
   let(:options) { Hash.new }
   let(:nodes) { %w[node1 node2 node3] }
   let(:plugin) { stub MB::Plugin, name: plugin_name }
@@ -30,8 +30,6 @@ describe MB::Upgrade::Worker do
     plugin.stub(:component!).with(component_name).and_return(component1)
   end
 
-  after(:each) { job.terminate if job.alive? }
-
   its(:environment_name) { should == environment_name }
   its(:plugin) { should == plugin }
   its(:options) { should == options }
@@ -45,8 +43,16 @@ describe MB::Upgrade::Worker do
       run
     end
 
-    it "returns a Job" do
-      run.should be_a(MB::Job)
+    context "when successful" do
+      it { should be_true }
+    end
+
+    context "when fail" do
+      before do
+        MB::ChefMutex.any_instance.should_receive(:synchronize).and_raise(RuntimeError)
+      end
+
+      it { should be_false }
     end
 
     it "marks the job as 'running' and then 'success' if successful" do
@@ -62,8 +68,8 @@ describe MB::Upgrade::Worker do
       end
 
       it "should set the job state to :failure" do
+        job.should_receive(:report_failure)
         run
-        job.should be_failure
       end
     end
 
@@ -161,9 +167,9 @@ describe MB::Upgrade::Worker do
       context "when the environment attributes file is invalid" do
         it "sets the job to failed" do
           worker.should_receive(:set_environment_attributes_from_file).and_raise(MB::InvalidAttributesFile)
-          run
+          job.should_receive(:report_failure)
 
-          job.should be_failure
+          run
         end
       end
     end
