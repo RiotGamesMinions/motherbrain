@@ -37,8 +37,7 @@ module MotherBrain
         #
         # @return [~Provisioner]
         def new_provisioner(options)
-          chosen = choose_provisioner(options[:with])
-          chosen.new(options.except(:with)) if chosen
+          choose_provisioner(options[:with]).new(options.except(:with))
         end
       end
 
