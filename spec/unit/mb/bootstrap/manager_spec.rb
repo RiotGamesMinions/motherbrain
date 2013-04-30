@@ -60,7 +60,7 @@ describe MB::Bootstrap::Manager do
   let(:environment) { "test" }
   let(:server_url) { MB::Application.config.chef.api_url }
   let(:job_stub) do
-    stub(MB::Job, alive?: true)
+    stub(MB::Job, alive?: true, set_status: nil)
   end
 
   before do
@@ -169,7 +169,7 @@ describe MB::Bootstrap::Manager do
     }
     let(:group_object_stub) { double('group_object', run_list: nil, chef_attributes: nil) }
     let(:options) { Hash.new }
-    let(:worker_stub) { double('worker', future: nil) }
+    let(:worker_stub) { double('worker', alive?: nil, future: nil) }
 
     before do
       manifest.stub(:hosts_for_groups).and_return("amq1.riotgames.com")
@@ -177,7 +177,6 @@ describe MB::Bootstrap::Manager do
     end
 
     it "works when the manifest options are empty" do
-
       concurrent_bootstrap
     end    
   end
