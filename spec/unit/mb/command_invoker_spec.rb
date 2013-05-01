@@ -13,7 +13,6 @@ describe MB::CommandInvoker do
   end
 
   subject { described_class.new }
-  after { subject.terminate if subject && subject.alive? }
 
   describe "#async_invoke" do
     let(:job_ticket) { double(MB::JobRecord) }

@@ -26,6 +26,8 @@ def setup_rspec
     config.run_all_when_everything_filtered = true
 
     config.before(:all) do
+      Celluloid.shutdown
+      Celluloid.boot
       MB::Logging.setup(location: '/dev/null')
 
       @config = generate_valid_config
