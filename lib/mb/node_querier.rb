@@ -39,8 +39,8 @@ module MotherBrain
     def bulk_chef_run(job, nodes)
       job.set_status("performing a chef client run on #{nodes.length} nodes")
 
-      node_success = 0
-      node_failure = 0
+      node_successes = 0
+      node_failures = 0
 
       futures = nodes.map { |node|
         node_querier.future.chef_run(node.public_hostname)
@@ -49,16 +49,16 @@ module MotherBrain
       futures.each do |future|
         begin
           future.value
-          node_success += 1
+          node_successes += 1
         rescue RemoteCommandError
-          node_failure += 1
+          node_failures += 1
         end
       end
 
-      if node_failure > 0
-        raise RemoteCommandError.new("chef client run failed on #{node_failure} nodes")
+      if node_failures > 0
+        raise RemoteCommandError.new("chef client run failed on #{node_failures} node(s)")
       else
-        job.set_status("finished chef client run on #{node_success} nodes")
+        job.set_status("finished chef client run on #{node_successes} node(s)")
       end
     end
 
