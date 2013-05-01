@@ -127,31 +127,14 @@ module MotherBrain
         #   nodes the nodes to run this action on
         #
         # @return [Service::Action]
-        def run(job, environment, nodes)
+        def run(job, environment, nodes, run_chef = true)
           job.set_status("running component: #{component.name} service action: #{name} on (#{nodes.length}) nodes")
 
           runner = ActionRunner.new(job, environment, nodes)
           runner.instance_eval(&block)
 
-          job.set_status("performing a chef client run on #{nodes.length} nodes")
-          node_success = 0
-          node_failure = 0
-
-          responses = nodes.collect do |node|
-            node_querier.future.chef_run(node.public_hostname)
-          end.each do |future|
-            begin
-              future.value
-              node_success += 1
-            rescue RemoteCommandError => ex
-              node_failure += 1
-            end
-          end
-
-          if node_failure > 0
-            raise RemoteCommandError.new("chef client run failed on #{node_failure} nodes")
-          else
-            job.set_status("finished chef client run on #{node_success} nodes")
+          if run_chef
+            node_querier.bulk_chef_run job, nodes
           end
 
           self
