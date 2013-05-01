@@ -148,6 +148,8 @@ describe MB::CommandRunner do
 
       subject.any_instance.should_receive(:run).exactly(1).times
 
+      node_querier.should_receive(:bulk_chef_run)
+
       command_block = Proc.new do
         async do
           on("master_group", max_concurrent: 1) do
