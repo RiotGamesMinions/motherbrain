@@ -102,7 +102,7 @@ module MotherBrain
           f.write "# #{name} plugin\n"
           if options[:with_bootstrap]
             f.write <<-PLUGIN
-cluster_bootstrap do
+stack_order do
   bootstrap("#{name}::server")
 end
 

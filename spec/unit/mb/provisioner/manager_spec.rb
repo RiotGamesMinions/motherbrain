@@ -19,6 +19,26 @@ describe MB::Provisioner::Manager do
         }.to raise_error(MB::ProvisionerNotRegistered)
       end
     end
+
+    describe "::new_provisioner" do
+      context ":with option set" do
+        let(:options) { {with: "magic"} }
+
+        it "should choose the 'magic' provisioner" do
+          subject.should_receive(:choose_provisioner).with("magic").and_return(MB::Provisioners.default)
+          subject.new_provisioner(options)
+        end
+      end
+    end
+
+    context ":with option not set" do
+      let(:options) { Hash.new }
+
+      it "should choose the default provisioner" do
+        subject.should_receive(:choose_provisioner).with(nil).and_call_original
+        subject.new_provisioner(options)
+      end
+    end
   end
 
   subject { described_class.new }

@@ -54,31 +54,31 @@ module MotherBrain
       #
       # @raise [EnvironmentNotFound] if the environment does not exist
       #
-      # @return [Job]
+      # @return [Boolean]
       def run
-        job.status = "Starting"
+        job.set_status("Starting")
         job.report_running
 
         assert_environment_exists
 
         chef_synchronize(chef_environment: environment_name, force: options[:force], job: job) do
           if component_versions.any?
-            job.status = "Setting component versions"
+            job.set_status("Setting component versions")
             set_component_versions(environment_name, plugin, component_versions)
           end
 
           if cookbook_versions.any?
-            job.status = "Setting cookbook versions"
+            job.set_status("Setting cookbook versions")
             set_cookbook_versions(environment_name, cookbook_versions)
           end
 
           if environment_attributes.any?
-            job.status = "Setting environment attributes"
+            job.set_status("Setting environment attributes")
             set_environment_attributes(environment_name, environment_attributes)
           end
 
           unless options[:environment_attributes_file].nil?
-            job.status = "Setting environment attributes from file"
+            job.set_status("Setting environment attributes from file")
             set_environment_attributes_from_file(environment_name, options[:environment_attributes_file])
           end
 
@@ -87,10 +87,11 @@ module MotherBrain
           end
         end
 
-        job.status = "Finishing up"
         job.report_success
+        true
       rescue => ex
         job.report_failure(ex)
+        false
       ensure
         job.terminate if job && job.alive?
       end
@@ -123,7 +124,7 @@ module MotherBrain
         def nodes
           return @nodes if @nodes
 
-          job.status = "Looking for nodes"
+          job.set_status("Looking for nodes")
 
           @nodes = plugin.nodes(environment_name).collect { |component, groups|
             groups.collect { |group, nodes|
@@ -140,7 +141,7 @@ module MotherBrain
 
         def run_chef
           log.info "Running Chef on #{nodes}"
-          job.status = "Running Chef on nodes"
+          job.set_status("Running Chef on nodes")
 
           nodes.map { |node|
             node_querier.future.chef_run(node)

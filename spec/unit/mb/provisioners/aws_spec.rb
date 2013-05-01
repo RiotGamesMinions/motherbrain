@@ -98,10 +98,10 @@ describe MB::Provisioners::AWS do
   end
 
   describe "#down" do
-    it "does all the steps" do
-      subject.should_receive(:terminate_instances).and_return(true)
-      subject.should_receive(:delete_environment).and_return(true)
-      subject.down(job, env_name).should eq(true)
+    it "is not implemented" do
+      expect {
+        subject.down
+      }.to raise_error(RuntimeError)
     end
   end
 

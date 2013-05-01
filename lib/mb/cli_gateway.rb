@@ -198,7 +198,7 @@ module MotherBrain
       #
       # @return [Boolean]
       def start_mb_application?(args)
-        args.any? && !SKIP_CONFIG_TASKS.include?(args[0])
+        args.any? && !SKIP_CONFIG_TASKS.include?(args.first)
       end
 
       private
@@ -244,7 +244,7 @@ module MotherBrain
 
       validate_environment
 
-      unless SKIP_CONFIG_TASKS.include?(config[:current_task].try(:name))
+      unless SKIP_CONFIG_TASKS.include?(config[:current_command].try(:name))
         self.class.configure(opts)
       end
     end

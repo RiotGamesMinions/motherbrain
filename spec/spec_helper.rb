@@ -15,6 +15,7 @@ def setup_rspec
 
   RSpec.configure do |config|
     config.include JsonSpec::Helpers
+    config.include MotherBrain::RSpec::Doubles
     config.include MotherBrain::Matchers
     config.include MotherBrain::SpecHelpers
     config.include MotherBrain::Mixin::Services
@@ -25,6 +26,8 @@ def setup_rspec
     config.run_all_when_everything_filtered = true
 
     config.before(:all) do
+      Celluloid.shutdown
+      Celluloid.boot
       MB::Logging.setup(location: '/dev/null')
 
       @config = generate_valid_config

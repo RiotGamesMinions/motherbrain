@@ -68,9 +68,8 @@ module MotherBrain
       #
       # @return [Class, nil]
       def default
-        # TODO: make this better
         _default_id = ENV['MB_DEFAULT_PROVISIONER'] || self.default_id
-        _default_id ? get(_default_id) : nil
+        get!(_default_id) if _default_id
       end
 
       # Clears all of the registered Provisioners.

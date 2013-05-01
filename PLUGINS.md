@@ -187,22 +187,22 @@ action :start do
 end
 ```
 
-# `cluster_bootstrap`
+# `stack_order`
 
-Cluster bootstrap identifies which `component` and `group` are to be bootstrapped when a `mb provision` is run.
+A stack order specifies the order in which a bootstrap or Chef run occurs.
 
 ```ruby
-cluster_bootstrap do
+stack_order do
   bootstrap("webserver::default")
 end
 ```
 
 ## `bootstrap`
 
-Used in a `cluster_bootstrap` block to specify what `component` and `group` should be bootstrapped during a provision
+Used in a `stack_order` block to specify what `component` and `group` should be bootstrapped during a provision
 
 ```ruby
-cluster_bootstrap do
+stack_order do
   bootstrap("webserver::default")
 end
 ```
