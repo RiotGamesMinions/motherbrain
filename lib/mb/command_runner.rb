@@ -1,6 +1,8 @@
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   class CommandRunner
+    include MB::Mixin::Services
+
     # @return [String]
     attr_reader :environment
     # @return [MB::Plugin, MB::Component]
@@ -58,16 +60,20 @@ module MotherBrain
     #
     # @return [Boolean]
     def async?
-      @async
+      !!@async
     end
 
     # Run the block asynchronously.
     def async(&block)
+      @nodes = []
+
       @async = true
       instance_eval(&block)
       @async = false
 
       run
+
+      node_querier.bulk_chef_run job, @nodes
     end
 
     # Run the block specified on the nodes in the groups specified.
@@ -112,15 +118,19 @@ module MotherBrain
       options[:max_concurrent] ||= nodes.count
       node_groups = nodes.each_slice(options[:max_concurrent]).to_a
 
+      run_chef = !async?
+
       @on_procs << lambda do
         node_groups.each do |nodes|
           actions.each do |action|
-            action.run(job, environment, nodes)
+            action.run(job, environment, nodes, run_chef)
           end
         end
       end
 
-      unless async?
+      if async?
+        @nodes |= nodes
+      else
         run
       end
     end
