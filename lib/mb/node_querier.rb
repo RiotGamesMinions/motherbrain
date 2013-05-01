@@ -42,13 +42,15 @@ module MotherBrain
       node_success = 0
       node_failure = 0
 
-      nodes.collect do |node|
+      futures = nodes.map { |node|
         node_querier.future.chef_run(node.public_hostname)
-      end.each do |future|
+      }
+
+      futures.each do |future|
         begin
           future.value
           node_success += 1
-        rescue RemoteCommandError => ex
+        rescue RemoteCommandError
           node_failure += 1
         end
       end
