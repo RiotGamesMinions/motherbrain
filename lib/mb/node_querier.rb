@@ -36,6 +36,8 @@ module MotherBrain
     # @param [Job] job
     # @param [Array(Ridley::NodeResource)] nodes
     #   The collection of nodes to run Chef on
+    #
+    # @raise [RemoteCommandError]
     def bulk_chef_run(job, nodes)
       job.set_status("performing a chef client run on #{nodes.length} nodes")
 
@@ -56,7 +58,7 @@ module MotherBrain
       end
 
       if node_failures > 0
-        raise RemoteCommandError.new("chef client run failed on #{node_failures} node(s)")
+        abort RemoteCommandError.new("chef client run failed on #{node_failures} node(s)")
       else
         job.set_status("finished chef client run on #{node_successes} node(s)")
       end
