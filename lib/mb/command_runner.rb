@@ -60,7 +60,7 @@ module MotherBrain
     #
     # @return [Boolean]
     def async?
-      @async
+      !!@async
     end
 
     # Run the block asynchronously.
