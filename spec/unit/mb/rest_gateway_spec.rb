@@ -4,7 +4,6 @@ describe MB::RestGateway do
   include Rack::Test::Methods
 
   before(:all) { @gateway = MB::RestGateway.new }
-  after(:all) { @gateway.terminate }
 
   let(:app) { @gateway.rack_app }
   subject { @gateway }

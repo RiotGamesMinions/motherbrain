@@ -32,6 +32,38 @@ module MotherBrain
       chef_connection.node.all
     end
 
+    # Run Chef on a group of nodes, and update a job status with the result
+    # @param [Job] job
+    # @param [Array(Ridley::NodeResource)] nodes
+    #   The collection of nodes to run Chef on
+    #
+    # @raise [RemoteCommandError]
+    def bulk_chef_run(job, nodes)
+      job.set_status("performing a chef client run on #{nodes.length} nodes")
+
+      node_successes = 0
+      node_failures = 0
+
+      futures = nodes.map { |node|
+        node_querier.future.chef_run(node.public_hostname)
+      }
+
+      futures.each do |future|
+        begin
+          future.value
+          node_successes += 1
+        rescue RemoteCommandError
+          node_failures += 1
+        end
+      end
+
+      if node_failures > 0
+        abort RemoteCommandError.new("chef client run failed on #{node_failures} node(s)")
+      else
+        job.set_status("finished chef client run on #{node_successes} node(s)")
+      end
+    end
+
     # Return the Chef node_name of the target host. A nil value is returned if a
     # node_name cannot be determined
     #

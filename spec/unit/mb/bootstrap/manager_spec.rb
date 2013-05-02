@@ -19,7 +19,7 @@ describe MB::Bootstrap::Manager do
         group "master"
       end
 
-      cluster_bootstrap do
+      stack_order do
         async do
           bootstrap("activemq::master")
           bootstrap("activemq::slave")
@@ -60,7 +60,7 @@ describe MB::Bootstrap::Manager do
   let(:environment) { "test" }
   let(:server_url) { MB::Application.config.chef.api_url }
   let(:job_stub) do
-    stub(MB::Job, alive?: true)
+    stub(MB::Job, alive?: true, set_status: nil)
   end
 
   before do
@@ -161,6 +161,41 @@ describe MB::Bootstrap::Manager do
   end
 
   describe "#concurrent_bootstrap" do
-    pending
+    let(:concurrent_bootstrap) { manager.concurrent_bootstrap(job_stub, manifest, boot_tasks, options) }
+    let(:boot_tasks) { 
+      double('boot_task', 
+        groups: nil,
+        group_object: group_object_stub)
+    }
+    let(:group_object_stub) { double('group_object', run_list: nil, chef_attributes: nil) }
+    let(:options) { Hash.new }
+    let(:worker_stub) { double('worker', alive?: nil, future: double('future', value: nil)) }
+
+    before do
+      manifest.stub(:hosts_for_groups).and_return("amq1.riotgames.com")
+      MB::Bootstrap::Worker.stub(:new).and_return(worker_stub)
+      options.merge!(run_list: group_object_stub.run_list, attributes: group_object_stub.chef_attributes)
+    end
+
+    context "when there are no nodes in the manifest" do
+      let(:log_stub) { double('log') }
+
+      before do
+        manifest.stub(:hosts_for_groups).and_return(Array.new)
+        subject.stub(:log).and_return(log_stub)
+      end
+
+      it "logs a message that this boot_task will be skipped" do
+        log_stub.should_receive(:info)
+        concurrent_bootstrap
+      end
+    end
+
+    context "when the manifest has no :options" do
+      it "calls :run on the future with options" do
+        worker_stub.should_receive(:future).with(:run, options)
+        concurrent_bootstrap
+      end
+    end
   end
 end

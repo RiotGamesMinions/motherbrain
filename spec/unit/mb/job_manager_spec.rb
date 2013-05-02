@@ -17,7 +17,6 @@ describe MB::JobManager do
   end
 
   before(:each) { @fake_job = fake_job.new }
-  after(:each) { @fake_job.terminate if @fake_job.alive? }
 
   describe "#add" do
     it "adds a job to the active jobs list" do

@@ -21,6 +21,7 @@ describe MB::Provisioner::Manifest do
 
   let(:valid_manifest) {
     {
+      provisioner: "magic",
       options: {
         image_id: "emi-1234ABCD",
         key_name: "mb",
@@ -51,6 +52,7 @@ describe MB::Provisioner::Manifest do
   end
 
   its(:node_count) { should == 4 }
+  its(:provisioner) { should == "magic" }
 
   describe "ClassMethods" do
     subject { described_class }

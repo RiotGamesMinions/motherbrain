@@ -4,6 +4,11 @@ motherbrain is an orchestration framework for Chef. In the same way that you
 would use Chef's Knife command to create a single node, you can use
 motherbrain to create and control an entire application environment.
 
+## Other Documentation
+
+* [Plugin DSL](PLUGINS.md)
+* [Testing with Vagrant](VAGRANT.md)
+
 ## Requirements
 
 * Ruby 1.9.3+
@@ -118,7 +123,7 @@ to any of those bulletpoints. Let's take a look at the plugin our `init`
 command created:
 
 ```rb
-cluster_bootstrap do
+stack_order do
   bootstrap 'app::default'
 end
 
@@ -134,7 +139,7 @@ end
 
 A plugin consists of a few things:
 
-* `cluster_bootstrap` declares the order to bootstrap component groups
+* `stack_order` declares the order to bootstrap component groups
 * `component` creates a namespace for different parts of your application
   * `description` provides a friendly summary of the component
   * `versioned` denotes that this component is versioned with an environment
@@ -188,7 +193,7 @@ the automatically-generated plugin to better fit the architecture for our
 application:
 
 ```rb
-cluster_bootstrap do
+stack_order do
   bootstrap 'app::db'
   bootstrap 'app::web'
 end
@@ -243,12 +248,6 @@ using myface (0.4.1)
 ```
 
 That's it! We now have our application deployed to 2 nodes.
-
-## Developer Info
-
-* To test alternate provisioners, use the MB_DEFAULT_PROVISIONER
-  variable. For instance, run with MB_DEFAULT_PROVISIONER=aws to use
-  the AWS/Eucalyptus provisioner.
 
 # Authors
 

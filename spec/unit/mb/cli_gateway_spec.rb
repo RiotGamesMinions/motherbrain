@@ -247,7 +247,7 @@ describe MB::CliGateway do
     let(:cli_gateway) { described_class.new(args, options, config) }
 
     let(:args) { Array.new }
-    let(:config) { { current_task: double('Config', name: "help") } }
+    let(:config) { { current_command: double('Config', name: "help") } }
     let(:environment_name) { "my_env" }
     let(:options) { { environment: environment_name } }
     let(:environment_manager) { MB::EnvironmentManager.instance.wrapped_object }

@@ -6,6 +6,7 @@ module MotherBrain
     #
     # @example valid manifest structure
     #   {
+    #     "provisioner": "aws",
     #     "options": {
     #       "provisioner_specific_option": "yellow",
     #     },
@@ -116,6 +117,11 @@ module MotherBrain
       # @raise [InvalidProvisionManifest] if the given manifest is not well formed
       def validate!(plugin)
         self.class.validate!(self, plugin)
+      end
+
+      # @return [String] the provisioner token from the manifest
+      def provisioner
+        self[:provisioner]
       end
     end
   end
