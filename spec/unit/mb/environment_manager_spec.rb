@@ -21,14 +21,13 @@ describe MB::EnvironmentManager do
       let(:env_id) { "rspec" }
 
       before(:each) do
-        MB::Application.ridley.stub_chain(:environment, :find!).
-          with(env_id).and_raise(Ridley::Errors::ResourceNotFound)
+        MB::Application.ridley.stub_chain(:environment, :find).
+          with(env_id).and_return(nil)
       end
 
-      it "raises an EnvironmentNotFound error" do
-        expect {
-          subject.find(env_id)
-        }.to raise_error(MB::EnvironmentNotFound)
+      it "aborts an EnvironmentNotFound error" do
+        subject.should_receive(:abort).with( kind_of(MB::EnvironmentNotFound) )
+        subject.find(env_id)
       end
     end
   end

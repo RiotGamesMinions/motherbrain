@@ -195,6 +195,8 @@ module MotherBrain
 
           private
 
+            attr_reader :component
+
             # TODO: Make this public when ActionRunner has a clean room
             def run(job)
               unless @node_attributes.empty?
@@ -227,7 +229,10 @@ module MotherBrain
             end
 
             def set_environment_attributes(job)
-              env = Application.ridley.environment.find(self.environment)
+              unless env = Application.ridley.environment.find(self.environment)
+                raise EnvironmentNotFound.new(self.environment)
+              end
+
               @environment_attributes.each do |attribute|
                 key, value, options = attribute[:key], attribute[:value], attribute[:options]
 
@@ -243,16 +248,12 @@ module MotherBrain
               env.save
             end
 
-            # Set a node level attribute on a single node to the given value.
-            # The key is represented by a dotted path.
+            # Set all node level attributes to the given node
             #
+            # @param [Ridley::Job] job
+            #  a job to send status updates to
             # @param [Ridley::NodeObject] node
             #   the node to set the attribute on
-            # @param [String] key
-            # @param [Object] value
-            #
-            # @option options [Boolean] :toggle
-            #   set this node attribute only for a single chef run
             def set_node_attributes(job, node)
               node.reload
               @node_attributes.each do |attribute|
@@ -268,8 +269,6 @@ module MotherBrain
               job.set_status("Saving node #{node.name}")
               node.save
             end
-
-            attr_reader :component
         end
       end
     end

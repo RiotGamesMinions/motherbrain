@@ -64,25 +64,27 @@ describe MB::Provisioners::AWS do
 
   let(:aws_nodes) do
     1.upto(3).collect do |n|
-      Ridley::NodeResource.new(:client,
-                               name: "awsnode#{n}",
-                               automatic: {
-                                 ec2: {
-                                   instance_id: "i-ABCDEFG#{n}"
-                                 }
-                               })
+      Ridley::NodeObject.new(double('resource'),
+        name: "awsnode#{n}",
+        automatic: {
+          ec2: {
+            instance_id: "i-ABCDEFG#{n}"
+          }
+        }
+      )
     end
   end
 
   let(:euca_nodes) do
     1.upto(3).collect do |n|
-      Ridley::NodeResource.new(:client,
-                               name: "eucanode#{n}",
-                               automatic: {
-                                 eucalyptus: {
-                                   instance_id: "i-EBCDEFG#{n}"
-                                 }
-                               })
+      Ridley::NodeObject.new(double('resource'),
+        name: "eucanode#{n}",
+        automatic: {
+          eucalyptus: {
+            instance_id: "i-EBCDEFG#{n}"
+          }
+        }
+      )
     end
   end
 

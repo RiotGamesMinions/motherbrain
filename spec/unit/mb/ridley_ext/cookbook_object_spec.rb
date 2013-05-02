@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Ridley::CookbookResource do
+describe Ridley::CookbookObject do
   let(:client) { double('client') }
 
   describe "#has_motherbrain_plugin?" do
