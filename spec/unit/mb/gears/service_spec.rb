@@ -111,7 +111,7 @@ describe MB::Gear::Service do
         end
       end
 
-      let(:runner) { double('action_runner', reset: true) }
+      let(:runner) { double('action_runner', reset: nil, run: nil) }
       let(:key) { "some.attr" }
       let(:value) { "val" }
       let(:chef_success) { double('success-response', error?: false) }
@@ -129,6 +129,12 @@ describe MB::Gear::Service do
           and_return(chef_success)
 
         subject.run(job, environment, nodes)
+      end
+
+      it "resets the ActionRunner" do
+        runner.should_receive(:reset)
+
+        subject.run(job, environment, [])
       end
 
       context "when an environment attribute is specified" do

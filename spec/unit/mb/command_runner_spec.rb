@@ -122,9 +122,9 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(job, environment, [node_1], true)
-        action.should_receive(:run).with(job, environment, [node_2], true)
-        action.should_receive(:run).with(job, environment, [node_3], true)
+        action.should_receive(:run).with(job, environment, [node_1], true).exactly(2).times
+        action.should_receive(:run).with(job, environment, [node_2], true).exactly(2).times
+        action.should_receive(:run).with(job, environment, [node_3], true).exactly(1).times
       end
 
       command_block = Proc.new do
