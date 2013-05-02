@@ -249,12 +249,6 @@ using myface (0.4.1)
 
 That's it! We now have our application deployed to 2 nodes.
 
-## Developer Info
-
-* To test alternate provisioners, use the MB_DEFAULT_PROVISIONER
-  variable. For instance, run with MB_DEFAULT_PROVISIONER=aws to use
-  the AWS/Eucalyptus provisioner.
-
 # Authors
 
 * Jamie Winsor (<reset@riotgames.com>)

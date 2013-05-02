@@ -1,3 +1,17 @@
+# 0.5.3
+
+* Only one Chef run will execute during an async command instead of one per action on each node
+* `cluster_bootstrapper` renamed to `stack_order`
+* Fix `configure` command: no longer need a config file to make a config file
+* Add ssh verbose configuration option
+* Allow provisioner selection in provisioner manifest
+* Lock to stable version of Celluloid to fix SEGFAULT in REST Gateway
+* Fixes to AWS provisioner
+
+# 0.5.2
+
+* Hotfix: lock to stable version of Ridley
+
 # 0.5.1
 
 * Explicit lock to stable version of Ridley

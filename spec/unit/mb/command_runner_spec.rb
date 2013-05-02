@@ -8,16 +8,16 @@ describe MB::CommandRunner do
 
   let(:actions) { [ action_1, action_2 ] }
 
-  let(:node_1) { double('node_1', name: 'reset.riotgames.com') }
-  let(:node_2) { double('node_2', name: 'jwinsor.riotgames.com') }
-  let(:node_3) { double('node_3', name: 'jwinsor.riotgames.com') }
+  let(:node_1) { double('node_1', name: 'a.riotgames.com', public_hostname: 'a.riotgames.com') }
+  let(:node_2) { double('node_2', name: 'b.riotgames.com', public_hostname: 'b.riotgames.com') }
+  let(:node_3) { double('node_3', name: 'c.riotgames.com', public_hostname: 'c.riotgames.com') }
   let(:nodes) { [ node_1, node_2, node_3 ] }
 
   let(:master_group) { double('master_group', nodes: [ node_1, node_2 ]) }
   let(:slave_group) { double('slave_group', nodes: [ node_3 ]) }
 
   let(:environment) { "rspec-test" }
-  let(:job) { double('job') }
+  let(:job) { double('job', set_status: nil) }
 
   subject { MB::CommandRunner }
 
@@ -38,7 +38,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(job, environment, master_group.nodes)
+        action.should_receive(:run).with(job, environment, master_group.nodes, true)
       end
 
       command_block = Proc.new do
@@ -55,7 +55,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(job, environment, nodes)
+        action.should_receive(:run).with(job, environment, nodes, true)
       end
 
       command_block = Proc.new do
@@ -72,7 +72,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(job, environment, [anything()]).exactly(3).times
+        action.should_receive(:run).with(job, environment, [anything()], true).exactly(3).times
       end
 
       command_block = Proc.new do
@@ -88,7 +88,7 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(job, environment, [anything()])
+        action.should_receive(:run).with(job, environment, [anything()], true)
       end
 
       command_block = Proc.new do
@@ -104,8 +104,8 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("master_group").and_return(master_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(job, environment, [node_1])
-        action.should_receive(:run).with(job, environment, [node_2])
+        action.should_receive(:run).with(job, environment, [node_1], true)
+        action.should_receive(:run).with(job, environment, [node_2], true)
       end
 
       command_block = Proc.new do
@@ -122,9 +122,9 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       actions.each do |action|
-        action.should_receive(:run).with(job, environment, [node_1])
-        action.should_receive(:run).with(job, environment, [node_2])
-        action.should_receive(:run).with(job, environment, [node_3])
+        action.should_receive(:run).with(job, environment, [node_1], true).exactly(2).times
+        action.should_receive(:run).with(job, environment, [node_2], true).exactly(2).times
+        action.should_receive(:run).with(job, environment, [node_3], true).exactly(1).times
       end
 
       command_block = Proc.new do
@@ -147,6 +147,8 @@ describe MB::CommandRunner do
       scope.should_receive(:group!).with("slave_group").and_return(slave_group)
 
       subject.any_instance.should_receive(:run).exactly(1).times
+
+      node_querier.should_receive(:bulk_chef_run)
 
       command_block = Proc.new do
         async do

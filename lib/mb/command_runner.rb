@@ -1,6 +1,8 @@
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   class CommandRunner
+    include MB::Mixin::Services
+
     # @return [String]
     attr_reader :environment
     # @return [MB::Plugin, MB::Component]
@@ -41,33 +43,37 @@ module MotherBrain
 
     # Run the stored procs created by on() that have not been ran yet.
     def run
-      threads = []
-
+      # TODO: This needs to happen in parallel but can't due to the way running multiple
+      # actions on a single node works. Actions work on a node and don't know about other
+      # actions which are being run on that node, so in a single node environment the
+      # state of a node can get weird when actions stomp all over each other.
+      #
+      # We should refactor this to APPLY actions to nodes and then allow them to converge
+      # together before we run them. This will allow us to execute multiple actions on a node at once
+      # without getting weird race conditions.
       @on_procs.each do |on_proc|
-        threads << Thread.new(on_proc) do |on_proc|
-          on_proc.call
-        end
+        on_proc.call
       end
-
-      threads.each(&:join)
-
-      @on_procs = []
     end
 
     # Are we inside an async block?
     #
     # @return [Boolean]
     def async?
-      @async
+      !!@async
     end
 
     # Run the block asynchronously.
     def async(&block)
+      @nodes = []
+
       @async = true
       instance_eval(&block)
       @async = false
 
       run
+
+      node_querier.bulk_chef_run job, @nodes
     end
 
     # Run the block specified on the nodes in the groups specified.
@@ -112,15 +118,19 @@ module MotherBrain
       options[:max_concurrent] ||= nodes.count
       node_groups = nodes.each_slice(options[:max_concurrent]).to_a
 
-      @on_procs << lambda do
+      run_chef = !async?
+
+      @on_procs << -> {
         node_groups.each do |nodes|
           actions.each do |action|
-            action.run(job, environment, nodes)
+            action.run(job, environment, nodes, run_chef)
           end
         end
-      end
+      }
 
-      unless async?
+      if async?
+        @nodes |= nodes
+      else
         run
       end
     end
