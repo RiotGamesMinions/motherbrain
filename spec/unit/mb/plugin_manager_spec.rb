@@ -124,7 +124,7 @@ describe MotherBrain::PluginManager do
     let(:name) { "nginx" }
     let(:version) { "1.2.0" }
     let(:resource) do
-      Ridley::CookbookResource.new(double('client'))
+      Ridley::CookbookObject.new(double('client'))
     end
 
     before(:each) do

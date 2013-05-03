@@ -157,7 +157,7 @@ module MotherBrain
         return nil
       end
 
-      status, response = chef_connection.node.put_secret(host, options[:secret])
+      status, response = chef_connection.node.put_secret(host)
 
       case status
       when :ok

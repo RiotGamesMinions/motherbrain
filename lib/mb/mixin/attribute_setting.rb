@@ -19,6 +19,8 @@ module MotherBrain
       # @param [Hash] component_versions
       #   Hash of components and the versions to set them to
       #
+      # @raise [MB::EnvironmentNotFound] if the environment does not exist
+      #
       # @example setting the versions of multiple components on an environment
       #
       #   set_component_versions("test-environment",
@@ -36,7 +38,10 @@ module MotherBrain
         log.info "Setting component versions #{component_versions}"
 
         chef_connection.sync do
-          env = environment.find!(env_id)
+          unless env = environment.find(env_id)
+            raise EnvironmentNotFound.new(env_id)
+          end
+
           env.override_attributes.merge!(override_attributes)
           env.save
         end
@@ -50,6 +55,8 @@ module MotherBrain
       # @param [Hash] cookbook_versions
       #   Hash of cookbooks and the versions to set them to
       #
+      # @raise [MB::EnvironmentNotFound] if the environment does not exist
+      #
       # @example setting cookbook versions on an environment
       #
       #   set_cookbook_versions("test-environment",
@@ -61,11 +68,13 @@ module MotherBrain
       def set_cookbook_versions(env_id, cookbook_versions)
         cookbook_versions = expand_constraints(expand_latest_versions(cookbook_versions))
         satisfies_constraints?(cookbook_versions)
-
         log.info "Setting cookbook versions #{cookbook_versions}"
 
         chef_connection.sync do
-          env = environment.find!(env_id)
+          unless env = environment.find(env_id)
+            raise EnvironmentNotFound.new(env_id)
+          end
+
           env.cookbook_versions.merge!(cookbook_versions)
           env.save
         end
@@ -104,6 +113,8 @@ module MotherBrain
       # @param [Hash] new_attributes
       #   Hash of attributes to set on the environment
       #
+      # @raise [MB::EnvironmentNotFound] if the environment does not exist
+      #
       # @example setting multiple attributes on an environment
       #
       #   set_environment_attributes_from_hash("test-environment",
@@ -116,7 +127,10 @@ module MotherBrain
         log.info "Setting environment attributes: #{new_attributes}"
 
         chef_connection.sync do
-          env = environment.find!(env_id)
+          unless env = environment.find(env_id)
+            raise EnvironmentNotFound.new(env_id)
+          end
+
           env.override_attributes.deep_merge!(new_attributes)
           env.save
         end

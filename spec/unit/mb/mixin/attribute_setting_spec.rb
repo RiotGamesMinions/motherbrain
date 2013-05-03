@@ -49,11 +49,11 @@ describe MB::Mixin::AttributeSetting do
       let(:hash) { Hash.new }
       before(:each) do
         env = double('environment', name: "foo")
-        Ridley::EnvironmentResource.stub(:find!).and_return(env)
+        chef_connection = subject.chef_connection
+        chef_connection.stub_chain(:environment, :find).and_return(env)
+        chef_connection.stub_chain(:cookbook, :latest_version).and_return("1.2.4")
         env.should_receive(:cookbook_versions).and_return(hash)
         env.stub(:save)
-
-        Ridley::CookbookResource.stub(:latest_version).and_return("1.2.4")
       end
 
       it "saves the cookbook versions to the environment" do
@@ -78,7 +78,8 @@ describe MB::Mixin::AttributeSetting do
 
       before(:each) do
         subject.stub(:expand_latest_versions) { constraints }
-        Ridley::EnvironmentResource.stub(:find!).and_return(env)
+        chef_connection = subject.chef_connection
+        chef_connection.stub_chain(:environment, :find).and_return(env)
         env.stub(:save)
       end
 
@@ -112,7 +113,8 @@ describe MB::Mixin::AttributeSetting do
       let(:hash) { Hash.new }
       before(:each) do
         env = double('environment', name: "foo")
-        Ridley::EnvironmentResource.stub(:find!).and_return(env)
+        chef_connection = subject.chef_connection
+        chef_connection.stub_chain(:environment, :find).and_return(env)
         env.should_receive(:override_attributes).and_return(hash)
         env.stub(:save)
       end

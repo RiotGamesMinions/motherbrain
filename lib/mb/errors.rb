@@ -283,21 +283,6 @@ module MotherBrain
     end
   end
 
-  class EnvironmentNotFound < MBError
-    exit_code(12)
-    error_code(3008)
-
-    attr_reader :name
-
-    def initialize(name)
-      @name = name
-    end
-
-    def message
-      "An environment named '#{name}' could not be found"
-    end
-  end
-
   class InvalidConfig < MBError
     exit_code(13)
     error_code(3009)
@@ -450,6 +435,71 @@ module MotherBrain
 
     def message
       "Expected '#{expected}' nodes to be provisioned but got: '#{got}'"
+    end
+  end
+
+  # Chef errors
+  class ChefError < MBError
+    exit_code(26)
+    error_code(9000)
+  end
+
+  class NodeNotFound < ChefError
+    error_code(9001)
+
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def message
+      "A node named '#{name}' could not be found on the Chef server"
+    end
+  end
+
+  class EnvironmentNotFound < MBError
+    exit_code(12)
+    error_code(9002)
+
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def message
+      "An environment named '#{name}' could not be found"
+    end
+  end
+
+  class DataBagNotFound < ChefError
+    error_code(9003)
+
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def message
+      "A Data Bag named '#{name}' could not be found"
+    end
+  end
+
+  class DataBagItemNotFound < ChefError
+    error_code(9004)
+
+    attr_reader :data_bag_name
+    attr_reader :item_name
+
+    def initialize(data_bag_name, item_name)
+      @data_bag_name = data_bag_name
+      @item_name     = item_name
+    end
+
+    def message
+      "An item named '#{item_name}' was not found in the '#{data_bag_name}' data bag."
     end
   end
 end
