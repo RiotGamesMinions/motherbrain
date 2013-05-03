@@ -12,6 +12,8 @@ metadata.version = Solve::Version.new("1.0.0")
 
 plugin = MB::Plugin.new(metadata)
 
+plugin.bootstrap_routine = MB::Bootstrap::Routine.new(plugin)
+
 class MB::CliGateway
   def self.basename
     "mb"
@@ -23,12 +25,14 @@ def subcmd.basename
   "mb $plugin"
 end
 
-# MB::CliGateway.commands.each do |command|
-#   shell.say "======== #{command[0]} ========"
-#   MB::CliGateway.command_help shell, command[0]
-# end
+MB::CliGateway.commands.each do |command|
+  shell.say
+  shell.say "======== #{command[0]} ========"
+  MB::CliGateway.command_help shell, command[0]
+end
 
 subcmd.commands.each do |command|
+  shell.say
   shell.say "======== $plugin #{command[0]} ========"
   subcmd.command_help shell, command[0]
 end
