@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+$:.push File.expand_path("../../lib", __FILE__)
+require 'motherbrain'
+
+#MB::CliGateway.help(Thor::Shell::Basic.new)
+
+shell = Thor::Shell::Basic.new
+
+metadata = MB::CookbookMetadata.new
+metadata.name = "plugin"
+metadata.version = Solve::Version.new("1.0.0")
+
+plugin = MB::Plugin.new(metadata)
+
+class MB::CliGateway
+  def self.basename
+    "mb"
+  end
+end
+
+subcmd = MB::Cli::SubCommand::Plugin.fabricate(plugin)
+def subcmd.basename
+  "mb $plugin"
+end
+
+# MB::CliGateway.commands.each do |command|
+#   shell.say "======== #{command[0]} ========"
+#   MB::CliGateway.command_help shell, command[0]
+# end
+
+subcmd.commands.each do |command|
+  shell.say "======== $plugin #{command[0]} ========"
+  subcmd.command_help shell, command[0]
+end
+
