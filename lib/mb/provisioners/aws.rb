@@ -87,6 +87,32 @@ module MotherBrain
           end
         end
 
+        # @param [Hash] manifest_options
+        #   accesses ssh.user key from the hash
+        #
+        # @raise [MB::InvalidProvisionManifest]
+        #   if keys cannot be found
+        #
+        # @return [Array]
+        def ssh_username(manifest_options)
+          manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:user]
+          config_ssh = Application.config[:ssh] && Application.config[:ssh][:user]
+          manifest_ssh || config_ssh || abort(InvalidProvisionManifest.new("Manifest or configuration needs an `ssh` hash with a `user` key."))
+        end
+
+        # @param [Hash] manifest_options
+        #   accesses ssh.keys key from the hash
+        #
+        # @raise [MB::InvalidProvisionManifest]
+        #   if keys cannot be found
+        #
+        # @return [Array]
+        def ssh_keys(manifest_options)
+          manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:keys]
+          config_ssh = Application.config[:ssh] && Application.config[:ssh][:keys]
+          manifest_ssh || config_ssh || abort(InvalidProvisionManifest.new("Manifest or configuration needs an `ssh` hash with a `keys` array."))
+        end
+
         # Find an appropriate AWS/Euca endpoint
         # Will look in manifest (if provided), and common environment
         # variables used by AWS and Euca tools
@@ -233,32 +259,6 @@ module MotherBrain
             sleep 10
           end
           verify_instances(job, fog, instances, tries-1)
-        end
-
-        # @param [Hash] manifest_options
-        #   accesses ssh.user key from the hash
-        #
-        # @raise [MB::InvalidProvisionManifest]
-        #   if keys cannot be found
-        #
-        # @return [Array]
-        def ssh_username(manifest_options)
-          manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:user]
-          config_ssh = Application.config[:ssh] && Application.config[:ssh][:user]
-          manifest_ssh || config_ssh || abort(InvalidProvisionManifest.new("Manifest or configuration needs an `ssh` hash with a `user` key."))
-        end
-
-        # @param [Hash] manifest_options
-        #   accesses ssh.keys key from the hash
-        #
-        # @raise [MB::InvalidProvisionManifest]
-        #   if keys cannot be found
-        #
-        # @return [Array]
-        def ssh_keys(manifest_options)
-          manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:keys]
-          config_ssh = Application.config[:ssh] && Application.config[:ssh][:keys]
-          manifest_ssh || config_ssh || abort(InvalidProvisionManifest.new("Manifest or configuration needs an `ssh` hash with a `keys` array."))
         end
 
         # @param [Job] job
