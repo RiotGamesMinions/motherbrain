@@ -123,7 +123,7 @@ module MotherBrain
       end
 
       if options[:any]
-        nodes = nodes.first(options[:any])
+        nodes = nodes.sample(options[:any])
       end
 
       options[:max_concurrent] ||= nodes.count
