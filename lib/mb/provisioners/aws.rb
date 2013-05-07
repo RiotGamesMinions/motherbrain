@@ -229,6 +229,18 @@ module MotherBrain
           verify_instances(job, fog, instances, tries-1)
         end
 
+        def ssh_username(manifest_options)
+          manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:user]
+          config_ssh = Application.config[:ssh] && Application.config[:ssh][:user]
+          manifest_ssh || config_ssh || abort(InvalidProvisionManifest.new("Manifest or configuration needs an `ssh` hash with a `user` key."))
+        end
+
+        def ssh_keys(manifest_options)
+          manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:keys]
+          config_ssh = Application.config[:ssh] && Application.config[:ssh][:keys]
+          manifest_ssh || config_ssh || abort(InvalidProvisionManifest.new("Manifest or configuration needs an `ssh` hash with a `keys` array."))
+        end
+
         # @param [Job] job
         # @param [AWS::Compute] fog
         # @param [Hash] instances
