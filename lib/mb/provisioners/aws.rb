@@ -49,6 +49,9 @@ module MotherBrain
         #
         # @param [Provisioner::Manifest] manifest
         #
+        # @raise [MB::InvalidProvisionManifest]
+        #   if keys cannot be found
+        #
         # @return [String]
         def access_key(manifest = nil)
           if manifest && manifest.options[:access_key]
@@ -67,6 +70,9 @@ module MotherBrain
         # variables used by AWS and Euca tools
         #
         # @param [Provisioner::Manifest] manifest
+        #
+        # @raise [MB::InvalidProvisionManifest]
+        #   if keys cannot be found
         #
         # @return [String]
         def secret_key(manifest = nil)
@@ -231,6 +237,10 @@ module MotherBrain
 
         # @param [Hash] manifest_options
         #   accesses ssh.user key from the hash
+        #
+        # @raise [MB::InvalidProvisionManifest]
+        #   if keys cannot be found
+        #
         # @return [Array]
         def ssh_username(manifest_options)
           manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:user]
@@ -240,6 +250,10 @@ module MotherBrain
 
         # @param [Hash] manifest_options
         #   accesses ssh.keys key from the hash
+        #
+        # @raise [MB::InvalidProvisionManifest]
+        #   if keys cannot be found
+        #
         # @return [Array]
         def ssh_keys(manifest_options)
           manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:keys]
