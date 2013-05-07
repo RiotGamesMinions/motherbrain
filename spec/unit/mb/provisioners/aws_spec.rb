@@ -125,15 +125,15 @@ describe MB::Provisioners::AWS do
         end
 
         it "should error on access_key" do
-          expect(lambda { subject.access_key(manifest) }).to raise_error(MB::InvalidProvisionManifest)
+          expect { subject.access_key(manifest) }.to raise_error(MB::InvalidProvisionManifest)
         end
 
         it "should error on secret_key" do
-          expect(lambda { subject.secret_key(manifest) }).to raise_error(MB::InvalidProvisionManifest)
+          expect { subject.secret_key(manifest) }.to raise_error(MB::InvalidProvisionManifest)
         end
 
         it "should error on endpoint" do
-          expect(lambda { subject.secret_key(manifest) }).to raise_error(MB::InvalidProvisionManifest)
+          expect { subject.secret_key(manifest) }.to raise_error(MB::InvalidProvisionManifest)
         end
 
         context "with Euca environment variables" do
@@ -182,34 +182,34 @@ describe MB::Provisioners::AWS do
 
         it "does not raise when SecurityGroups is not set" do
           manifest[:options].delete :security_groups
-          expect(lambda { subject.validate_manifest_options(job,manifest).should eq(true) }).not_to raise_error(MB::InvalidProvisionManifest)
+          expect { subject.validate_manifest_options(job,manifest).should eq(true) }.not_to raise_error(MB::InvalidProvisionManifest)
         end
       end
 
       context "with an invalid options hash in the manifest" do
         it "raises on no options" do
           manifest.delete :options
-          expect(lambda { subject.validate_manifest_options(job,manifest).should eq(true) }).to raise_error(MB::InvalidProvisionManifest)
+          expect { subject.validate_manifest_options(job,manifest).should eq(true) }.to raise_error(MB::InvalidProvisionManifest)
         end
 
         it "raises on no ImageId" do
           manifest[:options].delete :image_id
-          expect(lambda { subject.validate_manifest_options(job,manifest).should eq(true) }).to raise_error(MB::InvalidProvisionManifest)
+          expect { subject.validate_manifest_options(job,manifest).should eq(true) }.to raise_error(MB::InvalidProvisionManifest)
         end
 
         it "raises on no KeyName" do
           manifest[:options].delete :key_name
-          expect(lambda { subject.validate_manifest_options(job,manifest).should eq(true) }).to raise_error(MB::InvalidProvisionManifest)
+          expect { subject.validate_manifest_options(job,manifest).should eq(true) }.to raise_error(MB::InvalidProvisionManifest)
         end
 
         it "raises on no AvailabilityZone" do
           manifest[:options].delete :availability_zone
-          expect(lambda { subject.validate_manifest_options(job,manifest).should eq(true) }).to raise_error(MB::InvalidProvisionManifest)
+          expect { subject.validate_manifest_options(job,manifest).should eq(true) }.to raise_error(MB::InvalidProvisionManifest)
         end
 
         it "raises on SecurityGroups not being an array" do
           manifest[:options][:security_groups] = :fleeble
-          expect(lambda { subject.validate_manifest_options(job,manifest).should eq(true) }).to raise_error(MB::InvalidProvisionManifest)
+          expect { subject.validate_manifest_options(job,manifest).should eq(true) }.to raise_error(MB::InvalidProvisionManifest)
         end
       end
     end
