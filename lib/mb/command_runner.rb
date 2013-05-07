@@ -33,7 +33,7 @@ module MotherBrain
       @on_procs    = []
       @async       = false
 
-      if args.any?
+      if execute.arity.nonzero?
         curried_execute = proc { execute.call(*args) }
         instance_eval(&curried_execute)
       else
