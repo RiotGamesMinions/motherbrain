@@ -56,12 +56,10 @@ class Default < Thor
 
   desc "manpage", "Re-generate the man pages"
   def manpage
-    require './man/man_helper'
+    require MB.app_root.join('man', 'man_helper')
     say "Generating man page ronn source"
     MB::ManHelper.generate('man/mb.1.ronn.erb', 'man/mb.1.ronn')
     run "ronn man/mb.1.ronn"
-    run "git add man/mb.1 man/mb.1.html"
-    run "git commit -m 'man page update'"
   end
 
   class Cucumber < Thor

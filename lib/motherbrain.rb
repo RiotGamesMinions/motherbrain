@@ -161,4 +161,3 @@ if MB.testing?
 else
   class MB::Test ; end # Make the constant exist
 end
-
