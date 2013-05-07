@@ -75,18 +75,18 @@
 
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
-<p><code>mb</code> configure<br />
-<code>mb</code> configure_environment MANIFEST<br />
-<code>mb</code> init [PATH]<br />
-<code>mb</code> plugins<br />
-<code>mb</code> destroy<br />
-<code>mb</code> version<br />
-<code>mb</code> lock<br />
-<code>mb</code> unlock<br />
-<code>mb</code> <code>&lt;plugin></code> nodes<br />
-<code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST<br />
-<code>mb</code> <code>&lt;plugin></code> provision MANIFEST<br />
-<code>mb</code> <code>&lt;plugin></code> upgrade<br />
+<p><code>mb</code> mother_brain:cli_gateway:configure<br />
+<code>mb</code> mother_brain:cli_gateway:configure_environment MANIFEST<br />
+<code>mb</code> mother_brain:cli_gateway:init [PATH]<br />
+<code>mb</code> mother_brain:cli_gateway:plugins<br />
+<code>mb</code> mother_brain:cli_gateway:destroy<br />
+<code>mb</code> mother_brain:cli_gateway:version<br />
+<code>mb</code> mother_brain:cli_gateway:lock<br />
+<code>mb</code> mother_brain:cli_gateway:unlock<br />
+<code>mb</code> <code>&lt;plugin></code> plugin:nodes<br />
+<code>mb</code> <code>&lt;plugin></code> plugin:bootstrap MANIFEST<br />
+<code>mb</code> <code>&lt;plugin></code> plugin:provision MANIFEST<br />
+<code>mb</code> <code>&lt;plugin></code> plugin:upgrade<br />
 <code>mb</code> <code>&lt;plugin></code> <code>&lt;component></code> <code>&lt;command></code><br /></p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
@@ -127,7 +127,7 @@ Chef environment</dt><dd><p></p></dd>
 <h2 id="COMMANDS">COMMANDS</h2>
 
 <ul>
-<li><p><code>mb</code> configure:<br />
+<li><p><code>mb</code> mother_brain:cli_gateway:configure:<br />
 create a new configuration file based on a set of interactive questions</p>
 
 <ul>
@@ -135,7 +135,7 @@ create a new configuration file based on a set of interactive questions</p>
 create a new configuration file even if one already exists.<br /></li>
 </ul>
 </li>
-<li><p><code>mb</code> configure_environment MANIFEST:<br />
+<li><p><code>mb</code> mother_brain:cli_gateway:configure_environment MANIFEST:<br />
 configure a Chef environment</p>
 
 <ul>
@@ -143,9 +143,9 @@ configure a Chef environment</p>
 perform the configuration even if the environment is locked<br /></li>
 </ul>
 </li>
-<li><p><code>mb</code> init [PATH]:<br />
+<li><p><code>mb</code> mother_brain:cli_gateway:init [PATH]:<br />
 Create a MotherBrain plugin for the current cookbook</p></li>
-<li><p><code>mb</code> plugins:<br />
+<li><p><code>mb</code> mother_brain:cli_gateway:plugins:<br />
 Display all installed plugins and versions</p>
 
 <ul>
@@ -153,7 +153,7 @@ Display all installed plugins and versions</p>
 search the remote Chef server and include plugins from the results<br /></li>
 </ul>
 </li>
-<li><p><code>mb</code> destroy:<br />
+<li><p><code>mb</code> mother_brain:cli_gateway:destroy:<br />
 Destroy a provisioned environment</p>
 
 <ul>
@@ -167,15 +167,15 @@ Should we verify SSL connections?<br /></li>
 Don't confirm, just destroy the environment<br /></li>
 </ul>
 </li>
-<li><p><code>mb</code> version:<br />
+<li><p><code>mb</code> mother_brain:cli_gateway:version:<br />
 Display version and license information</p></li>
-<li><p><code>mb</code> lock:<br />
+<li><p><code>mb</code> mother_brain:cli_gateway:lock:<br />
 Lock an environment</p></li>
-<li><p><code>mb</code> unlock:<br />
+<li><p><code>mb</code> mother_brain:cli_gateway:unlock:<br />
 Unlock an environment</p></li>
-<li><p><code>mb</code> <code>&lt;plugin></code> nodes:<br />
+<li><p><code>mb</code> <code>&lt;plugin></code> plugin:nodes:<br />
 List all nodes grouped by Component and Group</p></li>
-<li><p><code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST:<br />
+<li><p><code>mb</code> <code>&lt;plugin></code> plugin:bootstrap MANIFEST:<br />
 Bootstrap a manifest of node groups</p>
 
 <ul>
@@ -195,7 +195,7 @@ Path to bootstrap template (ERB)<br /></li>
 Perform bootstrap even if the environment is locked<br /></li>
 </ul>
 </li>
-<li><p><code>mb</code> <code>&lt;plugin></code> provision MANIFEST:<br />
+<li><p><code>mb</code> <code>&lt;plugin></code> plugin:provision MANIFEST:<br />
 Create a cluster of nodes and add them to a Chef environment</p>
 
 <ul>
@@ -217,7 +217,7 @@ Path to bootstrap template (ERB)<br /></li>
 Perform bootstrap even if the environment is locked<br /></li>
 </ul>
 </li>
-<li><p><code>mb</code> <code>&lt;plugin></code> upgrade:<br />
+<li><p><code>mb</code> <code>&lt;plugin></code> plugin:upgrade:<br />
 Upgrade an environment to the specified versions</p>
 
 <ul>

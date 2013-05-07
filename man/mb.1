@@ -7,40 +7,40 @@
 \fBmb\fR \- command and control clusters of machines with Chef
 .
 .SH "SYNOPSIS"
-\fBmb\fR configure
+\fBmb\fR mother_brain:cli_gateway:configure
 .
 .br
-\fBmb\fR configure_environment MANIFEST
+\fBmb\fR mother_brain:cli_gateway:configure_environment MANIFEST
 .
 .br
-\fBmb\fR init [PATH]
+\fBmb\fR mother_brain:cli_gateway:init [PATH]
 .
 .br
-\fBmb\fR plugins
+\fBmb\fR mother_brain:cli_gateway:plugins
 .
 .br
-\fBmb\fR destroy
+\fBmb\fR mother_brain:cli_gateway:destroy
 .
 .br
-\fBmb\fR version
+\fBmb\fR mother_brain:cli_gateway:version
 .
 .br
-\fBmb\fR lock
+\fBmb\fR mother_brain:cli_gateway:lock
 .
 .br
-\fBmb\fR unlock
+\fBmb\fR mother_brain:cli_gateway:unlock
 .
 .br
-\fBmb\fR \fB<plugin>\fR nodes
+\fBmb\fR \fB<plugin>\fR plugin:nodes
 .
 .br
-\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST
+\fBmb\fR \fB<plugin>\fR plugin:bootstrap MANIFEST
 .
 .br
-\fBmb\fR \fB<plugin>\fR provision MANIFEST
+\fBmb\fR \fB<plugin>\fR plugin:provision MANIFEST
 .
 .br
-\fBmb\fR \fB<plugin>\fR upgrade
+\fBmb\fR \fB<plugin>\fR plugin:upgrade
 .
 .br
 \fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR
@@ -104,7 +104,7 @@ Chef environment
 .SH "COMMANDS"
 .
 .IP "\(bu" 4
-\fBmb\fR configure:
+\fBmb\fR mother_brain:cli_gateway:configure:
 .
 .br
 create a new configuration file based on a set of interactive questions
@@ -122,7 +122,7 @@ create a new configuration file even if one already exists\.
 
 .
 .IP "\(bu" 4
-\fBmb\fR configure_environment MANIFEST:
+\fBmb\fR mother_brain:cli_gateway:configure_environment MANIFEST:
 .
 .br
 configure a Chef environment
@@ -140,13 +140,13 @@ perform the configuration even if the environment is locked
 
 .
 .IP "\(bu" 4
-\fBmb\fR init [PATH]:
+\fBmb\fR mother_brain:cli_gateway:init [PATH]:
 .
 .br
 Create a MotherBrain plugin for the current cookbook
 .
 .IP "\(bu" 4
-\fBmb\fR plugins:
+\fBmb\fR mother_brain:cli_gateway:plugins:
 .
 .br
 Display all installed plugins and versions
@@ -164,7 +164,7 @@ search the remote Chef server and include plugins from the results
 
 .
 .IP "\(bu" 4
-\fBmb\fR destroy:
+\fBmb\fR mother_brain:cli_gateway:destroy:
 .
 .br
 Destroy a provisioned environment
@@ -209,31 +209,31 @@ Don\'t confirm, just destroy the environment
 
 .
 .IP "\(bu" 4
-\fBmb\fR version:
+\fBmb\fR mother_brain:cli_gateway:version:
 .
 .br
 Display version and license information
 .
 .IP "\(bu" 4
-\fBmb\fR lock:
+\fBmb\fR mother_brain:cli_gateway:lock:
 .
 .br
 Lock an environment
 .
 .IP "\(bu" 4
-\fBmb\fR unlock:
+\fBmb\fR mother_brain:cli_gateway:unlock:
 .
 .br
 Unlock an environment
 .
 .IP "\(bu" 4
-\fBmb\fR \fB<plugin>\fR nodes:
+\fBmb\fR \fB<plugin>\fR plugin:nodes:
 .
 .br
 List all nodes grouped by Component and Group
 .
 .IP "\(bu" 4
-\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST:
+\fBmb\fR \fB<plugin>\fR plugin:bootstrap MANIFEST:
 .
 .br
 Bootstrap a manifest of node groups
@@ -305,7 +305,7 @@ Perform bootstrap even if the environment is locked
 
 .
 .IP "\(bu" 4
-\fBmb\fR \fB<plugin>\fR provision MANIFEST:
+\fBmb\fR \fB<plugin>\fR plugin:provision MANIFEST:
 .
 .br
 Create a cluster of nodes and add them to a Chef environment
@@ -386,7 +386,7 @@ Perform bootstrap even if the environment is locked
 
 .
 .IP "\(bu" 4
-\fBmb\fR \fB<plugin>\fR upgrade:
+\fBmb\fR \fB<plugin>\fR plugin:upgrade:
 .
 .br
 Upgrade an environment to the specified versions
