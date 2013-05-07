@@ -230,6 +230,7 @@ module MotherBrain
         end
 
         # @param [Hash] manifest_options
+        #   accesses ssh.user key from the hash
         # @return [Array]
         def ssh_username(manifest_options)
           manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:user]
@@ -238,6 +239,7 @@ module MotherBrain
         end
 
         # @param [Hash] manifest_options
+        #   accesses ssh.keys key from the hash
         # @return [Array]
         def ssh_keys(manifest_options)
           manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:keys]
