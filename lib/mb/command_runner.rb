@@ -7,6 +7,10 @@ module MotherBrain
     attr_reader :environment
     # @return [MB::Plugin, MB::Component]
     attr_reader :scope
+    # @return [Proc]
+    attr_reader :execute
+    # @return [Array]
+    attr_reader :args
 
     # @param [String] environment
     #   environment to run this command on
@@ -30,9 +34,16 @@ module MotherBrain
       @job         = job
       @environment = environment
       @scope       = scope
+      @execute     = execute
+      @args        = args
+
       @on_procs    = []
       @async       = false
 
+      run
+    end
+
+    def run
       if execute.arity.nonzero?
         curried_execute = proc { execute.call(*args) }
         instance_eval(&curried_execute)
@@ -42,7 +53,7 @@ module MotherBrain
     end
 
     # Run the stored procs created by on() that have not been ran yet.
-    def run
+    def apply
       # TODO: This needs to happen in parallel but can't due to the way running multiple
       # actions on a single node works. Actions work on a node and don't know about other
       # actions which are being run on that node, so in a single node environment the
@@ -71,7 +82,7 @@ module MotherBrain
       instance_eval(&block)
       @async = false
 
-      run
+      apply
 
       node_querier.bulk_chef_run job, @nodes
     end
@@ -131,7 +142,7 @@ module MotherBrain
       if async?
         @nodes |= nodes
       else
-        run
+        apply
       end
     end
 
