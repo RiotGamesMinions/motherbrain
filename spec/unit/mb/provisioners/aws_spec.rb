@@ -214,6 +214,60 @@ describe MB::Provisioners::AWS do
       end
     end
 
+    context "ssh configuration" do
+      context "set in manifest" do
+        before do
+          manifest[:options][:ssh] ||= {}
+          manifest[:options][:ssh][:user] = "dauser"
+          manifest[:options][:ssh][:keys] = ["/home/dauser/.ssh/dakey"]
+        end
+
+        it "finds the ssh username from the manifest" do
+          expect(subject.ssh_username(manifest.options)).to eq("dauser")
+        end
+
+        it "finds the ssh keys from the manifest" do
+          expect(subject.ssh_keys(manifest.options).first).to eq("/home/dauser/.ssh/dakey")
+        end
+      end
+
+      context "not set in manifest" do
+        before do
+          manifest[:options].delete(:ssh)
+        end
+
+        context "set in config" do
+          before do
+            MB::Application.config[:ssh] ||= {}
+            MB::Application.config[:ssh][:user] = "dauser2"
+            MB::Application.config[:ssh][:keys] = ["/home/dauser2/.ssh/dakey"]
+          end
+
+          it "finds the ssh username from the config" do
+            expect(subject.ssh_username(manifest.options)).to eq("dauser2")
+          end
+
+          it "finds the ssh keys from the config" do
+            expect(subject.ssh_keys(manifest.options).first).to eq("/home/dauser2/.ssh/dakey")
+          end
+        end
+
+        context "not set in config" do
+          before do
+            MB::Application.config[:ssh] = nil
+          end
+
+          it "fails when trying to find the ssh username" do
+            expect { subject.ssh_username(manifest.options) }.to raise_error(MB::InvalidProvisionManifest)
+          end
+
+          it "fails when trying to find the ssh keys" do
+            expect { subject.ssh_keys(manifest.options) }.to raise_error(MB::InvalidProvisionManifest)
+          end
+        end
+      end
+    end
+
     describe "#instance_counts" do
       it "returns a Hash" do
         expect(subject.instance_counts(manifest)).to be_a(Hash)
