@@ -1,0 +1,451 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "MB" "1" "May 2013" "" ""
+.
+.SH "NAME"
+\fBmb\fR \- command and control clusters of machines with Chef
+.
+.SH "SYNOPSIS"
+\fBmb\fR configure
+.
+.br
+\fBmb\fR configure_environment MANIFEST
+.
+.br
+\fBmb\fR init [PATH]
+.
+.br
+\fBmb\fR plugins
+.
+.br
+\fBmb\fR destroy
+.
+.br
+\fBmb\fR version
+.
+.br
+\fBmb\fR lock
+.
+.br
+\fBmb\fR unlock
+.
+.br
+\fBmb\fR \fB<plugin>\fR nodes
+.
+.br
+\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST
+.
+.br
+\fBmb\fR \fB<plugin>\fR provision MANIFEST
+.
+.br
+\fBmb\fR \fB<plugin>\fR upgrade
+.
+.br
+\fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR
+.
+.br
+.
+.SH "DESCRIPTION"
+motherbrain is an orchestration framework for Chef\. In the same way that you would use Chef\'s Knife command to create a single node, you can use motherbrain to create and control an entire application environment\.
+.
+.P
+With the exception of a few top\-level commands, most motherbrain interactions use the commands defined in the selected plugin\.
+.
+.SH "FILES"
+Provisioning and bootstrapping nodes require manifests\. Insert manifest documentation\.
+.
+.SH "OPTIONS"
+The following global options can be used on any motherbrain command to change the behavior\.
+.
+.TP
+\fB\-c\fR, \fB\-\-config\fR:
+.
+.br
+Path to a MotherBrain JSON configuration file\.
+
+.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR:
+.
+.br
+Increase verbosity of output\.
+
+.
+.TP
+\fB\-d\fR, \fB\-\-debug\fR:
+.
+.br
+Output all log messages\.
+
+.
+.TP
+\fB\-L\fR, \fB\-\-logfile\fR:
+.
+.br
+Set the log file location\.
+
+.
+.TP
+\fB\-p\fR, \fB\-\-plugin_version\fR:
+.
+.br
+Plugin version to use
+
+.
+.TP
+\fB\-e\fR, \fB\-\-environment\fR:
+.
+.br
+Chef environment
+
+.
+.SH "COMMANDS"
+.
+.IP "\(bu" 4
+\fBmb\fR configure:
+.
+.br
+create a new configuration file based on a set of interactive questions
+.
+.IP "\(bu" 4
+\-f, \-\-force
+.
+.br
+create a new configuration file even if one already exists\.
+.
+.br
+
+.
+.IP "" 0
+
+.
+.IP "\(bu" 4
+\fBmb\fR configure_environment MANIFEST:
+.
+.br
+configure a Chef environment
+.
+.IP "\(bu" 4
+\-\-force
+.
+.br
+perform the configuration even if the environment is locked
+.
+.br
+
+.
+.IP "" 0
+
+.
+.IP "\(bu" 4
+\fBmb\fR init [PATH]:
+.
+.br
+Create a MotherBrain plugin for the current cookbook
+.
+.IP "\(bu" 4
+\fBmb\fR plugins:
+.
+.br
+Display all installed plugins and versions
+.
+.IP "\(bu" 4
+\-\-remote
+.
+.br
+search the remote Chef server and include plugins from the results
+.
+.br
+
+.
+.IP "" 0
+
+.
+.IP "\(bu" 4
+\fBmb\fR destroy:
+.
+.br
+Destroy a provisioned environment
+.
+.IP "\(bu" 4
+\-\-api\-url=API_URL
+.
+.br
+URL to the Environment Factory API endpoint
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-api\-key=API_KEY
+.
+.br
+API authentication key for the Environment Factory
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-ssl\-verify
+.
+.br
+Should we verify SSL connections?
+.
+.br
+
+.
+.IP "\(bu" 4
+\-y, \-\-yes
+.
+.br
+Don\'t confirm, just destroy the environment
+.
+.br
+
+.
+.IP "" 0
+
+.
+.IP "\(bu" 4
+\fBmb\fR version:
+.
+.br
+Display version and license information
+.
+.IP "\(bu" 4
+\fBmb\fR lock:
+.
+.br
+Lock an environment
+.
+.IP "\(bu" 4
+\fBmb\fR unlock:
+.
+.br
+Unlock an environment
+.
+.IP "\(bu" 4
+\fBmb\fR \fB<plugin>\fR nodes:
+.
+.br
+List all nodes grouped by Component and Group
+.
+.IP "\(bu" 4
+\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST:
+.
+.br
+Bootstrap a manifest of node groups
+.
+.IP "\(bu" 4
+\-\-chef\-version=CHEF_VERSION
+.
+.br
+The version of Chef to bootstrap the node(s) with
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-components, \-\-component\-versions=key:value
+.
+.br
+The component versions to set with override attributes
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-cookbooks, \-\-cookbook\-versions=key:value
+.
+.br
+The cookbook versions to set on the environment
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-attributes, \-\-environment\-attributes=key:value
+.
+.br
+Any additional attributes to set on the environment
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-attributes\-file, \-\-environment\-attributes\-file=ENVIRONMENT_ATTRIBUTES_FILE
+.
+.br
+Any additional attributes to set on the environment via a json file\.
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-template=TEMPLATE
+.
+.br
+Path to bootstrap template (ERB)
+.
+.br
+
+.
+.IP "\(bu" 4
+\-f, \-\-force
+.
+.br
+Perform bootstrap even if the environment is locked
+.
+.br
+
+.
+.IP "" 0
+
+.
+.IP "\(bu" 4
+\fBmb\fR \fB<plugin>\fR provision MANIFEST:
+.
+.br
+Create a cluster of nodes and add them to a Chef environment
+.
+.IP "\(bu" 4
+\-\-chef\-version=CHEF_VERSION
+.
+.br
+The version of Chef to bootstrap the node(s) with
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-components, \-\-component\-versions=key:value
+.
+.br
+The component versions to set with override attributes
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-cookbooks, \-\-cookbook\-versions=key:value
+.
+.br
+The cookbook versions to set on the environment
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-attributes, \-\-environment\-attributes=key:value
+.
+.br
+Any additional attributes to set on the environment
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-attributes\-file, \-\-environment\-attributes\-file=ENVIRONMENT_ATTRIBUTES_FILE
+.
+.br
+Any additional attributes to set on the environment via a json file\.
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-skip\-bootstrap
+.
+.br
+Nodes will be created and added to the Chef environment but not bootstrapped
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-template=TEMPLATE
+.
+.br
+Path to bootstrap template (ERB)
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-force
+.
+.br
+Perform bootstrap even if the environment is locked
+.
+.br
+
+.
+.IP "" 0
+
+.
+.IP "\(bu" 4
+\fBmb\fR \fB<plugin>\fR upgrade:
+.
+.br
+Upgrade an environment to the specified versions
+.
+.IP "\(bu" 4
+\-\-components, \-\-component\-versions=key:value
+.
+.br
+The component versions to set with override attributes
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-cookbooks, \-\-cookbook\-versions=key:value
+.
+.br
+The cookbook versions to set on the environment
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-attributes, \-\-environment\-attributes=key:value
+.
+.br
+Any additional attributes to set on the environment
+.
+.br
+
+.
+.IP "\(bu" 4
+\-\-attributes\-file, \-\-environment\-attributes\-file=ENVIRONMENT_ATTRIBUTES_FILE
+.
+.br
+Any additional attributes to set on the environment via a json file\.
+.
+.br
+
+.
+.IP "\(bu" 4
+\-f, \-\-force
+.
+.br
+Perform upgrade even if the environment is locked
+.
+.br
+
+.
+.IP "" 0
+
+.
+.IP "\(bu" 4
+\fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR:
+.
+.br
+Run a command defined in a component in the specified plugin\. Options and usage are plugin\-defined\.
+.
+.IP "" 0
+.
+.SH "COPYRIGHT"
+motherbrain is Copyright (C) 2012\-2013 Riot Games, Inc\.
