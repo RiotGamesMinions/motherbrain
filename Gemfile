@@ -37,6 +37,8 @@ group :development do
   gem 'guard-spork', platforms: :ruby
   gem 'guard-yard'
 
+  gem 'ronn'
+
   require 'rbconfig'
 
   if RbConfig::CONFIG['target_os'] =~ /darwin/i

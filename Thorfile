@@ -54,6 +54,14 @@ class Default < Thor
     puts MB::Api.routes
   end
 
+  desc "manpage", "Re-generate the man pages"
+  def manpage
+    run "bundle exec bin/mbdocs man/mb.1.ronn.erb > man/mb.1.ronn"
+    run "ronn man/mb.1.ronn"
+    run "git add man/mb.1 man/mb.1.html"
+    run "git commit -m 'man page update'"
+  end
+
   class Cucumber < Thor
     namespace :cucumber
     default_task :all
