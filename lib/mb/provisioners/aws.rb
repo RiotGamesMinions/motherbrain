@@ -229,12 +229,16 @@ module MotherBrain
           verify_instances(job, fog, instances, tries-1)
         end
 
+        # @param [Hash] manifest_options
+        # @return [Array]
         def ssh_username(manifest_options)
           manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:user]
           config_ssh = Application.config[:ssh] && Application.config[:ssh][:user]
           manifest_ssh || config_ssh || abort(InvalidProvisionManifest.new("Manifest or configuration needs an `ssh` hash with a `user` key."))
         end
 
+        # @param [Hash] manifest_options
+        # @return [Array]
         def ssh_keys(manifest_options)
           manifest_ssh = manifest_options[:ssh] && manifest_options[:ssh][:keys]
           config_ssh = Application.config[:ssh] && Application.config[:ssh][:keys]
@@ -252,8 +256,8 @@ module MotherBrain
           Fog.wait_for do
             job.set_status "waiting for instances to be SSH-able"
             servers.all? do |s|
-              s.username = manifest_options[:ssh][:user] || Application.config[:ssh][:user]
-              s.private_key_path = manifest_options[:ssh][:keys].first || Application.config[:ssh][:keys].first
+              s.username = ssh_username(manifest_options)
+              s.private_key_path = ssh_keys(manifest_options).first
               s.sshable?
             end
           end
