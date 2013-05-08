@@ -140,7 +140,7 @@ module MotherBrain
 
           self
         ensure
-          runner.send(:reset)
+          runner.send(:reset, job)
         end
 
         private
@@ -214,9 +214,10 @@ module MotherBrain
               end
             end
 
-            def reset
+            def reset(job)
               nodes.collect do |node|
                 @node_resets.each do |attribute|
+                  job.set_status("Setting node attribute '#{attribute[:key]}' to '#{attribute[:value]}' on #{node.name}")
                   node.set_chef_attribute(attribute[:key], attribute[:value])
                 end
 
@@ -226,6 +227,7 @@ module MotherBrain
               if @environment_resets.any?
                 env = Application.ridley.environment.find(environment)
                 @environment_resets.each do |attribute|
+                  job.set_status("Setting environment attribute '#{attribute[:key]}' to '#{attribute[:value]}' in #{environment}")
                   env.set_default_attribute(attribute[:key], attribute[:value])
                 end
                 env.save
@@ -251,7 +253,7 @@ module MotherBrain
                   @environment_resets << { key: key, value: env.default_attributes.dig(key) }
                 end
 
-                job.set_status("Setting environment attribute '#{key}' to '#{value}' on #{environment}")
+                job.set_status("Setting environment attribute '#{key}' to '#{value}' in #{environment}")
                 env.set_default_attribute(key, value)
               end
 
