@@ -118,9 +118,7 @@ module MotherBrain
         group.nodes(environment)
       end.uniq
 
-      if nodes.empty?
-        return nil
-      end
+      return unless nodes.any?
 
       if options[:any]
         nodes = nodes.sample(options[:any])

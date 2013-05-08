@@ -47,8 +47,8 @@ module MotherBrain
       def action(name)
         action = get_action(name)
 
-        if action.nil?
-          raise ActionNotFound, "#{self.class.keyword} '#{self._attributes_[:name]}' does not have the action '#{name}'"
+        unless action
+          raise ActionNotFound, "#{self.class.keyword} '#{_attributes_[:name]}' does not have the action '#{name}'"
         end
 
         action
@@ -60,11 +60,11 @@ module MotherBrain
       #
       # @return [Set<Action>]
       def add_action(new_action)
-        unless get_action(new_action.name).nil?
-          raise DuplicateAction, "Action '#{new_action.name}' already defined on service '#{self._attributes_[:name]}'"
+        if get_action(new_action.name)
+          raise DuplicateAction, "Action '#{new_action.name}' already defined on service '#{_attributes_[:name]}'"
         end
 
-        self.actions.add(new_action)
+        actions << new_action
       end
 
       private
@@ -77,7 +77,7 @@ module MotherBrain
 
         # @param [String] name
         def get_action(name)
-          self.actions.find { |action| action.name == name }
+          actions.find { |action| action.name == name }
         end
 
       # @author Jamie Winsor <reset@riotgames.com>
@@ -223,8 +223,8 @@ module MotherBrain
                 Celluloid::Future.new { node.save }
               end.map(&:value)
 
-              unless @environment_resets.empty?
-                env = Application.ridley.environment.find(self.environment)
+              if @environment_resets.any?
+                env = Application.ridley.environment.find(environment)
                 @environment_resets.each do |attribute|
                   env.set_default_attribute(attribute[:key], attribute[:value])
                 end
@@ -240,8 +240,8 @@ module MotherBrain
             end
 
             def set_environment_attributes(job)
-              unless env = Application.ridley.environment.find(self.environment)
-                raise EnvironmentNotFound.new(self.environment)
+              unless env = Application.ridley.environment.find(environment)
+                raise EnvironmentNotFound.new(environment)
               end
 
               @environment_attributes.each do |attribute|
@@ -251,11 +251,11 @@ module MotherBrain
                   @environment_resets << { key: key, value: env.default_attributes.dig(key) }
                 end
 
-                job.set_status("Setting environment attribute '#{key}' to '#{value}' on #{self.environment}")
+                job.set_status("Setting environment attribute '#{key}' to '#{value}' on #{environment}")
                 env.set_default_attribute(key, value)
               end
 
-              job.set_status("Saving environment #{self.environment}")
+              job.set_status("Saving environment #{environment}")
               env.save
             end
 
