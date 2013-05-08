@@ -199,13 +199,17 @@ module MotherBrain
 
             # TODO: Make this public when ActionRunner has a clean room
             def run(job)
-              unless @node_attributes.empty?
-                self.nodes.collect do |l_node|
-                  Celluloid::Future.new { set_node_attributes(job, l_node) }
-                end.map(&:value)
+              if @node_attributes.any?
+                futures = nodes.map { |node|
+                  Celluloid::Future.new { set_node_attributes(job, node) }
+                }
+
+                futures.map(&:value)
               end
 
-              unless @environment_attributes.empty?
+              save_nodes job
+
+              if @environment_attributes.any?
                 set_environment_attributes(job)
               end
             end
@@ -225,6 +229,13 @@ module MotherBrain
                   env.set_default_attribute(attribute[:key], attribute[:value])
                 end
                 env.save
+              end
+            end
+
+            def save_nodes(job)
+              if nodes.any?
+                job.set_status "Saving nodes #{nodes.collect(&:name)}"
+                nodes.each(&:save)
               end
             end
 
@@ -266,8 +277,6 @@ module MotherBrain
                 job.set_status("Setting node attribute '#{key}' to '#{value}' on #{node.name}")
                 node.set_chef_attribute(key, value)
               end
-              job.set_status("Saving node #{node.name}")
-              node.save
             end
         end
       end
