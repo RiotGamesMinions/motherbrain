@@ -143,9 +143,9 @@ module MotherBrain
           log.info "Running Chef on #{nodes}"
           job.set_status("Running Chef on nodes")
 
-          nodes.map { |node|
-            node_querier.future.chef_run(node)
-          }.map(&:value)
+          nodes.concurrent_map { |node|
+            node_querier.chef_run(node)
+          }
         end
     end
   end
