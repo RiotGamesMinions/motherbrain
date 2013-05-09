@@ -16,7 +16,7 @@ module MotherBrain
     attr_accessor :current_status
     attr_reader :job
 
-    # @param [Array<MotherBrain::Job>] jobs
+    # @param [MotherBrain::Job] job
     def initialize(job)
       @job = job
     end
