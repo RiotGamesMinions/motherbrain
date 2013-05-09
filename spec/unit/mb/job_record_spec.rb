@@ -7,6 +7,7 @@ describe MB::JobRecord do
       type: 'bootstrap',
       state: 'pending',
       status: 'just starting',
+      status_buffer: ['just starting'],
       result: 'finished',
       time_start: Time.now,
       time_end: Time.now

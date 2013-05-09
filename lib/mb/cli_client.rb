@@ -9,15 +9,16 @@ module MotherBrain
   #   CliClient.new(job).display
   #
   class CliClient
-    attr_reader :jobs
-
     COLUMNS = `tput cols`.to_i
     SPACE = " "
     TICK = 0.1
 
+    attr_accessor :current_status
+    attr_reader :job
+
     # @param [Array<MotherBrain::Job>] jobs
-    def initialize(*jobs)
-      @jobs = jobs
+    def initialize(job)
+      @job = job
     end
 
     # Block and wait for all jobs to be completed, while displaying the status
@@ -29,8 +30,8 @@ module MotherBrain
         display_jobs
       end
 
-      if jobs_failed?
-        display_log_info if log_location
+      if job_failed?
+        display_log_location if log_location
         abort
       end
     end
@@ -50,39 +51,43 @@ module MotherBrain
         MB.log.info?
       end
 
-      def display_log_info
+      def display_log_location
         puts "#{left_space} [motherbrain] Log written to #{log_location}"
       end
 
       def display_jobs
-        until jobs.all?(&:completed?) || application_terminated?
-          jobs.each do |job|
-            print_status job
-          end
+        until job_completed? || application_terminated?
+          print_statuses
+          sleep TICK
         end
 
         if application_terminated?
           print_final_terminated_status
         else
-          jobs.each do |job|
-            print_final_status job
-          end
+          print_final_status
         end
       end
 
-      def jobs_failed?
-        jobs.any?(&:failed?)
+      def job_completed?
+        job.completed?
+      end
+
+      def job_failed?
+        job.failed?
+      end
+
+      def job_type
+        @job_type || job.type
       end
 
       def log_location
         MB::Logging.filename
       end
 
-      # @param [MotherBrain::Job] job
-      def print_final_status(job)
-        print_last_status(job)
+      def print_final_status
+        print_with_new_line current_status
 
-        msg = "#{left_space} [#{job.type}] #{job.state.to_s.capitalize}"
+        msg = "#{left_space} [#{job_type}] #{job.state.to_s.capitalize}"
         msg << ": #{job.result}" if job.result
 
         puts msg
@@ -92,56 +97,60 @@ module MotherBrain
         puts "\nMotherBrain terminated"
       end
 
-      def last_statuses
-        @last_statuses ||= Hash.new
+      def left_space
+        SPACE * spinner.peek.length
       end
 
-      def left_space
-        SPACE * spinner.next.length
+      def print_statuses
+        last_status = status_buffer.pop
+
+        if last_status
+          print_with_new_line current_status if current_status
+          self.current_status = last_status
+        end
+
+        while status = status_buffer.shift
+          print_with_new_line status
+        end
+
+        print_with_spinner current_status
+      end
+
+      def print_with_spinner(text)
+        return unless text
+
+        clear_line
+
+        printf "\r%s [#{job_type}] #{text}", spinner.next
+      end
+
+      def print_with_new_line(text)
+        return unless text
+
+        clear_line
+
+        printf "\r#{left_space} [#{job_type}] #{text}\n"
       end
 
       # @return [Enumerator]
       def spinner
-        @spinner ||= Enumerator.new do |enumerator|
-          characters = [
-            %w[| / - \\],
-            ["MB", "MB", "MB", "MB", "  "],
-            ["MB", "  "],
-            %w[` ' - . , . - ']
-          # ].sample
-          ].last
+        @spinner ||= Enumerator.new { |enumerator|
+          characters = %w[` ' - . , . - ']
 
-          loop do
+          loop {
             characters.each do |character|
               enumerator.yield character
             end
-          end
-        end
+          }
+        }
       end
 
-      # @param [MotherBrain::Job] job
-      def print_status(job)
-        if last_statuses[job] && job.status != last_statuses[job]
-          print_last_status(job)
-        end
-
-        clear_line
-
-        printf "\r%s [#{job.type}] #{job.status}", spinner.next
-
-        last_statuses[job] = job.status
-
-        sleep TICK
-      end
-
-      def print_last_status(job)
-        clear_line
-
-        printf "\r#{left_space} [#{job.type}] #{last_statuses[job]}\n"
+      def status_buffer
+        job.status_buffer
       end
 
       def wait_for_jobs
-        sleep TICK until jobs.all?(&:completed?) || application_terminated?
+        sleep TICK until job.completed? || application_terminated?
       end
   end
 end
