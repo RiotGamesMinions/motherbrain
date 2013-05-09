@@ -32,7 +32,7 @@ module MB
         klass.instance_eval do
           meth = normalize_command_name(command_name)
           command = all_commands[meth]
-          banner(command)
+          banner(command).sub(/\S+:/,'')
         end
       }
 
@@ -40,7 +40,7 @@ module MB
         klass.instance_eval do
           meth = normalize_command_name(command_name)
           command = all_commands[meth]
-          [banner(command), command.description, command.long_description, command.options]
+          [banner(command).sub(/\S+:/,''), command.description, command.long_description, command.options]
         end
       }
 
@@ -63,3 +63,4 @@ module MB
     end
   end
 end
+

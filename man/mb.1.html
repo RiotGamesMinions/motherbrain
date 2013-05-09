@@ -75,18 +75,18 @@
 
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
-<p><code>mb</code> mother_brain:cli_gateway:configure<br />
-<code>mb</code> mother_brain:cli_gateway:configure_environment MANIFEST<br />
-<code>mb</code> mother_brain:cli_gateway:init [PATH]<br />
-<code>mb</code> mother_brain:cli_gateway:plugins<br />
-<code>mb</code> mother_brain:cli_gateway:destroy<br />
-<code>mb</code> mother_brain:cli_gateway:version<br />
-<code>mb</code> mother_brain:cli_gateway:lock<br />
-<code>mb</code> mother_brain:cli_gateway:unlock<br />
-<code>mb</code> <code>&lt;plugin></code> plugin:nodes<br />
-<code>mb</code> <code>&lt;plugin></code> plugin:bootstrap MANIFEST<br />
-<code>mb</code> <code>&lt;plugin></code> plugin:provision MANIFEST<br />
-<code>mb</code> <code>&lt;plugin></code> plugin:upgrade<br />
+<p><code>mb</code> configure<br />
+<code>mb</code> configure_environment MANIFEST<br />
+<code>mb</code> init [PATH]<br />
+<code>mb</code> plugins<br />
+<code>mb</code> destroy<br />
+<code>mb</code> version<br />
+<code>mb</code> lock<br />
+<code>mb</code> unlock<br />
+<code>mb</code> <code>&lt;plugin></code> nodes<br />
+<code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST<br />
+<code>mb</code> <code>&lt;plugin></code> provision MANIFEST<br />
+<code>mb</code> <code>&lt;plugin></code> upgrade<br />
 <code>mb</code> <code>&lt;plugin></code> <code>&lt;component></code> <code>&lt;command></code><br /></p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
@@ -109,134 +109,110 @@ manifest documentation.</p>
 change the behavior.</p>
 
 <dl>
-<dt><code>-c</code>, <code>--config</code>:<br />
-Path to a MotherBrain JSON configuration file.</dt><dd><p></p></dd>
-<dt><code>-v</code>, <code>--verbose</code>:<br />
-Increase verbosity of output.</dt><dd><p></p></dd>
-<dt><code>-d</code>, <code>--debug</code>:<br />
-Output all log messages.</dt><dd><p></p></dd>
-<dt><code>-L</code>, <code>--logfile</code>:<br />
-Set the log file location.</dt><dd><p></p></dd>
-<dt><code>-p</code>, <code>--plugin_version</code>:<br />
-Plugin version to use</dt><dd><p></p></dd>
-<dt><code>-e</code>, <code>--environment</code>:<br />
-Chef environment</dt><dd><p></p></dd>
+<dt><code>-c</code>, <code>--config</code></dt><dd><p>Path to a MotherBrain JSON configuration file.</p></dd>
+<dt><code>-v</code>, <code>--verbose</code></dt><dd><p>Increase verbosity of output.</p></dd>
+<dt><code>-d</code>, <code>--debug</code></dt><dd><p>Output all log messages.</p></dd>
+<dt><code>-L</code>, <code>--logfile</code></dt><dd><p>Set the log file location.</p></dd>
+<dt><code>-p</code>, <code>--plugin_version</code></dt><dd><p>Plugin version to use</p></dd>
+<dt><code>-e</code>, <code>--environment</code></dt><dd><p>Chef environment</p></dd>
 </dl>
 
 
 <h2 id="COMMANDS">COMMANDS</h2>
 
-<ul>
-<li><p><code>mb</code> mother_brain:cli_gateway:configure:<br />
+<p><em><code>mb</code> configure</em><br />
 create a new configuration file based on a set of interactive questions</p>
 
-<ul>
-<li>-f, --force<br />
-create a new configuration file even if one already exists.<br /></li>
-</ul>
-</li>
-<li><p><code>mb</code> mother_brain:cli_gateway:configure_environment MANIFEST:<br />
+<dl>
+<dt>-f, --force</dt><dd>create a new configuration file even if one already exists.<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> configure_environment MANIFEST</em><br />
 configure a Chef environment</p>
 
-<ul>
-<li>--force<br />
-perform the configuration even if the environment is locked<br /></li>
-</ul>
-</li>
-<li><p><code>mb</code> mother_brain:cli_gateway:init [PATH]:<br />
-Create a MotherBrain plugin for the current cookbook</p></li>
-<li><p><code>mb</code> mother_brain:cli_gateway:plugins:<br />
+<dl>
+<dt class="flush">--force</dt><dd>perform the configuration even if the environment is locked<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> init [PATH]</em><br />
+Create a MotherBrain plugin for the current cookbook</p>
+
+<p><em><code>mb</code> plugins</em><br />
 Display all installed plugins and versions</p>
 
-<ul>
-<li>--remote<br />
-search the remote Chef server and include plugins from the results<br /></li>
-</ul>
-</li>
-<li><p><code>mb</code> mother_brain:cli_gateway:destroy:<br />
+<dl>
+<dt>--remote</dt><dd>search the remote Chef server and include plugins from the results<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> destroy</em><br />
 Destroy a provisioned environment</p>
 
-<ul>
-<li>--api-url=API_URL<br />
-URL to the Environment Factory API endpoint<br /></li>
-<li>--api-key=API_KEY<br />
-API authentication key for the Environment Factory<br /></li>
-<li>--ssl-verify<br />
-Should we verify SSL connections?<br /></li>
-<li>-y, --yes<br />
-Don't confirm, just destroy the environment<br /></li>
-</ul>
-</li>
-<li><p><code>mb</code> mother_brain:cli_gateway:version:<br />
-Display version and license information</p></li>
-<li><p><code>mb</code> mother_brain:cli_gateway:lock:<br />
-Lock an environment</p></li>
-<li><p><code>mb</code> mother_brain:cli_gateway:unlock:<br />
-Unlock an environment</p></li>
-<li><p><code>mb</code> <code>&lt;plugin></code> plugin:nodes:<br />
-List all nodes grouped by Component and Group</p></li>
-<li><p><code>mb</code> <code>&lt;plugin></code> plugin:bootstrap MANIFEST:<br />
+<dl>
+<dt>--api-url=API_URL</dt><dd>URL to the Environment Factory API endpoint<br /></dd>
+<dt>--api-key=API_KEY</dt><dd>API authentication key for the Environment Factory<br /></dd>
+<dt>--ssl-verify</dt><dd>Should we verify SSL connections?<br /></dd>
+<dt>-y, --yes</dt><dd>Don't confirm, just destroy the environment<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> version</em><br />
+Display version and license information</p>
+
+<p><em><code>mb</code> lock</em><br />
+Lock an environment</p>
+
+<p><em><code>mb</code> unlock</em><br />
+Unlock an environment</p>
+
+<p><em><code>mb</code> <code>&lt;plugin></code> nodes</em><br />
+List all nodes grouped by Component and Group</p>
+
+<p><em><code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST</em><br />
 Bootstrap a manifest of node groups</p>
 
-<ul>
-<li>--chef-version=CHEF_VERSION<br />
-The version of Chef to bootstrap the node(s) with<br /></li>
-<li>--components, --component-versions=key:value<br />
-The component versions to set with override attributes<br /></li>
-<li>--cookbooks, --cookbook-versions=key:value<br />
-The cookbook versions to set on the environment<br /></li>
-<li>--attributes, --environment-attributes=key:value<br />
-Any additional attributes to set on the environment<br /></li>
-<li>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE<br />
-Any additional attributes to set on the environment via a json file.<br /></li>
-<li>--template=TEMPLATE<br />
-Path to bootstrap template (ERB)<br /></li>
-<li>-f, --force<br />
-Perform bootstrap even if the environment is locked<br /></li>
-</ul>
-</li>
-<li><p><code>mb</code> <code>&lt;plugin></code> plugin:provision MANIFEST:<br />
+<dl>
+<dt>--chef-version=CHEF_VERSION</dt><dd>The version of Chef to bootstrap the node(s) with<br /></dd>
+<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with override attributes<br /></dd>
+<dt>--cookbooks, --cookbook-versions=key:value</dt><dd>The cookbook versions to set on the environment<br /></dd>
+<dt>--attributes, --environment-attributes=key:value</dt><dd>Any additional attributes to set on the environment<br /></dd>
+<dt>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE</dt><dd>Any additional attributes to set on the environment via a json file.<br /></dd>
+<dt>--template=TEMPLATE</dt><dd>Path to bootstrap template (ERB)<br /></dd>
+<dt>-f, --force</dt><dd>Perform bootstrap even if the environment is locked<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> <code>&lt;plugin></code> provision MANIFEST</em><br />
 Create a cluster of nodes and add them to a Chef environment</p>
 
-<ul>
-<li>--chef-version=CHEF_VERSION<br />
-The version of Chef to bootstrap the node(s) with<br /></li>
-<li>--components, --component-versions=key:value<br />
-The component versions to set with override attributes<br /></li>
-<li>--cookbooks, --cookbook-versions=key:value<br />
-The cookbook versions to set on the environment<br /></li>
-<li>--attributes, --environment-attributes=key:value<br />
-Any additional attributes to set on the environment<br /></li>
-<li>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE<br />
-Any additional attributes to set on the environment via a json file.<br /></li>
-<li>--skip-bootstrap<br />
-Nodes will be created and added to the Chef environment but not bootstrapped<br /></li>
-<li>--template=TEMPLATE<br />
-Path to bootstrap template (ERB)<br /></li>
-<li>--force<br />
-Perform bootstrap even if the environment is locked<br /></li>
-</ul>
-</li>
-<li><p><code>mb</code> <code>&lt;plugin></code> plugin:upgrade:<br />
+<dl>
+<dt>--chef-version=CHEF_VERSION</dt><dd>The version of Chef to bootstrap the node(s) with<br /></dd>
+<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with override attributes<br /></dd>
+<dt>--cookbooks, --cookbook-versions=key:value</dt><dd>The cookbook versions to set on the environment<br /></dd>
+<dt>--attributes, --environment-attributes=key:value</dt><dd>Any additional attributes to set on the environment<br /></dd>
+<dt>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE</dt><dd>Any additional attributes to set on the environment via a json file.<br /></dd>
+<dt>--skip-bootstrap</dt><dd>Nodes will be created and added to the Chef environment but not bootstrapped<br /></dd>
+<dt>--template=TEMPLATE</dt><dd>Path to bootstrap template (ERB)<br /></dd>
+<dt class="flush">--force</dt><dd>Perform bootstrap even if the environment is locked<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> <code>&lt;plugin></code> upgrade</em><br />
 Upgrade an environment to the specified versions</p>
 
-<ul>
-<li>--components, --component-versions=key:value<br />
-The component versions to set with override attributes<br /></li>
-<li>--cookbooks, --cookbook-versions=key:value<br />
-The cookbook versions to set on the environment<br /></li>
-<li>--attributes, --environment-attributes=key:value<br />
-Any additional attributes to set on the environment<br /></li>
-<li>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE<br />
-Any additional attributes to set on the environment via a json file.<br /></li>
-<li>-f, --force<br />
-Perform upgrade even if the environment is locked<br /></li>
-</ul>
-</li>
-<li><p><code>mb</code> <code>&lt;plugin></code> <code>&lt;component></code> <code>&lt;command></code>:<br />
-Run a command defined in a component in the specified plugin. Options and usage are plugin-defined.</p></li>
-</ul>
+<dl>
+<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with override attributes<br /></dd>
+<dt>--cookbooks, --cookbook-versions=key:value</dt><dd>The cookbook versions to set on the environment<br /></dd>
+<dt>--attributes, --environment-attributes=key:value</dt><dd>Any additional attributes to set on the environment<br /></dd>
+<dt>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE</dt><dd>Any additional attributes to set on the environment via a json file.<br /></dd>
+<dt>-f, --force</dt><dd>Perform upgrade even if the environment is locked<br /></dd>
+</dl>
 
+
+<p><code>mb</code> <code>&lt;plugin></code> <code>&lt;component></code> <code>&lt;command></code><br />
+Run a command defined in a component in the specified plugin. Options and usage are plugin-defined.</p>
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 

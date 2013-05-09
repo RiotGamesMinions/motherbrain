@@ -7,40 +7,40 @@
 \fBmb\fR \- command and control clusters of machines with Chef
 .
 .SH "SYNOPSIS"
-\fBmb\fR mother_brain:cli_gateway:configure
+\fBmb\fR configure
 .
 .br
-\fBmb\fR mother_brain:cli_gateway:configure_environment MANIFEST
+\fBmb\fR configure_environment MANIFEST
 .
 .br
-\fBmb\fR mother_brain:cli_gateway:init [PATH]
+\fBmb\fR init [PATH]
 .
 .br
-\fBmb\fR mother_brain:cli_gateway:plugins
+\fBmb\fR plugins
 .
 .br
-\fBmb\fR mother_brain:cli_gateway:destroy
+\fBmb\fR destroy
 .
 .br
-\fBmb\fR mother_brain:cli_gateway:version
+\fBmb\fR version
 .
 .br
-\fBmb\fR mother_brain:cli_gateway:lock
+\fBmb\fR lock
 .
 .br
-\fBmb\fR mother_brain:cli_gateway:unlock
+\fBmb\fR unlock
 .
 .br
-\fBmb\fR \fB<plugin>\fR plugin:nodes
+\fBmb\fR \fB<plugin>\fR nodes
 .
 .br
-\fBmb\fR \fB<plugin>\fR plugin:bootstrap MANIFEST
+\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST
 .
 .br
-\fBmb\fR \fB<plugin>\fR plugin:provision MANIFEST
+\fBmb\fR \fB<plugin>\fR provision MANIFEST
 .
 .br
-\fBmb\fR \fB<plugin>\fR plugin:upgrade
+\fBmb\fR \fB<plugin>\fR upgrade
 .
 .br
 \fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR
@@ -60,392 +60,295 @@ Provisioning and bootstrapping nodes require manifests\. Insert manifest documen
 The following global options can be used on any motherbrain command to change the behavior\.
 .
 .TP
-\fB\-c\fR, \fB\-\-config\fR:
-.
-.br
+\fB\-c\fR, \fB\-\-config\fR
 Path to a MotherBrain JSON configuration file\.
-
 .
 .TP
-\fB\-v\fR, \fB\-\-verbose\fR:
-.
-.br
+\fB\-v\fR, \fB\-\-verbose\fR
 Increase verbosity of output\.
-
 .
 .TP
-\fB\-d\fR, \fB\-\-debug\fR:
-.
-.br
+\fB\-d\fR, \fB\-\-debug\fR
 Output all log messages\.
-
 .
 .TP
-\fB\-L\fR, \fB\-\-logfile\fR:
-.
-.br
+\fB\-L\fR, \fB\-\-logfile\fR
 Set the log file location\.
-
 .
 .TP
-\fB\-p\fR, \fB\-\-plugin_version\fR:
-.
-.br
+\fB\-p\fR, \fB\-\-plugin_version\fR
 Plugin version to use
-
 .
 .TP
-\fB\-e\fR, \fB\-\-environment\fR:
-.
-.br
+\fB\-e\fR, \fB\-\-environment\fR
 Chef environment
-
 .
 .SH "COMMANDS"
-.
-.IP "\(bu" 4
-\fBmb\fR mother_brain:cli_gateway:configure:
+\fI\fBmb\fR configure\fR
 .
 .br
 create a new configuration file based on a set of interactive questions
 .
-.IP "\(bu" 4
+.TP
 \-f, \-\-force
-.
-.br
 create a new configuration file even if one already exists\.
 .
 .br
 
 .
-.IP "" 0
-
-.
-.IP "\(bu" 4
-\fBmb\fR mother_brain:cli_gateway:configure_environment MANIFEST:
+.P
+\fI\fBmb\fR configure_environment MANIFEST\fR
 .
 .br
 configure a Chef environment
 .
-.IP "\(bu" 4
+.TP
 \-\-force
-.
-.br
 perform the configuration even if the environment is locked
 .
 .br
 
 .
-.IP "" 0
-
-.
-.IP "\(bu" 4
-\fBmb\fR mother_brain:cli_gateway:init [PATH]:
+.P
+\fI\fBmb\fR init [PATH]\fR
 .
 .br
 Create a MotherBrain plugin for the current cookbook
 .
-.IP "\(bu" 4
-\fBmb\fR mother_brain:cli_gateway:plugins:
+.P
+\fI\fBmb\fR plugins\fR
 .
 .br
 Display all installed plugins and versions
 .
-.IP "\(bu" 4
+.TP
 \-\-remote
-.
-.br
 search the remote Chef server and include plugins from the results
 .
 .br
 
 .
-.IP "" 0
-
-.
-.IP "\(bu" 4
-\fBmb\fR mother_brain:cli_gateway:destroy:
+.P
+\fI\fBmb\fR destroy\fR
 .
 .br
 Destroy a provisioned environment
 .
-.IP "\(bu" 4
+.TP
 \-\-api\-url=API_URL
-.
-.br
 URL to the Environment Factory API endpoint
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-api\-key=API_KEY
-.
-.br
 API authentication key for the Environment Factory
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-ssl\-verify
-.
-.br
 Should we verify SSL connections?
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-y, \-\-yes
-.
-.br
 Don\'t confirm, just destroy the environment
 .
 .br
 
 .
-.IP "" 0
-
-.
-.IP "\(bu" 4
-\fBmb\fR mother_brain:cli_gateway:version:
+.P
+\fI\fBmb\fR version\fR
 .
 .br
 Display version and license information
 .
-.IP "\(bu" 4
-\fBmb\fR mother_brain:cli_gateway:lock:
+.P
+\fI\fBmb\fR lock\fR
 .
 .br
 Lock an environment
 .
-.IP "\(bu" 4
-\fBmb\fR mother_brain:cli_gateway:unlock:
+.P
+\fI\fBmb\fR unlock\fR
 .
 .br
 Unlock an environment
 .
-.IP "\(bu" 4
-\fBmb\fR \fB<plugin>\fR plugin:nodes:
+.P
+\fI\fBmb\fR \fB<plugin>\fR nodes\fR
 .
 .br
 List all nodes grouped by Component and Group
 .
-.IP "\(bu" 4
-\fBmb\fR \fB<plugin>\fR plugin:bootstrap MANIFEST:
+.P
+\fI\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST\fR
 .
 .br
 Bootstrap a manifest of node groups
 .
-.IP "\(bu" 4
+.TP
 \-\-chef\-version=CHEF_VERSION
-.
-.br
 The version of Chef to bootstrap the node(s) with
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-components, \-\-component\-versions=key:value
-.
-.br
 The component versions to set with override attributes
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-cookbooks, \-\-cookbook\-versions=key:value
-.
-.br
 The cookbook versions to set on the environment
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-attributes, \-\-environment\-attributes=key:value
-.
-.br
 Any additional attributes to set on the environment
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-attributes\-file, \-\-environment\-attributes\-file=ENVIRONMENT_ATTRIBUTES_FILE
-.
-.br
 Any additional attributes to set on the environment via a json file\.
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-template=TEMPLATE
-.
-.br
 Path to bootstrap template (ERB)
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-f, \-\-force
-.
-.br
 Perform bootstrap even if the environment is locked
 .
 .br
 
 .
-.IP "" 0
-
-.
-.IP "\(bu" 4
-\fBmb\fR \fB<plugin>\fR plugin:provision MANIFEST:
+.P
+\fI\fBmb\fR \fB<plugin>\fR provision MANIFEST\fR
 .
 .br
 Create a cluster of nodes and add them to a Chef environment
 .
-.IP "\(bu" 4
+.TP
 \-\-chef\-version=CHEF_VERSION
-.
-.br
 The version of Chef to bootstrap the node(s) with
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-components, \-\-component\-versions=key:value
-.
-.br
 The component versions to set with override attributes
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-cookbooks, \-\-cookbook\-versions=key:value
-.
-.br
 The cookbook versions to set on the environment
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-attributes, \-\-environment\-attributes=key:value
-.
-.br
 Any additional attributes to set on the environment
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-attributes\-file, \-\-environment\-attributes\-file=ENVIRONMENT_ATTRIBUTES_FILE
-.
-.br
 Any additional attributes to set on the environment via a json file\.
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-skip\-bootstrap
-.
-.br
 Nodes will be created and added to the Chef environment but not bootstrapped
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-template=TEMPLATE
-.
-.br
 Path to bootstrap template (ERB)
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-force
-.
-.br
 Perform bootstrap even if the environment is locked
 .
 .br
 
 .
-.IP "" 0
-
-.
-.IP "\(bu" 4
-\fBmb\fR \fB<plugin>\fR plugin:upgrade:
+.P
+\fI\fBmb\fR \fB<plugin>\fR upgrade\fR
 .
 .br
 Upgrade an environment to the specified versions
 .
-.IP "\(bu" 4
+.TP
 \-\-components, \-\-component\-versions=key:value
-.
-.br
 The component versions to set with override attributes
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-cookbooks, \-\-cookbook\-versions=key:value
-.
-.br
 The cookbook versions to set on the environment
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-attributes, \-\-environment\-attributes=key:value
-.
-.br
 Any additional attributes to set on the environment
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-\-attributes\-file, \-\-environment\-attributes\-file=ENVIRONMENT_ATTRIBUTES_FILE
-.
-.br
 Any additional attributes to set on the environment via a json file\.
 .
 .br
 
 .
-.IP "\(bu" 4
+.TP
 \-f, \-\-force
-.
-.br
 Perform upgrade even if the environment is locked
 .
 .br
 
 .
-.IP "" 0
-
-.
-.IP "\(bu" 4
-\fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR:
+.P
+\fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR
 .
 .br
 Run a command defined in a component in the specified plugin\. Options and usage are plugin\-defined\.
-.
-.IP "" 0
 .
 .SH "COPYRIGHT"
 motherbrain is Copyright (C) 2012\-2013 Riot Games, Inc\.
