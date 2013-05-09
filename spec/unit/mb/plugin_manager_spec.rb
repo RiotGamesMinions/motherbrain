@@ -7,7 +7,7 @@ describe MotherBrain::PluginManager do
     describe "::new" do
       context "when 'remote_loading' is disabled" do
         before(:each) do
-          described_class.any_instance.stub(:eager_loading?) { false }
+          described_class.any_instance.stub(eager_loading?: false)
         end
 
         it "has a nil value for eager_load_timer" do
@@ -17,7 +17,7 @@ describe MotherBrain::PluginManager do
 
       context "when 'eager_loading' is enabled" do
         before(:each) do
-          described_class.any_instance.stub(:eager_loading?) { true }
+          described_class.any_instance.stub(eager_loading?: true )
         end
 
         it "sets a Timer for remote_load_timer" do
@@ -88,7 +88,7 @@ describe MotherBrain::PluginManager do
 
     context "when 'remote_loading' is enabled" do
       before(:each) do
-        subject.stub(:eager_loading?) { true }
+        subject.stub(eager_loading?: true)
       end
 
       it "calls #load_all_remote" do
@@ -147,7 +147,7 @@ describe MotherBrain::PluginManager do
         before(:each) do
           File.write(File.join(temp_dir, MB::Plugin::PLUGIN_FILENAME), "# blank plugin")
 
-          MB::FileSystem.stub(:tmpdir) { temp_dir }
+          MB::FileSystem.stub(tmpdir: temp_dir)
 
           resource.stub(:download_file).and_return(true)
 
@@ -232,7 +232,7 @@ describe MotherBrain::PluginManager do
   describe "#async_loading?" do
     context "if the plugin manager is configured for async loading" do
       before(:each) do
-        MB::Application.config.plugin_manager.stub(:async_loading) { true }
+        MB::Application.config.plugin_manager.stub(async_loading: true)
       end
 
       it "returns true" do
@@ -242,7 +242,7 @@ describe MotherBrain::PluginManager do
 
     context "if the plugin manager is not configured for async loading" do
       before(:each) do
-        MB::Application.config.plugin_manager.stub(:async_loading) { false }
+        MB::Application.config.plugin_manager.stub(async_loading: false)
       end
 
       it "returns false" do
@@ -544,13 +544,15 @@ describe MotherBrain::PluginManager do
     let(:local_versions) { [ "1.2.3", "2.0.0" ] }
     let(:remote_versions) { [ "3.0.0" ] }
 
-    before do
-      subject.should_not_receive(:remote_versions)
-    end
+    context "when given 'false' for the remote argument" do
+      before do
+        subject.should_not_receive(:remote_versions)
+        subject.should_receive(:local_versions).with(name).and_return(local_versions)
+      end
 
-    it "returns only the local plugins" do
-      subject.should_receive(:local_versions).with(name).and_return(local_versions)
-      subject.versions(name).should eql(local_versions)
+      it "returns only the local plugins" do
+        expect(subject.versions(name, false)).to eql(local_versions)
+      end
     end
 
     context "when given 'true' for the remote argument" do
@@ -560,24 +562,20 @@ describe MotherBrain::PluginManager do
       end
 
       it "includes the remote versions" do
-        subject.versions(name, true).should include(*remote_versions)
+        expect(subject.versions(name, true)).to include(*remote_versions)
       end
 
       it "includes the local versions" do
-        subject.versions(name, true).should include(*local_versions)
-      end
-    end
-
-    context "when no plugins are found" do
-      before do
-        subject.stub(:local_versions).with(name) { Array.new }
-        subject.stub(:remote_versions).with(name) { Array.new }
+        expect(subject.versions(name, true)).to include(*local_versions)
       end
 
-      it "raises a PluginNotFound error" do
-        expect {
-          subject.versions(name, true)
-        }.to raise_error(MB::PluginNotFound)
+      context "when no plugins are found" do
+        let(:remote_versions) { Array.new }
+        let(:local_versions) { Array.new }
+
+        it "raises a PluginNotFound error" do
+          expect { subject.versions(name, true) }.to raise_error(MB::PluginNotFound)
+        end
       end
     end
   end

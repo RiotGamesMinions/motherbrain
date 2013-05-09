@@ -42,7 +42,7 @@ describe MB::Mixin::AttributeSetting do
 
   describe "#set_cookbook_versions" do
     before(:each) do
-      subject.stub(:satisfies_constraints?) { true }
+      subject.stub(satisfies_constraints?: true)
     end
 
     context "successful" do
@@ -77,7 +77,7 @@ describe MB::Mixin::AttributeSetting do
       let(:env) { double('environment', name: "foo") }
 
       before(:each) do
-        subject.stub(:expand_latest_versions) { constraints }
+        subject.stub(expand_latest_versions: constraints)
         chef_connection = subject.chef_connection
         chef_connection.stub_chain(:environment, :find).and_return(env)
         env.stub(:save)
@@ -95,7 +95,7 @@ describe MB::Mixin::AttributeSetting do
       end
 
       before(:each) do
-        subject.stub(:expand_latest_versions) { constraints }
+        subject.stub(expand_latest_versions: constraints)
         subject.stub(:satisfies_constraints?).with(constraints).and_raise
       end
 

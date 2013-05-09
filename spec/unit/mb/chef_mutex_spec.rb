@@ -144,13 +144,13 @@ describe MB::ChefMutex do
       end
 
       it "raises the error" do
-        -> { synchronize }.should raise_error RuntimeError
+        expect { synchronize }.to raise_error(RuntimeError)
       end
 
       it "releases the lock" do
-        chef_mutex.should_receive :unlock
+        chef_mutex.should_receive(:unlock)
 
-        -> { synchronize }.should raise_error RuntimeError
+        expect { synchronize }.to raise_error(RuntimeError)
       end
 
       context "and passed unlock_on_failure: false" do

@@ -120,9 +120,7 @@ describe MB::Job do
 
   describe "#transition" do
     it "returns self" do
-      result = subject.transition(:running)
-
-      result.should eql(subject)
+      expect(subject.transition(:running)).to eq(subject)
     end
 
     it "accepts and sets a result/reason" do
