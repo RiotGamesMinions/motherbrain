@@ -1,0 +1,354 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "MB" "1" "May 2013" "" ""
+.
+.SH "NAME"
+\fBmb\fR \- command and control clusters of machines with Chef
+.
+.SH "SYNOPSIS"
+\fBmb\fR configure
+.
+.br
+\fBmb\fR configure_environment MANIFEST
+.
+.br
+\fBmb\fR init [PATH]
+.
+.br
+\fBmb\fR plugins
+.
+.br
+\fBmb\fR destroy
+.
+.br
+\fBmb\fR version
+.
+.br
+\fBmb\fR lock
+.
+.br
+\fBmb\fR unlock
+.
+.br
+\fBmb\fR \fB<plugin>\fR nodes
+.
+.br
+\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST
+.
+.br
+\fBmb\fR \fB<plugin>\fR provision MANIFEST
+.
+.br
+\fBmb\fR \fB<plugin>\fR upgrade
+.
+.br
+\fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR
+.
+.br
+.
+.SH "DESCRIPTION"
+motherbrain is an orchestration framework for Chef\. In the same way that you would use Chef\'s Knife command to create a single node, you can use motherbrain to create and control an entire application environment\.
+.
+.P
+With the exception of a few top\-level commands, most motherbrain interactions use the commands defined in the selected plugin\.
+.
+.SH "FILES"
+Provisioning and bootstrapping nodes require manifests\. Insert manifest documentation\.
+.
+.SH "OPTIONS"
+The following global options can be used on any motherbrain command to change the behavior\.
+.
+.TP
+\fB\-c\fR, \fB\-\-config\fR
+Path to a MotherBrain JSON configuration file\.
+.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Increase verbosity of output\.
+.
+.TP
+\fB\-d\fR, \fB\-\-debug\fR
+Output all log messages\.
+.
+.TP
+\fB\-L\fR, \fB\-\-logfile\fR
+Set the log file location\.
+.
+.TP
+\fB\-p\fR, \fB\-\-plugin_version\fR
+Plugin version to use
+.
+.TP
+\fB\-e\fR, \fB\-\-environment\fR
+Chef environment
+.
+.SH "COMMANDS"
+\fI\fBmb\fR configure\fR
+.
+.br
+create a new configuration file based on a set of interactive questions
+.
+.TP
+\-f, \-\-force
+create a new configuration file even if one already exists\.
+.
+.br
+
+.
+.P
+\fI\fBmb\fR configure_environment MANIFEST\fR
+.
+.br
+configure a Chef environment
+.
+.TP
+\-\-force
+perform the configuration even if the environment is locked
+.
+.br
+
+.
+.P
+\fI\fBmb\fR init [PATH]\fR
+.
+.br
+Create a MotherBrain plugin for the current cookbook
+.
+.P
+\fI\fBmb\fR plugins\fR
+.
+.br
+Display all installed plugins and versions
+.
+.TP
+\-\-remote
+search the remote Chef server and include plugins from the results
+.
+.br
+
+.
+.P
+\fI\fBmb\fR destroy\fR
+.
+.br
+Destroy a provisioned environment
+.
+.TP
+\-\-api\-url=API_URL
+URL to the Environment Factory API endpoint
+.
+.br
+
+.
+.TP
+\-\-api\-key=API_KEY
+API authentication key for the Environment Factory
+.
+.br
+
+.
+.TP
+\-\-ssl\-verify
+Should we verify SSL connections?
+.
+.br
+
+.
+.TP
+\-y, \-\-yes
+Don\'t confirm, just destroy the environment
+.
+.br
+
+.
+.P
+\fI\fBmb\fR version\fR
+.
+.br
+Display version and license information
+.
+.P
+\fI\fBmb\fR lock\fR
+.
+.br
+Lock an environment
+.
+.P
+\fI\fBmb\fR unlock\fR
+.
+.br
+Unlock an environment
+.
+.P
+\fI\fBmb\fR \fB<plugin>\fR nodes\fR
+.
+.br
+List all nodes grouped by Component and Group
+.
+.P
+\fI\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST\fR
+.
+.br
+Bootstrap a manifest of node groups
+.
+.TP
+\-\-chef\-version=CHEF_VERSION
+The version of Chef to bootstrap the node(s) with
+.
+.br
+
+.
+.TP
+\-\-components, \-\-component\-versions=key:value
+The component versions to set with override attributes
+.
+.br
+
+.
+.TP
+\-\-cookbooks, \-\-cookbook\-versions=key:value
+The cookbook versions to set on the environment
+.
+.br
+
+.
+.TP
+\-\-attributes, \-\-environment\-attributes=key:value
+Any additional attributes to set on the environment
+.
+.br
+
+.
+.TP
+\-\-attributes\-file, \-\-environment\-attributes\-file=ENVIRONMENT_ATTRIBUTES_FILE
+Any additional attributes to set on the environment via a json file\.
+.
+.br
+
+.
+.TP
+\-\-template=TEMPLATE
+Path to bootstrap template (ERB)
+.
+.br
+
+.
+.TP
+\-f, \-\-force
+Perform bootstrap even if the environment is locked
+.
+.br
+
+.
+.P
+\fI\fBmb\fR \fB<plugin>\fR provision MANIFEST\fR
+.
+.br
+Create a cluster of nodes and add them to a Chef environment
+.
+.TP
+\-\-chef\-version=CHEF_VERSION
+The version of Chef to bootstrap the node(s) with
+.
+.br
+
+.
+.TP
+\-\-components, \-\-component\-versions=key:value
+The component versions to set with override attributes
+.
+.br
+
+.
+.TP
+\-\-cookbooks, \-\-cookbook\-versions=key:value
+The cookbook versions to set on the environment
+.
+.br
+
+.
+.TP
+\-\-attributes, \-\-environment\-attributes=key:value
+Any additional attributes to set on the environment
+.
+.br
+
+.
+.TP
+\-\-attributes\-file, \-\-environment\-attributes\-file=ENVIRONMENT_ATTRIBUTES_FILE
+Any additional attributes to set on the environment via a json file\.
+.
+.br
+
+.
+.TP
+\-\-skip\-bootstrap
+Nodes will be created and added to the Chef environment but not bootstrapped
+.
+.br
+
+.
+.TP
+\-\-template=TEMPLATE
+Path to bootstrap template (ERB)
+.
+.br
+
+.
+.TP
+\-\-force
+Perform bootstrap even if the environment is locked
+.
+.br
+
+.
+.P
+\fI\fBmb\fR \fB<plugin>\fR upgrade\fR
+.
+.br
+Upgrade an environment to the specified versions
+.
+.TP
+\-\-components, \-\-component\-versions=key:value
+The component versions to set with override attributes
+.
+.br
+
+.
+.TP
+\-\-cookbooks, \-\-cookbook\-versions=key:value
+The cookbook versions to set on the environment
+.
+.br
+
+.
+.TP
+\-\-attributes, \-\-environment\-attributes=key:value
+Any additional attributes to set on the environment
+.
+.br
+
+.
+.TP
+\-\-attributes\-file, \-\-environment\-attributes\-file=ENVIRONMENT_ATTRIBUTES_FILE
+Any additional attributes to set on the environment via a json file\.
+.
+.br
+
+.
+.TP
+\-f, \-\-force
+Perform upgrade even if the environment is locked
+.
+.br
+
+.
+.P
+\fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR
+.
+.br
+Run a command defined in a component in the specified plugin\. Options and usage are plugin\-defined\.
+.
+.SH "COPYRIGHT"
+motherbrain is Copyright (C) 2012\-2013 Riot Games, Inc\.

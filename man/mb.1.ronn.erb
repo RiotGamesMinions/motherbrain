@@ -1,0 +1,62 @@
+mb(1) -- command and control clusters of machines with Chef
+===========================================================
+
+## SYNOPSIS
+
+<%- commands.each do |command| -%>
+<%= command %><br>
+<%- end -%>
+`mb` `<plugin>` `<component>` `<command>`<br>
+
+## DESCRIPTION
+
+motherbrain is an orchestration framework for Chef. In the same way that you
+would use Chef's Knife command to create a single node, you can use
+motherbrain to create and control an entire application environment.
+
+With the exception of a few top-level commands, most motherbrain
+interactions use the commands defined in the selected plugin.
+
+## FILES
+
+Provisioning and bootstrapping nodes require manifests. Insert
+manifest documentation.
+
+## OPTIONS
+
+The following global options can be used on any motherbrain command to
+change the behavior.
+
+<%- class_options.each do |class_option| -%>
+    <%- opts = class_option[1].aliases + ["--#{class_option[0]}"] -%>
+  * <%= opts.collect {|x| "`#{x}`"}.join(", ") %>:
+    <%= class_option[1].description %>
+    <%- if class_option[1].show_default? -%>(Default: <%= class_option[1].default %>)<%- end -%>
+    <%- if class_option[1].enum -%>Possible values: <%= class_option[1].enum.join(', ') %><%- end -%>
+
+<%- end -%>
+
+## COMMANDS
+
+<%- extended_commands.each do |command| -%>
+<%= command[0] %><br>
+<%= command[1] %>
+<%- if command[2] -%>
+  <br><%= command[2] %>
+<%- end -%>
+
+<%- command[3].each do |opt| -%>
+  * <%= opt[1].usage.gsub(/[\[\]]/,'') %><%= " (REQUIRED)" if opt[1].required? %>:
+    <%= opt[1].description %><br>
+    <%- if opt[1].show_default? -%><br>Default: <%= opt[1].default %><%- end -%>
+    <%- if opt[1].enum -%><br>Possible values: <%= opt[1].enum.join(', ') %><%- end -%>
+<%- end -%>
+
+<%- end -%>
+
+`mb` `<plugin>` `<component>` `<command>`<br>
+Run a command defined in a component in the specified plugin. Options and usage are plugin-defined.
+
+## COPYRIGHT
+
+motherbrain is Copyright (C) 2012-2013 Riot Games, Inc.
