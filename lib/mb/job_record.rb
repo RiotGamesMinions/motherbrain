@@ -8,6 +8,7 @@ module MotherBrain
     attr_reader :result
     attr_reader :state
     attr_reader :status
+    attr_reader :status_buffer
     attr_reader :type
 
     attr_reader :time_start
@@ -55,12 +56,13 @@ module MotherBrain
 
       # @param [Job] job
       def mass_assign(job)
-        @result     = job.result
-        @state      = job.state
-        @status     = job.status
-        @time_end   = job.time_end
-        @time_start = job.time_start
-        @type       = job.type
+        @result        = job.result
+        @state         = job.state
+        @status        = job.status
+        @status_buffer = job.status_buffer
+        @time_end      = job.time_end
+        @time_start    = job.time_start
+        @type          = job.type
       end
   end
 end
