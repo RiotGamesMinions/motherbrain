@@ -150,7 +150,7 @@ module MotherBrain
       end
 
       def wait_for_jobs
-        sleep TICK until job.completed? || application_terminated?
+        sleep TICK until job_completed? || application_terminated?
       end
   end
 end
