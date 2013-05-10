@@ -54,6 +54,14 @@ class Default < Thor
     puts MB::Api.routes
   end
 
+  desc "manpage", "Re-generate the man pages"
+  def manpage
+    require MB.app_root.join('man', 'man_helper')
+    say "Generating man page ronn source"
+    MB::ManHelper.generate('man/mb.1.ronn.erb', 'man/mb.1.ronn')
+    run "ronn man/mb.1.ronn"
+  end
+
   class Cucumber < Thor
     namespace :cucumber
     default_task :all

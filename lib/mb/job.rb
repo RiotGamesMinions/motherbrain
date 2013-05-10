@@ -144,13 +144,18 @@ module MotherBrain
     def status=(string)
       log.info { "Job (#{id}) status: #{string}" }
       @status = string
+      status_buffer << string
       save
     end
     alias_method :set_status, :status=
 
+    def status_buffer
+      @status_buffer ||= []
+    end
+
     # @return [JobTicket]
     def ticket
-      @ticket ||= JobTicket.new(self.id)
+      @ticket ||= JobTicket.new(id)
     end
 
     # @param [Symbol] state
