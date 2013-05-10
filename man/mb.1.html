@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <title>mb(1) - command and control clusters of machines with Chef</title>
+  <style type='text/css' media='all'>
+  /* style: man */
+  body#manpage {margin:0}
+  .mp {max-width:100ex;padding:0 9ex 1ex 4ex}
+  .mp p,.mp pre,.mp ul,.mp ol,.mp dl {margin:0 0 20px 0}
+  .mp h2 {margin:10px 0 0 0}
+  .mp > p,.mp > pre,.mp > ul,.mp > ol,.mp > dl {margin-left:8ex}
+  .mp h3 {margin:0 0 0 4ex}
+  .mp dt {margin:0;clear:left}
+  .mp dt.flush {float:left;width:8ex}
+  .mp dd {margin:0 0 0 9ex}
+  .mp h1,.mp h2,.mp h3,.mp h4 {clear:left}
+  .mp pre {margin-bottom:20px}
+  .mp pre+h2,.mp pre+h3 {margin-top:22px}
+  .mp h2+pre,.mp h3+pre {margin-top:5px}
+  .mp img {display:block;margin:auto}
+  .mp h1.man-title {display:none}
+  .mp,.mp code,.mp pre,.mp tt,.mp kbd,.mp samp,.mp h3,.mp h4 {font-family:monospace;font-size:14px;line-height:1.42857142857143}
+  .mp h2 {font-size:16px;line-height:1.25}
+  .mp h1 {font-size:20px;line-height:2}
+  .mp {text-align:justify;background:#fff}
+  .mp,.mp code,.mp pre,.mp pre code,.mp tt,.mp kbd,.mp samp {color:#131211}
+  .mp h1,.mp h2,.mp h3,.mp h4 {color:#030201}
+  .mp u {text-decoration:underline}
+  .mp code,.mp strong,.mp b {font-weight:bold;color:#131211}
+  .mp em,.mp var {font-style:italic;color:#232221;text-decoration:none}
+  .mp a,.mp a:link,.mp a:hover,.mp a code,.mp a pre,.mp a tt,.mp a kbd,.mp a samp {color:#0000ff}
+  .mp b.man-ref {font-weight:normal;color:#434241}
+  .mp pre {padding:0 4ex}
+  .mp pre code {font-weight:normal;color:#434241}
+  .mp h2+pre,h3+pre {padding-left:0}
+  ol.man-decor,ol.man-decor li {margin:3px 0 10px 0;padding:0;float:left;width:33%;list-style-type:none;text-transform:uppercase;color:#999;letter-spacing:1px}
+  ol.man-decor {width:100%}
+  ol.man-decor li.tl {text-align:left}
+  ol.man-decor li.tc {text-align:center;letter-spacing:4px}
+  ol.man-decor li.tr {text-align:right;float:right}
+  </style>
+</head>
+<!--
+  The following styles are deprecated and will be removed at some point:
+  div#man, div#man ol.man, div#man ol.head, div#man ol.man.
+
+  The .man-page, .man-decor, .man-head, .man-foot, .man-title, and
+  .man-navigation should be used instead.
+-->
+<body id='manpage'>
+  <div class='mp' id='man'>
+
+  <div class='man-navigation' style='display:none'>
+    <a href="#NAME">NAME</a>
+    <a href="#SYNOPSIS">SYNOPSIS</a>
+    <a href="#DESCRIPTION">DESCRIPTION</a>
+    <a href="#FILES">FILES</a>
+    <a href="#OPTIONS">OPTIONS</a>
+    <a href="#COMMANDS">COMMANDS</a>
+    <a href="#COPYRIGHT">COPYRIGHT</a>
+  </div>
+
+  <ol class='man-decor man-head man head'>
+    <li class='tl'>mb(1)</li>
+    <li class='tc'></li>
+    <li class='tr'>mb(1)</li>
+  </ol>
+
+  <h2 id="NAME">NAME</h2>
+<p class="man-name">
+  <code>mb</code> - <span class="man-whatis">command and control clusters of machines with Chef</span>
+</p>
+
+<h2 id="SYNOPSIS">SYNOPSIS</h2>
+
+<p><code>mb</code> configure<br />
+<code>mb</code> configure_environment MANIFEST<br />
+<code>mb</code> init [PATH]<br />
+<code>mb</code> plugins<br />
+<code>mb</code> destroy<br />
+<code>mb</code> version<br />
+<code>mb</code> lock<br />
+<code>mb</code> unlock<br />
+<code>mb</code> <code>&lt;plugin></code> nodes<br />
+<code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST<br />
+<code>mb</code> <code>&lt;plugin></code> provision MANIFEST<br />
+<code>mb</code> <code>&lt;plugin></code> upgrade<br />
+<code>mb</code> <code>&lt;plugin></code> <code>&lt;component></code> <code>&lt;command></code><br /></p>
+
+<h2 id="DESCRIPTION">DESCRIPTION</h2>
+
+<p>motherbrain is an orchestration framework for Chef. In the same way that you
+would use Chef's Knife command to create a single node, you can use
+motherbrain to create and control an entire application environment.</p>
+
+<p>With the exception of a few top-level commands, most motherbrain
+interactions use the commands defined in the selected plugin.</p>
+
+<h2 id="FILES">FILES</h2>
+
+<p>Provisioning and bootstrapping nodes require manifests. Insert
+manifest documentation.</p>
+
+<h2 id="OPTIONS">OPTIONS</h2>
+
+<p>The following global options can be used on any motherbrain command to
+change the behavior.</p>
+
+<dl>
+<dt><code>-c</code>, <code>--config</code></dt><dd><p>Path to a MotherBrain JSON configuration file.</p></dd>
+<dt><code>-v</code>, <code>--verbose</code></dt><dd><p>Increase verbosity of output.</p></dd>
+<dt><code>-d</code>, <code>--debug</code></dt><dd><p>Output all log messages.</p></dd>
+<dt><code>-L</code>, <code>--logfile</code></dt><dd><p>Set the log file location.</p></dd>
+<dt><code>-p</code>, <code>--plugin_version</code></dt><dd><p>Plugin version to use</p></dd>
+<dt><code>-e</code>, <code>--environment</code></dt><dd><p>Chef environment</p></dd>
+</dl>
+
+
+<h2 id="COMMANDS">COMMANDS</h2>
+
+<p><em><code>mb</code> configure</em><br />
+create a new configuration file based on a set of interactive questions</p>
+
+<dl>
+<dt>-f, --force</dt><dd>create a new configuration file even if one already exists.<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> configure_environment MANIFEST</em><br />
+configure a Chef environment</p>
+
+<dl>
+<dt class="flush">--force</dt><dd>perform the configuration even if the environment is locked<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> init [PATH]</em><br />
+Create a MotherBrain plugin for the current cookbook</p>
+
+<p><em><code>mb</code> plugins</em><br />
+Display all installed plugins and versions</p>
+
+<dl>
+<dt>--remote</dt><dd>search the remote Chef server and include plugins from the results<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> destroy</em><br />
+Destroy a provisioned environment</p>
+
+<dl>
+<dt>--api-url=API_URL</dt><dd>URL to the Environment Factory API endpoint<br /></dd>
+<dt>--api-key=API_KEY</dt><dd>API authentication key for the Environment Factory<br /></dd>
+<dt>--ssl-verify</dt><dd>Should we verify SSL connections?<br /></dd>
+<dt>-y, --yes</dt><dd>Don't confirm, just destroy the environment<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> version</em><br />
+Display version and license information</p>
+
+<p><em><code>mb</code> lock</em><br />
+Lock an environment</p>
+
+<p><em><code>mb</code> unlock</em><br />
+Unlock an environment</p>
+
+<p><em><code>mb</code> <code>&lt;plugin></code> nodes</em><br />
+List all nodes grouped by Component and Group</p>
+
+<p><em><code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST</em><br />
+Bootstrap a manifest of node groups</p>
+
+<dl>
+<dt>--chef-version=CHEF_VERSION</dt><dd>The version of Chef to bootstrap the node(s) with<br /></dd>
+<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with override attributes<br /></dd>
+<dt>--cookbooks, --cookbook-versions=key:value</dt><dd>The cookbook versions to set on the environment<br /></dd>
+<dt>--attributes, --environment-attributes=key:value</dt><dd>Any additional attributes to set on the environment<br /></dd>
+<dt>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE</dt><dd>Any additional attributes to set on the environment via a json file.<br /></dd>
+<dt>--template=TEMPLATE</dt><dd>Path to bootstrap template (ERB)<br /></dd>
+<dt>-f, --force</dt><dd>Perform bootstrap even if the environment is locked<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> <code>&lt;plugin></code> provision MANIFEST</em><br />
+Create a cluster of nodes and add them to a Chef environment</p>
+
+<dl>
+<dt>--chef-version=CHEF_VERSION</dt><dd>The version of Chef to bootstrap the node(s) with<br /></dd>
+<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with override attributes<br /></dd>
+<dt>--cookbooks, --cookbook-versions=key:value</dt><dd>The cookbook versions to set on the environment<br /></dd>
+<dt>--attributes, --environment-attributes=key:value</dt><dd>Any additional attributes to set on the environment<br /></dd>
+<dt>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE</dt><dd>Any additional attributes to set on the environment via a json file.<br /></dd>
+<dt>--skip-bootstrap</dt><dd>Nodes will be created and added to the Chef environment but not bootstrapped<br /></dd>
+<dt>--template=TEMPLATE</dt><dd>Path to bootstrap template (ERB)<br /></dd>
+<dt class="flush">--force</dt><dd>Perform bootstrap even if the environment is locked<br /></dd>
+</dl>
+
+
+<p><em><code>mb</code> <code>&lt;plugin></code> upgrade</em><br />
+Upgrade an environment to the specified versions</p>
+
+<dl>
+<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with override attributes<br /></dd>
+<dt>--cookbooks, --cookbook-versions=key:value</dt><dd>The cookbook versions to set on the environment<br /></dd>
+<dt>--attributes, --environment-attributes=key:value</dt><dd>Any additional attributes to set on the environment<br /></dd>
+<dt>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE</dt><dd>Any additional attributes to set on the environment via a json file.<br /></dd>
+<dt>-f, --force</dt><dd>Perform upgrade even if the environment is locked<br /></dd>
+</dl>
+
+
+<p><code>mb</code> <code>&lt;plugin></code> <code>&lt;component></code> <code>&lt;command></code><br />
+Run a command defined in a component in the specified plugin. Options and usage are plugin-defined.</p>
+
+<h2 id="COPYRIGHT">COPYRIGHT</h2>
+
+<p>motherbrain is Copyright (C) 2012-2013 Riot Games, Inc.</p>
+
+
+  <ol class='man-decor man-foot man foot'>
+    <li class='tl'></li>
+    <li class='tc'>May 2013</li>
+    <li class='tr'>mb(1)</li>
+  </ol>
+
+  </div>
+</body>
+</html>
