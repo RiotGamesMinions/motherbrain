@@ -72,6 +72,33 @@ module MotherBrain
       job_manager.add(Actor.current)
     end
 
+    # Start and stop a job around the given block of code.
+    #
+    # If the block of code raises an exception the job will end as a failure.
+    # If the block of code is successful the job will end as a success.
+    #
+    # The job will be terminated after execution.
+    #
+    # @option options [String] :running_msg
+    #   an optional running message
+    # @option options [String] :success_msg
+    #   an optional success message
+    # @option options [#call] :on_complete
+    #   an optional block of code to run before the job is terminated
+    def execute(options = {}, &block)
+      report_running(options[:running_msg])
+      yield
+      report_success(options[:success_msg])
+    rescue => ex
+      ex = ex.cause if ex.is_a?(AbortError)
+      report_failure(ex)
+    ensure
+      if options[:on_complete].respond_to?(:call)
+        options[:on_complete].call
+      end
+      terminate
+    end
+
     # @param [#to_json] result
     #   a result which can be converted to JSON
     # @param [Hash] options

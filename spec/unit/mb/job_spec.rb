@@ -33,6 +33,43 @@ describe MB::Job do
 
   subject { described_class.new(type) }
 
+  describe "#execute" do
+    let(:test_probe) { Object.new }
+    let(:test_block) { -> { test_probe.testing } }
+    before do
+      test_probe.stub(testing: true)
+      subject.should_receive(:report_running)
+    end
+
+    context "when the given block raises an exception" do
+      before { test_probe.stub(:testing).and_raise(RuntimeError) }
+
+      it "marks the job as a failure" do
+        subject.should_receive(:report_failure)
+        subject.execute(&test_block)
+      end
+
+      it "terminates the job" do
+        subject.should_receive(:terminate)
+        subject.execute(&test_block)
+      end
+    end
+
+    context "when the given block does not raise an exception" do
+      before { test_probe.stub(testing: true) }
+
+      it "marks the job as a success" do
+        subject.should_receive(:report_success)
+        subject.execute(&test_block)
+      end
+
+      it "terminates the job" do
+        subject.should_receive(:terminate)
+        subject.execute(&test_block)
+      end
+    end
+  end
+
   describe "#completed?" do
     it "should be completed if status is 'success'" do
       subject.transition(:running)
