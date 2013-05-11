@@ -122,7 +122,8 @@ This says, "on the `tomcat` servers, run the action start from the service `tomc
 
 * When all of the nodes' `chef-client` runs complete, MotherBrain will report success or failure based on those runs.
 
-### `mb pvpnet_core provision provision_manifest.json --environment my_new_environment`
+### `mb pvpnet_core provision provision_manifest.json \`
+### `--environment my_new_environment`
 
 This creates a new environment using a VM provider such as Eucalyptus or AWS and bootstraps the boxes into a new Chef environment after they are available using the environment name provided.
 
@@ -149,7 +150,8 @@ With the Eucalyptus provisioner, this will create 3 new m1.large nodes, install 
 
 * Next, a `mb bootstrap` is run on the nodes to install chef and run `chef-client` with the proper run list (see the `mb bootstrap` section) 
 
-### `mb bootstrap bootstrap_manifest.json --environment my_existing_environment`
+### `mb bootstrap bootstrap_manifest.json \`
+###`--environment my_existing_environment`
 
 Provided the nodes exist already, a bootstrap is required to get the nodes placed in the correct environment and capable of running `chef-client`.  The bootstrap_manifest.json looks like this:
 
