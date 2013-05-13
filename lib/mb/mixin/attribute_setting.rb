@@ -37,14 +37,12 @@ module MotherBrain
 
         log.info "Setting component versions #{component_versions}"
 
-        chef_connection.sync do
-          unless env = environment.find(env_id)
-            raise EnvironmentNotFound.new(env_id)
-          end
-
-          env.override_attributes.merge!(override_attributes)
-          env.save
+        unless env = chef_connection.environment.find(env_id)
+          raise EnvironmentNotFound.new(env_id)
         end
+
+        env.override_attributes.merge!(override_attributes)
+        env.save
       end
 
       # Lock the cookbook versions on the target environment from the given hash of
@@ -70,14 +68,12 @@ module MotherBrain
         satisfies_constraints?(cookbook_versions)
         log.info "Setting cookbook versions #{cookbook_versions}"
 
-        chef_connection.sync do
-          unless env = environment.find(env_id)
-            raise EnvironmentNotFound.new(env_id)
-          end
-
-          env.cookbook_versions.merge!(cookbook_versions)
-          env.save
+        unless env = chef_connection.environment.find(env_id)
+          raise EnvironmentNotFound.new(env_id)
         end
+
+        env.cookbook_versions.merge!(cookbook_versions)
+        env.save
       end
 
       # Set environment level attributes on an environment from a hash containing
@@ -126,14 +122,12 @@ module MotherBrain
       def set_environment_attributes_from_hash(env_id, new_attributes)
         log.info "Setting environment attributes: #{new_attributes}"
 
-        chef_connection.sync do
-          unless env = environment.find(env_id)
-            raise EnvironmentNotFound.new(env_id)
-          end
-
-          env.override_attributes.deep_merge!(new_attributes)
-          env.save
+        unless env = chef_connection.environment.find(env_id)
+          raise EnvironmentNotFound.new(env_id)
         end
+
+        env.override_attributes.deep_merge!(new_attributes)
+        env.save
       end
 
       # Set environment level attributes on an environment from the contents of the file
