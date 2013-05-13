@@ -85,12 +85,20 @@ module MotherBrain
     #   an optional success message
     # @option options [#call] :on_complete
     #   an optional block of code to run before the job is terminated
+    # @option options [#call] :on_failure
+    #   an optional block of code to run if the job results in a failure
     def execute(options = {}, &block)
       report_running(options[:running_msg])
       yield
+      if options[:on_success].respond_to?(:call)
+        options[:on_success].call
+      end
       report_success(options[:success_msg])
     rescue => ex
       ex = ex.cause if ex.is_a?(AbortError)
+      if options[:on_failure].respond_to?(:call)
+        options[:on_failure].call
+      end
       report_failure(ex)
     ensure
       if options[:on_complete].respond_to?(:call)
