@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe MB::EnvironmentManager do
+  subject { described_class.new }
+
   describe "#async_configure" do
     let(:environment) { "rspec-test" }
     let(:options) { Hash.new }
@@ -21,13 +23,11 @@ describe MB::EnvironmentManager do
       let(:env_id) { "rspec" }
 
       before(:each) do
-        MB::Application.ridley.stub_chain(:environment, :find).
-          with(env_id).and_return(nil)
+        MB::Application.ridley.stub_chain(:environment, :find).with(env_id).and_return(nil)
       end
 
       it "aborts an EnvironmentNotFound error" do
-        subject.should_receive(:abort).with( kind_of(MB::EnvironmentNotFound) )
-        subject.find(env_id)
+        expect { subject.find(env_id) }.to raise_error(MB::EnvironmentNotFound)
       end
     end
   end

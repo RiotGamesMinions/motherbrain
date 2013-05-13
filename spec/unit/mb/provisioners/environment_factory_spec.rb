@@ -64,7 +64,7 @@ describe MB::Provisioners::EnvironmentFactory do
         connection = double('connection')
         environment = double('environment')
         converted_manifest = double('converted_manifest')
-        subject.stub(:connection) { connection }
+        subject.stub(connection: connection)
         described_class.should_receive(:convert_manifest).with(manifest).and_return(converted_manifest)
         described_class.should_receive(:handle_created).with(environment).and_return(Array.new)
         described_class.should_receive(:validate_create).and_return(true)
@@ -87,7 +87,7 @@ describe MB::Provisioners::EnvironmentFactory do
 
     it "sends a destroy command to environment factory with the given environment" do
       connection = double('connection')
-      subject.stub(:connection) { connection }
+      subject.stub(connection: connection)
       subject.should_receive(:destroyed?).with(env_name).and_return(true)
       connection.stub_chain(:environment, :destroy).with(env_name).and_return(Hash.new)
 

@@ -46,6 +46,8 @@ module MotherBrain
     attr_reader :report_job_status
     attr_reader :unlock_on_failure
 
+    execute_block_on_receiver :synchronize
+
     # @option options [#to_s] :chef_environment
     #   The name of the environment to lock
     # @option options [Boolean] :force (false)
@@ -129,6 +131,7 @@ module MotherBrain
 
       unlock
     rescue => ex
+      ex = ex.respond_to?(:cause) ? ex.cause : ex
       job.set_status(ex.to_s) if job
 
       unless ex.is_a?(ResourceLocked)
