@@ -63,6 +63,8 @@ module MotherBrain
       job_manager.complete_job(Actor.current)
     end
 
+    execute_block_on_receiver :execute
+
     # @param [#to_s] type
     def initialize(type)
       @machine = StateMachine.new
