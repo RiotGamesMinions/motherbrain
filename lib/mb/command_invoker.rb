@@ -92,38 +92,29 @@ module MotherBrain
     #
     # @return [Boolean]
     def invoke(job, command_name, options = {})
-      options = options.reverse_merge(arguments: Array.new, force: false)
+      options     = options.reverse_merge(arguments: Array.new, force: false)
+      worker      = nil
+      on_complete = -> { worker.terminate if worker && worker.alive? }
 
-      job.report_running
+      job.execute(success_msg: "successfully executed command", on_complete: on_complete) do
+        if options[:plugin].nil?
+          raise MB::ArgumentError, "must specify a plugin that the command belongs to"
+        end
 
-      if options[:plugin].nil?
-        job.report_failure MB::ArgumentError.new("must specify a plugin that the command belongs to")
-        return false
+        if options[:environment].nil?
+          raise MB::ArgumentError, "must specify an environment to run this command on"
+        end
+
+        job.set_status("Finding environment #{options[:environment]}")
+        environment_manager.find(options[:environment])
+
+        command = find(command_name, options[:plugin], options.slice(:component, :environment, :version))
+        worker  = Worker.new(command, options[:environment])
+
+        chef_synchronize(chef_environment: options[:environment], force: options[:force], job: job) do
+          worker.run(job, options[:arguments])
+        end
       end
-
-      if options[:environment].nil?
-        job.report_failure MB::ArgumentError.new("must specify an environment to run this command on")
-        return false
-      end
-
-      job.set_status("Finding environment #{options[:environment]}")
-      environment_manager.find(options[:environment])
-
-      command = find(command_name, options[:plugin], options.slice(:component, :environment, :version))
-      worker  = Worker.new(command, options[:environment])
-
-      chef_synchronize(chef_environment: options[:environment], force: options[:force], job: job) do
-        worker.run(job, options[:arguments])
-      end
-
-      job.report_success("successfully executed command")
-      true
-    rescue => ex
-      job.report_failure(ex)
-      false
-    ensure
-      job.terminate if job && job.alive?
-      worker.terminate if worker && worker.alive?
     end
 
     private

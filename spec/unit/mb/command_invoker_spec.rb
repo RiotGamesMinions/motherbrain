@@ -85,7 +85,7 @@ describe MB::CommandInvoker do
     let(:component) { "default" }
     let(:environment) { "rspec-test" }
     let(:version) { "1.2.3" }
-    let(:job) { double(MB::Job, alive?: true, terminate: nil) }
+    let(:job) { MB::Job.new(:invoke_test) }
     let(:worker) { double('worker', alive?: true, terminate: nil) }
     let(:environment_manager) { double('env-man') }
     let(:options) do
@@ -103,26 +103,18 @@ describe MB::CommandInvoker do
     before(:each) do
       MB::CommandInvoker::Worker.stub(:new).and_return(worker)
       subject.stub(find: command, environment_manager: environment_manager, plugin_manager: plugin_manager)
-      job.stub(set_status: nil, report_running: nil, report_failure: nil, report_success: nil)
       environment_manager.stub(find: nil)
       worker.stub(run: nil)
     end
 
+    it "wraps the invocation within a job" do
+      job.should_receive(:execute)
+
+      run
+    end
+
     it "wraps the invocation in a lock" do
       MB::ChefMutex.any_instance.should_receive :synchronize
-
-      run
-    end
-
-    it "marks the job as running and then a success on success" do
-      job.should_receive(:report_running).ordered
-      job.should_receive(:report_success).ordered
-
-      run
-    end
-
-    it "terminates the running job on completion" do
-      job.should_receive(:terminate).once
 
       run
     end
