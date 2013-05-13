@@ -155,7 +155,7 @@ describe MB::ChefMutex do
 
       context "and passed unlock_on_failure: false" do
         before do
-          options[:unlock_on_failure] = false
+          chef_mutex.stub(unlock_on_failure: false)
         end
 
         it "does not release the lock" do
