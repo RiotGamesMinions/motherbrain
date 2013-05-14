@@ -118,8 +118,6 @@ end
 
 This says, "on the `tomcat` servers, run the action start from the service `tomcat`".  In this case, the group `tomcat_servers` is what motherbrain will be searching for when it finds the nodes that need a `chef-client` run started. Remember that a group is defined by the run list entries in the plugin file.
 
-**MERLIN USER NOTE**: `chef-client` is identical to Merlin's `chef:start` cap task.
-
 * When all of the nodes' `chef-client` runs complete, motherbrain will report success or failure based on those runs.
 
 ### `mb pvpnet_core provision provision_manifest.json \`
