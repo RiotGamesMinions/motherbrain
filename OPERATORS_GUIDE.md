@@ -3,18 +3,18 @@ motherbrain is a tool used to orchestrate clusters of nodes.
 It does this through plugins provided by cookbooks that are stored on the Chef Server. These plugins define commands that control various services and other configurations on the servers. Plugins are collections of components which contain groups which are collections of nodes.
 
 ### Q: What is a plugin?
-A: A plugin is a part of a cookbook that provides information to motherbrain to give the ability to orchestrate an environment.
+A plugin is a part of a cookbook that provides information to motherbrain to give the ability to orchestrate an environment.
 
 ### Q: What is a component?
-A: A component is a part of a plugin that defines details about a service or part of a service that is running as part of the application that the cookbook deploys.
+A component is a part of a plugin that defines details about a service or part of a service that is running as part of the application that the cookbook deploys.
 
 ### Q: What is a group?
-A: A group is how the component identifies the nodes that are part of the component. This is done via the run list of the nodes.
+A group is how the component identifies the nodes that are part of the component. This is done via the run list of the nodes.
 
 ### Q: What is a command?
-A: A command allows users to perform an action on a group of nodes. An action can be something like changing the state of a service to started or stopped, migrating a database, or clearing an application's cache.
+A command allows users to perform an action on a group of nodes. An action can be something like changing the state of a service to started or stopped, migrating a database, or clearing an application's cache.
 
-A command can be run on a component level to manipulate *just* that component or a command can exist at the plugin level and executing multiple component commands.
+Commands can be run on a component level to manipulate *just* that component or a command can exist at the plugin level and executing multiple component commands.
 
 ## Basic Usage
 
