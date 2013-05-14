@@ -59,40 +59,56 @@ module MotherBrain
       locks.delete(mutex)
     end
 
-    # Lock an environment
+    # Asynchronously lock an environment
     #
     # @param [String] environment
-    def lock(environment)
+    #
+    # @return [MB::JobRecord]
+    def async_lock(environment)
       job = Job.new(:lock)
+      async(:lock, job, environment)
+      job.ticket
+    end
 
-      chef_mutex = ChefMutex.new(
+    # Lock an environment
+    #
+    # @param [MB::Job] job
+    # @param [String] environment
+    #
+    # @return [Boolean]
+    def lock(job, environment)
+      ChefMutex.new(
         chef_environment: environment,
         force: true,
         job: job,
         report_job_status: true
-      )
+      ).lock
+    end
 
-      chef_mutex.async.lock
-
+    # Asynchronously unlock an environment
+    #
+    # @param [String] environment
+    #
+    # @return [MB::JobRecord]
+    def async_unlock(environment)
+      job = Job.new(:unlock)
+      async(:unlock, job, environment)
       job.ticket
     end
 
     # Unlock an environment
     #
+    # @param [MB::Job] job
     # @param [String] environment
-    def unlock(environment)
-      job = Job.new(:unlock)
-
-      chef_mutex = ChefMutex.new(
+    #
+    # @return [Boolean]
+    def unlock(job, environment)
+      ChefMutex.new(
         chef_environment: environment,
         force: true,
         job: job,
         report_job_status: true
-      )
-
-      chef_mutex.async.unlock
-
-      job.ticket
+      ).unlock
     end
   end
 end
