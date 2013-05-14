@@ -1,12 +1,12 @@
-MotherBrain is a tool used to orchestrate clusters of nodes.
+motherbrain is a tool used to orchestrate clusters of nodes.
 
-MotherBrain does this through plugins provided by cookbooks that are stored on the Chef Server.
+motherbrain does this through plugins provided by cookbooks that are stored on the Chef Server.
 
 These plugins define commands that control various services and other configurations on the servers.
 
 Plugins are collections of components which contain groups which are collections of nodes.
 
-A **plugin** is a part of a cookbook that provides information to MotherBrain to give the ability to orchestrate an environment.
+A **plugin** is a part of a cookbook that provides information to motherbrain to give the ability to orchestrate an environment.
 
 A **component** is a part of a plugin that defines details about a service or part of a service that is running as part of the application that the cookbook deploys.
 
@@ -36,14 +36,14 @@ Commands:
 
 By calling the cookbook name, few commands and a bunch of components (which may each have their own commands) are displayed.
 
-These are basic MotherBrain commands not defined by a specific plugin:
+These are basic motherbrain commands not defined by a specific plugin:
 
 * mb pvpnet_core bootstrap MANIFEST - takes a MANIFEST (which is a JSON file) that contains information about what a cluster of nodes should look like. This will apply run lists to nodes as defined in the MANIFEST JSON.
 * mb pvpnet_core nodes - takes an environment (via --environment) and returns the nodes that are running components of pvpnet_core.
 * mb pvpnet_core provision MANIFEST - similar to bootstrap, however before performing a bootstrap, it will request new VMs from a cloud provider and then use those new instances to create a cluster of machines.
 * mb pvpnet_core upgrade - this allows users to upgrade the version of the software running on various components that are controlled by the cookbook. Example: `mb pvpnet_core upgrade --components broker:1.2.4 coherence:4.2.3`
 
-The rest of the entries above are components. To see what MotherBrain knows about a specific component, you can ask mb similar to the above:
+The rest of the entries above are components. To see what motherbrain knows about a specific component, you can ask mb similar to the above:
 
 ```
 $ mb pvpnet_core coherence --environment NA_production
@@ -59,7 +59,7 @@ Commands:
   mb coherence stop                # Execute a stop on the core coherence servers
 ```
 
-Again there is the MotherBrain provided `nodes` command which will provide nodes that are a part of this component.
+Again there is the motherbrain provided `nodes` command which will provide nodes that are a part of this component.
 
 Other than `help`, the rest of commands are generated from the plugin and have a description that describe what each command does and will be unique to each component. For example, here are the tomcat commands:
 
@@ -74,9 +74,9 @@ Commands:
   mb tomcat stop            # Stop the pvpnet_core platform
 ```
 
-CAVEAT: The mb help output is not displaying the plugin name. This is a quirk of the command line tool framework MotherBrain uses under the hood to generate commands.
+CAVEAT: The mb help output is not displaying the plugin name. This is a quirk of the command line tool framework motherbrain uses under the hood to generate commands.
 
-## MotherBrain Flow
+## motherbrain Flow
 
 ### `mb pvpnet_core tomcat nodes --environment NA_production`
 
@@ -116,18 +116,18 @@ command 'start' do
 end
 ```
 
-This says, "on the `tomcat` servers, run the action start from the service `tomcat`".  In this case, the group `tomcat_servers` is what MotherBrain will be searching for when it finds the nodes that need a `chef-client` run started. Remember that a group is defined by the run list entries in the plugin file.
+This says, "on the `tomcat` servers, run the action start from the service `tomcat`".  In this case, the group `tomcat_servers` is what motherbrain will be searching for when it finds the nodes that need a `chef-client` run started. Remember that a group is defined by the run list entries in the plugin file.
 
 **MERLIN USER NOTE**: `chef-client` is identical to Merlin's `chef:start` cap task.
 
-* When all of the nodes' `chef-client` runs complete, MotherBrain will report success or failure based on those runs.
+* When all of the nodes' `chef-client` runs complete, motherbrain will report success or failure based on those runs.
 
 ### `mb pvpnet_core provision provision_manifest.json \`
 ### `--environment my_new_environment`
 
 This creates a new environment using a VM provider such as Eucalyptus or AWS and bootstraps the boxes into a new Chef environment after they are available using the environment name provided.
 
-* MotherBrain reads the provision_manifest.json to figure out what boxes are required for the new environment.  The provision_manifest.json looks like this:
+* motherbrain reads the provision_manifest.json to figure out what boxes are required for the new environment.  The provision_manifest.json looks like this:
 
 ```json
 {
@@ -189,5 +189,5 @@ Provided the nodes exist already, a bootstrap is required to get the nodes place
 }
 ```
 
-When the bootstrap command is run, the run lists from the groups in each node section of the json are applied to the hosts in the array in that same section. Chef will be installed if it needs to be installed and then MotherBrain will run `chef-client` on all of the nodes.
+When the bootstrap command is run, the run lists from the groups in each node section of the json are applied to the hosts in the array in that same section. Chef will be installed if it needs to be installed and then motherbrain will run `chef-client` on all of the nodes.
 
