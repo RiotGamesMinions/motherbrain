@@ -38,11 +38,9 @@ describe MB::Bootstrap::Worker do
       ]
     end
 
-    let(:future) { double('future', value: nil) }
-
     before do
       subject.stub(node_querier: node_querier, hosts: hosts)
-      node_querier.stub(:future).with(:registered_as, anything).and_return(future)
+      node_querier.stub(:registered_as, anything) { |arg| arg }
     end
 
     it "returns an array of Hashes" do
@@ -63,14 +61,14 @@ describe MB::Bootstrap::Worker do
     context "hosts that are registered to the Chef server" do
       let(:node_names) do
         {
-          "cloud-1.riotgames.com" => double(value: "cloud-1"),
-          "cloud-2.riotgames.com" => double(value: "cloud-2")
+          "cloud-1.riotgames.com" => "cloud-1",
+          "cloud-2.riotgames.com" => "cloud-2"
         }
       end
 
       before do
-        node_names.each do |host, future|
-          node_querier.should_receive(:future).with(:registered_as, host).and_return(future)
+        node_names.each do |host, name|
+          node_querier.should_receive(:registered_as).with(host).and_return(name)
         end
       end
 
@@ -86,9 +84,15 @@ describe MB::Bootstrap::Worker do
     context "hosts that are not registered to the Chef server" do
       let(:node_names) do
         {
-          "cloud-1.riotgames.com" => double(value: nil),
-          "cloud-2.riotgames.com" => double(value: nil)
+          "cloud-1.riotgames.com" => nil,
+          "cloud-2.riotgames.com" => nil
         }
+      end
+
+      before do
+        node_names.each do |host, name|
+          node_querier.should_receive(:registered_as).with(host).and_return(name)
+        end
       end
 
       it "has a nil value for node_name" do
