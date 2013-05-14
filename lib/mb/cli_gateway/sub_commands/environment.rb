@@ -66,14 +66,14 @@ module MotherBrain
 
         desc "lock ENVIRONMENT", "Lock an environment"
         def lock(environment)
-          job = lock_manager.lock(environment)
+          job = lock_manager.async_lock(environment)
 
           CliClient.new(job).display
         end
 
         desc "unlock ENVIRONMENT", "Unlock an environment"
         def unlock(environment)
-          job = lock_manager.unlock(environment)
+          job = lock_manager.async_unlock(environment)
 
           CliClient.new(job).display
         end
