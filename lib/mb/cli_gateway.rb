@@ -118,8 +118,8 @@ module MotherBrain
         if start_mb_application?(args)
           app_config = configure(opts.dup)
           app_config.validate!
-          @app = MB::Application.run!(app_config)
 
+          MB::Application.run!(app_config)
           MB::Logging.add_argument_header
 
           # If the first argument is the name of a plugin, register that plugin and use it.
@@ -138,6 +138,10 @@ module MotherBrain
       rescue MBError => ex
         ui.error ex
         exit_with(ex)
+      rescue Ridley::Errors::ConnectionFailed => ex
+        ui.error "[ERROR] Unable to connect to the configured Chef server: #{ex.message}."
+        ui.error "[ERROR] Check your configuration and network settings and try again."
+        exit_with MB::ChefConnectionError.new
       rescue Errno::EPIPE
         # This happens if a thor command is piped to something like `head`,
         # which closes the pipe when it's done reading. This will also
@@ -145,7 +149,7 @@ module MotherBrain
         # computation will not occur.
         exit(0)
       ensure
-        @app.terminate if @app && @app.alive?
+        Celluloid.shutdown
       end
 
       # Does this invocation require an environment?
