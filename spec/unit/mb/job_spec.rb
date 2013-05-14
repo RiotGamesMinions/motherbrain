@@ -34,11 +34,8 @@ describe MB::Job do
   subject { described_class.new(type) }
 
   describe "#execute" do
-    let(:test_probe) { Object.new }
+    let(:test_probe) { double(testing: true) }
     let(:test_block) { -> { test_probe.testing } }
-    before do
-      test_probe.stub(testing: true)
-    end
 
     context "when the given block raises an exception" do
       before { test_probe.stub(:testing).and_raise(RuntimeError) }
@@ -69,7 +66,7 @@ describe MB::Job do
     end
 
     context "when given an :on_complete callback" do
-      let(:callback_probe) { Object.new }
+      let(:callback_probe) { double(testing: true) }
       let(:callback) { -> { callback_probe.testing } }
 
       it "executes the callback after the job is finished but before it is terminated" do
@@ -83,7 +80,7 @@ describe MB::Job do
     end
 
     context "when given an :on_success callback" do
-      let(:callback_probe) { Object.new }
+      let(:callback_probe) { double(testing: true) }
       let(:callback) { -> { callback_probe.testing } }
 
       context "when the given block does not raise an exception" do
@@ -108,7 +105,7 @@ describe MB::Job do
     end
 
     context "when given an :on_failure callback" do
-      let(:callback_probe) { Object.new }
+      let(:callback_probe) { double(testing: true) }
       let(:callback) { -> { callback_probe.testing } }
 
       context "when the given block raises an exception" do
