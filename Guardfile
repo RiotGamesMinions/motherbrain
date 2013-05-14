@@ -28,16 +28,3 @@ guard 'cucumber', cli: "--drb --require features --format pretty", all_on_start:
 
   watch(%r{^lib/mb/cli.rb})                             { 'features/core' }
 end
-
-# guard 'environment-factory',
-#   name: 'mbtest',
-#   pattern: 'ef_secondary',
-#   api_keyfile: File.join(File.expand_path('..', __FILE__), 'features', 'support', 'ef.token'),
-#   api_url: 'https://ef.riotgames.com',
-#   override_attributes: {
-#     environment_factory: {
-#       artifact_version: "0.8.5"
-#     }
-#   },
-#   cookbook_versions: Hash.new,
-#   destroy_on_exit: true
