@@ -238,10 +238,7 @@ module MotherBrain
     ].freeze
 
     ENVIRONMENT_TASKS = [
-      "configure_environment",
-      "destroy",
-      "lock",
-      "unlock",
+      "destroy"
     ].freeze
 
     SKIP_ENVIRONMENT_TASKS = [

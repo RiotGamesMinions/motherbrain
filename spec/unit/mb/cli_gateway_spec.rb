@@ -49,7 +49,7 @@ describe MB::CliGateway do
       end
 
       context "base command" do
-        ["destroy", "lock", "unlock"].each do |command|
+        ["destroy"].each do |command|
           it "should require an environment for #{command}" do
             subject.requires_environment?([command]).should be_true
           end
