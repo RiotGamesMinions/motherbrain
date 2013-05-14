@@ -128,7 +128,7 @@ module MotherBrain
         #
         # @return [Service::Action]
         def run(job, environment, nodes, run_chef = true)
-          job.set_status("Running component: #{component.name} service action: #{name} on (#{nodes.length}) nodes")
+          job.set_status("Running component: #{component.name} service action: #{name} on #{nodes.collect(&:name).join(', ')}")
 
           runner = ActionRunner.new(environment, nodes)
           runner.instance_eval(&block)
@@ -240,7 +240,7 @@ module MotherBrain
 
             def save_nodes(job)
               if nodes.any?
-                job.set_status "Saving nodes #{nodes.collect(&:name)}"
+                job.set_status "Saving #{nodes.collect(&:name).join(', ')}"
                 nodes.each(&:save)
               end
             end

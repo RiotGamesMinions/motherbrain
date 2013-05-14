@@ -66,7 +66,7 @@ module MotherBrain
       node_success = 0
       node_failure = 0
 
-      job.report_running("Finding environment")
+      job.report_running("Finding environment #{environment.name}")
       environment = find(id)
 
       chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do

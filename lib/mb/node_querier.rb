@@ -39,7 +39,7 @@ module MotherBrain
     #
     # @raise [RemoteCommandError]
     def bulk_chef_run(job, nodes)
-      job.set_status("Performing a chef client run on #{nodes.length} nodes")
+      job.set_status("Performing a chef client run on #{nodes.collect(&:name).join(', ')}")
 
       node_successes = 0
       node_failures = 0
