@@ -128,7 +128,7 @@ module MotherBrain
         #
         # @return [Service::Action]
         def run(job, environment, nodes, run_chef = true)
-          job.set_status("running component: #{component.name} service action: #{name} on (#{nodes.length}) nodes")
+          job.set_status("Running component: #{component.name} service action: #{name} on (#{nodes.length}) nodes")
 
           runner = ActionRunner.new(environment, nodes)
           runner.instance_eval(&block)

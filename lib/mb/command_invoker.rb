@@ -106,7 +106,7 @@ module MotherBrain
         return false
       end
 
-      job.set_status("finding environment")
+      job.set_status("Finding environment")
       environment_manager.find(options[:environment])
 
       command = find(command_name, options[:plugin], options.slice(:component, :environment, :version))
