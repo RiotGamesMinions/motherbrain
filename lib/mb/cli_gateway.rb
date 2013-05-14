@@ -152,7 +152,7 @@ module MotherBrain
         Celluloid.shutdown
       end
 
-      # Does this invocation require an environment?
+      # Does the given argument array require a named argument for environment?
       #
       # @param [Array<String>] args the CLI arguments
       #
@@ -160,16 +160,21 @@ module MotherBrain
       def requires_environment?(args)
         return false if args.count.zero?
 
-        if ENVIRONMENT_TASKS.include?(args.first)
-          return true
+        if args.include?("help")
+          return false
+        end
+
+        if SKIP_ENVIRONMENT_TASKS.include?(args.first)
+          return false
         end
 
         if args.count == 1
           return false
         end
 
-        # All plugin commands require an environment except for help.
-        return !args.include?("help")
+        # All commands/subcommands require an environment unless specified in
+        # the {SKIP_ENVIRONMENT_TASKS} constant array.
+        true
       end
 
       # Did the user call a plugin task?
@@ -228,11 +233,8 @@ module MotherBrain
       "version"
     ].freeze
 
-    ENVIRONMENT_TASKS = [
-      "configure_environment",
-      "destroy",
-      "lock",
-      "unlock",
+    SKIP_ENVIRONMENT_TASKS = [
+      "environment"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [
@@ -312,34 +314,6 @@ module MotherBrain
       MB.ui.say "Config written to: '#{path}'"
     end
 
-    method_option :force,
-      type: :boolean,
-      default: false,
-      desc: "perform the configuration even if the environment is locked"
-    desc "configure_environment MANIFEST", "configure a Chef environment"
-    def configure_environment(attributes_file)
-      attributes_file = File.expand_path(attributes_file)
-
-      begin
-        content = File.read(attributes_file)
-      rescue Errno::ENOENT
-        MB.ui.say "No attributes file found at: '#{attributes_file}'"
-        exit(1)
-      end
-
-      begin
-        attributes = MultiJson.decode(content)
-      rescue MultiJson::DecodeError => ex
-        MB.ui.say "Error decoding JSON from: '#{attributes_file}'"
-        MB.ui.say ex
-        exit(1)
-      end
-
-      job = environment_manager.async_configure(options[:environment], attributes: attributes, force: options[:force])
-
-      CliClient.new(job).display
-    end
-
     desc "init [PATH]", "Create a MotherBrain plugin for the current cookbook"
     def init(path = Dir.pwd)
       metadata = File.join(path, 'metadata.rb')
@@ -405,55 +379,11 @@ module MotherBrain
       end
     end
 
-    method_option :api_url,
-      type: :string,
-      desc: "URL to the Environment Factory API endpoint"
-    method_option :api_key,
-      type: :string,
-      desc: "API authentication key for the Environment Factory"
-    method_option :ssl_verify,
-      type: :boolean,
-      desc: "Should we verify SSL connections?",
-      default: false
-    method_option :yes,
-      type: :boolean,
-      default: false,
-      desc: "Don't confirm, just destroy the environment",
-      aliases: '-y'
-    desc "destroy", "Destroy a provisioned environment"
-    def destroy
-      destroy_options = Hash.new.merge(options).deep_symbolize_keys
-
-      dialog = "This will destroy the '#{options[:environment]}' environment.\nAre you sure? (yes|no): "
-      really_destroy = options[:yes] || ui.yes?(dialog)
-
-      if really_destroy
-        job = provisioner.async_destroy(options[:environment], destroy_options)
-        CliClient.new(job).display
-      else
-        ui.say("Aborting destruction of '#{options[:environment]}'")
-      end
-    end
-
     desc "version", "Display version and license information"
     def version
       MB.ui.say version_header
       MB.ui.say "\n"
       MB.ui.say license
-    end
-
-    desc "lock", "Lock an environment"
-    def lock
-      job = lock_manager.async_lock(options[:environment])
-
-      CliClient.new(job).display
-    end
-
-    desc "unlock", "Unlock an environment"
-    def unlock
-      job = lock_manager.async_unlock(options[:environment])
-
-      CliClient.new(job).display
     end
 
     private
@@ -494,3 +424,5 @@ module MotherBrain
       end
   end
 end
+
+require 'mb/cli_gateway/sub_commands'
