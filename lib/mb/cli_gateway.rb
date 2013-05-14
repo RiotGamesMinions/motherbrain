@@ -425,4 +425,4 @@ module MotherBrain
   end
 end
 
-require 'mb/cli/sub_commands'
+require 'mb/cli_gateway/sub_commands'
