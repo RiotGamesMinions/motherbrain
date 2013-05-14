@@ -200,9 +200,9 @@ module MotherBrain
             # TODO: Make this public when ActionRunner has a clean room
             def run(job)
               unless @node_attributes.empty?
-                self.nodes.collect do |l_node|
-                  Celluloid::Future.new { set_node_attributes(job, l_node) }
-                end.map(&:value)
+                nodes.concurrent_map do |l_node|
+                  set_node_attributes(job, l_node)
+                end
               end
 
               unless @environment_attributes.empty?

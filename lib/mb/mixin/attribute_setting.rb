@@ -251,13 +251,11 @@ module MotherBrain
         # @raise [MB::CookbookConstraintNotSatisfied]
         #   if the constraints cannot be satisfied
         def satisfies_constraints?(cookbook_versions)
-          failures = cookbook_versions.collect do |name, constraint|
-            Celluloid::Future.new {
-              if chef_connection.cookbook.satisfy(name, constraint).nil?
-                "#{name} (#{constraint})"
-              end
-            }
-          end.map(&:value).compact
+          failures = cookbook_versions.concurrent_map do |name, constraint|
+            if chef_connection.cookbook.satisfy(name, constraint).nil?
+              "#{name} (#{constraint})"
+            end
+          end.compact
 
           unless failures.empty?
             raise MB::CookbookConstraintNotSatisfied,

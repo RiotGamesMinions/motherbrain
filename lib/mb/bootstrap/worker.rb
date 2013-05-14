@@ -119,13 +119,8 @@ module MotherBrain
           @nodes = nil
         end
 
-        @nodes ||= hosts.collect do |host|
-          [ host, node_querier.future(:registered_as, host) ]
-        end.collect do |host, client_name|
-          {
-            hostname: host,
-            node_name: client_name.value
-          }
+        @nodes ||= hosts.concurrent_map do |host|
+          { hostname: host, node_name: node_querier.registered_as(host) }
         end
       end
 
@@ -247,37 +242,35 @@ module MotherBrain
       #
       # @return [Array<Hash>]
       def partial_bootstrap(nodes, options = {})
-        nodes.collect do |node|
-          Celluloid::Future.new {
-            hostname  = node[:hostname]
-            node_name = node[:node_name]
+        nodes.concurrent_map do |node|
+          hostname  = node[:hostname]
+          node_name = node[:node_name]
 
-            log.info {
-              "Node (#{node_name}):(#{hostname}) is already registered with Chef: performing a partial bootstrap"
-            }
-
-            response = {
-              node_name: node_name,
-              hostname: hostname,
-              bootstrap_type: :partial,
-              message: "",
-              status: nil
-            }
-
-            begin
-              chef_connection.node.merge_data(node_name, options.slice(:run_list, :attributes))
-              node_querier.put_secret(hostname)
-              node_querier.chef_run(hostname)
-
-              response[:status] = :ok
-            rescue Ridley::Errors::HTTPNotFound, RemoteCommandError, RemoteFileCopyError => ex
-              response[:status]  = :error
-              response[:message] = ex.to_s
-            end
-
-            response
+          log.info {
+            "Node (#{node_name}):(#{hostname}) is already registered with Chef: performing a partial bootstrap"
           }
-        end.map(&:value)
+
+          response = {
+            node_name: node_name,
+            hostname: hostname,
+            bootstrap_type: :partial,
+            message: "",
+            status: nil
+          }
+
+          begin
+            chef_connection.node.merge_data(node_name, options.slice(:run_list, :attributes))
+            node_querier.put_secret(hostname)
+            node_querier.chef_run(hostname)
+
+            response[:status] = :ok
+          rescue Ridley::Errors::HTTPNotFound, RemoteCommandError, RemoteFileCopyError => ex
+            response[:status]  = :error
+            response[:message] = ex.to_s
+          end
+
+          response
+        end
       end
     end
   end
