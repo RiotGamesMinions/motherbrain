@@ -160,6 +160,10 @@ module MotherBrain
       def requires_environment?(args)
         return false if args.count.zero?
 
+        if args.include?("help")
+          return false
+        end
+
         if ENVIRONMENT_TASKS.include?(args.first)
           return true
         end
@@ -241,7 +245,6 @@ module MotherBrain
     ].freeze
 
     SKIP_ENVIRONMENT_TASKS = [
-      "help",
       "environment"
     ].freeze
 
@@ -262,8 +265,6 @@ module MotherBrain
         self.class.configure(opts)
       end
     end
-
-    register Cli::SubCommand::Environment, :environment, "environment", "Environment level commands"
 
     map 'ver' => :version
 
@@ -464,3 +465,5 @@ module MotherBrain
       end
   end
 end
+
+require 'mb/cli/sub_commands'
