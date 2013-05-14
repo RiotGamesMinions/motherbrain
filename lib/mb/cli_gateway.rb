@@ -164,10 +164,6 @@ module MotherBrain
           return false
         end
 
-        if ENVIRONMENT_TASKS.include?(args.first)
-          return true
-        end
-
         if SKIP_ENVIRONMENT_TASKS.include?(args.first)
           return false
         end
@@ -235,10 +231,6 @@ module MotherBrain
       "help",
       "init",
       "version"
-    ].freeze
-
-    ENVIRONMENT_TASKS = [
-      "destroy"
     ].freeze
 
     SKIP_ENVIRONMENT_TASKS = [
@@ -384,36 +376,6 @@ module MotherBrain
       plugins.group_by(&:name).each do |name, plugins|
         versions = plugins.collect(&:version).reverse!
         MB.ui.say "#{name}: #{versions.join(', ')}"
-      end
-    end
-
-    method_option :api_url,
-      type: :string,
-      desc: "URL to the Environment Factory API endpoint"
-    method_option :api_key,
-      type: :string,
-      desc: "API authentication key for the Environment Factory"
-    method_option :ssl_verify,
-      type: :boolean,
-      desc: "Should we verify SSL connections?",
-      default: false
-    method_option :yes,
-      type: :boolean,
-      default: false,
-      desc: "Don't confirm, just destroy the environment",
-      aliases: '-y'
-    desc "destroy", "Destroy a provisioned environment"
-    def destroy
-      destroy_options = Hash.new.merge(options).deep_symbolize_keys
-
-      dialog = "This will destroy the '#{options[:environment]}' environment.\nAre you sure? (yes|no): "
-      really_destroy = options[:yes] || ui.yes?(dialog)
-
-      if really_destroy
-        job = provisioner.async_destroy(options[:environment], destroy_options)
-        CliClient.new(job).display
-      else
-        ui.say("Aborting destruction of '#{options[:environment]}'")
       end
     end
 

@@ -49,16 +49,6 @@ describe MB::CliGateway do
       end
 
       context "base command" do
-        ["destroy"].each do |command|
-          it "should require an environment for #{command}" do
-            subject.requires_environment?([command]).should be_true
-          end
-        end
-
-        it "should require an environment for configure_environment" do
-          subject.requires_environment?(["configure_environment", "manifest"]).should be_true
-        end
-
         it "should not require an environment for versions" do
           subject.requires_environment?(["versions"]).should be_false
         end

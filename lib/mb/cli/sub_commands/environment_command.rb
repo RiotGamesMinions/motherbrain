@@ -30,6 +30,36 @@ module MotherBrain
         CliClient.new(job).display
       end
 
+      method_option :api_url,
+        type: :string,
+        desc: "URL to the Environment Factory API endpoint"
+      method_option :api_key,
+        type: :string,
+        desc: "API authentication key for the Environment Factory"
+      method_option :ssl_verify,
+        type: :boolean,
+        desc: "Should we verify SSL connections?",
+        default: false
+      method_option :yes,
+        type: :boolean,
+        default: false,
+        desc: "Don't confirm, just destroy the environment",
+        aliases: '-y'
+      desc "destroy ENVIRONMENT", "Destroy a provisioned environment"
+      def destroy(environment)
+        destroy_options = Hash.new.merge(options).deep_symbolize_keys
+
+        dialog = "This will destroy the '#{environment}' environment.\nAre you sure? (yes|no): "
+        really_destroy = options[:yes] || ui.yes?(dialog)
+
+        if really_destroy
+          job = provisioner.async_destroy(environment, destroy_options)
+          CliClient.new(job).display
+        else
+          ui.say("Aborting destruction of '#{environment}'")
+        end
+      end
+
       desc "list", "List all environments"
       def list
         ui.say "\n"
