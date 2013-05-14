@@ -138,12 +138,12 @@ module MotherBrain
 
         desc "lock an environment"
         post 'lock' do
-          lock_manager.lock(params[:environment_id])
+          lock_manager.async_lock(params[:environment_id])
         end
 
         desc "unlock an environment"
         delete 'lock' do
-          lock_manager.unlock(params[:environment_id])
+          lock_manager.async_unlock(params[:environment_id])
         end
 
         desc "configure an existing environment cluster"

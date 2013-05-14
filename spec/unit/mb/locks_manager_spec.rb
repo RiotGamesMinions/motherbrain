@@ -43,4 +43,46 @@ describe MB::LockManager do
       subject.locks.should have(0).items
     end
   end
+
+  describe "#lock" do
+    let(:environment) { "rspec-test" }
+    let(:job) { MB::Job.new(:lock) }
+
+    it "creates a new ChefMutex and locks it" do
+      mutex = double('mutex')
+      mutex.should_receive(:lock)
+      MB::ChefMutex.should_receive(:new).and_return(mutex)
+
+      subject.lock(job, environment)
+    end
+  end
+
+  describe "#async_lock" do
+    let(:environment) { "rspec-test" }
+
+    it "returns a JobRecord" do
+      expect(subject.async_lock(environment)).to be_a(MB::JobRecord)
+    end
+  end
+
+  describe "unlock" do
+    let(:environment) { "rspec-test" }
+    let(:job) { MB::Job.new(:unlock) }
+
+    it "creates a new ChefMutex and unlocks it" do
+      mutex = double('mutex')
+      mutex.should_receive(:unlock)
+      MB::ChefMutex.should_receive(:new).and_return(mutex)
+
+      subject.unlock(job, environment)
+    end
+  end
+
+  describe "#async_unlock" do
+    let(:environment) { "rspec-test" }
+
+    it "returns a JobRecord" do
+      expect(subject.async_unlock(environment)).to be_a(MB::JobRecord)
+    end
+  end
 end
