@@ -134,7 +134,7 @@ module MotherBrain
           runner.instance_eval(&block)
           runner.send(:run, job) # TODO: make this public when ActionRunner has a clean room
 
-          if run_chef
+          if run_chef || runner.resets.any?
             node_querier.bulk_chef_run job, nodes
           end
 
@@ -191,6 +191,10 @@ module MotherBrain
           def node_attribute(key, value, options = {})
             options = options.reverse_merge(toggle: false)
             @node_attributes << { key: key, value: value, options: options }
+          end
+
+          def resets
+            @node_resets | @environment_resets
           end
 
           private
