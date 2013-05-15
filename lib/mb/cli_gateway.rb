@@ -71,11 +71,8 @@ module MotherBrain
 
           plugin
         elsif plugin_manager.local_plugin?
-          plugin = plugin_manager.load_local(Dir.getwd)
-
-          ui.info "loading plugin from #{Dir.getwd}"
-
-          plugin
+          ui.info "Loading #{name} plugin from: #{Dir.getwd}"
+          plugin_manager.load_local(Dir.getwd)
         elsif options[:environment]
           plugin = begin
             ui.info "Determining best version of the #{name} plugin to use with the #{options[:environment]}" +
