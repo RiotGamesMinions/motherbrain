@@ -10,6 +10,40 @@ component "webserver" do
 end
 ```
 
+## `description`
+
+Provides text to be displayed in the help output generated for the component 
+
+```ruby
+component "webserver" do
+  description "serves the myface PHP web application"
+end
+```
+
+## `versioned`
+
+Declares that the component is versioned.
+
+```ruby
+component "webserver" do
+  versioned
+end
+```
+
+This will default to 'webserver.version'. Declaring this will allow you to use the `mb plugin upgrade` command:
+
+```sh
+mb myface upgrade --components webserver:1.2.3
+```
+
+You can also specify a custom version attribute:
+
+```ruby
+component "webserver" do
+  versioned_with "web"
+end
+```
+
 ## `command`
 
 Defines a command to be added to the mb cli generated for the plugin.
@@ -95,16 +129,6 @@ To run a command on all nodes, but limit how many are running at once:
 ```ruby
 on("default", max_concurrent: 2) do
   ...
-end
-```
-
-## `description`
-
-Provides text to be displayed in the help output generated for the plugin
-
-```ruby
-component "webserver" do
-  description "serves the myface PHP web application"
 end
 ```
 
