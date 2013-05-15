@@ -61,7 +61,7 @@ module MotherBrain
       end
 
       if find(plugin.name, plugin.version, remote: false)
-        return
+        return nil
       end
 
       @plugins.add(plugin)
@@ -153,7 +153,9 @@ module MotherBrain
     # returned.
     #
     # @param [String] name
+    #   name of the plugin
     # @param [#to_s] version
+    #   version of the plugin to find
     #
     # @option options [Boolean] :remote (false)
     #   search for the plugin on the remote Chef Server if it isn't found locally
@@ -204,27 +206,20 @@ module MotherBrain
     # given name and optional version into the user's Berkshelf.
     #
     # @param [String] name
-    #   name of the plugin
-    #
-    # @option options [String] :version
+    #   Name of the plugin
+    # @param [#to_s] version
     #   The version of the plugin to install. If left blank the latest version will be installed
     #
     # @return [MB::Plugin]
     #
     # @raise [MB::PluginNotFound]
-    def install(name, options = {})
-      plugin = if options[:version].nil?
-        latest(name, remote: true)
-      else
-        find(name, options[:version], remote: true)
-      end
-
-      if plugin.nil?
-        abort MB::PluginNotFound.new(name, options[:version])
+    def install(name, version = nil)
+      unless plugin = find(name, version, remote: true)
+        abort MB::PluginNotFound.new(name, version)
       end
 
       chef_connection.cookbook.download(plugin.name, plugin.version, install_path_for(plugin))
-      plugin
+      add(plugin, force: true)
     end
 
     # The local filepath that a plugin would be or should be installed to
@@ -364,10 +359,11 @@ module MotherBrain
 
     # Remove and Add the given plugin from the set of plugins
     #
-    # @param [MotherBrain::Plugin] plugin
+    # @param [MB::Plugin] plugin
     def reload(plugin)
       remove(plugin)
-      add(plugin)
+      @plugins.add(plugin)
+      plugin
     end
 
     # Reload plugins from Chef Server and from the Berkshelf
@@ -435,9 +431,8 @@ module MotherBrain
     # Uninstall an installed plugin
     #
     # @param [String] name
-    #   name of the plugin
-    #
-    # @option options [String] :version
+    #   Name of the plugin
+    # @param [#to_s] version
     #   The version of the plugin to uninstall
     #
     # @return [MB::Plugin, nil]

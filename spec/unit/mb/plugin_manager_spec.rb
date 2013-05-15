@@ -33,70 +33,42 @@ describe MotherBrain::PluginManager do
 
   describe "#install" do
     let(:plugin) { double(name: "rspec", version: "1.2.3") }
+    let(:plugin_install_path) { subject.install_path_for(plugin) }
 
     before do
       subject.stub_chain(:chef_connection, :cookbook, :download)
+      subject.stub(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin)
     end
 
-    context "when no version is specified" do
-      before { subject.stub(:latest).with(plugin.name, remote: true).and_return(plugin) }
+    it "searches for the plugin of the given name/version on the remote" do
+      subject.should_receive(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin)
 
-      it "searches for the latest version of the plugin on the remote" do
-        subject.should_receive(:latest).with(plugin.name, remote: true).and_return(plugin)
-
-        subject.install(plugin.name)
-      end
-
-      it "returns the found plugin" do
-        expect(subject.install(plugin.name)).to eq(plugin)
-      end
-
-      it "downloads the cookbook containing the plugin to the Berkshelf" do
-        berkshelf_destination = MB::Berkshelf.cookbooks_path.join("#{plugin.name}-#{plugin.version}")
-        cookbook_resource = double
-        subject.stub_chain(:chef_connection, :cookbook).and_return(cookbook_resource)
-        cookbook_resource.should_receive(:download).with(plugin.name, plugin.version, berkshelf_destination)
-
-        subject.install(plugin.name)
-      end
-
-      context "when the remote does not have a plugin of the given name" do
-        before { subject.should_receive(:latest).with(plugin.name, remote: true).and_return(nil) }
-
-        it "raises a PluginNotFound error" do
-          expect { subject.install(plugin.name) }.to raise_error(MB::PluginNotFound)
-        end
-      end
+      subject.install(plugin.name, plugin.version)
     end
 
-    context "when a version is specified" do
-      before { subject.stub(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin) }
+    it "returns the found plugin" do
+      expect(subject.install(plugin.name, plugin.version)).to eq(plugin)
+    end
 
-      it "searches for the exact version of the plugin on the remote" do
-        subject.should_receive(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin)
+    it "downloads the cookbook containing the plugin to the Berkshelf" do
+      cookbook_resource = double
+      subject.stub_chain(:chef_connection, :cookbook).and_return(cookbook_resource)
+      cookbook_resource.should_receive(:download).with(plugin.name, plugin.version, plugin_install_path)
 
-        subject.install(plugin.name, version: plugin.version)
-      end
+      subject.install(plugin.name, plugin.version)
+    end
 
-      it "returns the found plugin" do
-        expect(subject.install(plugin.name, version: plugin.version)).to eq(plugin)
-      end
+    it "adds the plugin to the list of plugins" do
+      subject.install(plugin.name, plugin.version)
 
-      it "downloads the cookbook containing the plugin to the Berkshelf" do
-        berkshelf_destination = MB::Berkshelf.cookbooks_path.join("#{plugin.name}-#{plugin.version}")
-        cookbook_resource = double
-        subject.stub_chain(:chef_connection, :cookbook).and_return(cookbook_resource)
-        cookbook_resource.should_receive(:download).with(plugin.name, plugin.version, berkshelf_destination)
+      expect(subject.list).to include(plugin)
+    end
 
-        subject.install(plugin.name, version: plugin.version)
-      end
+    context "when the remote does not have a plugin of the given name/version" do
+      before { subject.should_receive(:find).with(plugin.name, plugin.version, remote: true).and_return(nil) }
 
-      context "when the remote does not have a plugin of the given version" do
-        before { subject.should_receive(:find).with(plugin.name, plugin.version, remote: true).and_return(nil) }
-
-        it "raises a PluginNotFound error" do
-          expect { subject.install(plugin.name, version: plugin.version) }.to raise_error(MB::PluginNotFound)
-        end
+      it "raises a PluginNotFound error" do
+        expect { subject.install(plugin.name, plugin.version) }.to raise_error(MB::PluginNotFound)
       end
     end
   end
