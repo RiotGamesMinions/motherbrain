@@ -48,16 +48,16 @@ module MotherBrain
 
     # Add a plugin to the set of plugins
     #
-    # @param [MotherBrain::Plugin] plugin
+    # @param [MB::Plugin] plugin
     #
     # @option options [Boolean] :force
     #   load a plugin even if a plugin of the same name and version is already loaded
     #
-    # @return [Set<MB::Plugin>, nil]
+    # @return [MB::Plugin, nil]
     #   returns the set of plugins on success or nil if the plugin was not added
     def add(plugin, options = {})
       if options[:force]
-        return reload(plugin)
+        remove(plugin)
       end
 
       if find(plugin.name, plugin.version, remote: false)
@@ -219,7 +219,7 @@ module MotherBrain
       end
 
       chef_connection.cookbook.download(plugin.name, plugin.version, install_path_for(plugin))
-      add(plugin, force: true)
+      reload(plugin)
     end
 
     # The local filepath that a plugin would be or should be installed to
@@ -361,9 +361,7 @@ module MotherBrain
     #
     # @param [MB::Plugin] plugin
     def reload(plugin)
-      remove(plugin)
-      @plugins.add(plugin)
-      plugin
+      add(plugin, force: true)
     end
 
     # Reload plugins from Chef Server and from the Berkshelf

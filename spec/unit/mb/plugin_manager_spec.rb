@@ -35,33 +35,37 @@ describe MotherBrain::PluginManager do
     let(:plugin) { double(name: "rspec", version: "1.2.3") }
     let(:plugin_install_path) { subject.install_path_for(plugin) }
 
-    before do
-      subject.stub_chain(:chef_connection, :cookbook, :download)
-      subject.stub(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin)
-    end
+    before { subject.stub_chain(:chef_connection, :cookbook, :download) }
 
-    it "searches for the plugin of the given name/version on the remote" do
-      subject.should_receive(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin)
+    context "when the remote contains the plugin and it is not installed" do
+      before do
+        subject.stub(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin)
+        subject.stub(:find).with(plugin.name, plugin.version, remote: false).and_return(nil)
+      end
 
-      subject.install(plugin.name, plugin.version)
-    end
+      it "searches for the plugin of the given name/version on the remote" do
+        subject.should_receive(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin)
 
-    it "returns the found plugin" do
-      expect(subject.install(plugin.name, plugin.version)).to eq(plugin)
-    end
+        subject.install(plugin.name, plugin.version)
+      end
 
-    it "downloads the cookbook containing the plugin to the Berkshelf" do
-      cookbook_resource = double
-      subject.stub_chain(:chef_connection, :cookbook).and_return(cookbook_resource)
-      cookbook_resource.should_receive(:download).with(plugin.name, plugin.version, plugin_install_path)
+      it "returns the found plugin" do
+        expect(subject.install(plugin.name, plugin.version)).to eq(plugin)
+      end
 
-      subject.install(plugin.name, plugin.version)
-    end
+      it "downloads the cookbook containing the plugin to the Berkshelf" do
+        cookbook_resource = double
+        subject.stub_chain(:chef_connection, :cookbook).and_return(cookbook_resource)
+        cookbook_resource.should_receive(:download).with(plugin.name, plugin.version, plugin_install_path)
 
-    it "adds the plugin to the list of plugins" do
-      subject.install(plugin.name, plugin.version)
+        subject.install(plugin.name, plugin.version)
+      end
 
-      expect(subject.list).to include(plugin)
+      it "adds the plugin to the list of plugins" do
+        subject.install(plugin.name, plugin.version)
+
+        expect(subject.list).to include(plugin)
+      end
     end
 
     context "when the remote does not have a plugin of the given name/version" do
