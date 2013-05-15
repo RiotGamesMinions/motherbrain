@@ -42,7 +42,7 @@ module MotherBrain
           desc: "The version of the plugin to install"
         desc "install NAME", "Install a plugin from the remote Chef server"
         def install(name)
-          plugin = plugin_manager.install(name, version: options[:version])
+          plugin = plugin_manager.install(name, options[:version])
           ui.say "Successfully installed #{plugin}"
         end
 
