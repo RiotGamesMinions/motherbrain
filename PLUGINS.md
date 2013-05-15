@@ -209,6 +209,18 @@ action :start do
 end
 ```
 
+**`toggle`**
+
+To toggle an attribute for just this Chef run:
+
+```ruby
+action :start do
+  node_attribute 'myface.apache.restart', true, toggle: true
+end
+```
+
+The attribute will be set to true, and then set back to its original value after the Chef run.
+
 # `stack_order`
 
 A stack order specifies the order in which a bootstrap or Chef run occurs.
