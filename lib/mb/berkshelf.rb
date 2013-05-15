@@ -1,7 +1,7 @@
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   #
-  # This module contains integration code for Berkshelf into MotherBrain
+  # This module contains integration code for Berkshelf into motherbrain
   module Berkshelf
     class << self
       # An array of Pathnames representing cookbooks in the Berkshelf

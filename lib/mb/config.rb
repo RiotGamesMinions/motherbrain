@@ -2,7 +2,7 @@ module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   class Config < Chozo::Config::JSON
     class << self
-      # The default location for MotherBrain's config file
+      # The default location for motherbrain's config file
       #
       # @return [String]
       def default_path

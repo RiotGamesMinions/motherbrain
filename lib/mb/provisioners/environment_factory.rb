@@ -30,7 +30,7 @@ module MotherBrain
         end
 
         # Convert the created environment response from environment factory into a usable format
-        # for MotherBrain internals
+        # for motherbrain internals
         #
         # @example
         #   [

@@ -1,10 +1,10 @@
-Feature: listing the plugins available to MotherBrain
+Feature: listing the plugins available to motherbrain
   As a user of the motherbrain command line interface
   I need a way to list all of the available plugins and versions
   So I can see what plugins and versions of those plugins I have installed
 
   Background:
-    Given a valid MotherBrain configuration
+    Given a valid motherbrain configuration
     And I have an empty Berkshelf
 
   Scenario: listing all plugins

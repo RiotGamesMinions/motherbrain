@@ -77,7 +77,7 @@ module MotherBrain
       MB::Cli::Base.ui
     end
 
-    # Path to the root directory of the MotherBrain application
+    # Path to the root directory of the motherbrain application
     #
     # @return [Pathname]
     def app_root
@@ -104,7 +104,7 @@ module MotherBrain
       MB::Logging.set_logger(obj)
     end
 
-    # Is MotherBrain executing in test mode?
+    # Is motherbrain executing in test mode?
     #
     # @return [Boolean]
     def testing?

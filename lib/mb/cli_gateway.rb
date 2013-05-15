@@ -259,7 +259,7 @@ module MotherBrain
 
     class_option :config,
       type: :string,
-      desc: "Path to a MotherBrain JSON configuration file.",
+      desc: "Path to a motherbrain JSON configuration file.",
       aliases: "-c",
       banner: "PATH"
     class_option :verbose,
