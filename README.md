@@ -45,10 +45,10 @@ Config written to: '~/.mb/config.json'
 ```
 
 You can verify that motherbrain is installed correctly and pointing to a Chef
-server by running `mb plugins --remote`:
+server by running `mb plugin list --remote`:
 
 ```
-$ mb plugins --remote
+$ mb plugin list --remote
 
 ** listing local and remote plugins...
 
@@ -69,7 +69,7 @@ myface$
 We'll generate a new plugin for the cookbook we're developing:
 
 ```
-myface$ mb init
+myface$ mb plugin init
       create  bootstrap.json
       create  motherbrain.rb
 
