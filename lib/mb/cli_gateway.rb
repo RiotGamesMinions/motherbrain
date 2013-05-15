@@ -230,7 +230,8 @@ module MotherBrain
       "configure",
       "help",
       "init",
-      "version"
+      "version",
+      "ver"
     ].freeze
 
     SKIP_ENVIRONMENT_TASKS = [
@@ -350,7 +351,7 @@ module MotherBrain
       end
 
       def version_header
-        "MotherBrain (#{MB::VERSION})"
+        "motherbrain (#{MB::VERSION})"
       end
 
       def license
