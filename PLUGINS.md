@@ -76,6 +76,28 @@ on("default") do
 end
 ```
 
+**`any`**
+
+To run a command only on portion of the nodes:
+
+```ruby
+on("default", any: 2) do
+  ...
+end
+```
+
+The nodes will be chosen at random.
+
+**`max_concurrent`**
+
+To run a command on all nodes, but limit how many are running at once:
+
+```ruby
+on("default", max_concurrent: 2) do
+  ...
+end
+```
+
 ## `description`
 
 Provides text to be displayed in the help output generated for the plugin
