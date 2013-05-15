@@ -307,7 +307,7 @@ module MotherBrain
       end
 
       def cluster_bootstrap(&block)
-        warn "#{real_model}: cluster_bootstrap is now stack_order, and will be removed in motherbrain 1.0"
+        MB.log.warn "#{real_model}: cluster_bootstrap is now stack_order, and will be removed in motherbrain 1.0"
         stack_order(&block)
       end
     end
