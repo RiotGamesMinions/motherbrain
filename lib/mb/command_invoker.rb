@@ -35,7 +35,7 @@ module MotherBrain
     #
     # @return [MB::Job]
     def async_invoke(command_name, options = {})
-      job = Job.new(:invoke_command)
+      job = Job.new(:command)
       async(:invoke, job, command_name, options)
       job.ticket
     end
@@ -106,7 +106,7 @@ module MotherBrain
         return false
       end
 
-      job.set_status("finding environment")
+      job.set_status("Finding environment #{options[:environment]}")
       environment_manager.find(options[:environment])
 
       command = find(command_name, options[:plugin], options.slice(:component, :environment, :version))
