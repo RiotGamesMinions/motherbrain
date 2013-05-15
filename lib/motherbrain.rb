@@ -151,6 +151,17 @@ module MotherBrain
         end
       end
     end
+
+    def require_or_exit(library, message = nil)
+      begin
+        require library
+      rescue LoadError
+        message ||=
+          "#{library} was not found. Please add it to your Gemfile, " +
+          "and then run `bundle install`."
+        raise PrerequisiteNotInstalled, message
+      end
+    end
   end
 end
 

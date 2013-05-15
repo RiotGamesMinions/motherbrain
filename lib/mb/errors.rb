@@ -502,4 +502,9 @@ module MotherBrain
       "An item named '#{item_name}' was not found in the '#{data_bag_name}' data bag."
     end
   end
+
+  class PrerequisiteNotInstalled < MBError
+    exit_code(1234)
+    error_code(1234)
+  end
 end
