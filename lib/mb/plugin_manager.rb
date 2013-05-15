@@ -223,10 +223,17 @@ module MotherBrain
         abort MB::PluginNotFound.new(name, options[:version])
       end
 
-      chef_connection.cookbook.download(plugin.name, plugin.version,
-        Berkshelf.cookbooks_path.join("#{plugin.name}-#{plugin.version}"))
-
+      chef_connection.cookbook.download(plugin.name, plugin.version, install_path_for(plugin))
       plugin
+    end
+
+    # The local filepath that a plugin would be or should be installed to
+    #
+    # @param [MB::Plugin] plugin
+    #
+    # @return [Pathname]
+    def install_path_for(plugin)
+      Berkshelf.cookbooks_path.join("#{plugin.name}-#{plugin.version}")
     end
 
     # Return most current version of the plugin of the given name
@@ -380,7 +387,7 @@ module MotherBrain
 
     # Remove the given plugin from the set of plugins
     #
-    # @param [MotherBrain::Plugin] plugin
+    # @param [Set<MB::Plugin>] plugin
     def remove(plugin)
       @plugins.delete(plugin)
     end
@@ -423,6 +430,26 @@ module MotherBrain
       end
     rescue Solve::Errors::NoSolutionError
       abort PluginNotFound.new(plugin_name, constraint)
+    end
+
+    # Uninstall an installed plugin
+    #
+    # @param [String] name
+    #   name of the plugin
+    #
+    # @option options [String] :version
+    #   The version of the plugin to uninstall
+    #
+    # @return [MB::Plugin, nil]
+    def uninstall(name, version)
+      unless plugin = find(name, version, remote: false)
+        return nil
+      end
+
+      FileUtils.rm_rf(install_path_for(plugin))
+      remove(plugin)
+
+      plugin
     end
 
     # List all of the versions of the plugin of the given name

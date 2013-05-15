@@ -31,7 +31,7 @@ describe MotherBrain::PluginManager do
 
   subject { described_class.new }
 
-  describe "#install", focus: true do
+  describe "#install" do
     let(:plugin) { double(name: "rspec", version: "1.2.3") }
 
     before do
@@ -97,6 +97,48 @@ describe MotherBrain::PluginManager do
         it "raises a PluginNotFound error" do
           expect { subject.install(plugin.name, version: plugin.version) }.to raise_error(MB::PluginNotFound)
         end
+      end
+    end
+  end
+
+  describe "#install_path_for" do
+    let(:plugin) { double(name: "rspec", version: "1.2.3") }
+
+    it "returns a Pathname" do
+      expect(subject.install_path_for(plugin)).to be_a(Pathname)
+    end
+  end
+
+  describe "#uninstall" do
+    let(:plugin) { double(name: "rpsec", version: "1.2.3") }
+    let(:plugin_install_path) { subject.install_path_for(plugin) }
+
+    before do
+      subject.add(plugin)
+      FileUtils.mkdir_p(plugin_install_path)
+    end
+
+    it "returns the uninstalled plugin" do
+      expect(subject.uninstall(plugin.name, plugin.version)).to eql(plugin)
+    end
+
+    it "removes the plugin from the plugins list" do
+      subject.uninstall(plugin.name, plugin.version)
+
+      expect(subject.list).to_not include(plugin)
+    end
+
+    it "removes the plugin and it's cookbook from disk" do
+      subject.uninstall(plugin.name, plugin.version)
+
+      expect(plugin_install_path).to_not exist
+    end
+
+    context "when the plugin of the given name/version is not installed" do
+      before { subject.stub(:find).with(plugin.name, plugin.version, remote: false).and_return(nil) }
+
+      it "returns nil" do
+        expect(subject.uninstall(plugin.name, plugin.version)).to be_nil
       end
     end
   end

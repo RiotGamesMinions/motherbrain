@@ -80,6 +80,19 @@ module MotherBrain
             ui.say "#{name}: #{versions.join(', ')}"
           end
         end
+
+        method_option :version,
+          type: :string,
+          desc: "The version of the plugin to install",
+          required: true
+        desc "uninstall NAME", "Uninstall a plugin from your Berkshelf"
+        def uninstall(name)
+          if plugin = plugin_manager.uninstall(name, options[:version])
+            ui.say "Successfully uninstalled #{plugin}"
+          else
+            ui.say "#{name} (#{options[:version]}) was not installed"
+          end
+        end
       end
     end
 
