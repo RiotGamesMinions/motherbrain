@@ -162,9 +162,9 @@ module MotherBrain
     #
     # @return [MB::Plugin, nil]
     def find(name, version = nil, options = {})
-      return latest(name) unless version
-
       options = options.reverse_merge(remote: false)
+
+      return latest(name, options) unless version
 
       installed = @plugins.find { |plugin| plugin.name == name && plugin.version.to_s == version.to_s }
 
