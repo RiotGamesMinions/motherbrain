@@ -12,7 +12,7 @@ end
 
 ## `description`
 
-Provides text to be displayed in the help output generated for the component 
+Provides text to be displayed in the help output generated for the component
 
 ```ruby
 component "webserver" do
@@ -30,7 +30,7 @@ component "webserver" do
 end
 ```
 
-This will default to 'webserver.version'. Declaring this will allow you to use the `mb plugin upgrade` command:
+This will default to the 'webserver.version' attribute, seen in recipes as `node[:webserver][:version]`. Declaring this will allow you to use the `mb plugin upgrade` command:
 
 ```sh
 mb myface upgrade --components webserver:1.2.3
@@ -43,6 +43,8 @@ component "webserver" do
   versioned_with "web"
 end
 ```
+
+THis would use the attribute 'web', seen in recipes as `node[:web]`.
 
 ## `command`
 
