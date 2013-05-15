@@ -6,13 +6,21 @@ Gem::Specification.new do |s|
     "Jamie Winsor",
     "Jesse Howarth",
     "Justin Campbell",
-    "Michael Ivey"
+    "Michael Ivey",
+    "Cliff Dickerson",
+    "Andrew Garson",
+    "Kyle Allan",
+    "Josiah Kiehl",
   ]
   s.email         = [
     "reset@riotgames.com",
     "jhowarth@riotgames.com",
     "justin.campbell@riotgames.com",
-    "michael.ivey@riotgames.com"
+    "michael.ivey@riotgames.com",
+    "cdickerson@riotgames.com",
+    "agarson@riotgames.com",
+    "kallan@riotgames.com",
+    "jkiehl@riotgames.com",
   ]
   s.description   = %q{An orchestrator for Chef}
   s.summary       = s.description

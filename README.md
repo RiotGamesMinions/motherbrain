@@ -256,3 +256,7 @@ That's it! We now have our application deployed to 2 nodes.
 * Jesse Howarth (<jhowarth@riotgames.com>)
 * Justin Campbell (<justin.campbell@riotgames.com>)
 * Michael Ivey (<michael.ivey@riotgames.com>)
+* Cliff Dickerson (<cdickerson@riotgames.com>)
+* Andrew Garson (<agarson@riotgames.com>)
+* Kyle Allan (<kallan@riotgames.com>)
+* Josiah Kiehl (<jkiehl@riotgames.com>)
