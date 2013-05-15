@@ -86,7 +86,10 @@
 <code>mb</code> <code>environment</code> unlock ENVIRONMENT<br />
 <code>mb</code> <code>environment</code> help [COMMAND]<br />
 <code>mb</code> <code>plugin</code> init [PATH]<br />
+<code>mb</code> <code>plugin</code> install NAME<br />
 <code>mb</code> <code>plugin</code> list<br />
+<code>mb</code> <code>plugin</code> show NAME<br />
+<code>mb</code> <code>plugin</code> uninstall NAME --version=VERSION<br />
 <code>mb</code> <code>plugin</code> help [COMMAND]<br />
 <code>mb</code> <code>&lt;plugin></code> nodes<br />
 <code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST<br />
@@ -173,11 +176,36 @@ Describe subcommands or one specific subcommand</p>
 <p><code>mb</code> <code>plugin</code> init [PATH]<br />
 Generate a new motherbrain plugin in the target cookbook</p>
 
+<p><code>mb</code> <code>plugin</code> install NAME<br />
+Install a plugin from the remote Chef server</p>
+
+<dl>
+<dt>--version=VERSION</dt><dd>The version of the plugin to install<br /></dd>
+</dl>
+
+
 <p><code>mb</code> <code>plugin</code> list<br />
 List all installed plugins</p>
 
 <dl>
 <dt>--remote</dt><dd>search the remote Chef server and include plugins from the results<br /></dd>
+</dl>
+
+
+<p><code>mb</code> <code>plugin</code> show NAME<br />
+Show information about a plugin</p>
+
+<dl>
+<dt>--version=VERSION</dt><dd>The version of the plugin to display information for<br /></dd>
+<dt>--remote</dt><dd>Include plugins found on the remote Chef server<br /></dd>
+</dl>
+
+
+<p><code>mb</code> <code>plugin</code> uninstall NAME --version=VERSION<br />
+Uninstall a plugin from your Berkshelf</p>
+
+<dl>
+<dt>--version=VERSION (REQUIRED)</dt><dd>The version of the plugin to install<br /></dd>
 </dl>
 
 
