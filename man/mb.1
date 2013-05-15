@@ -10,25 +10,40 @@
 \fBmb\fR configure
 .
 .br
-\fBmb\fR configure_environment MANIFEST
-.
-.br
-\fBmb\fR init [PATH]
-.
-.br
-\fBmb\fR plugins
-.
-.br
-\fBmb\fR destroy
-.
-.br
 \fBmb\fR version
 .
 .br
-\fBmb\fR lock
+\fBmb\fR environment
 .
 .br
-\fBmb\fR unlock
+\fBmb\fR plugin
+.
+.br
+\fBmb\fR \fBenvironment\fR configure ENVIRONMENT FILE
+.
+.br
+\fBmb\fR \fBenvironment\fR destroy ENVIRONMENT
+.
+.br
+\fBmb\fR \fBenvironment\fR list
+.
+.br
+\fBmb\fR \fBenvironment\fR lock ENVIRONMENT
+.
+.br
+\fBmb\fR \fBenvironment\fR unlock ENVIRONMENT
+.
+.br
+\fBmb\fR \fBenvironment\fR help [COMMAND]
+.
+.br
+\fBmb\fR \fBplugin\fR init [PATH]
+.
+.br
+\fBmb\fR \fBplugin\fR list
+.
+.br
+\fBmb\fR \fBplugin\fR help [COMMAND]
 .
 .br
 \fBmb\fR \fB<plugin>\fR nodes
@@ -84,7 +99,7 @@ Plugin version to use
 Chef environment
 .
 .SH "COMMANDS"
-\fI\fBmb\fR configure\fR
+\fBmb\fR configure
 .
 .br
 create a new configuration file based on a set of interactive questions
@@ -97,7 +112,25 @@ create a new configuration file even if one already exists\.
 
 .
 .P
-\fI\fBmb\fR configure_environment MANIFEST\fR
+\fBmb\fR version
+.
+.br
+Display version and license information
+.
+.P
+\fBmb\fR environment
+.
+.br
+Environment level commands
+.
+.P
+\fBmb\fR plugin
+.
+.br
+Plugin level commands
+.
+.P
+\fBmb\fR \fBenvironment\fR configure ENVIRONMENT FILE
 .
 .br
 configure a Chef environment
@@ -110,50 +143,10 @@ perform the configuration even if the environment is locked
 
 .
 .P
-\fI\fBmb\fR init [PATH]\fR
-.
-.br
-Create a MotherBrain plugin for the current cookbook
-.
-.P
-\fI\fBmb\fR plugins\fR
-.
-.br
-Display all installed plugins and versions
-.
-.TP
-\-\-remote
-search the remote Chef server and include plugins from the results
-.
-.br
-
-.
-.P
-\fI\fBmb\fR destroy\fR
+\fBmb\fR \fBenvironment\fR destroy ENVIRONMENT
 .
 .br
 Destroy a provisioned environment
-.
-.TP
-\-\-api\-url=API_URL
-URL to the Environment Factory API endpoint
-.
-.br
-
-.
-.TP
-\-\-api\-key=API_KEY
-API authentication key for the Environment Factory
-.
-.br
-
-.
-.TP
-\-\-ssl\-verify
-Should we verify SSL connections?
-.
-.br
-
 .
 .TP
 \-y, \-\-yes
@@ -163,31 +156,62 @@ Don\'t confirm, just destroy the environment
 
 .
 .P
-\fI\fBmb\fR version\fR
+\fBmb\fR \fBenvironment\fR list
 .
 .br
-Display version and license information
+List all environments
 .
 .P
-\fI\fBmb\fR lock\fR
+\fBmb\fR \fBenvironment\fR lock ENVIRONMENT
 .
 .br
 Lock an environment
 .
 .P
-\fI\fBmb\fR unlock\fR
+\fBmb\fR \fBenvironment\fR unlock ENVIRONMENT
 .
 .br
 Unlock an environment
 .
 .P
-\fI\fBmb\fR \fB<plugin>\fR nodes\fR
+\fBmb\fR \fBenvironment\fR help [COMMAND]
+.
+.br
+Describe subcommands or one specific subcommand
+.
+.P
+\fBmb\fR \fBplugin\fR init [PATH]
+.
+.br
+Generate a new motherbrain plugin in the target cookbook
+.
+.P
+\fBmb\fR \fBplugin\fR list
+.
+.br
+List all installed plugins
+.
+.TP
+\-\-remote
+search the remote Chef server and include plugins from the results
+.
+.br
+
+.
+.P
+\fBmb\fR \fBplugin\fR help [COMMAND]
+.
+.br
+Describe subcommands or one specific subcommand
+.
+.P
+\fBmb\fR \fB<plugin>\fR nodes
 .
 .br
 List all nodes grouped by Component and Group
 .
 .P
-\fI\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST\fR
+\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST
 .
 .br
 Bootstrap a manifest of node groups
@@ -242,7 +266,7 @@ Perform bootstrap even if the environment is locked
 
 .
 .P
-\fI\fBmb\fR \fB<plugin>\fR provision MANIFEST\fR
+\fBmb\fR \fB<plugin>\fR provision MANIFEST
 .
 .br
 Create a cluster of nodes and add them to a Chef environment
@@ -304,7 +328,7 @@ Perform bootstrap even if the environment is locked
 
 .
 .P
-\fI\fBmb\fR \fB<plugin>\fR upgrade\fR
+\fBmb\fR \fB<plugin>\fR upgrade
 .
 .br
 Upgrade an environment to the specified versions

@@ -76,13 +76,18 @@
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
 <p><code>mb</code> configure<br />
-<code>mb</code> configure_environment MANIFEST<br />
-<code>mb</code> init [PATH]<br />
-<code>mb</code> plugins<br />
-<code>mb</code> destroy<br />
 <code>mb</code> version<br />
-<code>mb</code> lock<br />
-<code>mb</code> unlock<br />
+<code>mb</code> environment<br />
+<code>mb</code> plugin<br />
+<code>mb</code> <code>environment</code> configure ENVIRONMENT FILE<br />
+<code>mb</code> <code>environment</code> destroy ENVIRONMENT<br />
+<code>mb</code> <code>environment</code> list<br />
+<code>mb</code> <code>environment</code> lock ENVIRONMENT<br />
+<code>mb</code> <code>environment</code> unlock ENVIRONMENT<br />
+<code>mb</code> <code>environment</code> help [COMMAND]<br />
+<code>mb</code> <code>plugin</code> init [PATH]<br />
+<code>mb</code> <code>plugin</code> list<br />
+<code>mb</code> <code>plugin</code> help [COMMAND]<br />
 <code>mb</code> <code>&lt;plugin></code> nodes<br />
 <code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST<br />
 <code>mb</code> <code>&lt;plugin></code> provision MANIFEST<br />
@@ -120,7 +125,7 @@ change the behavior.</p>
 
 <h2 id="COMMANDS">COMMANDS</h2>
 
-<p><em><code>mb</code> configure</em><br />
+<p><code>mb</code> configure<br />
 create a new configuration file based on a set of interactive questions</p>
 
 <dl>
@@ -128,7 +133,16 @@ create a new configuration file based on a set of interactive questions</p>
 </dl>
 
 
-<p><em><code>mb</code> configure_environment MANIFEST</em><br />
+<p><code>mb</code> version<br />
+Display version and license information</p>
+
+<p><code>mb</code> environment<br />
+Environment level commands</p>
+
+<p><code>mb</code> plugin<br />
+Plugin level commands</p>
+
+<p><code>mb</code> <code>environment</code> configure ENVIRONMENT FILE<br />
 configure a Chef environment</p>
 
 <dl>
@@ -136,41 +150,44 @@ configure a Chef environment</p>
 </dl>
 
 
-<p><em><code>mb</code> init [PATH]</em><br />
-Create a MotherBrain plugin for the current cookbook</p>
+<p><code>mb</code> <code>environment</code> destroy ENVIRONMENT<br />
+Destroy a provisioned environment</p>
 
-<p><em><code>mb</code> plugins</em><br />
-Display all installed plugins and versions</p>
+<dl>
+<dt>-y, --yes</dt><dd>Don't confirm, just destroy the environment<br /></dd>
+</dl>
+
+
+<p><code>mb</code> <code>environment</code> list<br />
+List all environments</p>
+
+<p><code>mb</code> <code>environment</code> lock ENVIRONMENT<br />
+Lock an environment</p>
+
+<p><code>mb</code> <code>environment</code> unlock ENVIRONMENT<br />
+Unlock an environment</p>
+
+<p><code>mb</code> <code>environment</code> help [COMMAND]<br />
+Describe subcommands or one specific subcommand</p>
+
+<p><code>mb</code> <code>plugin</code> init [PATH]<br />
+Generate a new motherbrain plugin in the target cookbook</p>
+
+<p><code>mb</code> <code>plugin</code> list<br />
+List all installed plugins</p>
 
 <dl>
 <dt>--remote</dt><dd>search the remote Chef server and include plugins from the results<br /></dd>
 </dl>
 
 
-<p><em><code>mb</code> destroy</em><br />
-Destroy a provisioned environment</p>
+<p><code>mb</code> <code>plugin</code> help [COMMAND]<br />
+Describe subcommands or one specific subcommand</p>
 
-<dl>
-<dt>--api-url=API_URL</dt><dd>URL to the Environment Factory API endpoint<br /></dd>
-<dt>--api-key=API_KEY</dt><dd>API authentication key for the Environment Factory<br /></dd>
-<dt>--ssl-verify</dt><dd>Should we verify SSL connections?<br /></dd>
-<dt>-y, --yes</dt><dd>Don't confirm, just destroy the environment<br /></dd>
-</dl>
-
-
-<p><em><code>mb</code> version</em><br />
-Display version and license information</p>
-
-<p><em><code>mb</code> lock</em><br />
-Lock an environment</p>
-
-<p><em><code>mb</code> unlock</em><br />
-Unlock an environment</p>
-
-<p><em><code>mb</code> <code>&lt;plugin></code> nodes</em><br />
+<p><code>mb</code> <code>&lt;plugin></code> nodes<br />
 List all nodes grouped by Component and Group</p>
 
-<p><em><code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST</em><br />
+<p><code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST<br />
 Bootstrap a manifest of node groups</p>
 
 <dl>
@@ -184,7 +201,7 @@ Bootstrap a manifest of node groups</p>
 </dl>
 
 
-<p><em><code>mb</code> <code>&lt;plugin></code> provision MANIFEST</em><br />
+<p><code>mb</code> <code>&lt;plugin></code> provision MANIFEST<br />
 Create a cluster of nodes and add them to a Chef environment</p>
 
 <dl>
@@ -199,7 +216,7 @@ Create a cluster of nodes and add them to a Chef environment</p>
 </dl>
 
 
-<p><em><code>mb</code> <code>&lt;plugin></code> upgrade</em><br />
+<p><code>mb</code> <code>&lt;plugin></code> upgrade<br />
 Upgrade an environment to the specified versions</p>
 
 <dl>

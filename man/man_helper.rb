@@ -23,10 +23,23 @@ module MB
 
       plugin.bootstrap_routine = MB::Bootstrap::Routine.new(plugin)
 
-      subcmd = MB::Cli::SubCommand::Plugin.fabricate(plugin)
-      def subcmd.basename
+      environment_command    = MB::CliGateway::SubCommand::Environment
+      plugin_command         = MB::CliGateway::SubCommand::Plugin
+      dynamic_plugin_command = MB::Cli::SubCommand::Plugin.fabricate(plugin)
+      def environment_command.basename
+        "`mb` `environment`"
+      end
+      def plugin_command.basename
+        "`mb` `plugin`"
+      end
+      def dynamic_plugin_command.basename
         "`mb` `<plugin>`"
       end
+      subcmds = [
+        environment_command,
+        plugin_command,
+        dynamic_plugin_command
+      ]
 
       banner_proc = lambda { |klass, command_name|
         klass.instance_eval do
@@ -49,9 +62,11 @@ module MB
         extended_commands << documentation_proc.call(MB::CliGateway, command[0])
       end
 
-      subcmd.commands.each do |command|
-        commands << banner_proc.call(subcmd, command[0])
-        extended_commands << documentation_proc.call(subcmd, command[0])
+      subcmds.each do |subcmd|
+        subcmd.commands.each do |command|
+          commands << banner_proc.call(subcmd, command[0])
+          extended_commands << documentation_proc.call(subcmd, command[0])
+        end
       end
 
       class_options = MB::CliGateway.class_options
