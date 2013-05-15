@@ -234,7 +234,8 @@ module MotherBrain
     ].freeze
 
     SKIP_ENVIRONMENT_TASKS = [
-      "environment"
+      "environment",
+      "plugin"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [
@@ -342,41 +343,6 @@ module MotherBrain
         "  mb #{cookbook.name} help",
         "\n"
       ].join("\n")
-    end
-
-    method_option :remote,
-      type: :boolean,
-      default: false,
-      desc: "search the remote Chef server and include plugins from the results"
-    desc "plugins", "Display all installed plugins and versions"
-    def plugins
-      if options[:remote]
-        MB.ui.say "\n"
-        MB.ui.say "** listing local and remote plugins..."
-        MB.ui.say "\n"
-      else
-        MB.ui.say "\n"
-        MB.ui.say "** listing local plugins...\n"
-        MB.ui.say "\n"
-      end
-
-      plugins = plugin_manager.list(remote: options[:remote])
-
-      if plugins.empty?
-        errmsg = "No plugins found in your Berkshelf: '#{Application.plugin_manager.berkshelf_path}'"
-
-        if options[:remote]
-          errmsg << " or on remote: '#{Application.config.chef.api_url}'"
-        end
-
-        MB.ui.say errmsg
-        exit(0)
-      end
-
-      plugins.group_by(&:name).each do |name, plugins|
-        versions = plugins.collect(&:version).reverse!
-        MB.ui.say "#{name}: #{versions.join(', ')}"
-      end
     end
 
     desc "version", "Display version and license information"
