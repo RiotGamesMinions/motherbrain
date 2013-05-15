@@ -5,6 +5,38 @@ module MotherBrain
       class Plugin < Cli::Base
         namespace :plugin
 
+        source_root MB.app_root.join('templates')
+
+        desc "init [PATH]", "Generate a new motherbrain plugin in the target cookbook"
+        def init(path = Dir.pwd)
+          metadata = File.join(path, 'metadata.rb')
+
+          unless File.exist?(metadata)
+            ui.say "#{path} is not a cookbook"
+            exit(1)
+          end
+
+          cookbook = CookbookMetadata.from_file(metadata)
+          config = { name: cookbook.name, groups: %w[default] }
+          template 'bootstrap.json', File.join(path, 'bootstrap.json'), config
+          template 'motherbrain.rb', File.join(path, 'motherbrain.rb'), config
+
+          ui.say [
+            "",
+            "motherbrain plugin created.",
+            "",
+            "Take a look at motherbrain.rb and bootstrap.json,",
+            "and then bootstrap with:",
+            "",
+            "  mb #{cookbook.name} bootstrap bootstrap.json",
+            "",
+            "To see all available commands, run:",
+            "",
+            "  mb #{cookbook.name} help",
+            "\n"
+          ].join("\n")
+        end
+
         method_option :remote,
           type: :boolean,
           default: false,
