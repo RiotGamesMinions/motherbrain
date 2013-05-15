@@ -200,6 +200,35 @@ module MotherBrain
       abort ex
     end
 
+    # Download and install the cookbook containing a motherbrain plugin matching the
+    # given name and optional version into the user's Berkshelf.
+    #
+    # @param [String] name
+    #   name of the plugin
+    #
+    # @option options [String] :version
+    #   The version of the plugin to install. If left blank the latest version will be installed
+    #
+    # @return [MB::Plugin]
+    #
+    # @raise [MB::PluginNotFound]
+    def install(name, options = {})
+      plugin = if options[:version].nil?
+        latest(name, remote: true)
+      else
+        find(name, options[:version], remote: true)
+      end
+
+      if plugin.nil?
+        abort MB::PluginNotFound.new(name, options[:version])
+      end
+
+      chef_connection.cookbook.download(plugin.name, plugin.version,
+        Berkshelf.cookbooks_path.join("#{plugin.name}-#{plugin.version}"))
+
+      plugin
+    end
+
     # Return most current version of the plugin of the given name
     #
     # @param [String] name
@@ -490,6 +519,8 @@ module MotherBrain
       # @return [Array<String>]
       def remote_cookbook_versions(name)
         chef_connection.cookbook.versions(name)
+      rescue Ridley::Errors::ResourceNotFound
+        []
       end
 
       # List all of the cookbooks and their versions present on the remote

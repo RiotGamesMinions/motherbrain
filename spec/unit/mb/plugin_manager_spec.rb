@@ -31,6 +31,76 @@ describe MotherBrain::PluginManager do
 
   subject { described_class.new }
 
+  describe "#install", focus: true do
+    let(:plugin) { double(name: "rspec", version: "1.2.3") }
+
+    before do
+      subject.stub_chain(:chef_connection, :cookbook, :download)
+    end
+
+    context "when no version is specified" do
+      before { subject.stub(:latest).with(plugin.name, remote: true).and_return(plugin) }
+
+      it "searches for the latest version of the plugin on the remote" do
+        subject.should_receive(:latest).with(plugin.name, remote: true).and_return(plugin)
+
+        subject.install(plugin.name)
+      end
+
+      it "returns the found plugin" do
+        expect(subject.install(plugin.name)).to eq(plugin)
+      end
+
+      it "downloads the cookbook containing the plugin to the Berkshelf" do
+        berkshelf_destination = MB::Berkshelf.cookbooks_path.join("#{plugin.name}-#{plugin.version}")
+        cookbook_resource = double
+        subject.stub_chain(:chef_connection, :cookbook).and_return(cookbook_resource)
+        cookbook_resource.should_receive(:download).with(plugin.name, plugin.version, berkshelf_destination)
+
+        subject.install(plugin.name)
+      end
+
+      context "when the remote does not have a plugin of the given name" do
+        before { subject.should_receive(:latest).with(plugin.name, remote: true).and_return(nil) }
+
+        it "raises a PluginNotFound error" do
+          expect { subject.install(plugin.name) }.to raise_error(MB::PluginNotFound)
+        end
+      end
+    end
+
+    context "when a version is specified" do
+      before { subject.stub(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin) }
+
+      it "searches for the exact version of the plugin on the remote" do
+        subject.should_receive(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin)
+
+        subject.install(plugin.name, version: plugin.version)
+      end
+
+      it "returns the found plugin" do
+        expect(subject.install(plugin.name, version: plugin.version)).to eq(plugin)
+      end
+
+      it "downloads the cookbook containing the plugin to the Berkshelf" do
+        berkshelf_destination = MB::Berkshelf.cookbooks_path.join("#{plugin.name}-#{plugin.version}")
+        cookbook_resource = double
+        subject.stub_chain(:chef_connection, :cookbook).and_return(cookbook_resource)
+        cookbook_resource.should_receive(:download).with(plugin.name, plugin.version, berkshelf_destination)
+
+        subject.install(plugin.name, version: plugin.version)
+      end
+
+      context "when the remote does not have a plugin of the given version" do
+        before { subject.should_receive(:find).with(plugin.name, plugin.version, remote: true).and_return(nil) }
+
+        it "raises a PluginNotFound error" do
+          expect { subject.install(plugin.name, version: plugin.version) }.to raise_error(MB::PluginNotFound)
+        end
+      end
+    end
+  end
+
   describe "#latest" do
     let(:name) { "apple" }
     let(:version) { "2.0.0" }

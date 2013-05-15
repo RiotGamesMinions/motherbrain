@@ -37,6 +37,15 @@ module MotherBrain
           ].join("\n")
         end
 
+        method_option :version,
+          type: :string,
+          desc: "The version of the plugin to install"
+        desc "install NAME", "Install a plugin from the remote Chef server"
+        def install(name)
+          plugin = plugin_manager.install(name, version: options[:version])
+          ui.say "Successfully installed #{plugin}"
+        end
+
         method_option :remote,
           type: :boolean,
           default: false,
