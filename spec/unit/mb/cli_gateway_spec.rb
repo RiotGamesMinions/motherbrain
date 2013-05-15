@@ -139,7 +139,10 @@ describe MB::CliGateway do
       let(:plugin) { double('asdf') }
 
       subject { described_class.find_plugin(name, options) }
-      before { described_class.stub(plugin_manager: plugin_manager) }
+      before do
+        described_class.stub(plugin_manager: plugin_manager)
+        plugin_manager.stub(:local_plugin?).and_return(false)
+      end
 
       context "given no value for :plugin_version or :environment" do
         before do
@@ -227,6 +230,34 @@ describe MB::CliGateway do
           plugin_manager.should_receive(:find).with(name, plugin_version, remote: true).and_return(plugin)
 
           subject.should eql(plugin)
+        end
+      end
+
+      context "given a local plugin" do
+        before do
+          plugin_manager.stub(:local_plugin?).and_return(true)
+        end
+
+        it "should prefer the local plugin if no version was specified" do
+          plugin_manager.should_receive(:load_local).and_return(plugin)
+
+          subject.should eql(plugin)
+        end
+
+        it "should use the version specified version of the plugin if a version is specified" do
+          options[:plugin_version] = '1.2.3'
+          plugin_manager.should_not_receive(:load_local)
+          plugin_manager.should_receive(:find).with('myface', '1.2.3', remote: true).and_return(plugin)
+
+          subject.should eql(plugin)
+        end
+
+        it "should use the local version if the environment is specified" do
+          options[:environment] = "abc"
+          plugin_manager.stub(:local_plugin?).and_return(true)
+          plugin_manager.should_receive(:load_local).and_return(plugin)
+
+          subject.should eql(plugin)          
         end
       end
     end
