@@ -1,10 +1,10 @@
 Feature: allow additional/configurable bootstrap scripts
-  As a user of the MotherBrain (MB) command line interface (CLI)
+  As a user of the motherbrain (MB) command line interface (CLI)
   I need a way to specify the bootstrap template to use
   So I can control the way my nodes are created
 
   Background:
-    Given a valid MotherBrain configuration
+    Given a valid motherbrain configuration
 
   Scenario: default template
     Given a cookbook "awesomed" at version "1.2.3" with a plugin that can bootstrap

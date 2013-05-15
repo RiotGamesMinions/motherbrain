@@ -16,7 +16,7 @@ end if Signal.supported?('HUP')
 module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   #
-  # Main application supervisor for MotherBrain
+  # Main application supervisor for motherbrain
   #
   # @example running the application in the foreground
   #   MB::Application.run(config)
@@ -43,10 +43,10 @@ module MotherBrain
         raise Celluloid::DeadActorError, "application not running"
       end
 
-      # The Actor registry for MotherBrain.
+      # The Actor registry for motherbrain.
       #
-      # @note MotherBrain uses it's own registry instead of Celluloid::Registry.root to
-      #   avoid conflicts in the larger namespace. Use MB::Application[] to access MotherBrain
+      # @note motherbrain uses it's own registry instead of Celluloid::Registry.root to
+      #   avoid conflicts in the larger namespace. Use MB::Application[] to access motherbrain
       #   actors instead of Celluloid::Actor[].
       #
       # @return [Celluloid::Registry]
@@ -58,7 +58,7 @@ module MotherBrain
       #
       # @param [MB::Config] config
       def run!(config)
-        log.info { "MotherBrain starting..." }
+        log.info { "motherbrain starting..." }
         setup
         @instance = Application::SupervisionGroup.new(config)
       end

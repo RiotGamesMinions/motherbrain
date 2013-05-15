@@ -1,4 +1,4 @@
-# This is an example MotherBrain plugin. Feel free to edit it.
+# This is an example motherbrain plugin.
 #
 # To see a list of all commands this plugin provides, run:
 #

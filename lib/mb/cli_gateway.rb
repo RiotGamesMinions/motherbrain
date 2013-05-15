@@ -70,6 +70,9 @@ module MotherBrain
           end
 
           plugin
+        elsif plugin_manager.local_plugin?
+          ui.info "Loading #{name} plugin from: #{Dir.getwd}"
+          plugin_manager.load_local(Dir.getwd)
         elsif options[:environment]
           plugin = begin
             ui.info "Determining best version of the #{name} plugin to use with the #{options[:environment]}" +
@@ -230,7 +233,8 @@ module MotherBrain
       "configure",
       "help",
       "init",
-      "version"
+      "version",
+      "ver"
     ].freeze
 
     SKIP_ENVIRONMENT_TASKS = [
@@ -258,7 +262,7 @@ module MotherBrain
 
     class_option :config,
       type: :string,
-      desc: "Path to a MotherBrain JSON configuration file.",
+      desc: "Path to a motherbrain JSON configuration file.",
       aliases: "-c",
       banner: "PATH"
     class_option :verbose,
@@ -350,7 +354,7 @@ module MotherBrain
       end
 
       def version_header
-        "MotherBrain (#{MB::VERSION})"
+        "motherbrain (#{MB::VERSION})"
       end
 
       def license

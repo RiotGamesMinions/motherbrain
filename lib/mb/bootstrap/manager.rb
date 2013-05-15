@@ -32,7 +32,7 @@ module MotherBrain
       # @param [Bootstrap::Manifest] manifest
       #   manifest of nodes and what they should become
       # @param [Plugin] plugin
-      #   a MotherBrain plugin with a bootstrap routine to follow
+      #   a motherbrain plugin with a bootstrap routine to follow
       #
       # @option options [Hash] :component_versions (Hash.new)
       #   Hash of components and the versions to set them to
@@ -73,7 +73,7 @@ module MotherBrain
       # @param [MB::Bootstrap::Manifest] manifest
       #   manifest of nodes and what they should become
       # @param [MB::Plugin] plugin
-      #   a MotherBrain plugin with a bootstrap routine to follow
+      #   a motherbrain plugin with a bootstrap routine to follow
       #
       # @see {#async_bootstrap} for options
       def bootstrap(job, environment, manifest, plugin, options = {})

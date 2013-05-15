@@ -94,7 +94,7 @@ module MotherBrain
       end
 
       def print_final_terminated_status
-        puts "\nMotherBrain terminated"
+        puts "\nmotherbrain terminated"
       end
 
       def left_space

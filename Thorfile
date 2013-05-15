@@ -13,17 +13,17 @@ class Default < Thor
   include Thor::RakeCompat
   Bundler::GemHelper.install_tasks
 
-  desc "build", "Build MotherBrain-#{MotherBrain::VERSION}.gem into the pkg directory"
+  desc "build", "Build motherbrain-#{MotherBrain::VERSION}.gem into the pkg directory"
   def build
     Rake::Task["build"].execute
   end
 
-  desc "install", "Build and install MotherBrain-#{MotherBrain::VERSION}.gem into system gems"
+  desc "install", "Build and install motherbrain-#{MotherBrain::VERSION}.gem into system gems"
   def install
     Rake::Task["install"].execute
   end
 
-  desc "release", "Create tag v#{MotherBrain::VERSION} and build and push MotherBrain-#{MotherBrain::VERSION}.gem to gem in a box"
+  desc "release", "Create tag v#{MotherBrain::VERSION} and build and push motherbrain-#{MotherBrain::VERSION}.gem to gem in a box"
   def release
     unless clean?
       say "There are files that need to be committed first.", :red

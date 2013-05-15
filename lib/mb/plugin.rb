@@ -68,7 +68,6 @@ module MotherBrain
     attr_reader :metadata
     attr_reader :components
     attr_reader :commands
-    attr_reader :dependencies
 
     def_delegator :metadata, :name
     def_delegator :metadata, :maintainer
@@ -87,7 +86,6 @@ module MotherBrain
       @metadata     = metadata
       @components   = Set.new
       @commands     = Set.new
-      @dependencies = HashWithIndifferentAccess.new
 
       if block_given?
         dsl_eval(&block)
@@ -212,12 +210,6 @@ module MotherBrain
       self.commands.add(command)
     end
 
-    # @param [#to_s] name
-    # @param [Solve::Constraint] constraint
-    def add_dependency(name, constraint)
-      self.dependencies[name.to_s] = Solve::Constraint.new(constraint)
-    end
-
     # Completely validate a loaded plugin and raise an exception of errors
     #
     # @return [self]
@@ -315,7 +307,7 @@ module MotherBrain
       end
 
       def cluster_bootstrap(&block)
-        warn "#{real_model}: cluster_bootstrap is now stack_order, and will be removed in motherbrain 1.0"
+        MB.log.warn "#{real_model}: cluster_bootstrap is now stack_order, and will be removed in motherbrain 1.0"
         stack_order(&block)
       end
     end

@@ -32,7 +32,6 @@ describe MB::Plugin do
       its(:version) { subject.to_s.should eql('motherbrain (0.1.0)') }
       its(:components) { should be_empty }
       its(:commands) { should be_empty }
-      its(:dependencies) { should be_empty }
       its(:bootstrap_routine) { should be_nil }
 
       context "when a stack_order block is present" do
