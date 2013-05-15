@@ -65,8 +65,11 @@ module MotherBrain
     attribute :bootstrap_routine,
       type: MB::Bootstrap::Routine
 
+    # @return [MB::CookbookMetadata]
     attr_reader :metadata
+    # @return [Set<MB::Component>]
     attr_reader :components
+    # @return [Set<MB::Command>]
     attr_reader :commands
 
     def_delegator :metadata, :name

@@ -48,20 +48,20 @@ module MotherBrain
 
     # Add a plugin to the set of plugins
     #
-    # @param [MotherBrain::Plugin] plugin
+    # @param [MB::Plugin] plugin
     #
     # @option options [Boolean] :force
     #   load a plugin even if a plugin of the same name and version is already loaded
     #
-    # @return [Set<MB::Plugin>, nil]
+    # @return [MB::Plugin, nil]
     #   returns the set of plugins on success or nil if the plugin was not added
     def add(plugin, options = {})
       if options[:force]
-        return reload(plugin)
+        remove(plugin)
       end
 
       if find(plugin.name, plugin.version, remote: false)
-        return
+        return nil
       end
 
       @plugins.add(plugin)
@@ -153,16 +153,18 @@ module MotherBrain
     # returned.
     #
     # @param [String] name
+    #   name of the plugin
     # @param [#to_s] version
+    #   version of the plugin to find
     #
     # @option options [Boolean] :remote (false)
     #   search for the plugin on the remote Chef Server if it isn't found locally
     #
     # @return [MB::Plugin, nil]
     def find(name, version = nil, options = {})
-      return latest(name) unless version
-
       options = options.reverse_merge(remote: false)
+
+      return latest(name, options) unless version
 
       installed = @plugins.find { |plugin| plugin.name == name && plugin.version.to_s == version.to_s }
 
@@ -198,6 +200,35 @@ module MotherBrain
       satisfy(plugin_id, constraint, options)
     rescue MotherBrain::EnvironmentNotFound => ex
       abort ex
+    end
+
+    # Download and install the cookbook containing a motherbrain plugin matching the
+    # given name and optional version into the user's Berkshelf.
+    #
+    # @param [String] name
+    #   Name of the plugin
+    # @param [#to_s] version
+    #   The version of the plugin to install. If left blank the latest version will be installed
+    #
+    # @return [MB::Plugin]
+    #
+    # @raise [MB::PluginNotFound]
+    def install(name, version = nil)
+      unless plugin = find(name, version, remote: true)
+        abort MB::PluginNotFound.new(name, version)
+      end
+
+      chef_connection.cookbook.download(plugin.name, plugin.version, install_path_for(plugin))
+      reload(plugin)
+    end
+
+    # The local filepath that a plugin would be or should be installed to
+    #
+    # @param [MB::Plugin] plugin
+    #
+    # @return [Pathname]
+    def install_path_for(plugin)
+      Berkshelf.cookbooks_path.join("#{plugin.name}-#{plugin.version}")
     end
 
     # Return most current version of the plugin of the given name
@@ -328,10 +359,9 @@ module MotherBrain
 
     # Remove and Add the given plugin from the set of plugins
     #
-    # @param [MotherBrain::Plugin] plugin
+    # @param [MB::Plugin] plugin
     def reload(plugin)
-      remove(plugin)
-      add(plugin)
+      add(plugin, force: true)
     end
 
     # Reload plugins from Chef Server and from the Berkshelf
@@ -351,7 +381,7 @@ module MotherBrain
 
     # Remove the given plugin from the set of plugins
     #
-    # @param [MotherBrain::Plugin] plugin
+    # @param [Set<MB::Plugin>] plugin
     def remove(plugin)
       @plugins.delete(plugin)
     end
@@ -394,6 +424,25 @@ module MotherBrain
       end
     rescue Solve::Errors::NoSolutionError
       abort PluginNotFound.new(plugin_name, constraint)
+    end
+
+    # Uninstall an installed plugin
+    #
+    # @param [String] name
+    #   Name of the plugin
+    # @param [#to_s] version
+    #   The version of the plugin to uninstall
+    #
+    # @return [MB::Plugin, nil]
+    def uninstall(name, version)
+      unless plugin = find(name, version, remote: false)
+        return nil
+      end
+
+      FileUtils.rm_rf(install_path_for(plugin))
+      remove(plugin)
+
+      plugin
     end
 
     # List all of the versions of the plugin of the given name
@@ -490,6 +539,8 @@ module MotherBrain
       # @return [Array<String>]
       def remote_cookbook_versions(name)
         chef_connection.cookbook.versions(name)
+      rescue Ridley::Errors::ResourceNotFound
+        []
       end
 
       # List all of the cookbooks and their versions present on the remote
