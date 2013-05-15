@@ -234,15 +234,14 @@ module MotherBrain
     ].freeze
 
     SKIP_ENVIRONMENT_TASKS = [
-      "environment"
+      "environment",
+      "plugin"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [
       "bootstrap",
       "provision"
     ].freeze
-
-    source_root File.join(__FILE__, '../../../templates')
 
     def initialize(args = [], options = {}, config = {})
       super
@@ -312,71 +311,6 @@ module MotherBrain
       config.save
 
       MB.ui.say "Config written to: '#{path}'"
-    end
-
-    desc "init [PATH]", "Create a MotherBrain plugin for the current cookbook"
-    def init(path = Dir.pwd)
-      metadata = File.join(path, 'metadata.rb')
-
-      unless File.exist?(metadata)
-        MB.ui.say "#{path} is not a cookbook"
-        return
-      end
-
-      cookbook = CookbookMetadata.from_file(metadata)
-      config = { name: cookbook.name, groups: %w[default] }
-      template 'bootstrap.json', File.join(path, 'bootstrap.json'), config
-      template 'motherbrain.rb', File.join(path, 'motherbrain.rb'), config
-
-      MB.ui.say [
-        "",
-        "motherbrain plugin created.",
-        "",
-        "Take a look at motherbrain.rb and bootstrap.json,",
-        "and then bootstrap with:",
-        "",
-        "  mb #{cookbook.name} bootstrap bootstrap.json",
-        "",
-        "To see all available commands, run:",
-        "",
-        "  mb #{cookbook.name} help",
-        "\n"
-      ].join("\n")
-    end
-
-    method_option :remote,
-      type: :boolean,
-      default: false,
-      desc: "search the remote Chef server and include plugins from the results"
-    desc "plugins", "Display all installed plugins and versions"
-    def plugins
-      if options[:remote]
-        MB.ui.say "\n"
-        MB.ui.say "** listing local and remote plugins..."
-        MB.ui.say "\n"
-      else
-        MB.ui.say "\n"
-        MB.ui.say "** listing local plugins...\n"
-        MB.ui.say "\n"
-      end
-
-      plugins = plugin_manager.list(remote: options[:remote])
-
-      if plugins.empty?
-        errmsg = "No plugins found in your Berkshelf: '#{Application.plugin_manager.berkshelf_path}'"
-
-        if options[:remote]
-          errmsg << " or on remote: '#{Application.config.chef.api_url}'"
-        end
-
-        MB.ui.say errmsg
-        exit(0)
-      end
-
-      plugins.group_by(&:name).each do |name, plugins|
-        versions = plugins.collect(&:version).reverse!
-        MB.ui.say "#{name}: #{versions.join(', ')}"
-      end
     end
 
     desc "version", "Display version and license information"
