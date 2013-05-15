@@ -36,7 +36,7 @@ module MotherBrain
           if task.is_a?(Array)
             has_task?(node_group, task)
           else
-            (task.groups & [node_group]).any?
+            task.groups.include?(node_group)
           end
         end
       end

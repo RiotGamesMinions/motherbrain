@@ -23,7 +23,7 @@ module MotherBrain
       def run(job, arguments = Array.new)
         arguments ||= Array.new
 
-        msg = "invoking #{command.type} command #{command.scope.name} #{command.name} on #{environment}"
+        msg = "Invoking #{command.type} command #{command.scope.name} #{command.name} on #{environment}"
         msg << " with arguments: #{arguments}" if arguments.any?
         job.set_status(msg)
 

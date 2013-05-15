@@ -66,7 +66,7 @@ module MotherBrain
       node_success = 0
       node_failure = 0
 
-      job.report_running("finding environment")
+      job.report_running("Finding environment #{environment.name}")
       environment = find(id)
 
       chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
@@ -92,9 +92,9 @@ module MotherBrain
       end
 
       if node_failure > 0
-        job.report_failure("chef client run failed on #{node_failure} nodes")
+        job.report_failure("Chef client run failed on #{node_failure} nodes")
       else
-        job.report_success("finished chef client run on #{node_success} nodes")
+        job.report_success("Finished chef client run on #{node_success} nodes")
       end
     rescue => ex
       job.report_failure(ex)

@@ -223,7 +223,7 @@ module MotherBrain
 
           workers << worker = Worker.new(nodes)
 
-          job.set_status("performing bootstrap on group(s): #{groups}")
+          job.set_status("Performing bootstrap on group(s): #{groups}")
           response[groups] = worker.future(:run, worker_options)
         end
 
