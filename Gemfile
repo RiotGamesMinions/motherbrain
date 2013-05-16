@@ -9,13 +9,11 @@ end
 
 platforms :ruby do
   gem 'mysql2'
-  gem 'yajl-ruby'
 end
 
 platforms :jruby do
   gem 'jdbc-mysql'
   gem 'jmx4r'
-  gem 'json-jruby'
 end
 
 group :development do
