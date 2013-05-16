@@ -52,4 +52,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'multi_json'
   s.add_runtime_dependency 'fog', '~> 1.10.0'
   s.add_runtime_dependency 'json', '>= 1.8.0'
+  s.add_runtime_dependency 'pry', '= 1.0.0.pre1'
 end

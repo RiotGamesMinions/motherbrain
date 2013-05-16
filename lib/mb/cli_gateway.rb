@@ -320,6 +320,12 @@ module MotherBrain
       MB.ui.say "Config written to: '#{path}'"
     end
 
+    desc "console", "Start an interactive motherbrain console"
+    def console
+      require 'mb/console'
+      MB::Console.start
+    end
+
     desc "version", "Display version and license information"
     def version
       MB.ui.say version_header
