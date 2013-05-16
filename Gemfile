@@ -22,7 +22,7 @@ group :development do
   gem 'aruba'
   gem 'coolline'
   gem 'cucumber'
-  gem 'debugger', '>= 1.3.2'
+  gem 'debugger', '>= 1.3.2', platforms: :ruby
   gem 'fuubar'
   gem 'json_spec'
   gem 'redcarpet', platforms: :ruby
@@ -37,7 +37,7 @@ group :development do
   gem 'guard-spork', platforms: :ruby
   gem 'guard-yard'
 
-  gem 'ronn'
+  gem 'ronn', platforms: :ruby
 
   require 'rbconfig'
 
