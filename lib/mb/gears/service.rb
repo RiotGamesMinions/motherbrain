@@ -219,7 +219,7 @@ module MotherBrain
             def reset(job)
               nodes.collect do |node|
                 @node_resets.each do |attribute|
-                  job.set_status("Setting node attribute '#{attribute[:key]}' to '#{attribute[:value]}' on #{node.name}")
+                  job.set_status("Setting node attribute '#{attribute[:key]}' to #{attribute[:value].inspect} on #{node.name}")
                   node.set_chef_attribute(attribute[:key], attribute[:value])
                 end
 
@@ -229,7 +229,7 @@ module MotherBrain
               if @environment_resets.any?
                 env = Application.ridley.environment.find(environment)
                 @environment_resets.each do |attribute|
-                  job.set_status("Setting environment attribute '#{attribute[:key]}' to '#{attribute[:value]}' in #{environment}")
+                  job.set_status("Setting environment attribute '#{attribute[:key]}' to #{attribute[:value].inspect} in #{environment}")
                   env.set_default_attribute(attribute[:key], attribute[:value])
                 end
                 env.save
@@ -255,7 +255,7 @@ module MotherBrain
                   @environment_resets << { key: key, value: env.default_attributes.dig(key) }
                 end
 
-                job.set_status("Setting environment attribute '#{key}' to '#{value}' in #{environment}")
+                job.set_status("Setting environment attribute '#{key}' to #{value.inspect} in #{environment}")
                 env.set_default_attribute(key, value)
               end
 
@@ -278,7 +278,7 @@ module MotherBrain
                   @node_resets << { key: key, value: node.normal.dig(key) }
                 end
 
-                job.set_status("Setting node attribute '#{key}' to '#{value}' on #{node.name}")
+                job.set_status("Setting node attribute '#{key}' to #{value.inspect} on #{node.name}")
                 node.set_chef_attribute(key, value)
               end
             end
