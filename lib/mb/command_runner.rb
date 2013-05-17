@@ -65,6 +65,8 @@ module MotherBrain
       @on_procs.each do |on_proc|
         on_proc.call
       end
+
+      @on_procs.clear
     end
 
     # Are we inside an async block?
