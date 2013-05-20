@@ -113,7 +113,7 @@ module MotherBrain
       actions = clean_room.send(:actions)
 
       nodes = group_names.map do |name|
-        scope.group!(name)
+        scope.group!(name.to_s)
       end.flat_map do |group|
         group.nodes(environment)
       end.uniq

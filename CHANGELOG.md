@@ -1,3 +1,28 @@
+# 0.6.0
+
+* Windows Command and Control
+* Environment subcommand: 'mb environment'
+  * environment list: 'mb environment list'
+  * environment lock: 'mb environment lock'
+  * environment unlock: 'mb environment unlock'
+  * 'mb configure_environment' renamed to 'mb environment configure'
+* Plugin subcommand
+  * 'mb plugins' renamed to 'mb plugin list'
+  * plugin install: 'mb plugin install'
+  * plugin uninstall: 'mb plugin uninstall'
+  * plugin show: 'mb plugin show'
+* Lots of new documentation:
+  * Manifests
+  * Command Line Interface
+  * Operator's Guide
+* AWS Provisioner
+* The plugin in the current working directory will now be preferred, regardless of the version of the local plugin, unless a specific version of the plugin is specified via plugin-version
+* Job status display no longer misses changes that happen inbetween refreshes
+* Fixed various version constraint and solution issues
+* Fixed a number of crashes
+* Asynchronous commands should not stomp on each other
+* Chef runs should be batched together properly when running asynchronous commands
+
 # 0.5.3
 
 * Only one Chef run will execute during an async command instead of one per action on each node

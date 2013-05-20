@@ -194,6 +194,10 @@ module MotherBrain
       end
     end
 
+    def to_s
+      "#{name}: #{description}"
+    end
+
     private
 
       def dsl_eval(&block)

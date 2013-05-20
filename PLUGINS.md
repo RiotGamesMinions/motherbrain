@@ -10,6 +10,42 @@ component "webserver" do
 end
 ```
 
+## `description`
+
+Provides text to be displayed in the help output generated for the component
+
+```ruby
+component "webserver" do
+  description "serves the myface PHP web application"
+end
+```
+
+## `versioned`
+
+Declares that the component is versioned.
+
+```ruby
+component "webserver" do
+  versioned
+end
+```
+
+This will default to the 'webserver.version' attribute, seen in recipes as `node[:webserver][:version]`. Declaring this will allow you to use the `mb plugin upgrade` command:
+
+```sh
+mb myface upgrade --components webserver:1.2.3
+```
+
+You can also specify a custom version attribute:
+
+```ruby
+component "webserver" do
+  versioned_with "web"
+end
+```
+
+THis would use the attribute 'web', seen in recipes as `node[:web]`.
+
 ## `command`
 
 Defines a command to be added to the mb cli generated for the plugin.
@@ -76,13 +112,25 @@ on("default") do
 end
 ```
 
-## `description`
+**`any`**
 
-Provides text to be displayed in the help output generated for the plugin
+To run a command only on portion of the nodes:
 
 ```ruby
-component "webserver" do
-  description "serves the myface PHP web application"
+on("default", any: 2) do
+  ...
+end
+```
+
+The nodes will be chosen at random.
+
+**`max_concurrent`**
+
+To run a command on all nodes, but limit how many are running at once:
+
+```ruby
+on("default", max_concurrent: 2) do
+  ...
 end
 ```
 
@@ -186,6 +234,18 @@ action :start do
   node_attribute 'myface.apache.start', true
 end
 ```
+
+**`toggle`**
+
+To toggle an attribute for just this Chef run:
+
+```ruby
+action :start do
+  node_attribute 'myface.apache.restart', true, toggle: true
+end
+```
+
+The attribute will be set to true, and then set back to its original value after the Chef run.
 
 # `stack_order`
 
