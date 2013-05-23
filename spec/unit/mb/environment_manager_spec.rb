@@ -15,7 +15,25 @@ describe MB::EnvironmentManager do
   end
 
   describe "#configure" do
-    pending
+    let(:job) { MB::Job.new(:environment_configure) }
+    let(:env_id) { "rspec" }
+    let(:options) { Hash.new }
+
+    before { @record = job.ticket }
+
+    context "when the environment exists" do
+      pending
+    end
+
+    context "when the environment does not exist" do
+      before { subject.stub_chain(:ridley, :environment, :find).with(env_id).and_return(nil) }
+
+      it "sets the job to failure because of EnvironmentNotFound" do
+        subject.configure(job, env_id, options)
+        expect(@record).to be_failure
+        expect(@record.result).to be_a(MB::EnvironmentNotFound)
+      end
+    end
   end
 
   describe "#find" do
