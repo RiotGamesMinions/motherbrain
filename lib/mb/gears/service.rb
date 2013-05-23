@@ -1,7 +1,7 @@
 module MotherBrain
   module Gear
     # @author Jamie Winsor <reset@riotgames.com>
-    class Service < AbstractGear
+    class Service < Gear::Base
       register_gear :service
 
     class << self

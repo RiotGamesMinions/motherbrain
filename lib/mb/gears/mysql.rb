@@ -8,7 +8,7 @@ end
 module MotherBrain
   module Gear
     # @author Jesse Howarth <jhowarth@riotgames.com>
-    class Mysql < AbstractGear
+    class Mysql < Gear::Base
       register_gear :mysql
 
       # @see [MB::Gear::Mysql::Action]

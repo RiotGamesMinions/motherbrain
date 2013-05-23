@@ -9,7 +9,7 @@ end
 module MotherBrain
   module Gear
     # @author Jesse Howarth <jhowarth@riotgames.com>
-    class Jmx < AbstractGear
+    class Jmx < Gear::Base
       register_gear :jmx
 
       # @see [MB::Gear::Jmx::Action]
