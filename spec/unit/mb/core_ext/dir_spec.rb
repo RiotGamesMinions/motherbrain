@@ -72,19 +72,19 @@ describe Dir do
 
       context "but does not contain a Chef JSON or Ruby metadata file" do
         before do
-          FileUtils.rm_f(target.join(MB::Plugin::RUBY_METADATA_FILENAME))
-          FileUtils.rm_f(target.join(MB::Plugin::JSON_METADATA_FILENAME))
+          FileUtils.rm_f(target.join(MB::CookbookMetadata::RUBY_FILENAME))
+          FileUtils.rm_f(target.join(MB::CookbookMetadata::JSON_FILENAME))
         end
         it { should be_false }
       end
 
       context "and contains a Chef JSON metadata file" do
-        before { FileUtils.touch(target.join(MB::Plugin::JSON_METADATA_FILENAME)) }
+        before { FileUtils.touch(target.join(MB::CookbookMetadata::JSON_FILENAME)) }
         it { should be_true }
       end
 
       context "and contains a Chef Ruby metadata file" do
-        before { FileUtils.touch(target.join(MB::Plugin::RUBY_METADATA_FILENAME)) }
+        before { FileUtils.touch(target.join(MB::CookbookMetadata::RUBY_FILENAME)) }
         it { should be_true }
       end
     end

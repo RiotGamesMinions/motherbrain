@@ -31,8 +31,8 @@ class Dir
     #
     # @return [Boolean]
     def has_chef_metadata?(path)
-      File.exist?(File.join(path, MB::Plugin::RUBY_METADATA_FILENAME)) ||
-        File.exist?(File.join(path, MB::Plugin::JSON_METADATA_FILENAME))
+      File.exist?(File.join(path, MB::CookbookMetadata::RUBY_FILENAME)) ||
+        File.exist?(File.join(path, MB::CookbookMetadata::JSON_FILENAME))
     end
   end
 end
