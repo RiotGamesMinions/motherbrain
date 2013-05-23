@@ -298,7 +298,7 @@ module MotherBrain
 
       begin
         scratch_dir   = FileSystem.tmpdir("cbplugin")
-        metadata_path = File.join(scratch_dir, Plugin::JSON_METADATA_FILENAME)
+        metadata_path = File.join(scratch_dir, CookbookMetadata::JSON_FILENAME)
         plugin_path   = File.join(scratch_dir, Plugin::PLUGIN_FILENAME)
 
         File.write(metadata_path, resource.metadata.to_json)
