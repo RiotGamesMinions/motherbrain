@@ -20,6 +20,17 @@ module MotherBrain
         end
       end
 
+      # @param [#to_s] path
+      #
+      # @return [Cookbook::Metadata]
+      def from_path(path)
+        ruby_file     = File.join(path, RUBY_FILENAME)
+        json_file     = File.join(path, JSON_FILENAME)
+        metadata_file = File.exists?(json_file) ? json_file : ruby_file
+
+        from_file(metadata_file)
+      end
+
       private
 
         def from_ruby_file(filepath)
@@ -33,6 +44,9 @@ module MotherBrain
           }
         end
     end
+
+    RUBY_FILENAME = 'metadata.rb'.freeze
+    JSON_FILENAME = 'metadata.json'.freeze
 
     include Chozo::VariaModel
 
