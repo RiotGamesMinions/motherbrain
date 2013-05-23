@@ -8,7 +8,7 @@ end
 
 module MotherBrain
   module Gear
-    class Jmx
+    class JMX
       # @author Jesse Howarth <jhowarth@riotgames.com>
       # @api private
       class Action

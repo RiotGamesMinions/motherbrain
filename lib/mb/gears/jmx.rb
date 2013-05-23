@@ -1,7 +1,7 @@
 module MotherBrain
   module Gear
     # @author Jesse Howarth <jhowarth@riotgames.com>
-    class Jmx < Gear::Base
+    class JMX < Gear::Base
       register_gear :jmx
 
       # @param [Fixnum] port
@@ -12,7 +12,7 @@ module MotherBrain
       # @raise [ActionNotSupported] if not running JRuby
       # @raise [ArgumentError]
       def action(port, object_name, &block)
-        Jmx::Action.new(port, object_name, &block)
+        JMX::Action.new(port, object_name, &block)
       end
     end
 

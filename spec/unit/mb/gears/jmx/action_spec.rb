@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 if jruby?
-  describe MB::Gear::Jmx::Action do
+  describe MB::Gear::JMX::Action do
     subject { described_class }
 
     describe "::new" do
