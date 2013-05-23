@@ -105,11 +105,11 @@ module MotherBrain
     # Load all of the plugins from the Berkshelf
     #
     # @option options [Boolean] :force (false)
-    def load_all_local(options = {})
+    def load_all_installed(options = {})
       options = options.reverse_merge(force: false)
 
-      local_cookbooks.each do |path|
-        load_local(path, options)
+      installed_cookbooks.each do |path|
+        load_installed(path, options)
       end
     end
 
@@ -142,7 +142,7 @@ module MotherBrain
     #   version of the plugin to find
     #
     # @option options [Boolean] :remote (false)
-    #   search for the plugin on the remote Chef Server if it isn't found locally
+    #   search for the plugin on the remote Chef Server if it isn't installed
     #
     # @return [MB::Plugin, nil]
     def find(name, version = nil, options = {})
@@ -170,7 +170,7 @@ module MotherBrain
     #   name of the environment
     #
     # @option options [Boolean] :remote (false)
-    #   include plugins on the remote Chef Server which aren't found locally
+    #   include plugins on the remote Chef Server which aren't installed
     #
     # @raise [EnvironmentNotFound] if the given environment does not exist
     # @raise [PluginNotFound] if a plugin of the given name is not found
@@ -206,7 +206,7 @@ module MotherBrain
       reload(plugin)
     end
 
-    # The local filepath that a plugin would be or should be installed to
+    # The filepath that a plugin would be or should be installed to
     #
     # @param [MB::Plugin] plugin
     #
@@ -221,7 +221,7 @@ module MotherBrain
     #   name of the plugin
     #
     # @option options [Boolean] :remote (false)
-    #   include plugins on the remote Chef server which haven't been cached locally
+    #   include plugins on the remote Chef server which haven't been cached or installed
     #
     # @return [MB::Plugin, nil]
     def latest(name, options = {})
@@ -241,7 +241,7 @@ module MotherBrain
 
     # @return [Array<MotherBrain::Plugin>]
     def load_all
-      load_all_local
+      load_all_installed
       load_all_remote if eager_loading?
     end
 
@@ -256,11 +256,11 @@ module MotherBrain
     #
     # @return [MB::Plugin, nil]
     #   returns the loaded plugin or nil if the plugin was not loaded successfully
-    def load_local(path, options = {})
+    def load_installed(path, options = {})
       options = options.reverse_merge(force: true, allow_failure: true)
       load_file(path, options)
     rescue PluginSyntaxError, PluginLoadError => ex
-      err_msg = "could not load local plugin at '#{path}': #{ex.message}"
+      err_msg = "could not load plugin at '#{path}': #{ex.message}"
       options[:allow_failure] ? log.debug(err_msg) : abort(PluginLoadError.new(err_msg))
       nil
     end
@@ -310,19 +310,19 @@ module MotherBrain
       end
     end
 
-    # List all versions of a plugin with the given name that are present within the local cache
-    # of plugins. An empty array will be returned if no versions are present.
+    # List all installed versions of a plugin with the given name of plugins. An empty
+    # array will be returned if no versions of a plugin are installed.
     #
     # @example
-    #   plugin_manager.local_versions("nginx") #=> [ "1.2.3", "2.0.0", "3.1.2" ]
+    #   plugin_manager.installed_versions("nginx") #=> [ "1.2.3", "2.0.0", "3.1.2" ]
     #
     # @param [#to_s] name
     #   name of the plugin
     #
     # @return [Array<String>]
-    def local_versions(name)
-      local_cookbooks.collect do |path|
-        plugin = load_local(path)
+    def installed_versions(name)
+      installed_cookbooks.collect do |path|
+        plugin = load_installed(path)
         next unless plugin
 
         if plugin.name == name
@@ -368,8 +368,8 @@ module MotherBrain
     # Reload plugins from the Berkshelf
     #
     # @return [Array<MotherBrain::Plugin>]
-    def reload_local
-      load_all_local(force: true)
+    def reload_installed
+      load_all_installed(force: true)
     end
 
     # Remove the given plugin from the set of plugins
@@ -387,7 +387,7 @@ module MotherBrain
     #   constraint to satisfy
     #
     # @option options [Boolean] :remote (false)
-    #   include plugins on the remote Chef Server which aren't found locally
+    #   include plugins on the remote Chef Server which aren't installed
     #
     # @raise [PluginNotFound] if a plugin of the given name which satisfies the given constraint
     #   is not found
@@ -449,7 +449,7 @@ module MotherBrain
     #
     # @return [Array<String>]
     def versions(name, remote = false)
-      all_versions = local_versions(name)
+      all_versions = installed_versions(name)
 
       if remote
         all_versions += remote_versions(name)
@@ -518,7 +518,7 @@ module MotherBrain
       end
 
       # @return [Array<Pathname>]
-      def local_cookbooks
+      def installed_cookbooks
         Berkshelf.cookbooks(with_plugin: true)
       end
 
