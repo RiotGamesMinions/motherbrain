@@ -117,7 +117,7 @@ describe MB::Gear::Service do
       let(:chef_success) { double('success-response', error?: false) }
 
       before(:each) do
-        MB::Gear::Service::Action::ActionRunner.stub(:new).and_return(runner)
+        MB::Gear::Service::ActionRunner.stub(:new).and_return(runner)
       end
 
       it "runs Chef on every node" do
@@ -177,7 +177,7 @@ describe MB::Gear::Service do
 
         it "sets a node attribute on each node" do
           success = double('success-response', error?: false)
-          MB::Gear::Service::Action::ActionRunner.should_receive(:new).and_return(runner)
+          MB::Gear::Service::ActionRunner.should_receive(:new).and_return(runner)
           MB::Application.node_querier.should_receive(:chef_run).exactly(3).times.and_return(chef_success)
           runner.should_receive(:node_attribute).with(key, value, toggle: true)
 
