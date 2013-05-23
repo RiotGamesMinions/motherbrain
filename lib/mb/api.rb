@@ -90,7 +90,7 @@ module MotherBrain
             optional :version, sem_ver: true, desc: "version of the plugin to use"
           end
           optional :chef_version, type: String, desc: "version of Chef to install on the node(s)"
-          optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
+          optional :component_versions, type: Hash, desc: "component versions to set with default attributes"
           optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
           optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
           optional :skip_bootstrap, type: Boolean, desc: "skip automatic bootstrapping of the created environment"
@@ -117,7 +117,7 @@ module MotherBrain
             optional :version, sem_ver: true, desc: "version of the plugin to use"
           end
           optional :chef_version, type: String, desc: "version of Chef to install on the node(s)"
-          optional :component_versions, type: Hash, desc: "component versions to set with override attributes"
+          optional :component_versions, type: Hash, desc: "component versions to set with default attributes"
           optional :cookbook_versions, type: Hash, desc: "cookbook versions to set on the environment"
           optional :environment_attributes, type: Hash, desc: "additional attributes to set on the environment"
           optional :force, type: Boolean
@@ -161,7 +161,7 @@ module MotherBrain
             requires :name, type: String, desc: "name of the plugin to use"
             optional :version, sem_ver: true, desc: "version of the plugin to use"
           end
-          optional :component_versions, type: Hash, desc: "the component versions to set with override attributes"
+          optional :component_versions, type: Hash, desc: "the component versions to set with default attributes"
           optional :cookbook_versions, type: Hash, desc: "the cookbook versions to set on the environment"
           optional :environment_attributes, type: Hash, desc: "any additional attributes to set on the environment"
           optional :force, type: Boolean, desc: "force upgrade even if the environment is locked"

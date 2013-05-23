@@ -76,6 +76,7 @@
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
 <p><code>mb</code> configure<br />
+<code>mb</code> console<br />
 <code>mb</code> version<br />
 <code>mb</code> environment<br />
 <code>mb</code> plugin<br />
@@ -136,6 +137,9 @@ create a new configuration file based on a set of interactive questions</p>
 </dl>
 
 
+<p><code>mb</code> console<br />
+Start an interactive motherbrain console</p>
+
 <p><code>mb</code> version<br />
 Display version and license information</p>
 
@@ -149,7 +153,7 @@ Plugin level commands</p>
 configure a Chef environment</p>
 
 <dl>
-<dt class="flush">--force</dt><dd>perform the configuration even if the environment is locked<br /></dd>
+<dt>-f, --force</dt><dd>perform the configuration even if the environment is locked<br /></dd>
 </dl>
 
 
@@ -220,7 +224,7 @@ Bootstrap a manifest of node groups</p>
 
 <dl>
 <dt>--chef-version=CHEF_VERSION</dt><dd>The version of Chef to bootstrap the node(s) with<br /></dd>
-<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with override attributes<br /></dd>
+<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with default attributes<br /></dd>
 <dt>--cookbooks, --cookbook-versions=key:value</dt><dd>The cookbook versions to set on the environment<br /></dd>
 <dt>--attributes, --environment-attributes=key:value</dt><dd>Any additional attributes to set on the environment<br /></dd>
 <dt>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE</dt><dd>Any additional attributes to set on the environment via a json file.<br /></dd>
@@ -234,7 +238,7 @@ Create a cluster of nodes and add them to a Chef environment</p>
 
 <dl>
 <dt>--chef-version=CHEF_VERSION</dt><dd>The version of Chef to bootstrap the node(s) with<br /></dd>
-<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with override attributes<br /></dd>
+<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with default attributes<br /></dd>
 <dt>--cookbooks, --cookbook-versions=key:value</dt><dd>The cookbook versions to set on the environment<br /></dd>
 <dt>--attributes, --environment-attributes=key:value</dt><dd>Any additional attributes to set on the environment<br /></dd>
 <dt>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE</dt><dd>Any additional attributes to set on the environment via a json file.<br /></dd>
@@ -248,7 +252,7 @@ Create a cluster of nodes and add them to a Chef environment</p>
 Upgrade an environment to the specified versions</p>
 
 <dl>
-<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with override attributes<br /></dd>
+<dt>--components, --component-versions=key:value</dt><dd>The component versions to set with default attributes<br /></dd>
 <dt>--cookbooks, --cookbook-versions=key:value</dt><dd>The cookbook versions to set on the environment<br /></dd>
 <dt>--attributes, --environment-attributes=key:value</dt><dd>Any additional attributes to set on the environment<br /></dd>
 <dt>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE</dt><dd>Any additional attributes to set on the environment via a json file.<br /></dd>
