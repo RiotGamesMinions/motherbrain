@@ -388,6 +388,25 @@ module MotherBrain
     error_code(3022)
   end
 
+  class RequiredFileNotFound < MBError
+    error_code(3023)
+
+    attr_reader :filename
+    attr_reader :required_for
+
+    def initialize(filename, options = {})
+      @filename = filename
+      @required_for = options[:required_for]
+    end
+
+    def message
+      msg = "#{@filename} does not exist, but is required"
+      msg += " for #{@required_for}" if @required_for
+      msg += "."
+      msg
+    end
+  end
+
   # Bootstrap errors
   class BootstrapError < MBError
     exit_code(24)
@@ -414,6 +433,14 @@ module MotherBrain
 
   class InvalidAttributesFile < BootstrapError
     error_code(4003)
+  end
+
+  class ValidatorPemNotFound < RequiredFileNotFound
+    error_code(4004)
+
+    def initialize(filename, options = { required_for: 'bootstrap' })
+      super
+    end
   end
 
   # Provision errors
@@ -500,25 +527,6 @@ module MotherBrain
 
     def message
       "An item named '#{item_name}' was not found in the '#{data_bag_name}' data bag."
-    end
-  end
-
-  class RequiredFileNotFound < MBError
-    error_code(10000)
-
-    attr_reader :filename
-    attr_reader :required_for
-
-    def initialize(filename, options = {})
-      @filename = filename
-      @required_for = options[:required_for]
-    end
-
-    def message
-      msg = "#{@filename} does not exist, but is required"
-      msg += " for #{@required_for}" if @required_for
-      msg += "."
-      msg
     end
   end
 end

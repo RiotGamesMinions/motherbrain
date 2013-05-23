@@ -105,7 +105,7 @@ describe MB::Bootstrap::Manager do
     let(:run) { manager.bootstrap(job_stub, environment, manifest, plugin, options) }
 
     context "should validate that the required files and configuration are available prior to attempting to bootstrap" do
-      it "and fail early if the validation pem is missing", focus: true do
+      it "and fail early if the validation pem is missing" do
         job_stub.stub(:report_failure)
 
         MB::Config.stub(:chef_config).and_return validation_key: '/this/file/doesnt/exist'
