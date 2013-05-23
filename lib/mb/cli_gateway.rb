@@ -70,9 +70,9 @@ module MotherBrain
           end
 
           plugin
-        elsif plugin_manager.local_plugin?
-          ui.info "Loading #{name} plugin from: #{Dir.getwd}"
-          plugin_manager.load_local(Dir.getwd)
+        elsif local_plugin?
+          ui.info "Loading #{name} plugin from: #{Dir.pwd}"
+          plugin_manager.load_local(Dir.pwd)
         elsif options[:environment]
           plugin = begin
             ui.info "Determining best version of the #{name} plugin to use with the #{options[:environment]}" +
@@ -103,6 +103,13 @@ module MotherBrain
 
           plugin
         end
+      end
+
+      # Determines if we're running inside of a cookbook with a plugin.
+      #
+      # @return [Boolean]
+      def local_plugin?
+        Dir.has_mb_plugin?(Dir.pwd)
       end
 
       # @see {#Thor}

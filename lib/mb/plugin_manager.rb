@@ -35,8 +35,6 @@ module MotherBrain
 
       MB::Berkshelf.init
 
-      load_local_plugin if local_plugin?
-
       async_loading? ? async(:load_all) : load_all
 
       if eager_loading?
@@ -104,16 +102,6 @@ module MotherBrain
       Application.config.plugin_manager.eager_load_interval
     end
 
-    # Determines if we're running inside of a cookbook with a plugin.
-    #
-    # @return [Boolean]
-    def local_plugin?
-      %w[
-        metadata.rb
-        motherbrain.rb
-      ].all? { |file| File.exist? file }
-    end
-
     # Load all of the plugins from the Berkshelf
     #
     # @option options [Boolean] :force (false)
@@ -142,10 +130,6 @@ module MotherBrain
           load_remote(name, version, options)
         end
       end
-    end
-
-    def load_local_plugin
-      load_local '.'
     end
 
     # Find and return a registered plugin of the given name and version. If no
@@ -526,9 +510,7 @@ module MotherBrain
 
       # @return [Array<Pathname>]
       def local_cookbooks
-        paths = Berkshelf.cookbooks(with_plugin: true)
-        paths << Pathname.pwd if local_plugin?
-        paths
+        Berkshelf.cookbooks(with_plugin: true)
       end
 
       # List all the versions of the given cookbook on the remote Chef server
