@@ -59,7 +59,7 @@ module MotherBrain
                   desc: "The version of Chef to bootstrap the node(s) with"
                 method_option :component_versions,
                   type: :hash,
-                  desc: "The component versions to set with override attributes",
+                  desc: "The component versions to set with default attributes",
                   aliases: "--components"
                 method_option :cookbook_versions,
                   type: :hash,
@@ -101,7 +101,7 @@ module MotherBrain
                   desc: "The version of Chef to bootstrap the node(s) with"
                 method_option :component_versions,
                   type: :hash,
-                  desc: "The component versions to set with override attributes",
+                  desc: "The component versions to set with default attributes",
                   aliases: "--components"
                 method_option :cookbook_versions,
                   type: :hash,
@@ -143,7 +143,7 @@ module MotherBrain
 
                 method_option :component_versions,
                   type: :hash,
-                  desc: "The component versions to set with override attributes",
+                  desc: "The component versions to set with default attributes",
                   aliases: "--components"
                 method_option :cookbook_versions,
                   type: :hash,
