@@ -529,25 +529,6 @@ describe MotherBrain::PluginManager do
     end
   end
 
-  describe "#local_cookbooks" do
-    before do
-      MB::Berkshelf.stub(cookbooks: Array.new)
-    end
-
-    context "when there is a plugin in the current working directory" do
-      before(:each) do
-        subject.stub(local_plugin?: true)
-      end
-
-      it "returns an array containing a Pathname to the current working directory" do
-        result = subject.send(:local_cookbooks)
-        result.should have(1).item
-        result.first.should be_a(Pathname)
-        result.first.should eql(Pathname.pwd)
-      end
-    end
-  end
-
   describe "#local_versions" do
     before { MB::Berkshelf.stub(cookbooks_path: fixtures_path) }
 
