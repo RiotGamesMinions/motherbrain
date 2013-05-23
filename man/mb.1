@@ -10,6 +10,9 @@
 \fBmb\fR configure
 .
 .br
+\fBmb\fR console
+.
+.br
 \fBmb\fR version
 .
 .br
@@ -121,6 +124,12 @@ create a new configuration file even if one already exists\.
 
 .
 .P
+\fBmb\fR console
+.
+.br
+Start an interactive motherbrain console
+.
+.P
 \fBmb\fR version
 .
 .br
@@ -145,7 +154,7 @@ Plugin level commands
 configure a Chef environment
 .
 .TP
-\-\-force
+\-f, \-\-force
 perform the configuration even if the environment is locked
 .
 .br
@@ -280,7 +289,7 @@ The version of Chef to bootstrap the node(s) with
 .
 .TP
 \-\-components, \-\-component\-versions=key:value
-The component versions to set with override attributes
+The component versions to set with default attributes
 .
 .br
 
@@ -335,7 +344,7 @@ The version of Chef to bootstrap the node(s) with
 .
 .TP
 \-\-components, \-\-component\-versions=key:value
-The component versions to set with override attributes
+The component versions to set with default attributes
 .
 .br
 
@@ -390,7 +399,7 @@ Upgrade an environment to the specified versions
 .
 .TP
 \-\-components, \-\-component\-versions=key:value
-The component versions to set with override attributes
+The component versions to set with default attributes
 .
 .br
 
