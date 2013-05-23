@@ -54,11 +54,11 @@ module MotherBrain
         def list
           if options[:remote]
             ui.say "\n"
-            ui.say "** listing local and remote plugins..."
+            ui.say "** listing installed and remote plugins..."
             ui.say "\n"
           else
             ui.say "\n"
-            ui.say "** listing local plugins...\n"
+            ui.say "** listing installed plugins...\n"
             ui.say "\n"
           end
 

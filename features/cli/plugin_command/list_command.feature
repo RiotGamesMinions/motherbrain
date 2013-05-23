@@ -15,7 +15,7 @@ Feature: listing the plugins available to motherbrain
     Then the output should contain:
       """
 
-      ** listing local plugins...
+      ** listing installed plugins...
 
       pvpnet: 1.2.3, 2.3.4
       league: 1.0.0
