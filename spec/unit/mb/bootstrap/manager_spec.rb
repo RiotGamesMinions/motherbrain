@@ -108,8 +108,9 @@ describe MB::Bootstrap::Manager do
       it "and fail early if the validation pem is missing", focus: true do
         job_stub.stub(:report_failure)
 
-        manager.should_receive(:assert_file_exists!).and_raise(MB::RequiredFileNotFound.new('/some/path'))
+        MB::Config.stub(:chef_config).and_return validation_key: '/this/file/doesnt/exist'
         manager.should_not_receive(:chef_synchronize)
+        job_stub.should_receive(:report_failure)
 
         run
       end
