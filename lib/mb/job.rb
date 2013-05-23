@@ -160,14 +160,14 @@ module MotherBrain
 
     # @param [Symbol] state
     #   the state to transition to in the Job's state machine
-    # @param [#to_json] result
+    # @param [#cause, #to_s] result
     #   a result which can be converted to JSON
     # @param [Hash] options
     #   options to pass to the state machine transition
     #
     # @return [Job]
     def transition(state, result = nil, options = {})
-      @result = result
+      @result = result.respond_to?(:cause) ? result.cause : result
       machine.transition(state, options)
       Actor.current
     end
