@@ -235,9 +235,7 @@ describe MB::CliGateway do
       end
 
       context "given a local plugin" do
-        before do
-          described_class.stub(local_plugin?: true)
-        end
+        before { described_class.stub(local_plugin?: true) }
 
         it "should prefer the local plugin if no version was specified" do
           plugin_manager.should_receive(:load_local).and_return(plugin)

@@ -251,13 +251,17 @@ module MotherBrain
     #
     # @option options [Boolean] :force (true)
     #   load a plugin even if a plugin of the same name and version is already loaded
+    # @option options [Boolean] :allow_failure (true)
+    #   allow for loading failure
     #
     # @return [MB::Plugin, nil]
     #   returns the loaded plugin or nil if the plugin was not loaded successfully
     def load_local(path, options = {})
+      options = options.reverse_merge(force: true, allow_failure: true)
       load_file(path, options)
     rescue PluginSyntaxError, PluginLoadError => ex
-      log.debug { "could not load local plugin at '#{path}': #{ex}" }
+      err_msg = "could not load local plugin at '#{path}': #{ex.message}"
+      options[:allow_failure] ? log.debug(err_msg) : abort(PluginLoadError.new(err_msg))
       nil
     end
 
@@ -270,12 +274,17 @@ module MotherBrain
     #
     # @option options [Boolean] :force (false)
     #   load a plugin even if a plugin of the same name and version is already loaded
+    # @option options [Boolean] :allow_failure (true)
+    #   allow for loading failure
+    #
+    # @raise [PluginSyntaxError]
+    # @raise [PluginLoadError]
     #
     # @return [MB::Plugin, nil]
     #   returns the loaded plugin or nil if the remote does not contain a plugin of the given
     #   name and version or if there was a failure loading the plugin
     def load_remote(name, version, options = {})
-      options  = options.reverse_merge(force: false)
+      options  = options.reverse_merge(force: false, allow_failure: true)
       resource = ridley.cookbook.find(name, version)
 
       return unless resource && resource.has_motherbrain_plugin?
@@ -288,13 +297,13 @@ module MotherBrain
         File.write(metadata_path, resource.metadata.to_json)
 
         unless resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, plugin_path)
-          log.warn { "error loading remote plugin: failure downloading plugin file for #{resource.name}" }
-          return
+          raise PluginLoadError, "failure downloading plugin file for #{resource.name}"
         end
 
         load_file(scratch_dir, options)
       rescue PluginSyntaxError, PluginLoadError => ex
-        log.debug { "could not load remote plugin #{name} (#{version}): #{ex}" }
+        err_msg = "could not load remote plugin #{name} (#{version}): #{ex.message}"
+        options[:allow_failure] ? log.debug(err_msg) : abort(PluginLoadError.new(err_msg))
         nil
       ensure
         FileUtils.rm_rf(scratch_dir)
