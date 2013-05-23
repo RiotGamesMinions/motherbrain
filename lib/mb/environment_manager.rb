@@ -38,7 +38,7 @@ module MotherBrain
     #
     # @return [JobTicket]
     def async_configure(id, options = {})
-      job = Job.new(:configure_environment)
+      job = Job.new(:environment_configure)
       async(:configure, job, id, options)
 
       job.ticket
@@ -66,8 +66,8 @@ module MotherBrain
       node_success = 0
       node_failure = 0
 
-      job.report_running("Finding environment #{environment.name}")
       environment = find(id)
+      job.report_running("Finding environment #{environment.name}")
 
       chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
         job.set_status("saving updated environment")
