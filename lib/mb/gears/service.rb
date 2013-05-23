@@ -2,9 +2,6 @@ module MotherBrain
   module Gear
     # @author Jamie Winsor <reset@riotgames.com>
     class Service < Gear::Base
-      require_relative 'service/action'
-      require_relative 'service/action_runner'
-
       register_gear :service
 
       class << self
@@ -96,5 +93,8 @@ module MotherBrain
             attr_reader :component
         end
     end
+
+    require_relative 'service/action'
+    require_relative 'service/action_runner'
   end
 end

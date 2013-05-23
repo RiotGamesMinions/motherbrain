@@ -2,8 +2,6 @@ module MotherBrain
   module Gear
     # @author Jesse Howarth <jhowarth@riotgames.com>
     class MySQL < Gear::Base
-      require_relative 'mysql/action'
-
       register_gear :mysql
 
       # @param [String] sql
@@ -17,5 +15,7 @@ module MotherBrain
         MySQL::Action.new(sql, options)
       end
     end
+
+    require_relative 'mysql/action'
   end
 end
