@@ -89,7 +89,7 @@ module MotherBrain
 
         job.report_running
 
-        manifest.validate!(plugin)
+        validate_bootstrap_configuration!(manifest, plugin)
 
         job.set_status("searching for environment")
         unless chef_connection.environment.find(environment)
@@ -233,6 +233,14 @@ module MotherBrain
       ensure
         workers.map { |worker| worker.terminate if worker.alive? }
       end
+
+      private
+
+        def validate_bootstrap_configuration!(manifest, plugin)
+          manifest.validate!(plugin)
+          raise ValidatorPemNotFound.new(config_manager.config.chef[:validator_path]) unless File.exists? config_manager.config.chef[:validator_path]
+          true
+        end
     end
   end
 end
