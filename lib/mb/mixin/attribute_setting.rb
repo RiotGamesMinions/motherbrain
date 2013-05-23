@@ -28,11 +28,11 @@ module MotherBrain
       #     "component_two" => "2.3.0"
       #   )
       def set_component_versions(env_id, plugin, component_versions)
-        override_attributes = Hash.new
+        default_attributes = Hash.new
 
         component_versions.each do |component_name, version|
           version_hash = Hash.from_dotted_path(version_attribute(plugin, component_name), version)
-          override_attributes.deep_merge!(version_hash)
+          default_attributes.deep_merge!(version_hash)
         end
 
         log.info "Setting component versions #{component_versions}"
@@ -41,7 +41,7 @@ module MotherBrain
           raise EnvironmentNotFound.new(env_id)
         end
 
-        env.override_attributes.merge!(override_attributes)
+        env.default_attributes.merge!(default_attributes)
         env.save
       end
 
@@ -92,14 +92,14 @@ module MotherBrain
       #     "baz.quux" => 42
       #   )
       def set_environment_attributes(env_id, new_attributes)
-        override_attributes = Hash.new
+        default_attributes = Hash.new
 
         new_attributes.each do |attribute, value|
           attribute_hash = Hash.from_dotted_path(attribute.to_s, value.to_s)
-          override_attributes.deep_merge!(attribute_hash)
+          default_attributes.deep_merge!(attribute_hash)
         end
 
-        set_environment_attributes_from_hash(env_id, override_attributes)
+        set_environment_attributes_from_hash(env_id, default_attributes)
       end
 
       # Set arbitrary attributes at the environment level
@@ -126,7 +126,7 @@ module MotherBrain
           raise EnvironmentNotFound.new(env_id)
         end
 
-        env.override_attributes.deep_merge!(new_attributes)
+        env.default_attributes.deep_merge!(new_attributes)
         env.save
       end
 

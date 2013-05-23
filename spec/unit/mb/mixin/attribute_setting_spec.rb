@@ -115,7 +115,7 @@ describe MB::Mixin::AttributeSetting do
         env = double('environment', name: "foo")
         chef_connection = subject.chef_connection
         chef_connection.stub_chain(:environment, :find).and_return(env)
-        env.should_receive(:override_attributes).and_return(hash)
+        env.should_receive(:default_attributes).and_return(hash)
         env.stub(:save)
       end
 

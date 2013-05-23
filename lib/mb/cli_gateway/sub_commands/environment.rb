@@ -8,7 +8,8 @@ module MotherBrain
         method_option :force,
           type: :boolean,
           default: false,
-          desc: "perform the configuration even if the environment is locked"
+          desc: "perform the configuration even if the environment is locked",
+          aliases: "-f"
         desc "configure ENVIRONMENT FILE", "configure a Chef environment"
         def configure(environment, attributes_file)
           attributes_file = File.expand_path(attributes_file)
