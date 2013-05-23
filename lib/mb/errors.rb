@@ -502,4 +502,23 @@ module MotherBrain
       "An item named '#{item_name}' was not found in the '#{data_bag_name}' data bag."
     end
   end
+
+  class RequiredFileNotFound < MBError
+    error_code(10000)
+
+    attr_reader :filename
+    attr_reader :required_for
+
+    def initialize(filename, options = {})
+      @filename = filename
+      @required_for = options[:required_for]
+    end
+
+    def message
+      msg = "#{@filename} does not exist, but is required"
+      msg += " for #{@required_for}" if @required_for
+      msg += "."
+      msg
+    end
+  end
 end

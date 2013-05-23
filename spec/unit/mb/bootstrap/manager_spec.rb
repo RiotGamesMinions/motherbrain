@@ -104,6 +104,17 @@ describe MB::Bootstrap::Manager do
 
     let(:run) { manager.bootstrap(job_stub, environment, manifest, plugin, options) }
 
+    context "should validate that the required files and configuration are available prior to attempting to bootstrap" do
+      it "and fail early if the validation pem is missing", focus: true do
+        job_stub.stub(:report_failure)
+
+        manager.should_receive(:assert_file_exists!).and_raise(MB::RequiredFileNotFound.new('/some/path'))
+        manager.should_not_receive(:chef_synchronize)
+
+        run
+      end
+    end
+
     context "when the environment cannot be found" do
       before(:each) do
         manager.stub_chain(:chef_connection, :environment, :find).with(environment).and_return(nil)
@@ -116,7 +127,7 @@ describe MB::Bootstrap::Manager do
         run
       end
     end
-
+    
     context "when the given bootstrap manifest is invalid" do
       it "sets the job to failed" do
         job_stub.should_receive(:report_failure)
