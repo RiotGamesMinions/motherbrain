@@ -1,5 +1,19 @@
 require 'spec_helper'
 
+describe MB::Gear::Base do
+  subject do
+    Class.new(described_class).new
+  end
+
+  describe "#run" do
+    it "raises an AbstractFunction error when not implemented" do
+      lambda {
+        subject.run(double('job'), double('environment'))
+      }.should raise_error(MB::AbstractFunction)
+    end
+  end
+end
+
 describe MB::Gear do
   before(:each) do
     @original = MB::Gear.all
@@ -31,11 +45,11 @@ describe MB::Gear do
 
       context "when a gear is registered" do
         before(:each) do
-          @gear_1 = Class.new(MB::AbstractGear) do
+          @gear_1 = Class.new(MB::Gear::Base) do
             register_gear :fake_one
           end
 
-          @gear_2 = Class.new(MB::AbstractGear) do
+          @gear_2 = Class.new(MB::Gear::Base) do
             register_gear :fake_two
           end
         end
@@ -58,7 +72,7 @@ describe MB::Gear do
 
     describe "::find_by_keyword" do
       before(:each) do
-        @klass = Class.new(MB::AbstractGear) do
+        @klass = Class.new(MB::Gear::Base) do
           register_gear :fake_gear
         end
       end
@@ -75,7 +89,7 @@ describe MB::Gear do
 
   describe "::register_gear" do
     it "sets the keyword class attribute" do
-      @klass = Class.new(MB::AbstractGear) do
+      @klass = Class.new(MB::Gear::Base) do
         register_gear :racer
       end
 
@@ -84,12 +98,12 @@ describe MB::Gear do
 
     context "when registering a keyword that has already been used" do
       it "raises a DuplicateGearKeyword error" do
-        Class.new(MB::AbstractGear) do
+        Class.new(MB::Gear::Base) do
           register_gear :racer
         end
 
         lambda {
-          Class.new(MB::AbstractGear) do
+          Class.new(MB::Gear::Base) do
             register_gear :racer
           end
         }.should raise_error(MB::DuplicateGearKeyword)
@@ -100,7 +114,7 @@ describe MB::Gear do
       it "raises a ReservedGearKeyword error" do
         MB::Gear::RESERVED_KEYWORDS.each do |key|
           lambda {
-            Class.new(MB::AbstractGear) do
+            Class.new(MB::Gear::Base) do
               register_gear key
             end
           }.should raise_error(MB::ReservedGearKeyword)
