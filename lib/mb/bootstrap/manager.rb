@@ -238,11 +238,7 @@ module MotherBrain
 
         def validate_bootstrap_configuration!(manifest, plugin)
           manifest.validate!(plugin)
-          assert_file_exists! Config.chef_config[:validation_key]
-        end
-
-        def assert_file_exists!(filename)
-          raise RequiredFileNotFound.new(filename, required_for: 'bootstrap') unless File.exists? filename
+          raise RequiredFileNotFound.new(filename, required_for: 'bootstrap') unless File.exists? Config.chef_config[:validation_key]
         end
     end
   end
