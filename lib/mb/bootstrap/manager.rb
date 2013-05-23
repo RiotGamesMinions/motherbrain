@@ -238,7 +238,8 @@ module MotherBrain
 
         def validate_bootstrap_configuration!(manifest, plugin)
           manifest.validate!(plugin)
-          raise ValidatorPemNotFound.new(Config.chef_config[:validation_key]) unless File.exists? Config.chef_config[:validation_key]
+          raise ValidatorPemNotFound.new(config_manager.config.chef[:validator_path]) unless File.exists? config_manager.config.chef[:validator_path]
+          true
         end
     end
   end

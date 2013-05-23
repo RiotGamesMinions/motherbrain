@@ -108,7 +108,7 @@ describe MB::Bootstrap::Manager do
       it "and fail early if the validation pem is missing" do
         job_stub.stub(:report_failure)
 
-        MB::Config.stub(:chef_config).and_return validation_key: '/this/file/doesnt/exist'
+        config_manager.stub_chain(:config).and_return(chef: {validation_key: '/this/file/doesnt/exist.pem'})
         manager.should_not_receive(:chef_synchronize)
         job_stub.should_receive(:report_failure)
 
