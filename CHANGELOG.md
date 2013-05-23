@@ -1,3 +1,13 @@
+# 0.6.1
+
+* Add the 'mb console' command to bring up an interactive developer console
+* Attributes will uniformly be set at default precedence (previously a mix of override and default)
+* The CLI will exit with an error if the local plugin it is attempting to load has a syntax error
+* Fix issue where attributes would be set multiple times when running async service commands
+* Allow symbols and strings in various places in the DSL
+* Fix deadlock on application start when using JRuby
+* Fix JSON warnings in JRuby
+
 # 0.6.0
 
 * Windows Command and Control
