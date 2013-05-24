@@ -16,6 +16,6 @@ module MotherBrain
       end
     end
 
-    require_relative 'gears/jmx'
+    require_relative 'jmx/action'
   end
 end
