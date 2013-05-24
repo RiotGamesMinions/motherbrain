@@ -2,7 +2,7 @@ require 'ef/rest'
 EF::REST.set_logger(MB.logger)
 
 module MotherBrain
-  module Provisioners
+  module Provisioner
     # @author Jamie Winsor <reset@riotgames.com>
     #
     # Provisioner adapter for Environment Factory. Node/Environment creation will be

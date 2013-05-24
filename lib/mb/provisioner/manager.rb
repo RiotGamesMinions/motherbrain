@@ -24,7 +24,7 @@ module MotherBrain
         #
         # @return [Class]
         def choose_provisioner(id)
-          id.nil? ? Provisioners.default : Provisioners.get!(id)
+          id.nil? ? Provisioner.default : Provisioner.get!(id)
         end
 
         # Instantiate a new provisioner based on the given options

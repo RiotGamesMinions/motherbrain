@@ -2,7 +2,7 @@ require 'active_support/inflector'
 require 'fog'
 
 module MotherBrain
-  module Provisioners
+  module Provisioner
     # @author Michael Ivey <michael.ivey@riotgames.com>
     #
     # Provisioner adapter for AWS/Eucalyptus
