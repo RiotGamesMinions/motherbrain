@@ -149,7 +149,6 @@ module MotherBrain
       unlock
     rescue => ex
       ex = ex.respond_to?(:cause) ? ex.cause : ex
-      job.set_status(ex.to_s) if job
 
       unless ex.is_a?(ResourceLocked)
         unlock if unlock_on_failure
