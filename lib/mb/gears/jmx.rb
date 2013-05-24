@@ -12,6 +12,10 @@ module MotherBrain
       # @raise [ActionNotSupported] if not running JRuby
       # @raise [ArgumentError]
       def action(port, object_name, &block)
+        unless jruby?
+          raise ActionNotSupported, "The JMX Gear is only supported on JRuby"
+        end
+
         JMX::Action.new(port, object_name, &block)
       end
     end
