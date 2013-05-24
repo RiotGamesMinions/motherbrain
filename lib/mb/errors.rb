@@ -388,6 +388,11 @@ module MotherBrain
     error_code(3022)
   end
 
+  class BootstrapTemplateNotFound < MBError
+    exit_code(106)
+    error_code(3023)
+  end
+
   # Bootstrap errors
   class BootstrapError < MBError
     exit_code(24)
