@@ -13,7 +13,7 @@ module MotherBrain
       #
       # @raise [MB::ConfigNotFound]
       def from_file(*args)
-        super(*args)
+        super
       rescue Chozo::Errors::ConfigNotFound => ex
         raise MB::ConfigNotFound, ex
       rescue Chozo::Errors::InvalidConfig => ex
