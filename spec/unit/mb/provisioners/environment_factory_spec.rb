@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::Provisioners::EnvironmentFactory do
+describe MB::Provisioner::EnvironmentFactory do
   let(:manifest) do
     MB::Provisioner::Manifest.new.from_json({
       nodes: [

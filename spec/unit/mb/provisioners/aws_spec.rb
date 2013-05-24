@@ -1,19 +1,14 @@
 require 'spec_helper'
 
-describe MB::Provisioners::AWS do
+describe MB::Provisioner::AWS do
   # We test a lot of the guts
-  saved_private_instance_methods = MB::Provisioners::AWS.private_instance_methods
-  before(:all) { MB::Provisioners::AWS.class_eval { public *saved_private_instance_methods } }
-  after(:all) { MB::Provisioners::AWS.class_eval { private *saved_private_instance_methods } }
+  saved_private_instance_methods = described_class.private_instance_methods
+  before(:all) { described_class.class_eval { public *saved_private_instance_methods } }
+  after(:all) { described_class.class_eval { private *saved_private_instance_methods } }
 
-  before(:all) do
-    Fog.mock!
-  end
-
+  before(:all) { Fog.mock! }
   let(:job) { double('job') }
-  before(:each) do
-    job.stub(:set_status)
-  end
+  before(:each) { job.stub(:set_status) }
 
   let(:env_name) { "mbtest" }
   let(:plugin) { double('plugin') }
