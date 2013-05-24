@@ -54,7 +54,7 @@ describe MB::Bootstrap::Template do
 
       context "with no name or path" do
         let(:name_or_path) { nil }
-        
+
         context "with a default in config" do
           before do
             MB::Application.config.bootstrap.default_template = "quux"
@@ -62,11 +62,33 @@ describe MB::Bootstrap::Template do
               with(MB::FileSystem.templates.join("quux.erb").to_s).
               and_return(true)
           end
-          
+
           it "should get the default" do
             expect(subject).to eq(MB::FileSystem.templates.join("quux.erb").to_s)
           end
         end
+      end
+    end
+
+    describe "#install" do
+      subject { described_class }
+
+      it "should install a file" do
+        File.should_receive(:exists?).with("/path/to/file.erb").and_return(true)
+        FileUtils.should_receive(:copy).
+          with("/path/to/file.erb",MB::FileSystem.templates.join("file").to_s)
+        subject.install("file", "/path/to/file.erb")
+      end
+
+      it "should install from a URL" do
+        Net::HTTP.should_receive(:start).with("example.com")
+        subject.install("fromurl", "http://example.com/gist")
+      end
+
+      it "should error when file doesn't exist" do
+        File.should_receive(:exists?).with("/path/to/badfile.erb").and_return(false)
+        FileUtils.should_not_receive(:copy)
+        expect { subject.install("file", "/path/to/badfile.erb") }.to raise_error(MB::BootstrapTemplateNotFound)
       end
     end
   end
