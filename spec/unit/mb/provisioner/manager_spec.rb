@@ -6,7 +6,7 @@ describe MB::Provisioner::Manager do
 
     describe "::choose_provisioner" do
       it "returns the default provisioner if nil is provided" do
-        subject.choose_provisioner(nil).should eql(MB::Provisioners.default)
+        subject.choose_provisioner(nil).should eql(MB::Provisioner.default)
       end
 
       it "returns the provisioner corresponding to the given ID" do
@@ -25,7 +25,7 @@ describe MB::Provisioner::Manager do
         let(:options) { {with: "magic"} }
 
         it "should choose the 'magic' provisioner" do
-          subject.should_receive(:choose_provisioner).with("magic").and_return(MB::Provisioners.default)
+          subject.should_receive(:choose_provisioner).with("magic").and_return(MB::Provisioner.default)
           subject.new_provisioner(options)
         end
       end
