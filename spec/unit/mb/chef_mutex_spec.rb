@@ -153,6 +153,12 @@ describe MB::ChefMutex do
         expect { synchronize }.to raise_error(RuntimeError)
       end
 
+      it "does not crash the mutex actor" do
+        expect { chef_mutex.synchronize(&test_block) }.to raise_error(RuntimeError)
+
+        expect { chef_mutex.to_s }.to_not raise_error(Celluloid::DeadActorError)
+      end
+
       context "and passed unlock_on_failure: false" do
         before do
           chef_mutex.stub(unlock_on_failure: false)
