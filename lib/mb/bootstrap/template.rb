@@ -5,6 +5,7 @@ module MotherBrain
     class Template
       class << self
         def install(name, filename_or_url)
+          name += ".erb"
           if filename_or_url.match(URI.regexp(['http','https']))
             uri = URI.parse(filename_or_url)
             Net::HTTP.start(uri.host) do |http|

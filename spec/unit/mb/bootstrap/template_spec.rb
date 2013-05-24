@@ -76,7 +76,7 @@ describe MB::Bootstrap::Template do
       it "should install a file" do
         File.should_receive(:exists?).with("/path/to/file.erb").and_return(true)
         FileUtils.should_receive(:copy).
-          with("/path/to/file.erb",MB::FileSystem.templates.join("file").to_s)
+          with("/path/to/file.erb",MB::FileSystem.templates.join("file.erb").to_s)
         subject.install("file", "/path/to/file.erb")
       end
 
