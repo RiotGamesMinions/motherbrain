@@ -123,9 +123,9 @@ module MotherBrain
       end
 
       Process.kill('TERM', pid)
-      remove_pid
+      destroy_pid
     rescue Errno::ESRCH
-      remove_pid
+      destroy_pid
     end
 
     private
