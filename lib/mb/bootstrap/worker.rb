@@ -54,6 +54,8 @@ module MotherBrain
       #     }
       #   ]
       #
+      # @option options [String] :environment
+      #   environment to join the node to (default: '_default')
       # @option options [Hash] :attributes (Hash.new)
       #   a hash of attributes to use in the first Chef run
       # @option options [Array] :run_list (Array.new)
@@ -154,6 +156,8 @@ module MotherBrain
       # @param [Array<Hash>] hostnames
       #   an array of hashes containing node data
       #
+      # @option options [String] :environment
+      #   environment to join the node to (default: '_default')
       # @option options [String] :chef_version
       #   version of Chef to install on the node
       # @option options [Hash] :attributes (Hash.new)
