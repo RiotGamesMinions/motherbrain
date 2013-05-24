@@ -32,7 +32,7 @@ module MotherBrain
       #
       # @return [Boolean]
       def chef_synchronize(options = {}, &block)
-        find_or_new(options).synchronize(&block)
+        ChefMutex.synchronize(options, &block)
       end
 
       # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
