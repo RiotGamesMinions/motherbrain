@@ -34,11 +34,11 @@ module MotherBrain
 
               desc("nodes", "List all nodes grouped by Group")
               define_method(:nodes) do
-                MB.ui.say "Listing nodes for '#{component.name}' in '#{environment}':"
+                ui.say "Listing nodes for '#{component.name}' in '#{environment}':"
                 nodes = component.nodes(environment).each do |group, nodes|
                   nodes.collect! { |node| "#{node.public_hostname} (#{node.public_ipv4})" }
                 end
-                MB.ui.say nodes.to_yaml
+                ui.say nodes.to_yaml
               end
             end
           end

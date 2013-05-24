@@ -47,10 +47,10 @@ module MotherBrain
                   end
                 end
 
-                MB.ui.say "\n"
-                MB.ui.say "** listing nodes in #{environment}:"
-                MB.ui.say "\n"
-                MB.ui.say nodes.to_yaml
+                ui.say "\n"
+                ui.say "** listing nodes in #{environment}:"
+                ui.say "\n"
+                ui.say nodes.to_yaml
               end
 
               if plugin.bootstrap_routine.present?
