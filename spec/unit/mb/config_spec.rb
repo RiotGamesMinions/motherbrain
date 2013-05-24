@@ -212,7 +212,7 @@ describe MB::Config do
         it "raises a MB::ConfigNotFound error" do
           lambda {
             subject.from_file(tmp_path.join("asdf.txt"))
-          }.should raise_error(Chozo::Errors::ConfigNotFound)
+          }.should raise_error(MB::ConfigNotFound)
         end
       end
     end

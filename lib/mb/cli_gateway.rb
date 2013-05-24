@@ -13,13 +13,11 @@ module MotherBrain
         file = options[:config] || File.expand_path(MB::Config.default_path)
 
         begin
-          config = MB::Config.from_file file
-        rescue Chozo::Errors::InvalidConfig => ex
-          ui.error "Invalid configuration file #{file}"
-          ui.error ""
+          config = MB::Config.from_file(file)
+        rescue MB::InvalidConfig => ex
           ui.error ex.to_s
           exit_with(InvalidConfig)
-        rescue Chozo::Errors::ConfigNotFound => ex
+        rescue MB::ConfigNotFound => ex
           ui.error "#{ex.message}"
           ui.error "Create one with `mb configure`"
           exit_with(ConfigNotFound)
@@ -114,7 +112,7 @@ module MotherBrain
 
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
-        config[:shell] ||= MB::Cli::Base.shell.new
+        config[:shell] ||= MB::Cli::Shell.shell.new
         args, opts = parse_args(given_args)
         invoked_opts.merge!(opts)
 
