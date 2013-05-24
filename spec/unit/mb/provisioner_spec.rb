@@ -1,12 +1,8 @@
 require 'spec_helper'
 
-describe MB::Provisioner do
+describe MB::Provisioner::Base do
   describe "ClassMethods" do
-    subject {
-      Class.new do
-        include MB::Provisioner
-      end
-    }
+    subject { described_class }
 
     describe "::validate_create" do
       it "does not raise an error if the number of nodes in the response matches the expected in manifest" do
@@ -101,12 +97,25 @@ describe MB::Provisioner do
     end
   end
 
-  subject do
-    Class.new do
-      include MB::Provisioner
-    end.new
+  subject { described_class.new }
+
+  describe "#up" do
+    let(:job) { double('job') }
+    let(:env_name) { "rpsec" }
+    let(:manifest) { double('manifest') }
+    let(:plugin) { double('plugin') }
+
+    it "raises an AbstractFunction error" do
+      expect { subject.up(job, env_name, manifest, plugin) }.to raise_error(MB::AbstractFunction)
+    end
   end
 
-  it { subject.should respond_to(:up) }
-  it { subject.should respond_to(:down) }
+  describe "#down" do
+    let(:job) { double('job') }
+    let(:env_name) { "rpsec" }
+
+    it "raises an AbstractFunction error" do
+      expect { subject.down(job, env_name) }.to raise_error(MB::AbstractFunction)
+    end
+  end
 end

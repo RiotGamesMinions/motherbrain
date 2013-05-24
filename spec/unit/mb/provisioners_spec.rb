@@ -23,9 +23,7 @@ describe MB::Provisioners do
 
   describe "::register" do
     let(:provisioner_class) do
-      Class.new do
-        include MB::Provisioner
-
+      Class.new(MB::Provisioner::Base) do
         @provisioner_id = :hello
       end
     end
@@ -56,9 +54,7 @@ describe MB::Provisioners do
 
     context "given a class with a nil value for provisioner_id" do
       let(:provisioner_class) do
-        Class.new do
-          include MB::Provisioner
-
+        Class.new(MB::Provisioner::Base) do
           @provisioner_id = nil
         end
       end
@@ -72,14 +68,12 @@ describe MB::Provisioners do
 
     context "when a provisioner with the given id has already been registered" do
       it "raises an ProvisionerRegistrationError" do
-        rspec_provisioner = Class.new do
-          include MB::Provisioner
+        rspec_provisioner = Class.new(MB::Provisioner::Base) do
           register_provisioner :rspec_provisioner
         end
 
         expect {
-          Class.new do
-            include MB::Provisioner
+          Class.new(MB::Provisioner::Base) do
             register_provisioner :rspec_provisioner
           end
         }.to raise_error(MB::ProvisionerRegistrationError)
@@ -88,8 +82,7 @@ describe MB::Provisioners do
 
     context "given the :default option set to true" do
       it "sets the given class as the default class" do
-        rspec_provisioner = Class.new do
-          include MB::Provisioner
+        rspec_provisioner = Class.new(MB::Provisioner::Base) do
           register_provisioner :rspec_provisioner, default: true
         end
 
@@ -97,14 +90,12 @@ describe MB::Provisioners do
       end
 
       it "raises if there is already a default class" do
-        rspec_provisioner = Class.new do
-          include MB::Provisioner
+        rspec_provisioner = Class.new(MB::Provisioner::Base) do
           register_provisioner :rspec_provisioner, default: true
         end
 
         expect {
-          Class.new do
-            include MB::Provisioner
+          Class.new(MB::Provisioner::Base) do
             register_provisioner :rspec_provisioner_two, default: true
           end
         }.to raise_error(MB::ProvisionerRegistrationError)
@@ -114,8 +105,7 @@ describe MB::Provisioners do
 
   describe "::get" do
     it "returns the provisioner class with the given provisioner_id" do
-      rspec_provisioner = Class.new do
-        include MB::Provisioner
+      rspec_provisioner = Class.new(MB::Provisioner::Base) do
         register_provisioner :rspec_provisioner
       end
 
@@ -126,8 +116,7 @@ describe MB::Provisioners do
   describe "::default" do
     context "given there is a default provisioner class" do
       it "returns the default provisioner class" do
-        rspec_provisioner = Class.new do
-          include MB::Provisioner
+        rspec_provisioner = Class.new(MB::Provisioner::Base) do
           register_provisioner :rspec_provisioner, default: true
         end
 
