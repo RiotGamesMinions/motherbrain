@@ -25,6 +25,19 @@ module MotherBrain
   #   end
   #
   class ChefMutex
+    class << self
+      # Create a new ChefMutex and run the given block of code within it. Terminate the
+      # ChefMutex after the block of code finishes executing.
+      #
+      # @see {ChefMutex#initialize}, {ChefMutex#synchronize}
+      def synchronize(options, &block)
+        mutex = new(options)
+        mutex.synchronize(&block)
+      ensure
+        mutex.terminate
+      end
+    end
+
     include Celluloid
     include Celluloid::Notifications
     include MB::Logging
@@ -47,6 +60,8 @@ module MotherBrain
     attr_reader :unlock_on_failure
 
     execute_block_on_receiver :synchronize
+
+    finalizer :unregister_lock
 
     # @option options [#to_s] :chef_environment
     #   The name of the environment to lock
@@ -71,6 +86,8 @@ module MotherBrain
       @job               = options[:job]
       @report_job_status = options[:report_job_status]
       @unlock_on_failure = options[:unlock_on_failure]
+
+      lock_manager.register(Actor.current)
     end
 
     # @return [String]
@@ -263,6 +280,10 @@ module MotherBrain
         result = locks.find(data_bag_id)
 
         result.to_hash if result
+      end
+
+      def unregister_lock
+        lock_manager.unregister(Actor.current)
       end
 
       # Write the lock to the data bag.
