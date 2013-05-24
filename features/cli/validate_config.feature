@@ -17,7 +17,7 @@ Feature: listing the plugins available to motherbrain
     When I run a command that requires a config
     Then the output should contain:
       """
-      Invalid configuration file
+      [err_code]: 3009 [message]: Invalid Configuration File
       """
     And the exit status should be the code for error "InvalidConfig"
 
