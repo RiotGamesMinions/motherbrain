@@ -28,10 +28,12 @@ Given /^an extra bootstrap template$/ do
   File.open(@template, 'w+') {|f| f.write "echo 'HELLO'" }
 end
 
-When /^I bootstrap "(.*?)" with the extra bootstrap template$/ do |name|
+When /^I bootstrap "(.*?)" with the "(.*?)" bootstrap template$/ do |name, template|
+  template = @template if template == "extra"
   set_env "MB_TEST_INIT_ENV", "#{name}prod"
   set_env "MB_TEST_INIT_COOKBOOK", name
   set_env "MB_TEST_INIT_BOOTSTRAP", "true"
-  set_env "MB_TEST_INIT_TEMPLATE", @template
-  run_simple(unescape("mb #{name} bootstrap #{@bootstrap_manifest} --environment #{name}prod --template #{@template} -d -L /tmp/aruba-mb.log"), false)
+  set_env "MB_TEST_INIT_TEMPLATE", template
+  run_simple(unescape("mb #{name} bootstrap #{@bootstrap_manifest} --environment #{name}prod --template #{template} -d -L /tmp/aruba-mb.log"), false)
+end
 end

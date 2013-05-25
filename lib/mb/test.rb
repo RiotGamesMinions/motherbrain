@@ -82,7 +82,7 @@ module MotherBrain
         ssh = double('ssh')
         node.should_receive(:bootstrap) do |hostnames, options|
           raise "Template not set!" unless options[:template]
-          raise "Template not right!" unless options[:template] =~ /extra_bootstrap_template/
+          raise "Template not right!" unless options[:template] =~ /#{name}/
           [ssh]
         end
         node.should_receive(:all).and_return([])

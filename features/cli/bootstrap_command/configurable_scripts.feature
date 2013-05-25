@@ -14,7 +14,7 @@ Feature: allow additional/configurable bootstrap scripts
   Scenario: custom template
     Given a cookbook "awesomed" at version "1.2.3" with a plugin that can bootstrap
     And an extra bootstrap template
-    When I bootstrap "awesomed" with the extra bootstrap template
+    When I bootstrap "awesomed" with the "extra" bootstrap template
     Then the exit status should be 0
 
   Scenario: named template
