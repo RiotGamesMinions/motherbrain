@@ -343,7 +343,12 @@ module MotherBrain
 
     desc "template NAME PATH_OR_URL", "Download and install a bootstrap template"
     def template(name, path_or_url)
-      MB::Bootstrap::Template.install(name, path_or_url)
+      begin
+        MB::Bootstrap::Template.install(name, path_or_url)
+        MB.ui.say "Installed template `#{name}`"
+      rescue MB::BootstrapTemplateNotFound
+        MB.ui.warn "Template could not be installed. Check the path, and try again."
+      end
     end
 
     private
