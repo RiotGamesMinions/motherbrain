@@ -45,6 +45,7 @@ module MotherBrain
         #   does not exist
         def find(name_or_path=nil)
           name_or_path ||= MB::Application.config.bootstrap.default_template
+          return unless name_or_path
           installed = MB::FileSystem.templates.join("#{name_or_path}.erb").to_s
           if File.exists?(installed)
             return installed
