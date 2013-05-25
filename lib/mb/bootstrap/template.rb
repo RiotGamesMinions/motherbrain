@@ -25,6 +25,7 @@ module MotherBrain
               end
             rescue Exception => e
               MB.log.warn e.to_s
+              raise MB::BootstrapTemplateNotFound
             end
           elsif File.exists?(filename_or_url)
             FileUtils.copy(filename_or_url, MB::FileSystem.templates.join(name).to_s)
