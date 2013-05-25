@@ -250,9 +250,8 @@ module MotherBrain
           hostname  = node[:hostname]
           node_name = node[:node_name]
 
-          log.info {
-            "Node (#{node_name}):(#{hostname}) is already registered with Chef: performing a partial bootstrap"
-          }
+          log.info "Node (#{node_name}):(#{hostname}) is already registered with Chef: " +
+            "performing a partial bootstrap"
 
           response = {
             node_name: node_name,
@@ -268,7 +267,18 @@ module MotherBrain
             node_querier.chef_run(hostname)
 
             response[:status] = :ok
-          rescue Ridley::Errors::HTTPNotFound, RemoteCommandError, RemoteFileCopyError => ex
+          rescue Ridley::Errors::ResourceNotFound => ex
+            response[:status]  = :error
+            response[:message] = "The node #{node_name} thinks it is registered to the Chef server and " +
+              "has a client but there is no node object for it. Generating a new node object for it."
+            # JW TODO: We can recover here by creating the node object. However, we can't do this right
+            # now because OHC/OPC have ACLs associated with the node object. When we create the object the
+            # API user that we are acting as will be the only user with full permissions to the node
+            # object resulting in a 403 error when the node attempts to save itself back to the Chef server.
+            #
+            # TLDR; The undocumented ACL endpoints need to be implemented in Ridley to support graceful
+            # recovery. https://github.com/RiotGames/ridley/issues/147
+          rescue RemoteCommandError, RemoteFileCopyError => ex
             response[:status]  = :error
             response[:message] = ex.to_s
           end
