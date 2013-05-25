@@ -23,15 +23,13 @@ module MotherBrain
                   file.write(resp.body)
                 end
               end
-            rescue Exception => e
-              MB.log.warn e.to_s
-              raise MB::BootstrapTemplateNotFound
+            rescue Exception => ex
+              raise MB::BootstrapTemplateNotFound, ex
             end
           elsif File.exists?(filename_or_url)
             FileUtils.copy(filename_or_url, MB::FileSystem.templates.join(name).to_s)
           else
-            MB.log.warn "Couldn't install template"
-            raise MB::BootstrapTemplateNotFound
+            raise MB::BootstrapTemplateNotFound, "Couldn't install template"
           end
         end
 
