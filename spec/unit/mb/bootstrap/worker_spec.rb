@@ -190,7 +190,7 @@ describe MB::Bootstrap::Worker do
       }
     end
 
-    let(:nodes) { [node] }
+    let(:nodes) { [ node ] }
 
     before(:each) do
       subject.stub(node_querier: node_querier, chef_connection: chef_connection)
@@ -272,6 +272,21 @@ describe MB::Bootstrap::Worker do
 
         it "has the string representation of the raised exception for :message" do
           response[:message].should eql(exception.to_s)
+        end
+      end
+
+      context "when the node does not have a node object in the Chef server" do
+        let(:node_resource) { double('node_resource') }
+        before do
+          chef_connection.stub(node: node_resource)
+          node_resource.should_receive(:merge_data).and_raise(Ridley::Errors::ResourceNotFound)
+        end
+
+        it "sets the response to error", focus: true do
+          data = { run_list: "some_list", attributes: "some_attrs" }
+
+          response = subject.partial_bootstrap(nodes, data).first
+          expect(response[:status]).to eq(:error)
         end
       end
     end
