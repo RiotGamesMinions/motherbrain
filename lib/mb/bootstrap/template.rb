@@ -39,6 +39,7 @@ module MotherBrain
         #  User's choice of template
         #
         # @return [String] the actual path the the chosen template
+        # # @return [nil] if there is no template
         #
         # @raise [MB::BootstrapTemplateNotFound] if the template file
         #   does not exist
