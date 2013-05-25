@@ -44,18 +44,18 @@ module MotherBrain
 
     desc "display the loaded configuration"
     get 'config' do
-      Application.config
+      config_manager.config
     end
 
     namespace 'jobs' do
       desc "list all jobs (completed and active)"
       get do
-        JobManager.instance.list
+        job_manager.list
       end
 
       desc "list all active jobs"
       get 'active' do
-        JobManager.instance.active
+        job_manager.active
       end
 
       desc "find and return the Job with the given ID"

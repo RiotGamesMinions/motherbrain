@@ -2,16 +2,12 @@ require 'active_support/inflector'
 require 'fog'
 
 module MotherBrain
-  module Provisioners
+  module Provisioner
     # @author Michael Ivey <michael.ivey@riotgames.com>
     #
     # Provisioner adapter for AWS/Eucalyptus
-    class AWS
-      include Provisioner
-
+    class AWS < Provisioner::Base
       register_provisioner :aws
-
-      def initialize(options = {}); end
 
       # Provision nodes in the environment based on the contents of the given manifest
       #

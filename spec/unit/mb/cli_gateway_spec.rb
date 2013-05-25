@@ -238,14 +238,14 @@ describe MB::CliGateway do
         before { described_class.stub(local_plugin?: true) }
 
         it "should prefer the local plugin if no version was specified" do
-          plugin_manager.should_receive(:load_local).and_return(plugin)
+          plugin_manager.should_receive(:load_installed).and_return(plugin)
 
           subject.should eql(plugin)
         end
 
         it "should use the version specified version of the plugin if a version is specified" do
           options[:plugin_version] = '1.2.3'
-          plugin_manager.should_not_receive(:load_local)
+          plugin_manager.should_not_receive(:load_installed)
           plugin_manager.should_receive(:find).with('myface', '1.2.3', remote: true).and_return(plugin)
 
           subject.should eql(plugin)
@@ -253,7 +253,7 @@ describe MB::CliGateway do
 
         it "should use the local version if the environment is specified" do
           options[:environment] = "abc"
-          plugin_manager.should_receive(:load_local).and_return(plugin)
+          plugin_manager.should_receive(:load_installed).and_return(plugin)
 
           subject.should eql(plugin)
         end

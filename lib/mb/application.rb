@@ -58,6 +58,7 @@ module MotherBrain
       #
       # @param [MB::Config] config
       def run!(config)
+        Celluloid.boot
         log.info { "motherbrain starting..." }
         setup
         @instance = Application::SupervisionGroup.new(config)

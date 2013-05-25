@@ -9,7 +9,7 @@ module MotherBrain
   #
   # @example Defining a new Gear
   #
-  #   class Twitter < MotherBrain::AbstractGear
+  #   class Twitter < MB::Gear::Base
   #     register_gear :twitter
   #   end
   #
@@ -23,6 +23,37 @@ module MotherBrain
   #   end
   #
   module Gear
+    class Base
+      # @author Jamie Winsor <reset@riotgames.com>
+      class << self
+        # The identifier for the Gear. The keyword is automatically populated based on the name
+        # of the Class including {MotherBrain::Gear}. The keyword must be unique among the other
+        # registered Gears. Also used to define a Gear in the plugin DSL.
+        #
+        # @return [Symbol]
+        attr_reader :keyword
+
+        # Register the gear with {MotherBrain::Gear} with the given keyword. This is how a gear is
+        # identified within a plugin.
+        #
+        # @param [#to_sym] keyword
+        def register_gear(keyword)
+          @keyword = keyword.to_sym
+          Gear.register(self)
+        end
+      end
+
+      include Chozo::VariaModel
+
+      # @param [MB::Job] job
+      #   a job to update with status
+      # @param [String] environment
+      #   the environment this command is being run on
+      def run(job, environment, *args)
+        raise AbstractFunction, "#run(environment, *args) must be implemented on #{self.class}"
+      end
+    end
+
     RESERVED_KEYWORDS = [
       :name,
       :version,
@@ -34,7 +65,7 @@ module MotherBrain
       :component,
       :group,
       :execute
-    ]
+    ].freeze
 
     class << self
       # Registers a given Class as a Gear to be used within MotherBrain plugins. This
@@ -122,15 +153,5 @@ module MotherBrain
           true
         end
     end
-  end
-end
-
-Dir["#{File.dirname(__FILE__)}/gears/*.rb"].sort.each do |path|
-  basename = File.basename(path, '.rb')
-
-  begin
-    require "mb/gears/#{basename}"
-  rescue LoadError => error
-    # puts "Error loading #{basename} gear: #{error.message}"
   end
 end
