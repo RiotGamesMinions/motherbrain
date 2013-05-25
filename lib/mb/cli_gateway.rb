@@ -249,7 +249,8 @@ module MotherBrain
 
     SKIP_ENVIRONMENT_TASKS = [
       "environment",
-      "plugin"
+      "plugin",
+      "template"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [

@@ -24,11 +24,11 @@ Feature: allow additional/configurable bootstrap scripts
     Then the exit status should be 0
 
   Scenario: installing template from file
-    When I install a template from "foo.erb"
+    When I install a template named "foo" from "foo.erb"
     Then the "foo" template should exist
 
   Scenario: installing template from URL
-    When I install a template from "http://gist.example.com/bar.gist"
+    When I install a template named "bar" from "http://gist.example.com/bar.gist"
     Then the "bar" template should exist
 
 

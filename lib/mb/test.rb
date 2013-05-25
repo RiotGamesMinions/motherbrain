@@ -1,5 +1,6 @@
 require 'rspec/mocks'
 require 'active_support/inflector'
+require 'webmock'
 
 module MotherBrain
   module Test
@@ -41,8 +42,10 @@ module MotherBrain
     end
 
     class Init < Base
+      include WebMock::API
+
       def available_mocks
-        [:env, :cookbook, :bootstrap, :template]
+        [:env, :cookbook, :bootstrap, :template, :template_url]
       end
 
       def ridley
@@ -89,6 +92,11 @@ module MotherBrain
         ssh.should_receive(:host).and_return("foo.example.com")
         ssh.should_receive(:error?).and_return(false)
         Application.node_querier.wrapped_object.should_receive(:node_name).and_return("foo.example.com")
+      end
+
+      def template_url(name_and_url)
+        name, url = name_and_url.split("##")
+        stub_request(:get, url).to_return(:body => name)
       end
     end
   end
