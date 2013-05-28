@@ -282,7 +282,7 @@ describe MB::Bootstrap::Worker do
           node_resource.should_receive(:merge_data).and_raise(Ridley::Errors::ResourceNotFound)
         end
 
-        it "sets the response to error", focus: true do
+        it "sets the response to error" do
           data = { run_list: "some_list", attributes: "some_attrs" }
 
           response = subject.partial_bootstrap(nodes, data).first
