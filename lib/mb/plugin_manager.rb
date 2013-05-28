@@ -24,9 +24,7 @@ module MotherBrain
     # @return [Timers::Timer, nil]
     attr_reader :eager_load_timer
 
-    finalizer do
-      log.info { "Plugin Manager stopping..." }
-    end
+    finalizer :finalize_callback
 
     def initialize
       log.info { "Plugin Manager starting..." }
@@ -495,6 +493,10 @@ module MotherBrain
       end
 
     private
+
+      def finalize_callback
+        log.info { "Plugin Manager stopping..." }
+      end
 
       # Load a plugin from a file
       #

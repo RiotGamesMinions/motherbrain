@@ -52,9 +52,5 @@ describe MB::JobManager do
     it "removes the given job from the active job list" do
       subject.active.should have(0).items
     end
-
-    it "should not be monitoring the removed job" do
-      subject.should_not be_monitoring(@fake_job)
-    end
   end
 end

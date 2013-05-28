@@ -19,9 +19,7 @@ module MotherBrain
     # @return [MB::Config]
     attr_reader :config
 
-    finalizer do
-      log.info { "Config Manager stopping..." }
-    end
+    finalizer :finalize_callback
 
     # @param [MB::Config] new_config
     def initialize(new_config)
@@ -64,6 +62,10 @@ module MotherBrain
 
       # @return [Mutex]
       attr_reader :reload_mutex
+
+      def finalize_callback
+        log.info { "Config Manager stopping..." }
+      end
 
       # @param [MB::Config] new_config
       def set_config(new_config)

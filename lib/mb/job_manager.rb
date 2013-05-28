@@ -28,9 +28,7 @@ module MotherBrain
     attr_reader :records
     alias_method :list, :records
 
-    finalizer do
-      @_active.map { |job| job.terminate if job.alive? }
-    end
+    finalizer :finalize_callback
 
     def initialize
       @records = Set.new
@@ -51,13 +49,10 @@ module MotherBrain
     # @param [Job] job
     def complete_job(job)
       @_active.delete(job)
-
-      if job.alive?
-        unmonitor(job)
-      end
     end
 
     # listing of all active jobs
+    #
     # @return [Set<JobRecord>]
     def active
       active_ids = @_active.collect {|j| j.id }
@@ -76,6 +71,10 @@ module MotherBrain
       find(job.id).update(job)
     end
 
+    def terminate_active
+      @_active.map { |job| job.terminate if job.alive? }
+    end
+
     # Generate a new Job ID
     #
     # @return [String]
@@ -84,6 +83,10 @@ module MotherBrain
     end
 
     private
+
+      def finalize_callback
+        terminate_active
+      end
 
       def force_complete(actor, reason)
         complete_job(actor)
