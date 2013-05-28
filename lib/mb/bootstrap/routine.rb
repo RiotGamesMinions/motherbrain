@@ -88,11 +88,6 @@ module MotherBrain
       # @author Jamie Winsor <reset@riotgames.com>
       # @api private
       class CleanRoom < CleanRoomBase
-        def initialize(*args)
-          super
-          @task_procs = Array.new
-        end
-
         # Add a Bootstrap::Routine::Task for bootstrapping nodes in the given node group to the {Routine}
         #
         # @example
@@ -125,7 +120,9 @@ module MotherBrain
         protected
 
           # @return [Array<Proc>]
-          attr_reader :task_procs
+          def task_procs
+            @task_procs ||= Array.new
+          end
       end
     end
   end
