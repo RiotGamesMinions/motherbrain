@@ -53,8 +53,6 @@ module MotherBrain
       #   does not have a version attribute in the corresponding component
       #
       # @raise [EnvironmentNotFound] if the environment does not exist
-      #
-      # @return [Boolean]
       def run
         job.set_status("Starting")
         job.report_running
@@ -86,10 +84,8 @@ module MotherBrain
         end
 
         job.report_success
-        true
       rescue => ex
         job.report_failure(ex)
-        false
       ensure
         job.terminate if job && job.alive?
       end

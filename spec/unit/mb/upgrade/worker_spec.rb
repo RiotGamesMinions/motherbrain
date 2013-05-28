@@ -43,18 +43,6 @@ describe MB::Upgrade::Worker do
       run
     end
 
-    context "when successful" do
-      it { should be_true }
-    end
-
-    context "when fail" do
-      before do
-        MB::ChefMutex.any_instance.should_receive(:synchronize).and_raise(RuntimeError)
-      end
-
-      it { should be_false }
-    end
-
     it "marks the job as 'running' and then 'success' if successful" do
       job.should_receive(:report_running).ordered
       job.should_receive(:report_success).ordered
