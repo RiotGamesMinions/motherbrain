@@ -61,7 +61,7 @@ module MotherBrain
 
     execute_block_on_receiver :synchronize
 
-    finalizer :unregister_lock
+    finalizer :finalize_callback
 
     # @option options [#to_s] :chef_environment
     #   The name of the environment to lock
@@ -175,6 +175,10 @@ module MotherBrain
     end
 
     private
+
+      def finalize_callback
+        unregister_lock
+      end
 
       # Reports a job status
       # @param [Object] result

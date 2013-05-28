@@ -17,9 +17,7 @@ module MotherBrain
       include MB::Mixin::AttributeSetting
       include MB::Mixin::Services
 
-      finalizer do
-        log.info { "Bootstrap Manager stopping..." }
-      end
+      finalizer :finalize_callback
 
       def initialize
         log.info { "Bootstrap Manager starting..." }
@@ -235,6 +233,10 @@ module MotherBrain
       end
 
       private
+
+        def finalize_callback
+          log.info { "Bootstrap Manager stopping..." }
+        end
 
         def validate_bootstrap_configuration!(manifest, plugin)
           manifest.validate!(plugin)
