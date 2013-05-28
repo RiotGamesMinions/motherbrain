@@ -73,19 +73,6 @@ describe MB::Upgrade::Worker do
       end
     end
 
-    context "when no component_versions or cookbook_versions are passed" do
-      before do
-        options[:cookbook_versions] = nil
-        options[:component_versions] = nil
-      end
-
-      it "does not save the environment, nor run chef" do
-        worker.should_not_receive :run_chef
-
-        run
-      end
-    end
-
     context "when only cookbook_versions is passed as an option" do
       before do
         options[:cookbook_versions] = cookbook_versions

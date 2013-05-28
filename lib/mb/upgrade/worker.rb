@@ -77,14 +77,12 @@ module MotherBrain
             set_environment_attributes(environment_name, environment_attributes)
           end
 
-          unless options[:environment_attributes_file].nil?
-            job.set_status("Setting environment attributes from file")
-            set_environment_attributes_from_file(environment_name, options[:environment_attributes_file])
+          if environment_attributes_file
+            job.set_status("Setting environment attributes from #{environment_attributes_file}")
+            set_environment_attributes_from_file(environment_name, environment_attributes_file)
           end
 
-          if component_versions.any? or cookbook_versions.any?
-            run_chef if nodes.any?
-          end
+          run_chef if nodes.any?
         end
 
         job.report_success
@@ -118,6 +116,11 @@ module MotherBrain
         # @return [Hash]
         def environment_attributes
           options[:environment_attributes] || {}
+        end
+
+        # @return [String, nil]
+        def environment_attributes_file
+          options[:environment_attributes_file]
         end
 
         # @return [Array<String>]
