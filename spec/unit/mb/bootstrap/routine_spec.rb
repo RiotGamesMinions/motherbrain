@@ -102,10 +102,10 @@ describe MB::Bootstrap::Routine do
         end
       end
 
-      it "returns an array of arrays of boot tasks" do
+      it "returns an array of arrays of bootstrap routine tasks" do
         subject.task_queue.should have(1).item
         subject.task_queue[0].should have(2).items
-        subject.task_queue[0].should each be_a(MB::Bootstrap::BootTask)
+        subject.task_queue[0].should each be_a(MB::Bootstrap::Routine::Task)
       end
     end
 
@@ -117,9 +117,9 @@ describe MB::Bootstrap::Routine do
         end
       end
 
-      it "returns an array of boot tasks" do
+      it "returns an array of bootstrap routine tasks" do
         subject.task_queue.should have(2).items
-        subject.task_queue.should each be_a(MB::Bootstrap::BootTask)
+        subject.task_queue.should each be_a(MB::Bootstrap::Routine::Task)
       end
     end
   end
@@ -131,7 +131,7 @@ describe MB::Bootstrap::Routine do
       end
     end
 
-    it "returns a BootTask if a task with a matching ID is present" do
+    it "returns true if a bootstrap routine task with the matching ID is present" do
       subject.has_task?("activemq::master").should be_true
     end
 

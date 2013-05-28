@@ -155,8 +155,8 @@ module MotherBrain
       #   a job to send progress updates to
       # @param [Bootstrap::Manifest] manifest
       #   a hash where the keys are node group names and the values are arrays of hostnames
-      # @param [BootTask, Array<BootTask>] boot_tasks
-      #   a hash where the keys are node group names and the values are arrays of hostnames
+      # @param [Bootstrap::Routine::Task, Array<Bootstrap::Routine::Task>] tasks
+      #   a task or array of bootstrap tasks to concurrently perform
       #
       # @option options [Hash] :attributes (Hash.new)
       #   a hash of attributes to use in the first Chef run
@@ -199,11 +199,11 @@ module MotherBrain
       #       }
       #     ]
       #   }
-      def concurrent_bootstrap(job, manifest, boot_tasks, options = {})
+      def concurrent_bootstrap(job, manifest, tasks, options = {})
         workers  = Array.new
         response = Hash.new
 
-        Array(boot_tasks).each do |boot_task|
+        Array(tasks).each do |boot_task|
           groups = boot_task.groups
           nodes  = manifest.hosts_for_groups(groups)
 

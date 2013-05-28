@@ -2,6 +2,21 @@ module MotherBrain
   module Bootstrap
     # @author Jamie Winsor <reset@riotgames.com>
     class Routine
+      # Container for a bootstrap task defined in a bootstrap routine
+      #
+      # @api private
+      class Task
+        attr_accessor :groups
+        attr_reader :group_object
+
+        # @param [String] groups
+        # @param [MB::Group] group_object
+        def initialize(groups, group_object)
+          @groups       = Array(groups)
+          @group_object = group_object
+        end
+      end
+
       # @return [MB::Plugin]
       attr_reader :plugin
 
@@ -20,7 +35,7 @@ module MotherBrain
       # are contained within an array. Groups should be bootstrapped starting from index 0 of
       # the returned array.
       #
-      # @return [Array<Bootstrap::BootTask>, Array<Array<Bootstrap::BootTask>>]
+      # @return [Array<Bootstrap::Routine::Task>, Array<Array<Bootstrap::Routine::Task>>]
       def task_queue
         @task_queue ||= MB.expand_procs(task_procs)
       end
@@ -60,7 +75,7 @@ module MotherBrain
           @task_procs = Array.new
         end
 
-        # Add a Bootstrap::BootTask for bootstrapping nodes in the given node group to the {Routine}
+        # Add a Bootstrap::Routine::Task for bootstrapping nodes in the given node group to the {Routine}
         #
         # @example
         #   Routine.new(...) do
@@ -72,11 +87,11 @@ module MotherBrain
           self.task_procs.push -> {
             component, group = scoped_group.split('::')
 
-            BootTask.new(scoped_group, real_model.plugin.component!(component).group!(group))
+            Task.new(scoped_group, real_model.plugin.component!(component).group!(group))
           }
         end
 
-        # Add an array of Bootstrap::BootTasks to be executed asyncronously to the {Routine}
+        # Add an array of Bootstrap::Routine::Task(s) to be executed asyncronously to the {Routine}
         #
         # @example
         #   Routine.new(...) do
