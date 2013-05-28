@@ -17,9 +17,7 @@ module MotherBrain
     include MB::Logging
     include MB::Mixin::Services
 
-    finalizer do
-      log.info { "Node Querier stopping..." }
-    end
+    finalizer :finalize_callback
 
     def initialize
       log.info { "Node Querier starting..." }
@@ -228,6 +226,10 @@ module MotherBrain
     end
 
     private
+
+      def finalize_callback
+        log.info { "Node Querier stopping..." }
+      end
 
       # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
       # that are located in the Mother Brain scripts directory can be used and they should

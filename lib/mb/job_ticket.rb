@@ -21,7 +21,7 @@ module MotherBrain
       end
 
       def method_missing(method, *args, &block)
-        record.send(method, *args, &block) if record
+        record.send(method, *args, &block)
       end
   end
 end
