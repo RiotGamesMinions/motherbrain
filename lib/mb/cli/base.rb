@@ -33,6 +33,19 @@ module MotherBrain
         def ui
           self.class.ui
         end
+
+        def requires_one_of(*valid_options)
+          valid_options = valid_options.flatten
+
+          return if options.slice(*valid_options).any?
+
+          valid_cli_arguments = valid_options.map { |key|
+            key.to_s.dasherize.prepend('--')
+          }
+
+          ui.say "Requires one of #{valid_cli_arguments.join(', ')}"
+          exit 1
+        end
       end
     end
   end
