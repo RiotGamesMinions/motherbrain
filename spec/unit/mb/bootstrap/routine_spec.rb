@@ -158,3 +158,54 @@ describe MB::Bootstrap::Routine do
     end
   end
 end
+
+describe MB::Bootstrap::Routine::Task do
+  describe "::from_group_path" do
+    let(:plugin) do
+      metadata = MB::CookbookMetadata.new do
+        name "motherbrain"
+        version "0.1.0"
+      end
+
+      MB::Plugin.new(metadata)
+    end
+
+    let(:activemq) { MB::Component.new('activemq', plugin) }
+    let(:amq_master) { MB::Group.new('master') }
+    let(:group_path) { "activemq::master" }
+
+    before(:each) do
+      plugin.stub(:components).and_return([activemq])
+      activemq.stub(:groups).and_return([amq_master])
+    end
+
+    subject { described_class.from_group_path(plugin, group_path) }
+
+    its(:groups) { [group_path] }
+    its(:group_object) { should eql(amq_master) }
+
+    context "given an invalid string" do
+      let(:group_path) { :one_two }
+
+      it "raises a PluginSyntaxError" do
+        expect { subject }.to raise_error(MB::PluginSyntaxError)
+      end
+    end
+
+    context "when the given plugin does not contain the component in the given name" do
+      let(:group_path) { "something::master" }
+
+      it "raises a PluginSyntaxError" do
+        expect { subject }.to raise_error(MB::PluginSyntaxError)
+      end
+    end
+
+    context "when the given plugin does not contain the group in the given name" do
+      let(:group_path) { "activemq::slave" }
+
+      it "raises a PluginSyntaxError" do
+        expect { subject }.to raise_error(MB::PluginSyntaxError)
+      end
+    end
+  end
+end

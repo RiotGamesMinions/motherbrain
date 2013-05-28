@@ -6,13 +6,31 @@ module MotherBrain
       #
       # @api private
       class Task
-        attr_accessor :groups
+        class << self
+          # Create a new bootstrap routine task from a group path
+          #
+          # @param [MB::Plugin] plugin
+          #   the plugin to find the group in
+          # @param [#to_s] group_path
+          #   a string representing the path to a group in a component ("nginx::master")
+          #
+          # @raise [MB::PluginSyntaxError] if the group or component is not found on the plugin
+          def from_group_path(plugin, group_path)
+            component, group = group_path.to_s.split('::')
+            group_object     = plugin.component!(component).group!(group)
+            new(group_path, group_object)
+          rescue ComponentNotFound, GroupNotFound => ex
+            raise PluginSyntaxError, ex
+          end
+        end
+
+        attr_reader :groups
         attr_reader :group_object
 
-        # @param [String] groups
+        # @param [String] group_name
         # @param [MB::Group] group_object
-        def initialize(groups, group_object)
-          @groups       = Array(groups)
+        def initialize(group_name, group_object)
+          @groups       = Array(group_name)
           @group_object = group_object
         end
       end
@@ -82,13 +100,10 @@ module MotherBrain
         #     bootstrap("mysql::master")
         #   end
         #
-        # @param [String] scoped_group
-        def bootstrap(scoped_group)
-          self.task_procs.push -> {
-            component, group = scoped_group.split('::')
-
-            Task.new(scoped_group, real_model.plugin.component!(component).group!(group))
-          }
+        # @param [String] group_path
+        #   a group path
+        def bootstrap(group_path)
+          self.task_procs.push -> { Task.from_group_path(real_model.plugin, group_path) }
         end
 
         # Add an array of Bootstrap::Routine::Task(s) to be executed asyncronously to the {Routine}
