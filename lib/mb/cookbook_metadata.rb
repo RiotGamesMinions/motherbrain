@@ -51,7 +51,14 @@ module MotherBrain
     include Chozo::VariaModel
 
     attribute :name,
-      type: String
+      type: String,
+      coerce: lambda { |m|
+        if m.kind_of? String
+          m.gsub('-', '_')
+        else
+          m
+        end
+      }
 
     attribute :maintainer,
       type: String

@@ -15,6 +15,17 @@ describe MB::Component do
     end
   }
 
+  describe "#new" do
+    let(:new_component) { MB::Component.new("active-mq", plugin) }
+
+    context "when the component has a hyphen in its name" do
+      it "changes the hyphen to an underscore" do
+        expect(new_component.name).to eql("active_mq")
+      end
+    end
+
+  end
+
   describe "#command" do
     let(:component) do
       MB::Component.new("activemq", plugin) do

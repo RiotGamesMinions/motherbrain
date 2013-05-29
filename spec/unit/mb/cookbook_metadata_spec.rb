@@ -66,6 +66,31 @@ describe MotherBrain::CookbookMetadata do
           }.to_not raise_error
         end
       end
+
+      context "when the cookbooks name contains a hyphen" do
+        subject do
+          described_class.load do
+            name             "mother-brain"
+            maintainer       "Jamie Winsor"
+            maintainer_email "reset@riotgames.com"
+            license          "Apache 2.0"
+            description      "Installs/Configures motherbrain"
+            long_description "Installs/Configures motherbrain"
+            version          "0.1.0"
+
+            %w{ centos }.each do |os|
+              supports os
+            end
+
+            depends "nginx", "~> 1.0.0"
+            depends "artifact", "~> 0.11.5"
+          end
+        end
+
+        it "replaces hyphens with underscores in the name" do
+          expect(subject.name).to eql("mother_brain")
+        end
+      end
     end
 
     describe "#from_file" do
