@@ -37,7 +37,7 @@ module MotherBrain
           elsif File.exists?(filename_or_url)
             FileUtils.copy(filename_or_url, template_path.to_s)
           else
-            raise MB::BootstrapTemplateNotFound, "Couldn't install template"
+            raise MB::BootstrapTemplateNotFound, "Couldn't find the template to install or the protocol given is not supported."
           end
         end
 
