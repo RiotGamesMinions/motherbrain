@@ -18,17 +18,21 @@ module MotherBrain
           end
           MB.log.info "Installing bootstrap template `#{name}` from #{filename_or_url}"
           name += ".erb"
-          if filename_or_url.match(URI.regexp(['http','https']))
-            uri = URI.parse(filename_or_url)
-            begin
-              Net::HTTP.start(uri.host) do |http|
-                resp = http.get(uri.path)
-                MB::FileSystem.templates.join(name).open("w+") do |file|
-                  file.write(resp.body)
+          if filename_or_url.match(URI.regexp)
+            if filename_or_url.match(URI.regexp(['http','https']))
+              uri = URI.parse(filename_or_url)
+              begin
+                Net::HTTP.start(uri.host) do |http|
+                  resp = http.get(uri.path)
+                  MB::FileSystem.templates.join(name).open("w+") do |file|
+                    file.write(resp.body)
+                  end
                 end
+              rescue Exception => ex
+                raise MB::BootstrapTemplateNotFound, ex
               end
-            rescue Exception => ex
-              raise MB::BootstrapTemplateNotFound, ex
+            else
+              raise MB::BootstrapTemplateNotFound, "Only http/https URLs are supported"
             end
           elsif File.exists?(filename_or_url)
             FileUtils.copy(filename_or_url, template_path.to_s)
