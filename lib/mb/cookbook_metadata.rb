@@ -53,7 +53,11 @@ module MotherBrain
     attribute :name,
       type: String,
       coerce: lambda { |m|
-        m.gsub('-', '_')
+        if m.kind_of? String
+          m.gsub('-', '_')
+        else
+          m
+        end
       }
 
     attribute :maintainer,
