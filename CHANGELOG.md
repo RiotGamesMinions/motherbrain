@@ -1,3 +1,16 @@
+# 0.7.0
+
+* Speed up bootstrap times
+* Fix issue where multiple unnecessary chef runs would occur on the same node during an async bootstrap
+* Fix issue where run lists would be overwritten if an async bootstrap occured on the same node from a different group
+* Application should now shutdown and clean up after itself properly
+* Add error handling if a validation key is missing during a bootstrap
+* Fix daemonization of 'mbsrv'
+* ChefMutex will no longer crash when re-raising an error to the caller
+* Multiple thread leak fixes
+* Small improvements to load times
+* Improve messaging around the difference between 'installed', 'remote', and a 'local' plugin
+
 # 0.6.1
 
 * Add the 'mb console' command to bring up an interactive developer console
