@@ -211,7 +211,7 @@ module MotherBrain
         end
 
         instructions.each do |host, host_info|
-          boot_options = host_info[:options]
+          boot_options = options.merge(host_info[:options])
           boot_options.merge!(manifest[:options]) if manifest[:options]
 
           job.set_status("Bootstrapping #{host} with group(s): #{host_info[:groups]}")

@@ -3,6 +3,50 @@ module MotherBrain
     # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class Worker
+      # Used internally within the {Bootstrap::Worker} to identify hosts which should be
+      # partially or fully bootstrapped.
+      #
+      # @api private
+      class Host
+        # The fully qualified hostname of the machine
+        #
+        # @example
+        #   "reset.riotgames.com"
+        #
+        # @return [String]
+        attr_reader :hostname
+
+        # @param [String] hostname
+        #   A fully qualified hostname for a machine
+        def initialize(hostname)
+          @hostname = hostname
+        end
+
+        # @return [Boolean]
+        def full_bootstrap?
+          node_name.nil?
+        end
+
+        # The name of the machine as seen in Chef
+        #
+        # @example
+        #   "reset"
+        #
+        # @return [String]
+        def node_name
+          @node_name ||= NodeQuerier.instance.registered_as(hostname)
+        end
+
+        # @return [Boolean]
+        def partial_bootstrap?
+          node_name.present?
+        end
+
+        def to_s
+          "#{node_name}(#{hostname})"
+        end
+      end
+
       include Celluloid
       include MB::Logging
       include MB::Mixin::Services
@@ -21,31 +65,16 @@ module MotherBrain
       #   partial bootstrap.
       #
       # @example
-      #   hosts = [
-      #     "cloud-1.riotgames.com",
-      #     "cloud-2.riotgames.com"
-      #   ]
       #   worker = Worker.new
+      #   worker.run("cloud-1.riotgames.com") #=> {
+      #     node: "cloud-1.riotgames.com",
+      #     status: :ok,
+      #     message: "",
+      #     bootstrap_type: :full
+      #   }
       #
-      #   worker.run(hosts) #=> [
-      #     {
-      #       node: "cloud-1.riotgames.com",
-      #       status: :ok,
-      #       message: "",
-      #       bootstrap_type: :full
-      #     },
-      #     {
-      #       node: "cloud-2.riotgames.com",
-      #       status: :error,
-      #       message: "client verification error",
-      #       bootstrap_type: :partial
-      #     }
-      #   ]
-      #
-      # @param [Array<String>] hosts
-      #   an array of hostnames or ipaddresses to bootstrap
-      #
-      #   [ '33.33.33.10', 'reset.riotgames.com' ]
+      # @param [String] address
+      #   a hostname or ipaddress to bootstrap
       #
       # @option options [String] :environment
       #   environment to join the node to (default: '_default')
@@ -61,51 +90,14 @@ module MotherBrain
       #   bootstrap with sudo
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      def run(hosts, options = {})
-        full_nodes, partial_nodes = expand_hosts(hosts).partition { |node| node[:node_name].nil? }
-
-        [].tap do |futures|
-          if full_nodes.any?
-            hostnames = full_nodes.collect { |node| node[:hostname] }
-            futures << future(:full_bootstrap, hostnames, options)
-          end
-
-          if partial_nodes.any?
-            futures << future(:partial_bootstrap, partial_nodes, options.slice(:attributes, :run_list))
-          end
-        end.map(&:value).flatten
-      end
-
-      # Query the given hostnames and return an expanded view containing an array of Hashes
-      # each representing a hostname. Each hash contains a hostname and node_name key. The
-      # hostname is the address to communicate to the node with and the node_name is the
-      # name the node is identified in Chef as.
       #
-      # If the node has not registered with the Chef server then the node_name value will
-      # be nil.
-      #
-      # @example showing one node who has been registered with Chef and one which has not
-      #   worker = Worker.new(..)
-      #   worker.expand_hosts("33.33.33.10", "33.33.33.11") #=> [
-      #     {
-      #       hostname: "riot_one.riotgames.com",
-      #       node_name: "riot_one"
-      #     },
-      #     {
-      #       hostname: "riot_two.riotgames.com",
-      #       node_name: nil
-      #     }
-      #   ]
-      #
-      # @param [Array<String>] hosts
-      #   an array of hostnames or ipaddresses to bootstrap
-      #
-      #   [ '33.33.33.10', 'reset.riotgames.com' ]
-      #
-      # @return [Array<Hash>]
-      def expand_hosts(hosts, options = {})
-        Array(hosts).concurrent_map do |host|
-          { hostname: host, node_name: node_querier.registered_as(host) }
+      # @return [Hash]
+      def run(address, options = {})
+        host = Host.new(address)
+        if host.full_bootstrap?
+          full_bootstrap(host, options)
+        else
+          partial_bootstrap(host, options.slice(:attributes, :run_list))
         end
       end
 
@@ -113,31 +105,18 @@ module MotherBrain
       # and may not have Ruby, Chef, or other requirements installed.
       #
       # @example
-      #   hostnames = [
-      #     "cloud-1.riotgames.com",
-      #     "cloud-2.riotgames.com"
-      #   ]
-      #   worker = Worker.new(...)
+      #   host = Host.new("cloud-1.riotgames.com")
       #
-      #   worker.full_bootstrap(hostnames) #=> [
-      #     {
-      #       node_name: "cloud-1",
-      #       hostname: "cloud-1.riotgames.com",
-      #       status: :ok
-      #       message: "",
-      #       bootstrap_type: :full
-      #     },
-      #     {
-      #       node_name: "cloud-2",
-      #       hostname: "cloud-2.riotgames.com",
-      #       status: :error,
-      #       message: "client verification error",
-      #       bootstrap_type: :full
-      #     }
-      #   ]
+      #   worker.full_bootstrap(host) #=> {
+      #     node_name: "cloud-1",
+      #     hostname: "cloud-1.riotgames.com",
+      #     status: :ok
+      #     message: "",
+      #     bootstrap_type: :full
+      #   }
       #
-      # @param [Array<Hash>] hostnames
-      #   an array of hashes containing node data
+      # @param [Worker::Host] host
+      #   a host to bootstrap
       #
       # @option options [String] :environment
       #   environment to join the node to (default: '_default')
@@ -152,8 +131,8 @@ module MotherBrain
       # @option options [Boolean] :sudo (true)
       #   bootstrap with sudo
       #
-      # @return [Array<Hash>]
-      def full_bootstrap(hostnames, options = {})
+      # @return [Hash]
+      def full_bootstrap(host, options = {})
         options = options.reverse_merge(
           run_list: Array.new,
           attributes: Hash.new,
@@ -161,23 +140,19 @@ module MotherBrain
           sudo: true
         )
 
-        chef_connection.node.bootstrap(hostnames, options).collect do |ssh_response|
-          response = {
-            node_name: nil,
-            hostname: ssh_response.host,
-            bootstrap_type: :full,
-            message: "",
-            status: nil
-          }
+        ssh_response = chef_connection.node.bootstrap(host.hostname, options).first
+
+        {}.tap do |response|
+          response[:node_name]      = nil
+          response[:hostname]       = ssh_response.host
+          response[:bootstrap_type] = :full
+          response[:message]        = ""
+          response[:status]         = :ok
 
           if ssh_response.error?
             response[:status]  = :error
             response[:message] = ssh_response.stderr.chomp
-          else
-            response[:status] = :ok
           end
-
-          response
         end
       end
 
@@ -190,70 +165,42 @@ module MotherBrain
       #   3. Perform a chef client run on the target node
       #
       # @example
-      #   nodes = [
-      #     {
-      #       node_name: "reset",
-      #       hostname: "reset.riotgames.com"
-      #     },
-      #     {
-      #       node_name: "cloud-1",
-      #       hostname: "cloud-1.riotgames.com"
-      #     }
-      #   ]
-      #   worker = Worker.new(...)
+      #   host = Host.new("cloud-1.riotgames.com")
+      #   worker.partial_bootstrap(host) #=> {
+      #     node_name: "cloud-1",
+      #     hostname: "cloud-1.riotgames.com",
+      #     status: :ok
+      #     message: "",
+      #     bootstrap_type: :partial
+      #   }
       #
-      #   worker.partial_bootstrap(nodes) #=> [
-      #     {
-      #       node_name: "cloud-1",
-      #       hostname: "cloud-1.riotgames.com",
-      #       status: :ok,
-      #       message: "",
-      #       bootstrap_type: :partial
-      #     },
-      #     {
-      #       node_name: "cloud-2",
-      #       hostname: "cloud-2.riotgames.com",
-      #       status: :error,
-      #       message: "client verification error",
-      #       bootstrap_type: :partial
-      #     }
-      #   ]
-      #
-      # @param [Array<Hash>] nodes
-      #   an array of hashes containing node data
+      # @param [Worker::Host] host
+      #   a host to bootstrap
       #
       # @option options [Array] :run_list
       #   a chef run list
       # @option options [Hash] :attributes
       #   attributes to set on the node at normal precedence
       #
-      # @return [Array<Hash>]
-      def partial_bootstrap(nodes, options = {})
-        nodes.concurrent_map do |node|
-          hostname  = node[:hostname]
-          node_name = node[:node_name]
+      # @return [Hash]
+      def partial_bootstrap(host, options = {})
+        log.info "#{host} is already registered with Chef. Performing a partial bootstrap."
 
-          log.info "Node (#{node_name}):(#{hostname}) is already registered with Chef: " +
-            "performing a partial bootstrap"
-
-          response = {
-            node_name: node_name,
-            hostname: hostname,
-            bootstrap_type: :partial,
-            message: "",
-            status: nil
-          }
+        {}.tap do |response|
+          response[:node_name]      = host.node_name
+          response[:hostname]       = host.hostname
+          response[:bootstrap_type] = :partial
+          response[:message]        = ""
+          response[:status]         = :ok
 
           begin
-            chef_connection.node.merge_data(node_name, options.slice(:run_list, :attributes))
-            node_querier.put_secret(hostname)
-            node_querier.chef_run(hostname)
-
-            response[:status] = :ok
+            chef_connection.node.merge_data(host.node_name, options.slice(:run_list, :attributes))
+            node_querier.put_secret(host.hostname)
+            node_querier.chef_run(host.hostname)
           rescue Ridley::Errors::ResourceNotFound => ex
             response[:status]  = :error
-            response[:message] = "The node #{node_name} thinks it is registered to the Chef server and " +
-              "has a client but there is no node object for it. Generating a new node object for it."
+            response[:message] = "#{host} thinks it is registered to the Chef server and a client but there " +
+              "is no node object for it. Generating a new node object for it."
             # JW TODO: We can recover here by creating the node object. However, we can't do this right
             # now because OHC/OPC have ACLs associated with the node object. When we create the object the
             # API user that we are acting as will be the only user with full permissions to the node
@@ -261,12 +208,10 @@ module MotherBrain
             #
             # TLDR; The undocumented ACL endpoints need to be implemented in Ridley to support graceful
             # recovery. https://github.com/RiotGames/ridley/issues/147
-          rescue RemoteCommandError, RemoteFileCopyError => ex
+          rescue Exception => ex
             response[:status]  = :error
             response[:message] = ex.to_s
           end
-
-          response
         end
       end
     end
