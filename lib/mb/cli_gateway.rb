@@ -142,7 +142,7 @@ module MotherBrain
           end
         end
 
-        dispatch(nil, given_args.dup, nil, config)
+        dispatch(nil, normalize_dispatch_args(given_args.dup), nil, config)
       rescue MBError => ex
         ui.error ex
         exit_with(ex)
@@ -161,6 +161,22 @@ module MotherBrain
         exit(0)
       ensure
         Celluloid.shutdown
+      end
+
+      # Normalizes the Strings sent to Thor by changing
+      # hyphens into underscores
+      #
+      # @param  args [Array]
+      #
+      # @return [Array] a normalized array
+      def normalize_dispatch_args(args)
+        args.collect do |arg|
+          if arg.start_with?('-')
+            arg
+          else
+            arg.gsub('-', '_')
+          end
+        end
       end
 
       # Does the given argument array require a named argument for environment?

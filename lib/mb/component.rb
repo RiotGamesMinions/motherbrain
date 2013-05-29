@@ -5,7 +5,10 @@ module MotherBrain
 
     attribute :name,
       type: String,
-      required: true
+      required: true,
+      coerce: lambda { |m|
+        m.gsub('-', '_')
+      }
 
     attribute :description,
       type: String
@@ -21,7 +24,7 @@ module MotherBrain
     # @param [#to_s] name
     # @param [MB::Plugin] plugin
     def initialize(name, plugin, &block)
-      set_attribute(:name, name.to_s)
+      self.name = name.to_s
       @plugin   = plugin
       @groups   = Set.new
       @commands = Set.new

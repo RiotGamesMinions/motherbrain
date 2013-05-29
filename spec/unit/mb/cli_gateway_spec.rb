@@ -41,6 +41,27 @@ describe MB::CliGateway do
       end
     end
 
+    describe "::normalize_dispatch_args" do
+      subject { normalize_dispatch_args }
+      let(:normalize_dispatch_args) { described_class.normalize_dispatch_args(args) }
+
+      context "when the plugin or component name has hyphens" do
+        let(:args) { ["my-cookbook", "my-plugin"] }
+
+        it "replaces the hyphens with underscores" do
+          expect(normalize_dispatch_args).to eql(["my_cookbook", "my_plugin"])
+        end
+      end
+
+      context "when an option is passed" do
+        let(:args) { ["my-cookbook", "my-plugin", "-e Test"] }
+
+        it "does not replace the hyphen" do
+          expect(normalize_dispatch_args).to eql(["my_cookbook", "my_plugin", "-e Test"])
+        end
+      end
+    end
+
     describe "::requires_environment?" do
       context "no arguments" do
         it "should not require an environment" do
