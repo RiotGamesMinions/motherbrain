@@ -30,5 +30,3 @@ Feature: allow additional/configurable bootstrap scripts
   Scenario: installing template from URL
     When I install a template named "bar" from "http://gist.example.com/bar.gist"
     Then the "bar" template should exist
-
-
