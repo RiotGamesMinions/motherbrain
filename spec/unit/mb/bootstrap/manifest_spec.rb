@@ -19,18 +19,12 @@ describe MB::Bootstrap::Manifest do
       ]
     }
   }
-  describe "#hosts_for_groups" do
-    subject { manifest.hosts_for_groups(groups) }
+  describe "#hosts_for_group" do
+    subject { manifest.hosts_for_group(group) }
 
-    let(:groups) { ["activemq::master"] }
+    let(:group) { "activemq::master" }
 
     it { should == manifest[:nodes].first[:hosts] }
-
-    context "without an array" do
-      let(:groups) { "activemq::master" }
-
-      it { should == manifest[:nodes].first[:hosts] }
-    end
   end
 
   describe "#validate!" do
