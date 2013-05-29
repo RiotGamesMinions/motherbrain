@@ -13,16 +13,15 @@ describe MB::Bootstrap::Worker do
 
   let(:options) { Hash.new }
 
-  subject do
-    described_class.new(nodes)
-  end
+  let(:instance) { described_class.new }
+  subject { instance }
 
   describe "#run" do
     context "when there are no nodes" do
-      before { subject.stub(nodes: Array.new) }
+      let(:nodes) { Array.new }
 
       it "returns an empty array" do
-        result = subject.run
+        result = subject.run(nodes)
 
         result.should be_a(Array)
         result.should be_empty
@@ -30,7 +29,7 @@ describe MB::Bootstrap::Worker do
     end
   end
 
-  describe "#nodes" do
+  describe "#expand_hosts" do
     let(:hosts) do
       [
         "cloud-1.riotgames.com",
@@ -39,23 +38,23 @@ describe MB::Bootstrap::Worker do
     end
 
     before do
-      subject.stub(node_querier: node_querier, hosts: hosts)
+      instance.stub(node_querier: node_querier)
       node_querier.stub(:registered_as, anything) { |arg| arg }
     end
 
-    it "returns an array of Hashes" do
-      result = subject.nodes
+    subject { instance.expand_hosts(hosts) }
 
-      result.should be_a(Array)
-      result.should each be_a(Hash)
+    it "returns an array of Hashes" do
+      expect(subject).to be_a(Array)
+      expect(subject).to each be_a(Hash)
     end
 
     it "each contains a :hostname key" do
-      subject.nodes.should each have_key(:hostname)
+      expect(subject).to each have_key(:hostname)
     end
 
     it "each contains a :node_name key" do
-      subject.nodes.should each have_key(:node_name)
+      expect(subject).to each have_key(:node_name)
     end
 
     context "hosts that are registered to the Chef server" do
@@ -73,11 +72,9 @@ describe MB::Bootstrap::Worker do
       end
 
       it "has a value for node_name matching the name the node is registered_as to Chef" do
-        result = subject.nodes
-
-        result.should have(2).items
-        result[0][:node_name].should eql("cloud-1")
-        result[1][:node_name].should eql("cloud-2")
+        expect(subject).to have(2).items
+        expect(subject[0][:node_name]).to eql("cloud-1")
+        expect(subject[1][:node_name]).to eql("cloud-2")
       end
     end
 
@@ -96,11 +93,9 @@ describe MB::Bootstrap::Worker do
       end
 
       it "has a nil value for node_name" do
-        result = subject.nodes
-
-        result.should have(2).items
-        result[0][:node_name].should eql(nil)
-        result[1][:node_name].should eql(nil)
+        expect(subject).to have(2).items
+        expect(subject[0][:node_name]).to be_nil
+        expect(subject[1][:node_name]).to be_nil
       end
     end
   end

@@ -21,6 +21,7 @@ module MotherBrain
 
       def initialize
         log.info { "Bootstrap Manager starting..." }
+        @worker_pool = Bootstrap::Worker.pool(size: 50)
       end
 
       # Asynchronously bootstrap a collection of nodes described in the given manifest in the proper order
@@ -119,21 +120,18 @@ module MotherBrain
           end
 
           while tasks = task_queue.shift
-            grouped_errors = Hash.new
-            group_names    = "#{Array(tasks).collect(&:groups).flatten.uniq.join(', ')}"
-
+            host_errors = Hash.new
+            group_names = Array(tasks).collect(&:group_name).join(', ')
             job.set_status("bootstrapping group(s): #{group_names}")
-            concurrent_bootstrap(job, manifest, tasks, options).each do |group, responses|
-              errors = responses.select { |response| response[:status] == :error }
 
-              unless errors.empty?
-                grouped_errors[group] ||= Array.new
-                grouped_errors[group] << errors
+            concurrent_bootstrap(job, manifest, tasks, options).each do |host, host_info|
+              if host_info[:result][:status] == :error
+                host_errors[host] = host_info
               end
             end
 
-            unless grouped_errors.empty?
-              abort GroupBootstrapError.new(grouped_errors)
+            unless host_errors.empty?
+              abort GroupBootstrapError.new(host_errors)
             end
 
             job.set_status("done bootstrapping group(s): #{group_names}")
@@ -176,72 +174,72 @@ module MotherBrain
       #
       # @example
       #   {
-      #     "activemq::master" => [
-      #       {
-      #         node: "cloud-1.riotgames.com",
-      #         status: :ok
-      #         message: ""
+      #     "cloud-1.riotgames.com" => {
+      #       groups: ["proxy_server::default", "app_server::default"],
+      #       result: {
+      #         status: :ok,
+      #         message: "",
       #         bootstrap_type: :full
-      #       },
-      #       {
-      #         node: "cloud-2.riotgames.com",
+      #       }
+      #     },
+      #     "cloud-2.riotgames.com" => {
+      #       groups: ["database_master::default"],
+      #       result: {
       #         status: :error,
       #         message: "client verification error"
       #         bootstrap_type: :partial
       #       }
-      #     ]
-      #     "activemq::slave" => [
-      #       {
-      #         node: "cloud-3.riotgames.com",
+      #     },
+      #     "cloud-3.riotgames.com" => {
+      #       groups: ["database_slave::default"],
+      #       result: {
       #         status: :ok
       #         message: ""
       #         bootstrap_type: :partial
       #       }
-      #     ]
+      #     }
       #   }
       def concurrent_bootstrap(job, manifest, tasks, options = {})
-        workers  = Array.new
-        response = Hash.new
+        response     = Hash.new
+        instructions = Bootstrap::Routine.map_instructions(tasks, manifest)
 
-        Array(tasks).each do |boot_task|
-          groups = boot_task.groups
-          nodes  = manifest.hosts_for_groups(groups)
-
-          if nodes.empty?
-            log.info { "Skipping bootstrap of group(s): #{groups}. No hosts defined in manifest for these group(s)." }
-            next
-          end
-
-          worker_options = options.merge(
-            run_list: boot_task.group_object.run_list,
-            attributes: boot_task.group_object.chef_attributes
-          )
-
-          worker_options.merge!(manifest[:options]) if manifest[:options]
-
-          workers << worker = Worker.new(nodes)
-
-          job.set_status("Performing bootstrap on group(s): #{groups}")
-          response[groups] = worker.future(:run, worker_options)
+        if instructions.empty?
+          groups = Array(tasks).map(&:group_name)
+          log.info "Skipping bootstrap of group(s): #{groups}. No hosts defined in manifest to bootstrap for " +
+            "these groups."
+          return response
         end
 
-        response.each_with_object({}) do |(groups, future), resp|
-          resp[groups] = future.value
+        instructions.each do |host, host_info|
+          boot_options = host_info[:options]
+          boot_options.merge!(manifest[:options]) if manifest[:options]
+
+          job.set_status("Bootstrapping #{host} with group(s): #{host_info[:groups]}")
+
+          response[host] = {
+            groups: host_info[:groups],
+            result: worker_pool.future(:run, host, boot_options)
+          }
         end
-      ensure
-        workers.map { |worker| worker.terminate if worker.alive? }
+
+        response.each { |host, host_info| host_info[:result] = host_info[:result].value }
       end
 
       private
 
+        attr_reader :worker_pool
+
         def finalize_callback
           log.info { "Bootstrap Manager stopping..." }
+          worker_pool.terminate if worker_pool && worker_pool.alive?
         end
 
         def validate_bootstrap_configuration!(manifest, plugin)
           manifest.validate!(plugin)
-          raise ValidatorPemNotFound.new(config_manager.config.chef[:validator_path]) unless File.exists? config_manager.config.chef[:validator_path]
-          true
+
+          unless File.exists?(config_manager.config.chef[:validator_path])
+            raise ValidatorPemNotFound.new(config_manager.config.chef[:validator_path])
+          end
         end
     end
   end

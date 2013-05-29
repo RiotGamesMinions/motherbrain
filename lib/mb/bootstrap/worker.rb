@@ -7,18 +7,6 @@ module MotherBrain
       include MB::Logging
       include MB::Mixin::Services
 
-      # @return [Array<String>]
-      attr_reader :hosts
-
-      # @param [Array<String>] hosts
-      #   an array of hostnames or ipaddresses to bootstrap
-      #
-      #   @example
-      #     [ '33.33.33.10', 'reset.riotgames.com' ]
-      def initialize(hosts)
-        @hosts = Array(hosts)
-      end
-
       # Run a bootstrap on each of the hosts given to this instance of {Worker}. There are two different kinds of
       # bootstrap processes which may be run on a node; a partial bootstrap and a full bootstrap.
       #
@@ -37,22 +25,27 @@ module MotherBrain
       #     "cloud-1.riotgames.com",
       #     "cloud-2.riotgames.com"
       #   ]
-      #   worker = Worker.new(hosts)
+      #   worker = Worker.new
       #
-      #   worker.run #=> [
+      #   worker.run(hosts) #=> [
       #     {
       #       node: "cloud-1.riotgames.com",
-      #       status: :ok
-      #       message: ""
+      #       status: :ok,
+      #       message: "",
       #       bootstrap_type: :full
       #     },
       #     {
       #       node: "cloud-2.riotgames.com",
       #       status: :error,
-      #       message: "client verification error"
+      #       message: "client verification error",
       #       bootstrap_type: :partial
       #     }
       #   ]
+      #
+      # @param [Array<String>] hosts
+      #   an array of hostnames or ipaddresses to bootstrap
+      #
+      #   [ '33.33.33.10', 'reset.riotgames.com' ]
       #
       # @option options [String] :environment
       #   environment to join the node to (default: '_default')
@@ -68,14 +61,8 @@ module MotherBrain
       #   bootstrap with sudo
       # @option options [String] :bootstrap_proxy (nil)
       #   URL to a proxy server to bootstrap through
-      #
-      # @return [Array<Hash>]
-      def run(options = {})
-        if hosts.empty?
-          return Array.new
-        end
-
-        full_nodes, partial_nodes = nodes.partition { |node| node[:node_name].nil? }
+      def run(hosts, options = {})
+        full_nodes, partial_nodes = expand_hosts(hosts).partition { |node| node[:node_name].nil? }
 
         [].tap do |futures|
           if full_nodes.any?
@@ -99,7 +86,7 @@ module MotherBrain
       #
       # @example showing one node who has been registered with Chef and one which has not
       #   worker = Worker.new(..)
-      #   worker.nodes #=> [
+      #   worker.expand_hosts("33.33.33.10", "33.33.33.11") #=> [
       #     {
       #       hostname: "riot_one.riotgames.com",
       #       node_name: "riot_one"
@@ -110,18 +97,14 @@ module MotherBrain
       #     }
       #   ]
       #
-      # @option options [Boolean] :force (false)
-      #   reload the cached value of nodes if it has been cached
+      # @param [Array<String>] hosts
+      #   an array of hostnames or ipaddresses to bootstrap
+      #
+      #   [ '33.33.33.10', 'reset.riotgames.com' ]
       #
       # @return [Array<Hash>]
-      def nodes(options = {})
-        options = options.reverse_merge(force: false)
-
-        if options[:force]
-          @nodes = nil
-        end
-
-        @nodes ||= hosts.concurrent_map do |host|
+      def expand_hosts(hosts, options = {})
+        Array(hosts).concurrent_map do |host|
           { hostname: host, node_name: node_querier.registered_as(host) }
         end
       end
@@ -136,7 +119,7 @@ module MotherBrain
       #   ]
       #   worker = Worker.new(...)
       #
-      #   worker.full_bootstrap(target_nodes) #=> [
+      #   worker.full_bootstrap(hostnames) #=> [
       #     {
       #       node_name: "cloud-1",
       #       hostname: "cloud-1.riotgames.com",

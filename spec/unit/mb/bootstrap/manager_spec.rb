@@ -59,9 +59,6 @@ describe MB::Bootstrap::Manager do
 
   let(:environment) { "test" }
   let(:server_url) { MB::Application.config.chef.api_url }
-  let(:job_stub) do
-    stub(MB::Job, alive?: true, set_status: nil)
-  end
 
   before do
     stub_request(:get, File.join(server_url, "nodes")).
@@ -93,24 +90,20 @@ describe MB::Bootstrap::Manager do
   end
 
   describe "#bootstrap" do
+    let(:job) { MB::Job.new(:bootstrap) }
     let(:options) { Hash.new }
 
     before(:each) do
-      job_stub.stub(set_status: nil, report_success: nil)
-      job_stub.should_receive(:report_running)
-      job_stub.should_receive(:terminate).once
-      manager.stub(concurrent_bootstrap: [])
+      manager.stub(concurrent_bootstrap: {})
     end
 
-    let(:run) { manager.bootstrap(job_stub, environment, manifest, plugin, options) }
+    let(:run) { manager.bootstrap(job, environment, manifest, plugin, options) }
 
-    context "should validate that the required files and configuration are available prior to attempting to bootstrap" do
-      it "and fail early if the validation pem is missing" do
-        job_stub.stub(:report_failure)
-
+    context "when the validatiom key is not on disk" do
+      it "fails the job before locking the environment" do
         config_manager.stub_chain(:config).and_return(chef: {validation_key: '/this/file/doesnt/exist.pem'})
         manager.should_not_receive(:chef_synchronize)
-        job_stub.should_receive(:report_failure)
+        job.should_receive(:report_failure)
 
         run
       end
@@ -121,18 +114,19 @@ describe MB::Bootstrap::Manager do
         manager.stub_chain(:chef_connection, :environment, :find).with(environment).and_return(nil)
       end
 
-      it "sets the job to failed" do
-        job_stub.stub(alive?: true)
-        job_stub.should_receive(:report_failure)
+      it "sets the job to failed before locking the environment" do
+        manager.should_not_receive(:chef_synchronize)
+        job.should_receive(:report_failure)
 
         run
       end
     end
-    
+
     context "when the given bootstrap manifest is invalid" do
-      it "sets the job to failed" do
-        job_stub.should_receive(:report_failure)
+      it "sets the job to failed before locking the environment" do
         manifest.should_receive(:validate!).with(plugin).and_raise(MB::InvalidBootstrapManifest)
+        manager.should_not_receive(:chef_synchronize)
+        job.should_receive(:report_failure)
 
         run
       end
@@ -151,9 +145,10 @@ describe MB::Bootstrap::Manager do
       end
 
       context "when the environment attributes file is invalid" do
-        it "sets the job to failed" do
+        it "sets the job to failed before running #concurrent_bootstrap" do
           manager.should_receive(:set_environment_attributes_from_file).and_raise(MB::InvalidAttributesFile)
-          job_stub.should_receive(:report_failure)
+          manager.should_not_receive(:concurrent_bootstrap)
+          job.should_receive(:report_failure)
 
           run
         end
@@ -170,43 +165,181 @@ describe MB::Bootstrap::Manager do
         run
       end
     end
+
+    context "when all nodes bootstrap successfully" do
+      let(:host_one) { "euca-10-20-37-171.eucalyptus.cloud.riotgames.com" }
+      let(:host_two) { "euca-10-20-37-172.eucalyptus.cloud.riotgames.com" }
+
+      let(:response) do
+        {
+          host_one => {
+            groups: ["activemq::master"],
+            result: {
+              status: :ok,
+              message: "",
+              bootstrap_type: :full
+            }
+          },
+          host_two => {
+            groups: ["activemq::master"],
+            result: {
+              status: :ok,
+              message: "",
+              bootstrap_type: :partial
+            }
+          }
+        }
+      end
+
+      let(:manifest) do
+        MB::Bootstrap::Manifest.new(nodes: [
+          {
+            groups: ["activemq::master"],
+            hosts: [ host_one, host_two ]
+          }
+        ])
+      end
+
+      it "sets the job to success" do
+        manager.should_receive(:concurrent_bootstrap).and_return(response)
+        job.should_receive(:report_success)
+
+        run
+      end
+    end
+
+    context "when there is an error in one or more nodes bootstrapped" do
+      let(:host_one) { "euca-10-20-37-171.eucalyptus.cloud.riotgames.com" }
+      let(:host_two) { "euca-10-20-37-172.eucalyptus.cloud.riotgames.com" }
+
+      let(:response) do
+        {
+          host_one => {
+            groups: ["activemq::master"],
+            result: {
+              status: :error,
+              message: "something helpful",
+              bootstrap_type: :full
+            }
+          },
+          host_two => {
+            groups: ["activemq::master"],
+            result: {
+              status: :ok,
+              message: "",
+              bootstrap_type: :partial
+            }
+          }
+        }
+      end
+
+      let(:manifest) do
+        MB::Bootstrap::Manifest.new(nodes: [
+          {
+            groups: ["activemq::master"],
+            hosts: [ host_one, host_two ]
+          }
+        ])
+      end
+
+      it "sets the job to success" do
+        manager.should_receive(:concurrent_bootstrap).and_return(response)
+        job.should_receive(:report_failure)
+
+        run
+      end
+    end
   end
 
   describe "#concurrent_bootstrap" do
-    let(:concurrent_bootstrap) { manager.concurrent_bootstrap(job_stub, manifest, boot_tasks, options) }
-    let(:boot_tasks) { 
-      double('boot_task', 
-        groups: nil,
-        group_object: group_object_stub)
-    }
-    let(:group_object_stub) { double('group_object', run_list: nil, chef_attributes: nil) }
-    let(:options) { Hash.new }
-    let(:worker_stub) { double('worker', alive?: nil, future: double('future', value: nil)) }
+    let(:job) { MB::Job.new(:bootstrap) }
+    let(:tasks) { Array.new }
+    let(:worker_pool) { double('worker-pool') }
+    let(:result) { manager.concurrent_bootstrap(job, manifest, tasks) }
 
-    before do
-      manifest.stub(:hosts_for_groups).and_return("amq1.riotgames.com")
-      MB::Bootstrap::Worker.stub(:new).and_return(worker_stub)
-      options.merge!(run_list: group_object_stub.run_list, attributes: group_object_stub.chef_attributes)
+    before { subject.stub(worker_pool: worker_pool) }
+
+    context "with a manifest containing a node group with two groups and a task for each" do
+      let(:tasks) do
+        [
+          MB::Bootstrap::Routine::Task.new("app_server::default",
+            run_list: [ "recipe[one]", "recipe[two]" ],
+            chef_attributes: { deep: { one: "val" } }
+          ),
+          MB::Bootstrap::Routine::Task.new("database_master::default",
+            run_list: [ "recipe[three]" ],
+            chef_attributes: { deep: { two: "val" } }
+          )
+        ]
+      end
+
+      let(:host_one) { "euca-10-20-37-171.eucalyptus.cloud.riotgames.com" }
+      let(:host_two) { "euca-10-20-37-172.eucalyptus.cloud.riotgames.com" }
+
+      let(:response_one) do
+        double('future-one', value: {
+          node:  host_one,
+          status: :ok,
+          message: "",
+          bootstrap_type: :full
+        })
+      end
+
+      let(:response_two) do
+        double('future-two', value: {
+          node: host_two,
+          status: :error,
+          message: "client verification error",
+          bootstrap_type: :partial
+        })
+      end
+
+      let(:manifest) do
+        MB::Bootstrap::Manifest.new(
+          nodes: [
+            {
+              groups: ["app_server::default", "database_master::default"],
+              hosts: [ host_one, host_two ]
+            }
+          ]
+        )
+      end
+
+      it "bootstraps a node only one time" do
+        worker_pool.should_receive(:future).with(:run, host_one, anything).once.and_return(response_one)
+        worker_pool.should_receive(:future).with(:run, host_two, anything).once.and_return(response_two)
+        result
+      end
+
+      it "bootstraps each node with a merged run list from each task" do
+        options = { chef_attributes: anything, run_list: ["recipe[one]", "recipe[two]", "recipe[three]"]}
+        worker_pool.should_receive(:future).with(:run, host_one, options).once.and_return(response_one)
+        worker_pool.should_receive(:future).with(:run, host_two, options).once.and_return(response_two)
+        result
+      end
+
+      it "bootstraps each node with merged chef attributes from each task" do
+        chef_attributes = Hashie::Mash.new(deep: { one: "val", two: "val" })
+        options = { chef_attributes: chef_attributes, run_list: anything }
+        worker_pool.should_receive(:future).with(:run, host_one, options).once.and_return(response_one)
+        worker_pool.should_receive(:future).with(:run, host_two, options).once.and_return(response_two)
+        result
+      end
     end
 
     context "when there are no nodes in the manifest" do
-      let(:log_stub) { double('log') }
+      let(:manifest) { MB::Bootstrap::Manifest.new }
 
-      before do
-        manifest.stub(:hosts_for_groups).and_return(Array.new)
-        subject.stub(:log).and_return(log_stub)
-      end
-
-      it "logs a message that this boot_task will be skipped" do
-        log_stub.should_receive(:info)
-        concurrent_bootstrap
+      it "returns an empty Hash" do
+        expect(result).to be_empty
       end
     end
 
-    context "when the manifest has no :options" do
-      it "calls :run on the future with options" do
-        worker_stub.should_receive(:future).with(:run, options)
-        concurrent_bootstrap
+    context "given an empty array of tasks" do
+      let(:tasks) { Array.new }
+
+      it "returns an empty Hash" do
+        expect(result).to be_empty
       end
     end
   end
