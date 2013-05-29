@@ -12,6 +12,10 @@ module MotherBrain
         #
         # @raise [MB::BootstrapTemplateNotFound] if the file cannot be installed
         def install(name, filename_or_url)
+          template_path = MB::FileSystem.templates.join(name)
+          if template_path.exist?
+            raise MB::BootstrapTemplateNotFound, "Template named `#{name}` already installed"
+          end
           MB.log.info "Installing bootstrap template `#{name}` from #{filename_or_url}"
           name += ".erb"
           if filename_or_url.match(URI.regexp(['http','https']))
@@ -27,7 +31,7 @@ module MotherBrain
               raise MB::BootstrapTemplateNotFound, ex
             end
           elsif File.exists?(filename_or_url)
-            FileUtils.copy(filename_or_url, MB::FileSystem.templates.join(name).to_s)
+            FileUtils.copy(filename_or_url, template_path.to_s)
           else
             raise MB::BootstrapTemplateNotFound, "Couldn't install template"
           end
