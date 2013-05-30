@@ -180,9 +180,9 @@ module MotherBrain
       result = []
 
       lines.each_with_index do |line, index|
-        line_number = index + 1
+        current_line_number = index + 1
 
-        result << "#{line_number.to_s.rjust rjust_size}: #{line}"
+        result << "#{current_line_number.to_s.rjust rjust_size}#{line_number == current_line_number ? '>>' : ': '}#{line}"
       end
 
       result
