@@ -11,6 +11,7 @@ module MotherBrain
         FileUtils.mkdir_p(root)
         FileUtils.mkdir_p(logs)
         FileUtils.mkdir_p(tmp)
+        FileUtils.mkdir_p(templates)
       end
 
       # @return [Pathname]
@@ -26,6 +27,11 @@ module MotherBrain
       # @return [Pathname]
       def tmp
         root.join("tmp")
+      end
+
+      # @return [Pathname]
+      def templates
+        root.join("templates")
       end
 
       # Create a temporary directory in the tmp directory of the motherbrain
