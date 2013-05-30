@@ -1,3 +1,5 @@
+require 'faraday_middleware'
+
 module MotherBrain
   module Bootstrap
     # @author Michael Ivey <michael.ivey@riotgames.com>
@@ -12,7 +14,7 @@ module MotherBrain
         #
         # @raise [MB::BootstrapTemplateNotFound] if the file cannot be installed
         def install(name, filename_or_url)
-          template_path = MB::FileSystem.templates.join(name)
+          template_path = MB::FileSystem.templates.join("#{name}.erb")
           if template_path.exist?
             raise MB::BootstrapTemplateNotFound, "Template named `#{name}` already installed"
           end
@@ -22,11 +24,13 @@ module MotherBrain
             if filename_or_url.match(URI.regexp(['http','https']))
               uri = URI.parse(filename_or_url)
               begin
-                Net::HTTP.start(uri.host) do |http|
-                  resp = http.get(uri.path)
-                  MB::FileSystem.templates.join(name).open("w+") do |file|
-                    file.write(resp.body)
-                  end
+                conn = Faraday.new do |b|
+                  b.use FaradayMiddleware::FollowRedirects
+                  b.adapter :net_http
+                end
+                response = conn.get filename_or_url
+                template_path.open("w+") do |file|
+                  file.write(response.body)
                 end
               rescue Exception => ex
                 raise MB::BootstrapTemplateNotFound, ex

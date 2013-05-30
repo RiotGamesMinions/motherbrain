@@ -81,7 +81,12 @@ describe MB::Bootstrap::Template do
       end
 
       it "should install from a URL" do
-        Net::HTTP.should_receive(:start).with("example.com")
+        faraday = Faraday.new do |builder|
+          builder.adapter :test do |stub|
+            stub.get('/gist') {[ 200, {}, 'example' ]}
+          end
+        end
+        Faraday.should_receive(:new).and_return(faraday)
         subject.install("fromurl", "http://example.com/gist")
       end
 
