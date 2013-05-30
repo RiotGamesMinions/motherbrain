@@ -11,7 +11,7 @@ module MotherBrain
         #
         # @param [MB::Cli::SubCommand] klass
         def register_subcommand(klass)
-          self.register(klass, klass.name, klass.usage, klass.description)
+          self.register(klass, klass.name.gsub('-', '_'), klass.usage.gsub('-', '_'), klass.description)
         end
 
         # @return [MB::Cli::Shell::Color, MB::Cli::Shell::Basic]
