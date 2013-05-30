@@ -1,4 +1,4 @@
-require 'faraday_middleware'
+require 'faraday_middleware/response/follow_redirects'
 
 module MotherBrain
   module Bootstrap

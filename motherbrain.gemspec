@@ -46,7 +46,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'chozo', '~> 0.6.0'
   s.add_runtime_dependency 'activesupport'
   s.add_runtime_dependency 'thor', '~> 0.18.0'
-  s.add_runtime_dependency 'faraday', '>= 0.8.0'
+  s.add_runtime_dependency 'faraday'
   s.add_runtime_dependency 'faraday_middleware'
   s.add_runtime_dependency 'ef-rest', '>= 0.1.0'
   s.add_runtime_dependency 'activesupport'
