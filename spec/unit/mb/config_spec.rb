@@ -172,6 +172,12 @@ describe MB::Config do
 
       subject.should be_valid
     end
+
+    it "is valid if boostrap_default_template is a name" do
+      subject.bootstrap.default_template = "internal"
+
+      expect(subject).to be_valid
+    end
   end
 
   let(:json) do

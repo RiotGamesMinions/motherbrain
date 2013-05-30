@@ -247,7 +247,8 @@ module MotherBrain
 
     SKIP_ENVIRONMENT_TASKS = [
       "environment",
-      "plugin"
+      "plugin",
+      "template"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [
@@ -336,6 +337,12 @@ module MotherBrain
       ui.say version_header
       ui.say "\n"
       ui.say license
+    end
+
+    desc "template NAME PATH_OR_URL", "Download and install a bootstrap template"
+    def template(name, path_or_url)
+      MB::Bootstrap::Template.install(name, path_or_url)
+      ui.say "Installed template `#{name}`"
     end
 
     private

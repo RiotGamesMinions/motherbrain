@@ -140,6 +140,13 @@ module MotherBrain
           sudo: true
         )
 
+        begin
+          options[:template] = MB::Bootstrap::Template.find(options[:template])
+        rescue MB::BootstrapTemplateNotFound => e
+          abort e
+        end
+        options.delete(:template) if options[:template].nil?
+
         ssh_response = chef_connection.node.bootstrap(host.hostname, options).first
 
         {}.tap do |response|

@@ -191,6 +191,9 @@ module MotherBrain
     attribute 'ef.api_key',
       type: String
 
+    attribute 'bootstrap.default_template',
+      type: String
+
     # Validate the instantiated config
     #
     # @raise [MB::InvalidConfig] if the given configuration is invalid
