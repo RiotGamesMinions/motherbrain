@@ -123,6 +123,10 @@ describe MB::Component do
     pending
   end
 
+  describe "#invoke" do
+    pending
+  end
+
   describe "#service" do
     subject { MB::Component }
 
