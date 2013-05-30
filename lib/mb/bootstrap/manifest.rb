@@ -109,9 +109,9 @@ module MotherBrain
       # Finds all hosts to be bootstrapped with a set of groups
       #
       # @return [Array] of hosts
-      def hosts_for_groups(groups)
+      def hosts_for_group(group)
         node_groups.select { |node_group|
-          (node_group[:groups] & Array(groups)).any?
+          node_group[:groups].include?(group)
         }.collect { |node_group|
           node_group[:hosts]
         }.flatten

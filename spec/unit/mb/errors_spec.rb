@@ -88,3 +88,28 @@ describe MB::MBError do
     it { should have_json_path("message") }
   end
 end
+
+describe MB::GroupBootstrapError do
+  let(:bootstrap_response) do
+    {
+      "euca-10-20-37-171.eucalyptus.cloud.riotgames.com" => {
+        groups: ["activemq::master"],
+        result: {
+          status: :error, message: "something helpful", bootstrap_type: :full
+        }
+      },
+      "euca-10-20-37-172.eucalyptus.cloud.riotgames.com" => {
+        groups: ["activemq::master"],
+        result: {
+          status: :error, message: "something helpful", bootstrap_type: :partial
+        }
+      }
+    }
+  end
+
+  subject { described_class.new(bootstrap_response) }
+
+  its(:groups) { should have(1).item }
+  its(:host_errors) { should have(2).item }
+  its(:message) { should be_a(String) }
+end

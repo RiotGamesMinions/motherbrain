@@ -39,10 +39,7 @@ module MotherBrain
 
     def_delegator :handler, :rack_app
 
-    finalizer do
-      log.info { "REST Gateway stopping..." }
-      pool.terminate if pool && pool.alive?
-    end
+    finalizer :finalize_callback
 
     # @option options [String] :host ('0.0.0.0')
     # @option options [Integer] :port (26100)
@@ -75,5 +72,10 @@ module MotherBrain
       attr_reader :pool
       # @return [Rack::Handler::Reel]
       attr_reader :handler
+
+      def finalize_callback
+        log.info { "REST Gateway stopping..." }
+        pool.terminate if pool && pool.alive?
+      end
   end
 end

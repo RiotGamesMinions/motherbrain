@@ -54,9 +54,7 @@ module MotherBrain
       include MB::Logging
       include MB::Mixin::Services
 
-      finalizer do
-        log.info { "Provision Manager stopping..." }
-      end
+      finalizer :finalize_callback
 
       def initialize
         log.info { "Provision Manager starting..." }
@@ -174,6 +172,12 @@ module MotherBrain
       ensure
         job.terminate if job && job.alive?
       end
+
+      private
+
+        def finalize_callback
+          log.info { "Bootstrap Manager stopping..." }
+        end
     end
   end
 end

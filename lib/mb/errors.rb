@@ -420,15 +420,45 @@ module MotherBrain
 
   class GroupBootstrapError < BootstrapError
     error_code(4001)
-    attr_reader :errors
 
-    def initialize(errors)
-      @errors = errors
+    # @return [Array<String>]
+    attr_reader :groups
+    # @return [Hash]
+    attr_reader :host_errors
+
+    # @param [String] groups
+    # @param [Hash] host_errors
+    #
+    #  "cloud-3.riotgames.com" => {
+    #    groups: ["database_slave::default"],
+    #    result: {
+    #      status: :ok
+    #      message: ""
+    #      bootstrap_type: :partial
+    #    }
+    #  }
+    def initialize(host_errors)
+      @groups      = Set.new
+      @host_errors = Hash.new
+
+      host_errors.each do |host, host_info|
+        @host_errors[host] = host_info
+        host_info[:groups].each { |group| @groups.add(group) }
+      end
     end
 
     def message
-      group_err_count = errors.collect { |group, errors| "#{group} (#{errors.length} errors)" }.join(', ')
-      "there were failures while bootstrapping some groups: #{group_err_count}"
+      err = ""
+      groups.each do |group|
+        err << "failure bootstrapping group #{group}\n"
+        host_errors.each do |host, host_info|
+          if host_info[:groups].include?(group)
+            err << "  * #{host} #{host_info[:result]}\n"
+          end
+        end
+        err << "\n"
+      end
+      err
     end
   end
 

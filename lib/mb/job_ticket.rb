@@ -17,11 +17,11 @@ module MotherBrain
     private
 
       def record
-        JobManager.instance.find(id) if JobManager.running?
+        JobManager.instance.find(id)
       end
 
       def method_missing(method, *args, &block)
-        record.send(method, *args, &block) if record
+        record.send(method, *args, &block)
       end
   end
 end

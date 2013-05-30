@@ -11,7 +11,7 @@ module MotherBrain
         #
         # @param [MB::Cli::SubCommand] klass
         def register_subcommand(klass)
-          self.register(klass, klass.name, klass.usage, klass.description)
+          self.register(klass, klass.name.gsub('-', '_'), klass.usage.gsub('-', '_'), klass.description)
         end
 
         # @return [MB::Cli::Shell::Color, MB::Cli::Shell::Basic]
@@ -32,6 +32,19 @@ module MotherBrain
         # @return [MB::Cli::Shell::Color, MB::Cli::Shell::Basic]
         def ui
           self.class.ui
+        end
+
+        def requires_one_of(*valid_options)
+          valid_options = valid_options.flatten
+
+          return if options.slice(*valid_options).any?
+
+          valid_cli_arguments = valid_options.map { |key|
+            key.to_s.dasherize.prepend('--')
+          }
+
+          ui.say "Requires one of #{valid_cli_arguments.join(', ')}"
+          exit 1
         end
       end
     end

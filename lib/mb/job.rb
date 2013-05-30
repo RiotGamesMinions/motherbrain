@@ -58,10 +58,7 @@ module MotherBrain
 
     def_delegator :machine, :state
 
-    finalizer do
-      set_status("complete")
-      job_manager.complete_job(Actor.current)
-    end
+    finalizer :finalize_callback
 
     # @param [#to_s] type
     def initialize(type)
@@ -180,5 +177,9 @@ module MotherBrain
     private
 
       attr_reader :machine
+
+      def finalize_callback
+        job_manager.complete_job(Actor.current)
+      end
   end
 end

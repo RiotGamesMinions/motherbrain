@@ -15,9 +15,7 @@ module MotherBrain
     include MB::Mixin::Locks
     include MB::Mixin::Services
 
-    finalizer do
-      log.info { "Environment Manager stopping..." }
-    end
+    finalizer :finalize_callback
 
     def initialize
       log.info { "Environment Manager starting..." }
@@ -135,5 +133,11 @@ module MotherBrain
     def list
       ridley.environment.all
     end
+
+    private
+
+      def finalize_callback
+        log.info { "Environment Manager stopping..." }
+      end
   end
 end

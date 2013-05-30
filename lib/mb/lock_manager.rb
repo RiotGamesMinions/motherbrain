@@ -18,9 +18,7 @@ module MotherBrain
     # @return [Set<ChefMutex>]
     attr_reader :locks
 
-    finalizer do
-      log.info { "Lock Manager stopping..." }
-    end
+    finalizer :finalize_callback
 
     def initialize
       log.info { "Lock Manager starting..." }
@@ -110,5 +108,11 @@ module MotherBrain
         report_job_status: true
       ).unlock
     end
+
+    private
+
+      def finalize_callback
+        log.info { "Lock Manager stopping..." }
+      end
   end
 end
