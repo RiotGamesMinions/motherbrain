@@ -113,16 +113,15 @@ module MotherBrain
 
       log.info { "Running Chef client on: #{host}" }
 
-      status, response = chef_connection.node.chef_run(host)
+      response = chef_connection.node.chef_run(host)
 
-      case status
-      when :ok
-        log.info { "Completed Chef client run on: #{host}" }
-        response
-      when :error
+      if response.error?
         log.info { "Failed Chef client run on: #{host}" }
         abort RemoteCommandError.new(response.stderr.chomp)
       end
+
+      log.info { "Completed Chef client run on: #{host}" }
+      response
     end
 
     # Place an encrypted data bag secret on the target host
@@ -155,16 +154,15 @@ module MotherBrain
         return nil
       end
 
-      status, response = chef_connection.node.put_secret(host)
+      response = chef_connection.node.put_secret(host)
 
-      case status
-      when :ok
-        log.info { "Successfully put secret file on: #{host}" }
-        response
-      when :error
+      if response.error?
         log.info { "Failed to put secret file on: #{host}" }
-        nil
+        return nil
       end
+
+      log.info { "Successfully put secret file on: #{host}" }
+      response
     end
 
     # Executes the given command on the host using the best worker
@@ -175,16 +173,15 @@ module MotherBrain
     #
     # @return [Ridley::HostConnection::Response]
     def execute_command(host, command)
-      status, response = chef_connection.node.execute_command(host, command)
+      response = chef_connection.node.execute_command(host, command)
 
-      case status
-      when :ok
-        log.info { "Successfully executed command on: #{host}" }
-        response
-      when :error
+      if response.error?
         log.info { "Failed to execute command on: #{host}" }
         abort RemoteCommandError.new(response.stderr.chomp)
       end
+
+      log.info { "Successfully executed command on: #{host}" }
+      response
     end
 
     # Check if the target host is registered with the Chef server. If the node does not have Chef and
@@ -268,16 +265,13 @@ module MotherBrain
         lines   = File.readlines(MB.scripts.join("#{name}.rb"))
         command_lines = lines.collect { |line| line.gsub('"', "'").strip.chomp }
 
-        status, response = chef_connection.node.ruby_script(host, command_lines)
+        response = chef_connection.node.ruby_script(host, command_lines)
 
-        case status
-        when :ok
-          response.stdout.chomp
-        when :error
+        if response.error?
           raise RemoteScriptError.new(response.stderr.chomp)
-        else
-          raise RuntimeError, "unknown status returned from #ruby_script: #{status}"
         end
+
+        response.stdout.chomp
       end
   end
 end
