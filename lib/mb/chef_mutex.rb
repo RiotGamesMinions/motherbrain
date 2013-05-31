@@ -164,11 +164,9 @@ module MotherBrain
     def unlock
       return true if externally_testing?
 
-      log.info { "Unlocking #{to_s}" }
-
       if job
         job.report_running if report_job_status
-        job.status = "Unlocking #{to_s}"
+        job.set_status("Unlocking #{to_s}")
       end
 
       report(attempt_unlock)
@@ -177,7 +175,7 @@ module MotherBrain
     private
 
       def finalize_callback
-        unregister_lock
+        unregister_lock if lock_manager.alive?
       end
 
       # Reports a job status
