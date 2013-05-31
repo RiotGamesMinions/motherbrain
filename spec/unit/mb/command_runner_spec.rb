@@ -24,6 +24,7 @@ describe MB::CommandRunner do
 
   let(:environment) { "rspec-test" }
   let(:job) { double('job', set_status: nil) }
+  let(:component) { double('component', name: "foo") }
   let(:args) { }
   let(:command_block) {
     proc {
@@ -241,7 +242,6 @@ describe MB::CommandRunner do
   end
 
   describe "#component" do
-    let(:component) { double('component', name: "foo") }
     let(:proxy) { command_runner.component("foo") }
 
     before do
@@ -257,7 +257,7 @@ describe MB::CommandRunner do
     end
 
     it "invokes the real component" do
-      component.should_receive(:invoke).with(environment, "bar", [])
+      component.should_receive(:invoke).with(job, environment, "bar", [])
       proxy.invoke("bar")
     end
   end
@@ -277,6 +277,22 @@ describe MB::CommandRunner do
       scope.should_receive(:command!).with("foo").and_return(command)
 
       command_runner.command("foo")
+    end
+  end
+
+  describe MB::CommandRunner::InvokableComponent do
+    subject { invokable_component }
+
+    let(:invokable_component) {
+      MB::CommandRunner::InvokableComponent.new(job, environment, component)
+    }
+
+    describe "#invoke" do
+      it "invokes the component" do
+        component.should_receive :invoke
+
+        invokable_component.invoke("test")
+      end
     end
   end
 end
