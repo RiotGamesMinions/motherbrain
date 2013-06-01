@@ -20,12 +20,11 @@ describe MB::Bootstrap::Worker do
 
   describe "#full_bootstrap" do
     let(:chef_connection) { double('chef_connection') }
-    let(:response_1) { Ridley::HostConnector::Response.new("cloud-1.riotgames.com", exit_code: 0) }
-    let(:response_set) { Ridley::HostConnector::ResponseSet.new([response_1])}
+    let(:response) { Ridley::HostConnector::Response.new("cloud-1.riotgames.com", exit_code: 0) }
 
     before do
       subject.stub(chef_connection: chef_connection)
-      chef_connection.stub_chain(:node, :bootstrap).and_return(response_set)
+      chef_connection.stub_chain(:node, :bootstrap).and_return(response)
     end
 
     let(:result) { subject.full_bootstrap(host) }
@@ -57,8 +56,8 @@ describe MB::Bootstrap::Worker do
 
     context "when response is a failure" do
       before do
-        response_1.exit_code = -1
-        response_1.stderr = "OH NO AN ERROR"
+        response.exit_code = -1
+        response.stderr = "OH NO AN ERROR"
       end
 
       it "sets the value of the :status key to :error" do
@@ -66,12 +65,12 @@ describe MB::Bootstrap::Worker do
       end
 
       it "has the value of STDERR for :message" do
-        expect(result[:message]).to eql(response_1.stderr)
+        expect(result[:message]).to eql(response.stderr)
       end
     end
 
     context "when response is a success" do
-      before { response_1.exit_code = 0 }
+      before { response.exit_code = 0 }
 
       it "sets the value of the :status key to :ok" do
         expect(result[:status]).to eql(:ok)

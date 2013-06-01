@@ -147,7 +147,7 @@ module MotherBrain
         end
         options.delete(:template) if options[:template].nil?
 
-        ssh_response = chef_connection.node.bootstrap(host.hostname, options).first
+        ssh_response = chef_connection.node.bootstrap(host.hostname, options)
 
         {}.tap do |response|
           response[:node_name]      = nil

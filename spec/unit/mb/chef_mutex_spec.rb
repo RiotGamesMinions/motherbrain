@@ -235,9 +235,7 @@ describe MB::ChefMutex do
       let(:options) { { job: job_stub } }
 
       it "sets the job status" do
-        job_stub.should_receive(:status=).with(
-          "Unlocking chef_environment:my_environment"
-        )
+        job_stub.should_receive(:set_status).with("Unlocking chef_environment:my_environment")
 
         unlock
       end
