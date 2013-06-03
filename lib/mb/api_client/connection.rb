@@ -29,7 +29,7 @@ module MotherBrain
         options = options.slice(*VALID_OPTIONS).reverse_merge(retries: 5, retry_interval: 0.5)
 
         options[:builder] = Faraday::Builder.new do |b|
-          b.response :json
+          b.response :parse_json
           b.request :retry,
             max: options[:retries],
             interval: options[:retry_interval],
