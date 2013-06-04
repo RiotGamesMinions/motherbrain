@@ -24,9 +24,7 @@ module MotherBrain
     # @return [Timers::Timer, nil]
     attr_reader :eager_load_timer
 
-    finalizer do
-      log.info { "Plugin Manager stopping..." }
-    end
+    finalizer :finalize_callback
 
     def initialize
       log.info { "Plugin Manager starting..." }
@@ -34,8 +32,6 @@ module MotherBrain
       @plugins        = Set.new
 
       MB::Berkshelf.init
-
-      load_local_plugin if local_plugin?
 
       async_loading? ? async(:load_all) : load_all
 
@@ -48,20 +44,20 @@ module MotherBrain
 
     # Add a plugin to the set of plugins
     #
-    # @param [MotherBrain::Plugin] plugin
+    # @param [MB::Plugin] plugin
     #
     # @option options [Boolean] :force
     #   load a plugin even if a plugin of the same name and version is already loaded
     #
-    # @return [Set<MB::Plugin>, nil]
+    # @return [MB::Plugin, nil]
     #   returns the set of plugins on success or nil if the plugin was not added
     def add(plugin, options = {})
       if options[:force]
-        return reload(plugin)
+        remove(plugin)
       end
 
       if find(plugin.name, plugin.version, remote: false)
-        return
+        return nil
       end
 
       @plugins.add(plugin)
@@ -104,24 +100,14 @@ module MotherBrain
       Application.config.plugin_manager.eager_load_interval
     end
 
-    # Determines if we're running inside of a cookbook with a plugin.
-    #
-    # @return [Boolean]
-    def local_plugin?
-      %w[
-        metadata.rb
-        motherbrain.rb
-      ].all? { |file| File.exist? file }
-    end
-
     # Load all of the plugins from the Berkshelf
     #
     # @option options [Boolean] :force (false)
-    def load_all_local(options = {})
+    def load_all_installed(options = {})
       options = options.reverse_merge(force: false)
 
-      local_cookbooks.each do |path|
-        load_local(path, options)
+      installed_cookbooks.each do |path|
+        load_installed(path, options)
       end
     end
 
@@ -144,25 +130,23 @@ module MotherBrain
       end
     end
 
-    def load_local_plugin
-      load_local '.'
-    end
-
     # Find and return a registered plugin of the given name and version. If no
     # version attribute is specified the latest version of the plugin is
     # returned.
     #
     # @param [String] name
+    #   name of the plugin
     # @param [#to_s] version
+    #   version of the plugin to find
     #
     # @option options [Boolean] :remote (false)
-    #   search for the plugin on the remote Chef Server if it isn't found locally
+    #   search for the plugin on the remote Chef Server if it isn't installed
     #
     # @return [MB::Plugin, nil]
     def find(name, version = nil, options = {})
-      return latest(name) unless version
-
       options = options.reverse_merge(remote: false)
+
+      return latest(name, options) unless version
 
       installed = @plugins.find { |plugin| plugin.name == name && plugin.version.to_s == version.to_s }
 
@@ -184,7 +168,7 @@ module MotherBrain
     #   name of the environment
     #
     # @option options [Boolean] :remote (false)
-    #   include plugins on the remote Chef Server which aren't found locally
+    #   include plugins on the remote Chef Server which aren't installed
     #
     # @raise [EnvironmentNotFound] if the given environment does not exist
     # @raise [PluginNotFound] if a plugin of the given name is not found
@@ -200,13 +184,42 @@ module MotherBrain
       abort ex
     end
 
+    # Download and install the cookbook containing a motherbrain plugin matching the
+    # given name and optional version into the user's Berkshelf.
+    #
+    # @param [String] name
+    #   Name of the plugin
+    # @param [#to_s] version
+    #   The version of the plugin to install. If left blank the latest version will be installed
+    #
+    # @return [MB::Plugin]
+    #
+    # @raise [MB::PluginNotFound]
+    def install(name, version = nil)
+      unless plugin = find(name, version, remote: true)
+        abort MB::PluginNotFound.new(name, version)
+      end
+
+      chef_connection.cookbook.download(plugin.name, plugin.version, install_path_for(plugin))
+      reload(plugin)
+    end
+
+    # The filepath that a plugin would be or should be installed to
+    #
+    # @param [MB::Plugin] plugin
+    #
+    # @return [Pathname]
+    def install_path_for(plugin)
+      Berkshelf.cookbooks_path.join("#{plugin.name}-#{plugin.version}")
+    end
+
     # Return most current version of the plugin of the given name
     #
     # @param [String] name
     #   name of the plugin
     #
     # @option options [Boolean] :remote (false)
-    #   include plugins on the remote Chef server which haven't been cached locally
+    #   include plugins on the remote Chef server which haven't been cached or installed
     #
     # @return [MB::Plugin, nil]
     def latest(name, options = {})
@@ -226,7 +239,7 @@ module MotherBrain
 
     # @return [Array<MotherBrain::Plugin>]
     def load_all
-      load_all_local
+      load_all_installed
       load_all_remote if eager_loading?
     end
 
@@ -236,13 +249,17 @@ module MotherBrain
     #
     # @option options [Boolean] :force (true)
     #   load a plugin even if a plugin of the same name and version is already loaded
+    # @option options [Boolean] :allow_failure (true)
+    #   allow for loading failure
     #
     # @return [MB::Plugin, nil]
     #   returns the loaded plugin or nil if the plugin was not loaded successfully
-    def load_local(path, options = {})
+    def load_installed(path, options = {})
+      options = options.reverse_merge(force: true, allow_failure: true)
       load_file(path, options)
     rescue PluginSyntaxError, PluginLoadError => ex
-      log.debug { "could not load local plugin at '#{path}': #{ex}" }
+      err_msg = "could not load plugin at '#{path}': #{ex.message}"
+      options[:allow_failure] ? log.debug(err_msg) : abort(PluginLoadError.new(err_msg))
       nil
     end
 
@@ -255,50 +272,55 @@ module MotherBrain
     #
     # @option options [Boolean] :force (false)
     #   load a plugin even if a plugin of the same name and version is already loaded
+    # @option options [Boolean] :allow_failure (true)
+    #   allow for loading failure
+    #
+    # @raise [PluginSyntaxError]
+    # @raise [PluginLoadError]
     #
     # @return [MB::Plugin, nil]
     #   returns the loaded plugin or nil if the remote does not contain a plugin of the given
     #   name and version or if there was a failure loading the plugin
     def load_remote(name, version, options = {})
-      options  = options.reverse_merge(force: false)
+      options  = options.reverse_merge(force: false, allow_failure: true)
       resource = ridley.cookbook.find(name, version)
 
       return unless resource && resource.has_motherbrain_plugin?
 
       begin
         scratch_dir   = FileSystem.tmpdir("cbplugin")
-        metadata_path = File.join(scratch_dir, Plugin::JSON_METADATA_FILENAME)
+        metadata_path = File.join(scratch_dir, CookbookMetadata::JSON_FILENAME)
         plugin_path   = File.join(scratch_dir, Plugin::PLUGIN_FILENAME)
 
         File.write(metadata_path, resource.metadata.to_json)
 
         unless resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, plugin_path)
-          log.warn { "error loading remote plugin: failure downloading plugin file for #{resource.name}" }
-          return
+          raise PluginLoadError, "failure downloading plugin file for #{resource.name}"
         end
 
         load_file(scratch_dir, options)
       rescue PluginSyntaxError, PluginLoadError => ex
-        log.debug { "could not load remote plugin #{name} (#{version}): #{ex}" }
+        err_msg = "could not load remote plugin #{name} (#{version}): #{ex.message}"
+        options[:allow_failure] ? log.debug(err_msg) : abort(PluginLoadError.new(err_msg))
         nil
       ensure
         FileUtils.rm_rf(scratch_dir)
       end
     end
 
-    # List all versions of a plugin with the given name that are present within the local cache
-    # of plugins. An empty array will be returned if no versions are present.
+    # List all installed versions of a plugin with the given name of plugins. An empty
+    # array will be returned if no versions of a plugin are installed.
     #
     # @example
-    #   plugin_manager.local_versions("nginx") #=> [ "1.2.3", "2.0.0", "3.1.2" ]
+    #   plugin_manager.installed_versions("nginx") #=> [ "1.2.3", "2.0.0", "3.1.2" ]
     #
     # @param [#to_s] name
     #   name of the plugin
     #
     # @return [Array<String>]
-    def local_versions(name)
-      local_cookbooks.collect do |path|
-        plugin = load_local(path)
+    def installed_versions(name)
+      installed_cookbooks.collect do |path|
+        plugin = load_installed(path)
         next unless plugin
 
         if plugin.name == name
@@ -328,10 +350,9 @@ module MotherBrain
 
     # Remove and Add the given plugin from the set of plugins
     #
-    # @param [MotherBrain::Plugin] plugin
+    # @param [MB::Plugin] plugin
     def reload(plugin)
-      remove(plugin)
-      add(plugin)
+      add(plugin, force: true)
     end
 
     # Reload plugins from Chef Server and from the Berkshelf
@@ -345,13 +366,13 @@ module MotherBrain
     # Reload plugins from the Berkshelf
     #
     # @return [Array<MotherBrain::Plugin>]
-    def reload_local
-      load_all_local(force: true)
+    def reload_installed
+      load_all_installed(force: true)
     end
 
     # Remove the given plugin from the set of plugins
     #
-    # @param [MotherBrain::Plugin] plugin
+    # @param [Set<MB::Plugin>] plugin
     def remove(plugin)
       @plugins.delete(plugin)
     end
@@ -364,7 +385,7 @@ module MotherBrain
     #   constraint to satisfy
     #
     # @option options [Boolean] :remote (false)
-    #   include plugins on the remote Chef Server which aren't found locally
+    #   include plugins on the remote Chef Server which aren't installed
     #
     # @raise [PluginNotFound] if a plugin of the given name which satisfies the given constraint
     #   is not found
@@ -396,6 +417,25 @@ module MotherBrain
       abort PluginNotFound.new(plugin_name, constraint)
     end
 
+    # Uninstall an installed plugin
+    #
+    # @param [String] name
+    #   Name of the plugin
+    # @param [#to_s] version
+    #   The version of the plugin to uninstall
+    #
+    # @return [MB::Plugin, nil]
+    def uninstall(name, version)
+      unless plugin = find(name, version, remote: false)
+        return nil
+      end
+
+      FileUtils.rm_rf(install_path_for(plugin))
+      remove(plugin)
+
+      plugin
+    end
+
     # List all of the versions of the plugin of the given name
     #
     # @param [#to_s] name
@@ -407,7 +447,7 @@ module MotherBrain
     #
     # @return [Array<String>]
     def versions(name, remote = false)
-      all_versions = local_versions(name)
+      all_versions = installed_versions(name)
 
       if remote
         all_versions += remote_versions(name)
@@ -454,6 +494,10 @@ module MotherBrain
 
     private
 
+      def finalize_callback
+        log.info { "Plugin Manager stopping..." }
+      end
+
       # Load a plugin from a file
       #
       # @param [#to_s] path
@@ -476,10 +520,8 @@ module MotherBrain
       end
 
       # @return [Array<Pathname>]
-      def local_cookbooks
-        paths = Berkshelf.cookbooks(with_plugin: true)
-        paths << Pathname.pwd if local_plugin?
-        paths
+      def installed_cookbooks
+        Berkshelf.cookbooks(with_plugin: true)
       end
 
       # List all the versions of the given cookbook on the remote Chef server
@@ -490,6 +532,8 @@ module MotherBrain
       # @return [Array<String>]
       def remote_cookbook_versions(name)
         chef_connection.cookbook.versions(name)
+      rescue Ridley::Errors::ResourceNotFound
+        []
       end
 
       # List all of the cookbooks and their versions present on the remote

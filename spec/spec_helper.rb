@@ -27,22 +27,13 @@ def setup_rspec
 
     config.before(:all) do
       Celluloid.shutdown
-      Celluloid.boot
-      MB::Logging.setup(location: '/dev/null')
-
       @config = generate_valid_config
       @app    = MB::Application.run!(@config)
+      MB::Logging.setup(location: '/dev/null')
     end
 
     config.before(:each) do
       clean_tmp_path
-    end
-
-    config.around do |example|
-      $stdout.should_not_receive :write
-      $stderr.should_not_receive :write
-
-      example.run
     end
   end
 end

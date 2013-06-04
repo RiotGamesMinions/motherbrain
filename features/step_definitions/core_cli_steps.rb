@@ -10,6 +10,10 @@ When /^I run the "(.*?)" command$/ do |command|
   run_simple(unescape("mb #{command}"), false)
 end
 
+When /^I run the "(.*?)" command with:$/ do |command, arguments|
+  run_simple(unescape("mb #{command} #{arguments.raw.join(' ')}"), false)
+end
+
 When /^I run the "(.*?)" command interactively$/ do |command|
   run_interactive("mb #{command}")
 end

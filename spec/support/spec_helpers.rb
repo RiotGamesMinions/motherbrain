@@ -81,7 +81,7 @@ module MotherBrain
       cookbook_path = options[:path] || File.join(berkshelf_path, 'cookbooks', "#{name}-#{options[:version]}")
 
       FileUtils.mkdir_p(cookbook_path)
-      File.open(File.join(cookbook_path, MB::Plugin::RUBY_METADATA_FILENAME), 'w+') do |f|
+      File.open(File.join(cookbook_path, MB::CookbookMetadata::RUBY_FILENAME), 'w+') do |f|
         f.write <<-EOH
           name             "#{name}"
           maintainer       "Jamie Winsor"

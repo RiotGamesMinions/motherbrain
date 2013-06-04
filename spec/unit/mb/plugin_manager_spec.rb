@@ -31,6 +31,94 @@ describe MotherBrain::PluginManager do
 
   subject { described_class.new }
 
+  describe "#install" do
+    let(:plugin) { double(name: "rspec", version: "1.2.3") }
+    let(:plugin_install_path) { subject.install_path_for(plugin) }
+
+    before { subject.stub_chain(:chef_connection, :cookbook, :download) }
+
+    context "when the remote contains the plugin and it is not installed" do
+      before do
+        subject.stub(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin)
+        subject.stub(:find).with(plugin.name, plugin.version, remote: false).and_return(nil)
+      end
+
+      it "searches for the plugin of the given name/version on the remote" do
+        subject.should_receive(:find).with(plugin.name, plugin.version, remote: true).and_return(plugin)
+
+        subject.install(plugin.name, plugin.version)
+      end
+
+      it "returns the found plugin" do
+        expect(subject.install(plugin.name, plugin.version)).to eq(plugin)
+      end
+
+      it "downloads the cookbook containing the plugin to the Berkshelf" do
+        cookbook_resource = double
+        subject.stub_chain(:chef_connection, :cookbook).and_return(cookbook_resource)
+        cookbook_resource.should_receive(:download).with(plugin.name, plugin.version, plugin_install_path)
+
+        subject.install(plugin.name, plugin.version)
+      end
+
+      it "adds the plugin to the list of plugins" do
+        subject.install(plugin.name, plugin.version)
+
+        expect(subject.list).to include(plugin)
+      end
+    end
+
+    context "when the remote does not have a plugin of the given name/version" do
+      before { subject.should_receive(:find).with(plugin.name, plugin.version, remote: true).and_return(nil) }
+
+      it "raises a PluginNotFound error" do
+        expect { subject.install(plugin.name, plugin.version) }.to raise_error(MB::PluginNotFound)
+      end
+    end
+  end
+
+  describe "#install_path_for" do
+    let(:plugin) { double(name: "rspec", version: "1.2.3") }
+
+    it "returns a Pathname" do
+      expect(subject.install_path_for(plugin)).to be_a(Pathname)
+    end
+  end
+
+  describe "#uninstall" do
+    let(:plugin) { double(name: "rpsec", version: "1.2.3") }
+    let(:plugin_install_path) { subject.install_path_for(plugin) }
+
+    before do
+      subject.add(plugin)
+      FileUtils.mkdir_p(plugin_install_path)
+    end
+
+    it "returns the uninstalled plugin" do
+      expect(subject.uninstall(plugin.name, plugin.version)).to eql(plugin)
+    end
+
+    it "removes the plugin from the plugins list" do
+      subject.uninstall(plugin.name, plugin.version)
+
+      expect(subject.list).to_not include(plugin)
+    end
+
+    it "removes the plugin and it's cookbook from disk" do
+      subject.uninstall(plugin.name, plugin.version)
+
+      expect(plugin_install_path).to_not exist
+    end
+
+    context "when the plugin of the given name/version is not installed" do
+      before { subject.stub(:find).with(plugin.name, plugin.version, remote: false).and_return(nil) }
+
+      it "returns nil" do
+        expect(subject.uninstall(plugin.name, plugin.version)).to be_nil
+      end
+    end
+  end
+
   describe "#latest" do
     let(:name) { "apple" }
     let(:version) { "2.0.0" }
@@ -74,7 +162,7 @@ describe MotherBrain::PluginManager do
     end
 
     it "sends a load message to self with each plugin found in the berkshelf" do
-      subject.should_receive(:load_local).with(anything, force: false).exactly(count).times
+      subject.should_receive(:load_installed).with(anything, force: false).exactly(count).times
 
       subject.load_all
     end
@@ -98,7 +186,7 @@ describe MotherBrain::PluginManager do
     end
   end
 
-  describe "#load_local" do
+  describe "#load_installed" do
     let(:plugin) do
       metadata = MB::CookbookMetadata.new do
         name 'apple'
@@ -114,7 +202,7 @@ describe MotherBrain::PluginManager do
     end
 
     it "adds an instantiated plugin to the hash of plugins" do
-      subject.load_local(path)
+      subject.load_installed(path)
 
       subject.list.should include(plugin)
     end
@@ -441,39 +529,20 @@ describe MotherBrain::PluginManager do
     end
   end
 
-  describe "#local_cookbooks" do
-    before do
-      MB::Berkshelf.stub(cookbooks: Array.new)
-    end
-
-    context "when there is a plugin in the current working directory" do
-      before(:each) do
-        subject.stub(local_plugin?: true)
-      end
-
-      it "returns an array containing a Pathname to the current working directory" do
-        result = subject.send(:local_cookbooks)
-        result.should have(1).item
-        result.first.should be_a(Pathname)
-        result.first.should eql(Pathname.pwd)
-      end
-    end
-  end
-
-  describe "#local_versions" do
+  describe "#installed_versions" do
     before { MB::Berkshelf.stub(cookbooks_path: fixtures_path) }
 
-    context "when the local cache has at least one cookbook containing a plugin of the given name" do
+    context "when the installed cookbooks have at least one version containing a plugin" do
       it "returns an array containing a string for each" do
-        versions = subject.local_versions("myface")
+        versions = subject.installed_versions("myface")
         versions.should have(1).item
         versions.should each be_a(String)
       end
     end
 
-    context "when the local cache does not have a cookbook containing a plugin of the given name" do
+    context "when the installed cookbooks does not have a version containing a plugin" do
       it "returns an empty array" do
-        subject.local_versions("nginx").should be_empty
+        subject.installed_versions("nginx").should be_empty
       end
     end
   end
@@ -541,37 +610,37 @@ describe MotherBrain::PluginManager do
 
   describe "#versions" do
     let(:name) { "nginx" }
-    let(:local_versions) { [ "1.2.3", "2.0.0" ] }
+    let(:installed_versions) { [ "1.2.3", "2.0.0" ] }
     let(:remote_versions) { [ "3.0.0" ] }
 
     context "when given 'false' for the remote argument" do
       before do
         subject.should_not_receive(:remote_versions)
-        subject.should_receive(:local_versions).with(name).and_return(local_versions)
+        subject.should_receive(:installed_versions).with(name).and_return(installed_versions)
       end
 
-      it "returns only the local plugins" do
-        expect(subject.versions(name, false)).to eql(local_versions)
+      it "returns only the installed plugins" do
+        expect(subject.versions(name, false)).to eql(installed_versions)
       end
     end
 
     context "when given 'true' for the remote argument" do
       before do
         subject.should_receive(:remote_versions).with(name).and_return(remote_versions)
-        subject.should_receive(:local_versions).with(name).and_return(local_versions)
+        subject.should_receive(:installed_versions).with(name).and_return(installed_versions)
       end
 
       it "includes the remote versions" do
         expect(subject.versions(name, true)).to include(*remote_versions)
       end
 
-      it "includes the local versions" do
-        expect(subject.versions(name, true)).to include(*local_versions)
+      it "includes the installed versions" do
+        expect(subject.versions(name, true)).to include(*installed_versions)
       end
 
       context "when no plugins are found" do
         let(:remote_versions) { Array.new }
-        let(:local_versions) { Array.new }
+        let(:installed_versions) { Array.new }
 
         it "raises a PluginNotFound error" do
           expect { subject.versions(name, true) }.to raise_error(MB::PluginNotFound)

@@ -58,10 +58,7 @@ module MotherBrain
 
     def_delegator :machine, :state
 
-    finalizer do
-      set_status("complete")
-      job_manager.complete_job(Actor.current)
-    end
+    finalizer :finalize_callback
 
     # @param [#to_s] type
     def initialize(type)
@@ -160,14 +157,14 @@ module MotherBrain
 
     # @param [Symbol] state
     #   the state to transition to in the Job's state machine
-    # @param [#to_json] result
+    # @param [#cause, #to_s] result
     #   a result which can be converted to JSON
     # @param [Hash] options
     #   options to pass to the state machine transition
     #
     # @return [Job]
     def transition(state, result = nil, options = {})
-      @result = result
+      @result = result.respond_to?(:cause) ? result.cause : result
       machine.transition(state, options)
       Actor.current
     end
@@ -180,5 +177,9 @@ module MotherBrain
     private
 
       attr_reader :machine
+
+      def finalize_callback
+        job_manager.complete_job(Actor.current)
+      end
   end
 end

@@ -35,9 +35,7 @@ module MotherBrain
     resource ApiClient::JobResource, :job
     resource ApiClient::PluginResource, :plugin
 
-    finalizer do
-      connection.terminate if connection.alive?
-    end
+    finalizer :finalize_callback
 
     # @param [String] url
     #   URL to REST Gateway
@@ -61,5 +59,11 @@ module MotherBrain
     protected
 
       attr_reader :registry
+
+    private
+
+      def finalize_callback
+        connection.terminate if connection.alive?
+      end
   end
 end

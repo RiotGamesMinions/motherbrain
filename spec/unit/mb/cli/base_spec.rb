@@ -1,42 +1,9 @@
 require 'spec_helper'
 
 describe MB::Cli::Base do
-  describe "ClassMethods" do
-    describe "::shell" do
-      before do
-        Chozo::Platform.stub(windows?: false, osx?: false, linux?: false)
-      end
+  subject { cli }
 
-      subject { described_class.shell }
-      after { described_class.shell = nil }
-
-      context "when on a unix platform" do
-        before do
-          Chozo::Platform.stub(windows?: false, osx?: true, linux?: true)
-        end
-
-        it { should eql(MB::Cli::Shell::Color) }
-      end
-
-      context "when on a windows platform" do
-        before do
-          Chozo::Platform.stub(windows?: true, osx?: false, linux?: false)
-        end
-
-        it { should eql(MB::Cli::Shell::Basic) }
-      end
-
-      context "when the MB_SHELL env variable is set" do
-        before do
-          ENV.stub(:[]).with("MB_SHELL").and_return("basic")
-        end
-
-        it { should eql(MB::Cli::Shell::Basic) }
-      end
-    end
-  end
-
-  subject { described_class.new }
+  let(:cli) { described_class.new }
 
   describe "#display_job" do
     let(:job) { double('job') }
@@ -47,6 +14,30 @@ describe MB::Cli::Base do
       cli_client.should_receive(:display)
 
       subject.display_job(job)
+    end
+  end
+
+  describe "#requires_one_of" do
+    let(:options) { Hash.new }
+    let(:ui_stub) { double }
+
+    before do
+      cli.stub options: options, ui: ui_stub
+    end
+
+    it "exits with an error message" do
+      ui_stub.should_receive(:say)
+      cli.should_receive(:exit)
+
+      cli.requires_one_of(:a, :b)
+    end
+
+    context "with at least one valid option" do
+      let(:options) { { a: 1 } }
+
+      it "does not exit" do
+        cli.requires_one_of(:a, :b)
+      end
     end
   end
 end

@@ -16,9 +16,7 @@ module MotherBrain
       include Celluloid
       include MB::Logging
 
-      finalizer do
-        log.info { "Upgrade Manager stopping..." }
-      end
+      finalizer :finalize_callback
 
       def initialize
         log.info { "Upgrade Manager starting..." }
@@ -78,6 +76,12 @@ module MotherBrain
         worker.terminate if worker && worker.alive?
         job.terminate if job && job.alive?
       end
+
+      private
+
+        def finalize_callback
+          log.info { "Upgrade Manager stopping..." }
+        end
     end
   end
 end

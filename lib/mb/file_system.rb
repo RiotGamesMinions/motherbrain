@@ -8,14 +8,21 @@ module MotherBrain
     class << self
       # Create the directory structure for motherbrain
       def init
-        FileUtils.mkdir_p(root)
         FileUtils.mkdir_p(logs)
+        FileUtils.mkdir_p(manifests)
+        FileUtils.mkdir_p(root)
+        FileUtils.mkdir_p(templates)
         FileUtils.mkdir_p(tmp)
       end
 
       # @return [Pathname]
       def logs
         root.join("logs")
+      end
+
+      # @return [Pathname]
+      def manifests
+        root.join("manifests")
       end
 
       # @return [Pathname]
@@ -26,6 +33,11 @@ module MotherBrain
       # @return [Pathname]
       def tmp
         root.join("tmp")
+      end
+
+      # @return [Pathname]
+      def templates
+        root.join("templates")
       end
 
       # Create a temporary directory in the tmp directory of the motherbrain

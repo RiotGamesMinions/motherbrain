@@ -10,6 +10,9 @@
 \fBmb\fR configure
 .
 .br
+\fBmb\fR console
+.
+.br
 \fBmb\fR version
 .
 .br
@@ -40,7 +43,16 @@
 \fBmb\fR \fBplugin\fR init [PATH]
 .
 .br
+\fBmb\fR \fBplugin\fR install NAME
+.
+.br
 \fBmb\fR \fBplugin\fR list
+.
+.br
+\fBmb\fR \fBplugin\fR show NAME
+.
+.br
+\fBmb\fR \fBplugin\fR uninstall NAME \-\-version=VERSION
 .
 .br
 \fBmb\fR \fBplugin\fR help [COMMAND]
@@ -112,6 +124,12 @@ create a new configuration file even if one already exists\.
 
 .
 .P
+\fBmb\fR console
+.
+.br
+Start an interactive motherbrain console
+.
+.P
 \fBmb\fR version
 .
 .br
@@ -136,7 +154,7 @@ Plugin level commands
 configure a Chef environment
 .
 .TP
-\-\-force
+\-f, \-\-force
 perform the configuration even if the environment is locked
 .
 .br
@@ -186,6 +204,19 @@ Describe subcommands or one specific subcommand
 Generate a new motherbrain plugin in the target cookbook
 .
 .P
+\fBmb\fR \fBplugin\fR install NAME
+.
+.br
+Install a plugin from the remote Chef server
+.
+.TP
+\-\-version=VERSION
+The version of the plugin to install
+.
+.br
+
+.
+.P
 \fBmb\fR \fBplugin\fR list
 .
 .br
@@ -194,6 +225,39 @@ List all installed plugins
 .TP
 \-\-remote
 search the remote Chef server and include plugins from the results
+.
+.br
+
+.
+.P
+\fBmb\fR \fBplugin\fR show NAME
+.
+.br
+Show information about a plugin
+.
+.TP
+\-\-version=VERSION
+The version of the plugin to display information for
+.
+.br
+
+.
+.TP
+\-\-remote
+Include plugins found on the remote Chef server
+.
+.br
+
+.
+.P
+\fBmb\fR \fBplugin\fR uninstall NAME \-\-version=VERSION
+.
+.br
+Uninstall a plugin from your Berkshelf
+.
+.TP
+\-\-version=VERSION (REQUIRED)
+The version of the plugin to install
 .
 .br
 
@@ -225,7 +289,7 @@ The version of Chef to bootstrap the node(s) with
 .
 .TP
 \-\-components, \-\-component\-versions=key:value
-The component versions to set with override attributes
+The component versions to set with default attributes
 .
 .br
 
@@ -280,7 +344,7 @@ The version of Chef to bootstrap the node(s) with
 .
 .TP
 \-\-components, \-\-component\-versions=key:value
-The component versions to set with override attributes
+The component versions to set with default attributes
 .
 .br
 
@@ -335,7 +399,7 @@ Upgrade an environment to the specified versions
 .
 .TP
 \-\-components, \-\-component\-versions=key:value
-The component versions to set with override attributes
+The component versions to set with default attributes
 .
 .br
 

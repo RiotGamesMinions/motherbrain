@@ -50,7 +50,7 @@ server by running `mb plugin list --remote`:
 ```
 $ mb plugin list --remote
 
-** listing local and remote plugins...
+** listing installed and remote plugins...
 
 ```
 

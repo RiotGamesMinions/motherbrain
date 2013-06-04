@@ -1,4 +1,4 @@
-require 'celluloid/autostart'
+require 'celluloid'
 require 'chozo'
 require 'ridley'
 require 'solve'
@@ -21,7 +21,6 @@ require 'mb/thor_ext'
 
 # @author Jamie Winsor <reset@riotgames.com>
 module MotherBrain
-  autoload :AbstractGear, 'mb/abstract_gear'
   autoload :Api, 'mb/api'
   autoload :ApiClient, 'mb/api_client'
   autoload :ApiHelpers, 'mb/api_helpers'
@@ -59,7 +58,6 @@ module MotherBrain
   autoload :Plugin, 'mb/plugin'
   autoload :PluginManager, 'mb/plugin_manager'
   autoload :Provisioner, 'mb/provisioner'
-  autoload :Provisioners, 'mb/provisioners'
   autoload :RestGateway, 'mb/rest_gateway'
   autoload :SrvCtl, 'mb/srv_ctl'
   autoload :Upgrade, 'mb/upgrade'
@@ -71,11 +69,6 @@ module MotherBrain
 
     def_delegator "MB::Application.instance", :application
     alias_method :app, :application
-
-    # @return [MB::Cli::Shell::Color, MB::Cli::Shell::Basic]
-    def ui
-      MB::Cli::Base.ui
-    end
 
     # Path to the root directory of the motherbrain application
     #
@@ -167,6 +160,9 @@ end
 
 # Alias for {MotherBrain}
 MB = MotherBrain
+require_relative 'mb/gears'
+require_relative 'mb/provisioners'
+
 if MB.testing?
   require 'mb/test'
 else

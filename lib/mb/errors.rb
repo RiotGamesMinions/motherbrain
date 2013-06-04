@@ -388,6 +388,30 @@ module MotherBrain
     error_code(3022)
   end
 
+  class RequiredFileNotFound < MBError
+    error_code(3023)
+
+    attr_reader :filename
+    attr_reader :required_for
+
+    def initialize(filename, options = {})
+      @filename = filename
+      @required_for = options[:required_for]
+    end
+
+    def message
+      msg = "#{@filename} does not exist, but is required"
+      msg += " for #{@required_for}" if @required_for
+      msg += "."
+      msg
+    end
+  end
+
+  class BootstrapTemplateNotFound < MBError
+    exit_code(106)
+    error_code(3024)
+  end
+
   # Bootstrap errors
   class BootstrapError < MBError
     exit_code(24)
@@ -396,15 +420,45 @@ module MotherBrain
 
   class GroupBootstrapError < BootstrapError
     error_code(4001)
-    attr_reader :errors
 
-    def initialize(errors)
-      @errors = errors
+    # @return [Array<String>]
+    attr_reader :groups
+    # @return [Hash]
+    attr_reader :host_errors
+
+    # @param [String] groups
+    # @param [Hash] host_errors
+    #
+    #  "cloud-3.riotgames.com" => {
+    #    groups: ["database_slave::default"],
+    #    result: {
+    #      status: :ok
+    #      message: ""
+    #      bootstrap_type: :partial
+    #    }
+    #  }
+    def initialize(host_errors)
+      @groups      = Set.new
+      @host_errors = Hash.new
+
+      host_errors.each do |host, host_info|
+        @host_errors[host] = host_info
+        host_info[:groups].each { |group| @groups.add(group) }
+      end
     end
 
     def message
-      group_err_count = errors.collect { |group, errors| "#{group} (#{errors.length} errors)" }.join(', ')
-      "there were failures while bootstrapping some groups: #{group_err_count}"
+      err = ""
+      groups.each do |group|
+        err << "failure bootstrapping group #{group}\n"
+        host_errors.each do |host, host_info|
+          if host_info[:groups].include?(group)
+            err << "  * #{host} #{host_info[:result]}\n"
+          end
+        end
+        err << "\n"
+      end
+      err
     end
   end
 
@@ -414,6 +468,14 @@ module MotherBrain
 
   class InvalidAttributesFile < BootstrapError
     error_code(4003)
+  end
+
+  class ValidatorPemNotFound < RequiredFileNotFound
+    error_code(4004)
+
+    def initialize(filename, options = { required_for: 'bootstrap' })
+      super
+    end
   end
 
   # Provision errors

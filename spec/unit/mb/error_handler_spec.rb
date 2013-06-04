@@ -164,7 +164,7 @@ describe MotherBrain::ErrorHandler do
       should == <<-OUTPUT.gsub(/^\s{8}/, '').rstrip
          4:     def my_method
          5:       do :one
-         6:       do :two
+         6>>      do :two
          7:       do :three
          8:     end
       OUTPUT

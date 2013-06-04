@@ -1,11 +1,11 @@
 module MotherBrain
-  module Provisioners
+  module Provisioner
     # @author Jamie Winsor <reset@riotgames.com>
     #
     # Provisioner adapter for Environment Factory. Node/Environment creation will be
     # delegated to an Environment Factory server.
     #
-    class EnvironmentFactory
+    class EnvironmentFactory < Provisioner::Base
       class << self
         # Convert the given provisioner manifest to a hash usable by Environment Factory
         #
@@ -16,7 +16,8 @@ module MotherBrain
           ef_manifest = Array.new
 
           manifest.node_groups.each do |node_group|
-            count, type = node_group.slice(:count, :type).values
+            count = node_group[:count] || 1
+            type = node_group[:type]
 
             count.times do
               ef_manifest << { instance_size: type }
@@ -54,10 +55,7 @@ module MotherBrain
         end
       end
 
-      include Provisioner
-
-      register_provisioner :environment_factory,
-        default: true
+      register_provisioner :environment_factory, default: true
 
       # How often to check with Environment Factory to see if the environment has been
       # created and is ready

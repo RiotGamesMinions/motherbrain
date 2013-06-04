@@ -24,7 +24,7 @@ module MotherBrain
         #
         # @return [Class]
         def choose_provisioner(id)
-          id.nil? ? Provisioners.default : Provisioners.get!(id)
+          id.nil? ? Provisioner.default : Provisioner.get!(id)
         end
 
         # Instantiate a new provisioner based on the given options
@@ -54,9 +54,7 @@ module MotherBrain
       include MB::Logging
       include MB::Mixin::Services
 
-      finalizer do
-        log.info { "Provision Manager stopping..." }
-      end
+      finalizer :finalize_callback
 
       def initialize
         log.info { "Provision Manager starting..." }
@@ -167,6 +165,7 @@ module MotherBrain
           job.report_success(response)
         else
           bootstrap_manifest = Bootstrap::Manifest.from_provisioner(response, manifest)
+          write_bootstrap_manifest(job, environment, bootstrap_manifest, plugin)
           bootstrapper.bootstrap(job, environment, bootstrap_manifest, plugin, options)
         end
       rescue => ex
@@ -174,6 +173,26 @@ module MotherBrain
       ensure
         job.terminate if job && job.alive?
       end
+
+      private
+
+        # @param [MB::Job] job
+        # @param [String] environment
+        # @param [MB::Manifest] manifest
+        # @param [MB::Plugin] plugin
+        def write_bootstrap_manifest(job, environment, manifest, plugin)
+          filename = "#{plugin.name}_#{environment}_#{Time.now.to_i}.json"
+          path = MB::FileSystem.manifests.join(filename)
+          contents = JSON.pretty_generate(manifest.as_json)
+
+          job.set_status("Writing bootstrap manifest to #{path}")
+
+          File.open(path, 'w') { |file| file.write contents }
+        end
+
+        def finalize_callback
+          log.info { "Bootstrap Manager stopping..." }
+        end
     end
   end
 end

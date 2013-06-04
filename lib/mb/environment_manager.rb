@@ -15,9 +15,7 @@ module MotherBrain
     include MB::Mixin::Locks
     include MB::Mixin::Services
 
-    finalizer do
-      log.info { "Environment Manager stopping..." }
-    end
+    finalizer :finalize_callback
 
     def initialize
       log.info { "Environment Manager starting..." }
@@ -38,7 +36,7 @@ module MotherBrain
     #
     # @return [JobTicket]
     def async_configure(id, options = {})
-      job = Job.new(:configure_environment)
+      job = Job.new(:environment_configure)
       async(:configure, job, id, options)
 
       job.ticket
@@ -66,8 +64,8 @@ module MotherBrain
       node_success = 0
       node_failure = 0
 
-      job.report_running("Finding environment #{environment.name}")
       environment = find(id)
+      job.report_running("Finding environment #{environment.name}")
 
       chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
         job.set_status("saving updated environment")
@@ -135,5 +133,11 @@ module MotherBrain
     def list
       ridley.environment.all
     end
+
+    private
+
+      def finalize_callback
+        log.info { "Environment Manager stopping..." }
+      end
   end
 end

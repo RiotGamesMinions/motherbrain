@@ -58,6 +58,7 @@ module MotherBrain
       #
       # @param [MB::Config] config
       def run!(config)
+        Celluloid.boot
         log.info { "motherbrain starting..." }
         setup
         @instance = Application::SupervisionGroup.new(config)
@@ -92,22 +93,22 @@ module MotherBrain
       attr_reader :interrupted
 
       def initialize(config)
-        super(MB::Application.registry) do |s|
-          s.supervise_as :config_manager, MB::ConfigManager, config
-          s.supervise_as :ridley, Ridley::Client, config.to_ridley
-          s.supervise_as :job_manager, MB::JobManager
-          s.supervise_as :lock_manager, MB::LockManager
-          s.supervise_as :plugin_manager, MB::PluginManager
-          s.supervise_as :command_invoker, MB::CommandInvoker
-          s.supervise_as :node_querier, MB::NodeQuerier
-          s.supervise_as :environment_manager, MB::EnvironmentManager
-          s.supervise_as :bootstrap_manager, MB::Bootstrap::Manager
-          s.supervise_as :provisioner_manager, MB::Provisioner::Manager
-          s.supervise_as :upgrade_manager, MB::Upgrade::Manager
+        super(MB::Application.registry)
 
-          if config.rest_gateway.enable
-            s.supervise_as :rest_gateway, MB::RestGateway, config.to_rest_gateway
-          end
+        supervise_as(:config_manager, MB::ConfigManager, config)
+        supervise_as(:ridley, Ridley::Client, config.to_ridley)
+        supervise_as(:job_manager, MB::JobManager)
+        supervise_as(:lock_manager, MB::LockManager)
+        supervise_as(:plugin_manager, MB::PluginManager)
+        supervise_as(:command_invoker, MB::CommandInvoker)
+        supervise_as(:node_querier, MB::NodeQuerier)
+        supervise_as(:environment_manager, MB::EnvironmentManager)
+        supervise_as(:bootstrap_manager, MB::Bootstrap::Manager)
+        supervise_as(:provisioner_manager, MB::Provisioner::Manager)
+        supervise_as(:upgrade_manager, MB::Upgrade::Manager)
+
+        if config.rest_gateway.enable
+          supervise_as(:rest_gateway, MB::RestGateway, config.to_rest_gateway)
         end
 
         @interrupt_mutex = Mutex.new

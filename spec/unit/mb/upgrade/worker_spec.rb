@@ -43,18 +43,6 @@ describe MB::Upgrade::Worker do
       run
     end
 
-    context "when successful" do
-      it { should be_true }
-    end
-
-    context "when fail" do
-      before do
-        MB::ChefMutex.any_instance.should_receive(:synchronize).and_raise(RuntimeError)
-      end
-
-      it { should be_false }
-    end
-
     it "marks the job as 'running' and then 'success' if successful" do
       job.should_receive(:report_running).ordered
       job.should_receive(:report_success).ordered
@@ -69,19 +57,6 @@ describe MB::Upgrade::Worker do
 
       it "should set the job state to :failure" do
         job.should_receive(:report_failure)
-        run
-      end
-    end
-
-    context "when no component_versions or cookbook_versions are passed" do
-      before do
-        options[:cookbook_versions] = nil
-        options[:component_versions] = nil
-      end
-
-      it "does not save the environment, nor run chef" do
-        worker.should_not_receive :run_chef
-
         run
       end
     end

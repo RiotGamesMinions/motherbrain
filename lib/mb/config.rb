@@ -9,6 +9,17 @@ module MotherBrain
         FileSystem.root.join("config.json").to_s
       end
 
+      # @see Chozo::Config::JSON.from_json
+      #
+      # @raise [MB::ConfigNotFound]
+      def from_file(*args)
+        super
+      rescue Chozo::Errors::ConfigNotFound => ex
+        raise MB::ConfigNotFound, ex
+      rescue Chozo::Errors::InvalidConfig => ex
+        raise MB::InvalidConfig.new(syntax_error: [ex.message])
+      end
+
       # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
       #
       # @return [Celluloid::Actor(ConfigManager)]
@@ -178,6 +189,9 @@ module MotherBrain
       type: String
 
     attribute 'ef.api_key',
+      type: String
+
+    attribute 'bootstrap.default_template',
       type: String
 
     # Validate the instantiated config

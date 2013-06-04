@@ -25,23 +25,13 @@ module MotherBrain
       #
       # @return [MotherBrain::Plugin]
       def from_path(path)
-        plugin_filename   = File.join(path, PLUGIN_FILENAME)
-        ruby_metadata_filename = File.join(path, RUBY_METADATA_FILENAME)
-        json_metadata_filename = File.join(path, JSON_METADATA_FILENAME)
-
-        metadata_filename = File.exists?(json_metadata_filename) ? json_metadata_filename : ruby_metadata_filename
-
-        begin
-          metadata = CookbookMetadata.from_file(metadata_filename)
-        rescue Errno::ENOENT => ex
-          raise PluginLoadError, "Expected metadata file at: #{metadata_filename}"
+        unless Dir.has_mb_plugin?(path)
+          raise PluginLoadError, "Expected a motherbrain and metadata file at: #{path}"
         end
 
-        begin
-          plugin_contents = File.read(plugin_filename)
-        rescue Errno::ENOENT => ex
-          raise PluginLoadError, "Expected motherbrain plugin file at: #{plugin_filename}"
-        end
+        plugin_filename = File.join(path, PLUGIN_FILENAME)
+        plugin_contents = File.read(plugin_filename)
+        metadata        = CookbookMetadata.from_path(path)
 
         load(metadata) { eval(plugin_contents, binding, plugin_filename, 1) }
       rescue PluginSyntaxError => ex
@@ -55,8 +45,6 @@ module MotherBrain
 
     NODE_GROUP_ID_REGX = /^(.+)::(.+)$/.freeze
     PLUGIN_FILENAME    = 'motherbrain.rb'.freeze
-    RUBY_METADATA_FILENAME  = 'metadata.rb'.freeze
-    JSON_METADATA_FILENAME  = 'metadata.json'.freeze
 
     extend Forwardable
     include Comparable
@@ -65,8 +53,11 @@ module MotherBrain
     attribute :bootstrap_routine,
       type: MB::Bootstrap::Routine
 
+    # @return [MB::CookbookMetadata]
     attr_reader :metadata
+    # @return [Set<MB::Component>]
     attr_reader :components
+    # @return [Set<MB::Command>]
     attr_reader :commands
 
     def_delegator :metadata, :name

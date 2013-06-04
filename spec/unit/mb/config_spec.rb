@@ -172,6 +172,12 @@ describe MB::Config do
 
       subject.should be_valid
     end
+
+    it "is valid if boostrap_default_template is a name" do
+      subject.bootstrap.default_template = "internal"
+
+      expect(subject).to be_valid
+    end
   end
 
   let(:json) do
@@ -212,7 +218,7 @@ describe MB::Config do
         it "raises a MB::ConfigNotFound error" do
           lambda {
             subject.from_file(tmp_path.join("asdf.txt"))
-          }.should raise_error(Chozo::Errors::ConfigNotFound)
+          }.should raise_error(MB::ConfigNotFound)
         end
       end
     end

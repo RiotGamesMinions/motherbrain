@@ -1,3 +1,51 @@
+# 0.7.0
+
+* Speed up bootstrap times
+* Fix issue where multiple unnecessary chef runs would occur on the same node during an async bootstrap
+* Fix issue where run lists would be overwritten if an async bootstrap occured on the same node from a different group
+* Application should now shutdown and clean up after itself properly
+* Add error handling if a validation key is missing during a bootstrap
+* Fix daemonization of 'mbsrv'
+* ChefMutex will no longer crash when re-raising an error to the caller
+* Multiple thread leak fixes
+* Small improvements to load times
+* Improve messaging around the difference between 'installed', 'remote', and a 'local' plugin
+
+# 0.6.1
+
+* Add the 'mb console' command to bring up an interactive developer console
+* Attributes will uniformly be set at default precedence (previously a mix of override and default)
+* The CLI will exit with an error if the local plugin it is attempting to load has a syntax error
+* Fix issue where attributes would be set multiple times when running async service commands
+* Allow symbols and strings in various places in the DSL
+* Fix deadlock on application start when using JRuby
+* Fix JSON warnings in JRuby
+
+# 0.6.0
+
+* Windows Command and Control
+* Environment subcommand: 'mb environment'
+  * environment list: 'mb environment list'
+  * environment lock: 'mb environment lock'
+  * environment unlock: 'mb environment unlock'
+  * 'mb configure_environment' renamed to 'mb environment configure'
+* Plugin subcommand
+  * 'mb plugins' renamed to 'mb plugin list'
+  * plugin install: 'mb plugin install'
+  * plugin uninstall: 'mb plugin uninstall'
+  * plugin show: 'mb plugin show'
+* Lots of new documentation:
+  * Manifests
+  * Command Line Interface
+  * Operator's Guide
+* AWS Provisioner
+* The plugin in the current working directory will now be preferred, regardless of the version of the local plugin, unless a specific version of the plugin is specified via plugin-version
+* Job status display no longer misses changes that happen inbetween refreshes
+* Fixed various version constraint and solution issues
+* Fixed a number of crashes
+* Asynchronous commands should not stomp on each other
+* Chef runs should be batched together properly when running asynchronous commands
+
 # 0.5.3
 
 * Only one Chef run will execute during an async command instead of one per action on each node

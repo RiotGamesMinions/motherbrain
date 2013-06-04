@@ -65,6 +65,8 @@ module MotherBrain
       @on_procs.each do |on_proc|
         on_proc.call
       end
+
+      @on_procs.clear
     end
 
     # Are we inside an async block?
@@ -113,7 +115,7 @@ module MotherBrain
       actions = clean_room.send(:actions)
 
       nodes = group_names.map do |name|
-        scope.group!(name)
+        scope.group!(name.to_s)
       end.flat_map do |group|
         group.nodes(environment)
       end.uniq
@@ -152,7 +154,7 @@ module MotherBrain
     # @return [InvokableComponent] proxy for the actual component,
     #    only useful if you call #invoke on it
     def component(component_name)
-      InvokableComponent.new(environment, scope.component(component_name))
+      InvokableComponent.new(job, environment, scope.component(component_name))
     end
 
     def command(command_name)
@@ -203,13 +205,16 @@ module MotherBrain
     # @author Michael Ivey <michael.ivey@riotgames.com>
     # @api private
     class InvokableComponent
+      attr_reader :job
       attr_reader :environment
       attr_reader :component
 
+      # @param [Job] job
       # @param [String] environment the environment on which to
       #   eventually invoke a command
       # @param [Component] component the component we'll be invoking
-      def initialize(environment, component)
+      def initialize(job, environment, component)
+        @job = job
         @environment = environment
         @component   = component
       end
@@ -217,7 +222,7 @@ module MotherBrain
       # @param [String] command the command to invoke in the component
       # @param [Array] args additional arguments for the command
       def invoke(command, *args)
-        component.invoke(environment, command, args)
+        component.invoke(job, environment, command, args)
       end
     end
   end

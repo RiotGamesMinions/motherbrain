@@ -4,6 +4,8 @@ module MotherBrain
   # @author Jamie Winsor <reset@riotgames.com>
   class SrvCtl
     class << self
+      include MB::Mixin::CodedExit
+
       def default_options
         {
           config: MB::Config.default_path
@@ -47,7 +49,7 @@ module MotherBrain
           end
 
           opts.on_tail("-h", "--help", "show this message") do
-            puts opts
+            ui.say opts
             exit
           end
         end.parse!(args)
@@ -64,12 +66,13 @@ module MotherBrain
         ctl = new(options)
 
         options[:kill] ? ctl.stop : ctl.start
-      rescue MB::MBError => e
-        puts e
-        exit e.exit_code
-      rescue Chozo::Errors::ConfigNotFound => e
-        puts e
-        exit 1
+      rescue MB::MBError => ex
+        ui.error ex
+        exit_with(ex)
+      end
+
+      def ui
+        @ui ||= MB::Cli.shell.new
       end
     end
 
@@ -106,7 +109,7 @@ module MotherBrain
     def start
       if config.server.daemonize
         if pid
-          puts "mbsrv already started"
+          ui.say "mbsrv already started"
           exit 1
         end
 
@@ -118,21 +121,21 @@ module MotherBrain
 
     def stop
       unless pid
-        puts "mbsrv not started"
+        ui.say "mbsrv not started"
         exit 0
       end
 
       Process.kill('TERM', pid)
-      remove_pid
+      destroy_pid
     rescue Errno::ESRCH
-      remove_pid
+      destroy_pid
     end
 
     private
 
       def daemonize
         unless File.writable?(File.dirname(config.server.pid))
-          puts "startup failed: couldn't write pid to #{config.server.pid}"
+          ui.say "startup failed: couldn't write pid to #{config.server.pid}"
           exit 1
         end
 
@@ -157,6 +160,10 @@ module MotherBrain
 
       def pid_file?
         File.exists?(config.server.pid)
+      end
+
+      def ui
+        self.class.ui
       end
   end
 end

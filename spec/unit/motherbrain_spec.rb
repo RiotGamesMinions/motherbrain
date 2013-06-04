@@ -3,12 +3,6 @@ require 'spec_helper'
 describe MotherBrain do
   subject { MotherBrain }
 
-  describe "::ui" do
-    it "returns an instance of Thor::Shell::Color" do
-      subject.ui.should be_a(Thor::Shell::Color)
-    end
-  end
-
   describe "::app_root" do
     it "returns a pathname" do
       subject.app_root.should be_a(Pathname)

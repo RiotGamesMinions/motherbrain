@@ -47,10 +47,10 @@ module MotherBrain
                   end
                 end
 
-                MB.ui.say "\n"
-                MB.ui.say "** listing nodes in #{environment}:"
-                MB.ui.say "\n"
-                MB.ui.say nodes.to_yaml
+                ui.say "\n"
+                ui.say "** listing nodes in #{environment}:"
+                ui.say "\n"
+                ui.say nodes.to_yaml
               end
 
               if plugin.bootstrap_routine.present?
@@ -59,7 +59,7 @@ module MotherBrain
                   desc: "The version of Chef to bootstrap the node(s) with"
                 method_option :component_versions,
                   type: :hash,
-                  desc: "The component versions to set with override attributes",
+                  desc: "The component versions to set with default attributes",
                   aliases: "--components"
                 method_option :cookbook_versions,
                   type: :hash,
@@ -101,7 +101,7 @@ module MotherBrain
                   desc: "The version of Chef to bootstrap the node(s) with"
                 method_option :component_versions,
                   type: :hash,
-                  desc: "The component versions to set with override attributes",
+                  desc: "The component versions to set with default attributes",
                   aliases: "--components"
                 method_option :cookbook_versions,
                   type: :hash,
@@ -143,7 +143,7 @@ module MotherBrain
 
                 method_option :component_versions,
                   type: :hash,
-                  desc: "The component versions to set with override attributes",
+                  desc: "The component versions to set with default attributes",
                   aliases: "--components"
                 method_option :cookbook_versions,
                   type: :hash,
@@ -165,6 +165,13 @@ module MotherBrain
                 desc("upgrade", "Upgrade an environment to the specified versions")
                 define_method(:upgrade) do
                   upgrade_options = Hash.new.merge(options).deep_symbolize_keys
+
+                  requires_one_of [
+                    :component_versions,
+                    :cookbook_versions,
+                    :environment_attributes,
+                    :environment_attributes_file
+                  ]
 
                   job = upgrade_manager.async_upgrade(
                     environment.freeze,

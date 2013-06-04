@@ -1,67 +1,31 @@
 require 'spec_helper'
 
-if jruby?
-  describe MB::Gear::Jmx do
+describe MB::Gear::JMX do
+  subject { described_class }
 
-    describe "Class" do
-      subject { MB::Gear::Jmx }
-
-      it "is registered with MB::Gear" do
-        MB::Gear.all.should include(subject)
-      end
-
-      it "has the inferred keyword ':jmx' from it's Class name" do
-        subject.keyword.should eql(:jmx)
-      end
-    end
-
-    describe "#action" do
-      subject { MB::Gear::Jmx.new(@context) }
-
-      it "returns a Gear::Jmx::Action" do
-        subject.action(9001, "com.some.thing:name=thing") do |mbean|
-        end.should be_a(MB::Gear::Jmx::Action)
-      end
-    end
+  it "is registered with MB::Gear" do
+    MB::Gear.all.should include(subject)
   end
 
-  describe MB::Gear::Jmx::Action do
-    subject { MB::Gear::Jmx::Action }
+  it "has the inferred keyword ':jmx' from it's Class name" do
+    subject.keyword.should eql(:jmx)
+  end
 
-    describe "::new" do
-      let(:port) { 9001 }
-      let(:object_name) { "com.some.thing:name=thing" }
+  describe "#action" do
+    subject { MB::Gear::JMX.new }
+    before { described_class.any_instance.stub(jruby?: true) }
 
-      it "should set its attributes" do
-        obj = subject.new(@context, port, object_name) do |mbean|
-          mbean.do_a_thing
-        end
+    it "returns a Gear::JMX::Action" do
+      expect(subject.action(9001, "com.some.thing:name=thing") { |bean| }).to be_a(MB::Gear::JMX::Action)
+    end
 
-        obj.port.should == port
-        obj.object_name.should == object_name
-        obj.block.should be_a(Proc)
-      end
+    context "when not running under JRuby" do
+      before { described_class.any_instance.stub(jruby?: false) }
 
-      it "should be given a block" do
-        lambda do
-          obj = subject.new(@context, port, object_name)
-        end.should raise_error(MB::ArgumentError)
-      end
-
-      it "should be given a block with 1 argument" do
-        lambda do
-          obj = subject.new(@context, port, object_name) do
-          end
-        end.should raise_error(MB::ArgumentError)
-      end
-
-      it "should complain if not on jruby" do
-        subject.any_instance.stub(:jruby?).and_return(false)
-
-        lambda do
-          obj = subject.new(@context, port, object_name) do |mbean|
-          end
-        end.should raise_error(MB::ActionNotSupported)
+      it "raises an ActionNotSupported error" do
+        expect {
+          subject.action(9001, "com.some.thing:name=thing")
+        }.to raise_error(MB::ActionNotSupported)
       end
     end
   end

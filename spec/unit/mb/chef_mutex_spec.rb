@@ -1,6 +1,55 @@
 require 'spec_helper'
 
 describe MB::ChefMutex do
+  describe "ClassMethods" do
+    subject { described_class }
+
+    describe "::new" do
+      before { MB::LockManager.instance.reset }
+
+      it "adds the new lock to the lock manager" do
+        mutex = subject.new
+        expect(MB::LockManager.instance.locks).to have(1).item
+        expect(MB::LockManager.instance.locks.first).to eq(mutex)
+      end
+    end
+
+    describe "::synchronize" do
+      before { MB::LockManager.instance.reset }
+      let(:probe) { double('test-probe', test: nil) }
+
+      it "executes the given block" do
+        probe.should_receive(:test)
+
+        subject.synchronize(options) do
+          probe.test
+        end
+      end
+
+      it "removes the lock from the lock manager" do
+        subject.synchronize(options) do
+          probe.test
+        end
+
+        expect(MB::LockManager.instance.locks).to have(0).items
+      end
+
+      context "when the block encounters an error" do
+        before { probe.should_receive(:test).and_raise(RuntimeError) }
+
+        it "removes the lock from the lock manager" do
+          expect {
+            subject.synchronize(options) do
+              probe.test
+            end
+          }.to raise_error(RuntimeError)
+
+          expect(MB::LockManager.instance.locks).to have(0).items
+        end
+      end
+    end
+  end
+
   subject { chef_mutex }
 
   let(:chef_mutex) { klass.new(options.merge lockset) }
@@ -153,6 +202,12 @@ describe MB::ChefMutex do
         expect { synchronize }.to raise_error(RuntimeError)
       end
 
+      it "does not crash the mutex actor" do
+        expect { chef_mutex.synchronize(&test_block) }.to raise_error(RuntimeError)
+
+        expect { chef_mutex.to_s }.to_not raise_error(Celluloid::DeadActorError)
+      end
+
       context "and passed unlock_on_failure: false" do
         before do
           chef_mutex.stub(unlock_on_failure: false)
@@ -180,9 +235,7 @@ describe MB::ChefMutex do
       let(:options) { { job: job_stub } }
 
       it "sets the job status" do
-        job_stub.should_receive(:status=).with(
-          "Unlocking chef_environment:my_environment"
-        )
+        job_stub.should_receive(:set_status).with("Unlocking chef_environment:my_environment")
 
         unlock
       end
@@ -226,6 +279,17 @@ describe MB::ChefMutex do
         end
         it { should be_false }
       end
+    end
+  end
+
+  describe "#terminate" do
+    before { MB::LockManager.instance.reset }
+
+    it "removes the mutex from the lock manager" do
+      mutex = described_class.new(options)
+      expect(MB::LockManager.instance.locks).to have(1).item
+      mutex.terminate
+      expect(MB::LockManager.instance.locks).to have(0).items
     end
   end
 end

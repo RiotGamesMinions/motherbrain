@@ -13,13 +13,11 @@ module MotherBrain
         file = options[:config] || File.expand_path(MB::Config.default_path)
 
         begin
-          config = MB::Config.from_file file
-        rescue Chozo::Errors::InvalidConfig => ex
-          ui.error "Invalid configuration file #{file}"
-          ui.error ""
+          config = MB::Config.from_file(file)
+        rescue MB::InvalidConfig => ex
           ui.error ex.to_s
           exit_with(InvalidConfig)
-        rescue Chozo::Errors::ConfigNotFound => ex
+        rescue MB::ConfigNotFound => ex
           ui.error "#{ex.message}"
           ui.error "Create one with `mb configure`"
           exit_with(ConfigNotFound)
@@ -70,9 +68,9 @@ module MotherBrain
           end
 
           plugin
-        elsif plugin_manager.local_plugin?
-          ui.info "Loading #{name} plugin from: #{Dir.getwd}"
-          plugin_manager.load_local(Dir.getwd)
+        elsif local_plugin?
+          ui.info "Loading #{name} plugin from: #{Dir.pwd}"
+          plugin_manager.load_installed(Dir.pwd, allow_failure: false)
         elsif options[:environment]
           plugin = begin
             ui.info "Determining best version of the #{name} plugin to use with the #{options[:environment]}" +
@@ -105,15 +103,22 @@ module MotherBrain
         end
       end
 
+      # Determines if we're running inside of a cookbook with a plugin.
+      #
+      # @return [Boolean]
+      def local_plugin?
+        Dir.has_mb_plugin?(Dir.pwd)
+      end
+
       # @see {#Thor}
       def start(given_args = ARGV, config = {})
-        config[:shell] ||= MB::Cli::Base.shell.new
+        config[:shell] ||= MB::Cli::Shell.shell.new
         args, opts = parse_args(given_args)
         invoked_opts.merge!(opts)
 
         if requires_environment?(args)
           unless opts[:environment]
-            MB.ui.say "No value provided for required option '--environment'"
+            ui.say "No value provided for required option '--environment'"
             exit 1
           end
         end
@@ -132,8 +137,8 @@ module MotherBrain
             plugin = find_plugin(name, opts)
             register_plugin(plugin)
 
-            MB.ui.say "using #{plugin}"
-            MB.ui.say ""
+            ui.say "using #{plugin}"
+            ui.say ""
           end
         end
 
@@ -145,6 +150,9 @@ module MotherBrain
         ui.error "[ERROR] Unable to connect to the configured Chef server: #{ex.message}."
         ui.error "[ERROR] Check your configuration and network settings and try again."
         exit_with MB::ChefConnectionError.new
+      rescue Thor::Error => ex
+        ui.error ex.message
+        exit(1)
       rescue Errno::EPIPE
         # This happens if a thor command is piped to something like `head`,
         # which closes the pipe when it's done reading. This will also
@@ -239,7 +247,8 @@ module MotherBrain
 
     SKIP_ENVIRONMENT_TASKS = [
       "environment",
-      "plugin"
+      "plugin",
+      "template"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [
@@ -307,21 +316,33 @@ module MotherBrain
 
       config = MB::Config.new(path)
 
-      config.chef.api_url     = MB.ui.ask "Enter a Chef API URL:", default: config.chef.api_url
-      config.chef.api_client  = MB.ui.ask "Enter a Chef API Client:", default: config.chef.api_client
-      config.chef.api_key     = MB.ui.ask "Enter the path to the client's Chef API Key:", default: config.chef.api_key
-      config.ssh.user         = MB.ui.ask "Enter a SSH user:", default: config.ssh.user
-      config.ssh.password     = MB.ui.ask "Enter a SSH password:", default: config.ssh.password
+      config.chef.api_url     = ui.ask "Enter a Chef API URL:", default: config.chef.api_url
+      config.chef.api_client  = ui.ask "Enter a Chef API Client:", default: config.chef.api_client
+      config.chef.api_key     = ui.ask "Enter the path to the client's Chef API Key:", default: config.chef.api_key
+      config.ssh.user         = ui.ask "Enter a SSH user:", default: config.ssh.user
+      config.ssh.password     = ui.ask "Enter a SSH password:", default: config.ssh.password
       config.save
 
-      MB.ui.say "Config written to: '#{path}'"
+      ui.say "Config written to: '#{path}'"
+    end
+
+    desc "console", "Start an interactive motherbrain console"
+    def console
+      require 'mb/console'
+      MB::Console.start
     end
 
     desc "version", "Display version and license information"
     def version
-      MB.ui.say version_header
-      MB.ui.say "\n"
-      MB.ui.say license
+      ui.say version_header
+      ui.say "\n"
+      ui.say license
+    end
+
+    desc "template NAME PATH_OR_URL", "Download and install a bootstrap template"
+    def template(name, path_or_url)
+      MB::Bootstrap::Template.install(name, path_or_url)
+      ui.say "Installed template `#{name}`"
     end
 
     private
