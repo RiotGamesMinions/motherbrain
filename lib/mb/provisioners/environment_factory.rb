@@ -19,7 +19,8 @@ module MotherBrain
           ef_manifest = Array.new
 
           manifest.node_groups.each do |node_group|
-            count, type = node_group.slice(:count, :type).values
+            count = node_group[:count] || 1
+            type = node_group[:type]
 
             count.times do
               ef_manifest << { instance_size: type }
