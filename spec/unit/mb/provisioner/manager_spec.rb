@@ -151,11 +151,12 @@ describe MB::Provisioner::Manager do
         write_bootstrap_manifest
       }.to change { MB::FileSystem.manifests.opendir.count }.by 1
 
-      filename = MB::FileSystem.manifests.opendir.to_a.last
+      filename = MB::FileSystem.manifests.opendir.to_a.select { |filename|
+        filename.end_with?(".json")
+      }.last
 
       expect(filename).to include(plugin.name)
       expect(filename).to include(environment)
-      expect(filename).to be_end_with(".json")
 
       contents = File.read(MB::FileSystem.manifests.join(filename))
 
