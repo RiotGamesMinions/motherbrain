@@ -13,6 +13,12 @@ describe MB::FileSystem do
     end
   end
 
+  describe "::manifests" do
+    it "returns a pathname" do
+      subject.manifests.should be_a(Pathname)
+    end
+  end
+
   describe "::root" do
     it "returns a pathname" do
       subject.root.should be_a(Pathname)
