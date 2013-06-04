@@ -1,7 +1,14 @@
 require 'spec_helper'
 
 describe MB::Provisioner::Manager do
+  subject { provisioner_manager }
+
   let(:provisioner_manager) { described_class.new }
+
+  let(:job) { double(MB::Job, alive?: true) }
+  let(:environment) { "production" }
+  let(:manifest) { double(MB::Manifest, as_json: { 'a' => 1 }, provisioner: "None") }
+  let(:plugin) { double(MB::Plugin, name: "MyPlugin") }
 
   describe "ClassMethods" do
     subject { described_class }
@@ -73,10 +80,6 @@ describe MB::Provisioner::Manager do
       provisioner_manager.provision(job, environment, manifest, plugin, options)
     }
 
-    let(:job) { double(MB::Job, alive?: true) }
-    let(:environment) { "production" }
-    let(:manifest) { double(MB::Manifest, provisioner: "None") }
-    let(:plugin) { double(MB::Plugin) }
     let(:options) { Hash.new }
 
     it "provisions and bootstraps" do
@@ -131,6 +134,32 @@ describe MB::Provisioner::Manager do
 
         provision
       end
+    end
+  end
+
+  describe "#write_bootstrap_manifest" do
+    subject(:write_bootstrap_manifest) {
+      provisioner_manager.send(:write_bootstrap_manifest,
+        job, environment, manifest, plugin
+      )
+    }
+
+    it "writes the manifest" do
+      job.should_receive :set_status
+
+      expect {
+        write_bootstrap_manifest
+      }.to change { MB::FileSystem.manifests.opendir.count }.by 1
+
+      filename = MB::FileSystem.manifests.opendir.to_a.last
+
+      expect(filename).to include(plugin.name)
+      expect(filename).to include(environment)
+      expect(filename).to be_end_with(".json")
+
+      contents = File.read(MB::FileSystem.manifests.join(filename))
+
+      expect(JSON.parse(contents)).to eq(manifest.as_json)
     end
   end
 end
