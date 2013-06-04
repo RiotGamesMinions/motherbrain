@@ -1,6 +1,15 @@
 require 'spec_helper'
 
 describe MB::Provisioner::Manager do
+  subject { provisioner_manager }
+
+  let(:provisioner_manager) { described_class.new }
+
+  let(:job) { double(MB::Job, alive?: true) }
+  let(:environment) { "production" }
+  let(:manifest) { double(MB::Manifest, as_json: { 'a' => 1 }, provisioner: "None") }
+  let(:plugin) { double(MB::Plugin, name: "MyPlugin") }
+
   describe "ClassMethods" do
     subject { described_class }
 
@@ -63,6 +72,95 @@ describe MB::Provisioner::Manager do
 
     it "returns a JobRecord" do
       subject.async_provision(environment, manifest, plugin).should be_a(MB::JobRecord)
+    end
+  end
+
+  describe "#provision" do
+    subject(:provision) {
+      provisioner_manager.provision(job, environment, manifest, plugin, options)
+    }
+
+    let(:options) { Hash.new }
+
+    it "provisions and bootstraps" do
+      worker_stub = double(MB::Provisioner)
+
+      job.should_receive :report_running
+      described_class.should_receive(:new_provisioner).and_return(worker_stub)
+      MB::Provisioner::Manifest.should_receive :validate!
+
+      worker_stub.should_receive :up
+
+      bootstrap_manifest_stub = double(MB::Bootstrap::Manifest)
+
+      MB::Bootstrap::Manifest.
+        should_receive(:from_provisioner).
+        and_return(bootstrap_manifest_stub)
+
+      provisioner_manager.should_receive(:write_bootstrap_manifest)
+
+      bootstrapper_stub = double(MB::Bootstrap::Manager)
+
+      provisioner_manager.should_receive(:bootstrapper).and_return(bootstrapper_stub)
+
+      bootstrapper_stub.should_receive :bootstrap
+
+      job.should_receive :terminate
+
+      job.should_not_receive :report_success
+
+      provision
+    end
+
+    context "with skip_bootstrap: true" do
+      let(:options) {
+        { skip_bootstrap: true }
+      }
+
+      it "provisions but doesn't bootstrap" do
+        worker_stub = double(MB::Provisioner)
+
+        job.should_receive :report_running
+        described_class.should_receive(:new_provisioner).and_return(worker_stub)
+        MB::Provisioner::Manifest.should_receive :validate!
+
+        worker_stub.should_receive :up
+
+        job.should_receive :report_success
+
+        provisioner_manager.should_not_receive :bootstrapper
+
+        job.should_receive :terminate
+
+        provision
+      end
+    end
+  end
+
+  describe "#write_bootstrap_manifest" do
+    subject(:write_bootstrap_manifest) {
+      provisioner_manager.send(:write_bootstrap_manifest,
+        job, environment, manifest, plugin
+      )
+    }
+
+    it "writes the manifest" do
+      job.should_receive :set_status
+
+      expect {
+        write_bootstrap_manifest
+      }.to change { MB::FileSystem.manifests.opendir.count }.by 1
+
+      filename = MB::FileSystem.manifests.opendir.to_a.select { |filename|
+        filename.end_with?(".json")
+      }.last
+
+      expect(filename).to include(plugin.name)
+      expect(filename).to include(environment)
+
+      contents = File.read(MB::FileSystem.manifests.join(filename))
+
+      expect(JSON.parse(contents)).to eq(manifest.as_json)
     end
   end
 end
