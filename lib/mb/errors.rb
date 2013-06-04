@@ -566,7 +566,6 @@ module MotherBrain
   end
 
   class PrerequisiteNotInstalled < MBError
-    exit_code(1234)
-    error_code(1234)
+    error_code(9005)
   end
 end
