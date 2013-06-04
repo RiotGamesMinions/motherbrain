@@ -1,6 +1,3 @@
-require 'ef/rest'
-EF::REST.set_logger(MB.logger)
-
 module MotherBrain
   module Provisioner
     # @author Jamie Winsor <reset@riotgames.com>
@@ -72,6 +69,9 @@ module MotherBrain
       # @option options [#to_s] :api_key
       # @option options [Hash] :ssl
       def initialize(options = {})
+        MB.require_or_exit 'ef/rest'
+        EF::REST.set_logger(MB.logger)
+
         options = options.reverse_merge(
           api_url: Application.config[:ef][:api_url],
           api_key: Application.config[:ef][:api_key],
