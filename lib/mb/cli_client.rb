@@ -9,11 +9,10 @@ module MotherBrain
   #   CliClient.new(job).display
   #
   class CliClient
-    COLUMNS = `tput cols`.to_i
     SPACE = " "
     TICK = 0.1
 
-    attr_accessor :current_status
+    attr_accessor :current_status, :last_spun
     attr_reader :job
 
     # @param [MotherBrain::Job] job
@@ -43,7 +42,7 @@ module MotherBrain
       end
 
       def clear_line
-        printf "\r#{SPACE * COLUMNS}"
+        printf "\r#{SPACE * terminal_width}"
       end
 
       # @return [Boolean]
@@ -105,7 +104,10 @@ module MotherBrain
         last_status = status_buffer.pop
 
         if last_status
-          print_with_new_line current_status if current_status
+          if current_status && last_spun != current_status
+            print_with_new_line current_status
+          end
+
           self.current_status = last_status
         end
 
@@ -119,9 +121,15 @@ module MotherBrain
       def print_with_spinner(text)
         return unless text
 
-        clear_line
+        string = "\r#{spinner.next} [#{job_type}] #{text}"
 
-        printf "\r%s [#{job_type}] #{text}", spinner.next
+        if string.length < terminal_width
+          clear_line
+          printf string
+        else
+          print_with_new_line(text) unless text == last_spun
+          self.last_spun = text
+        end
       end
 
       def print_with_new_line(text)
@@ -147,6 +155,10 @@ module MotherBrain
 
       def status_buffer
         job.status_buffer
+      end
+
+      def terminal_width
+        @terminal_width ||= `tput cols`.to_i
       end
 
       def wait_for_jobs
