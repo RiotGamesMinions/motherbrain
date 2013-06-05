@@ -255,7 +255,7 @@ module MotherBrain
       options = options.reverse_merge(skip_chef: false)
       futures = Array.new
 
-      job.report_running("Disocvering host's registered node name")
+      job.report_running("Discovering host's registered node name")
       if node_name = registered_as(host)
         job.set_status("Host registered as #{node_name}. Destroying client and node objects.")
         futures << chef_connection.client.future(:delete, node_name)

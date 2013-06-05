@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::Provisioner::AWS, :focus do
+describe MB::Provisioner::AWS do
   subject { aws }
   let(:aws) { described_class.new }
 
