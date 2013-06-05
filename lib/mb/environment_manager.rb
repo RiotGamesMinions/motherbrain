@@ -68,14 +68,14 @@ module MotherBrain
       job.report_running("Finding environment #{environment.name}")
 
       chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
-        job.set_status("saving updated environment")
+        job.set_status("Saving updated environment")
         environment.default_attributes.deep_merge!(options[:attributes])
         environment.save
 
-        job.set_status("searching for nodes in the environment")
+        job.set_status("Searching for nodes in the environment")
         nodes = ridley.search(:node, "chef_environment:#{environment.name}")
 
-        job.set_status("performing a chef client run on #{nodes.length} nodes")
+        job.set_status("Performing a chef client run on #{nodes.length} nodes")
         nodes.collect do |node|
           node_querier.future(:chef_run, node.public_hostname)
         end.each do |future|
