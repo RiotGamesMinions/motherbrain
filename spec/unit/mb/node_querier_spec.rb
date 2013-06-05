@@ -195,4 +195,57 @@ describe MB::NodeQuerier do
       end
     end
   end
+
+  describe "#async_purge" do
+    let(:host) { "192.168.1.1" }
+    let(:options) { Hash.new }
+
+    it "creates a Job and delegates to #purge" do
+      ticket = double('ticket')
+      job    = double('job', ticket: ticket)
+      MB::Job.should_receive(:new).and_return(job)
+      subject.should_receive(:purge).with(job, host, options)
+
+      subject.async_purge(host, options)
+    end
+
+    it "returns a JobTicket" do
+      expect(subject.async_purge(host, options)).to be_a(MB::JobRecord)
+    end
+  end
+
+  describe "#purge" do
+    let(:host) { "192.168.1.1" }
+    let(:job) { MB::Job.new(:purge) }
+
+    before { subject.stub(:registered_as).with(host).and_return(nil) }
+
+    it "terminates the job" do
+      subject.purge(job, host)
+      expect(job).to_not be_alive
+    end
+
+    context "when the node is not registered" do
+      it "uninstalls chef" do
+        future = double('future', value: nil)
+        subject.chef_connection.stub_chain(:node, :future).with(:uninstall_chef, host, skip_chef: false).
+          and_return(future)
+        subject.purge(job, host)
+      end
+    end
+
+    context "when the node is registered" do
+      let(:node_name) { "reset.riotgames.com" }
+      before { subject.should_receive(:registered_as).with(host).and_return(node_name) }
+
+      it "deletes the client and node object and uninstalls chef" do
+        future = double('future', value: nil)
+        subject.chef_connection.stub_chain(:client, :future).with(:delete, node_name).and_return(future)
+        subject.chef_connection.stub_chain(:node, :future).with(:delete, node_name).and_return(future)
+        subject.chef_connection.stub_chain(:node, :future).with(:uninstall_chef, host, skip_chef: false).
+          and_return(future)
+        subject.purge(job, host)
+      end
+    end
+  end
 end
