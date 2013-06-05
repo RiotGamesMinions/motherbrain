@@ -1,6 +1,5 @@
 module MotherBrain
   module Cli
-    # @author Jamie Winsor <reset@riotgames.com>
     class Base < Thor
       include Thor::Actions
       include MB::Mixin::CodedExit

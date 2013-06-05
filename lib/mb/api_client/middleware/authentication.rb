@@ -1,5 +1,4 @@
 module MotherBrain::ApiClient::Middleware
-  # @author Jamie Winsor <reset@riotgames.com>
   class Authentication < Faraday::Middleware
     include MB::Logging
 

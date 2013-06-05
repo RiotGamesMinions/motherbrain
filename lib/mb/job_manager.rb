@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class JobManager
     class << self
       # @raise [Celluloid::DeadActorError] if job manager has not been started

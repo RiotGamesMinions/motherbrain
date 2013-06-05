@@ -1,6 +1,5 @@
 module MotherBrain
   module Gear
-    # @author Jesse Howarth <jhowarth@riotgames.com>
     class MySQL < Gear::Base
       register_gear :mysql
 

@@ -1,4 +1,3 @@
-# @author Jamie Winsor <reset@riotgames.com>
 class File
   class << self
     # Determine if the given filepath points to a Chef metadata file

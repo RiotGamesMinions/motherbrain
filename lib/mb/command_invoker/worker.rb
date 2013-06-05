@@ -1,6 +1,5 @@
 module MotherBrain
   class CommandInvoker
-    # @author Jamie Winsor <reset@riotgames.com>
     class Worker
       include Celluloid
 

@@ -1,5 +1,4 @@
 module Ridley
-  # @author Jamie Winsor <reset@riotgames.com>
   class CookbookObject < Ridley::ChefObject
     # Check if the cookbook has the required files to be a motherbrain plugin
     #

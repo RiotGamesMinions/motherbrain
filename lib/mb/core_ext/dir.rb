@@ -1,4 +1,3 @@
-# @author Jamie Winsor <reset@riotgames.com>
 class Dir
   class << self
     # Check if the given directory contains a cookbook with a motherbrain plugin

@@ -1,7 +1,6 @@
 require 'logger'
 
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   module Logging
     autoload :BasicFormat, 'mb/logging/basic_format'
     include Logger::Severity

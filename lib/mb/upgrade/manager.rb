@@ -1,7 +1,5 @@
 module MotherBrain
   module Upgrade
-    # @author Justin Campbell <justin.campbell@riotgames.com>
-    #
     # Handles upgrading nodes in already environments.
     class Manager
       class << self

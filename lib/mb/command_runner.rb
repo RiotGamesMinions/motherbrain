@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class CommandRunner
     include MB::Mixin::Services
 
@@ -165,7 +164,6 @@ module MotherBrain
 
       attr_reader :job
 
-    # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class CleanRoom < CleanRoomBase
       def initialize(*args)
@@ -202,7 +200,6 @@ module MotherBrain
 
     # Proxy for invoking components in the DSL
     #
-    # @author Michael Ivey <michael.ivey@riotgames.com>
     # @api private
     class InvokableComponent
       attr_reader :job

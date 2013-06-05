@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   module Provisioner
     autoload :Manager, 'mb/provisioner/manager'
     autoload :Manifest, 'mb/provisioner/manifest'
@@ -100,7 +99,6 @@ module MotherBrain
       end
     end
 
-    # @author Jamie Winsor <reset@riotgames.com>
     class Base
       class << self
         # The identifier for the Provisioner

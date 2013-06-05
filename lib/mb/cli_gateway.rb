@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class CliGateway < Cli::Base
     class << self
       def invoked_opts

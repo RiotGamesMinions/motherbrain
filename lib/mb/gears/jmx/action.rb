@@ -5,7 +5,6 @@ rescue LoadError; end
 module MotherBrain
   module Gear
     class JMX
-      # @author Jesse Howarth <jhowarth@riotgames.com>
       # @api private
       class Action
         attr_reader :port

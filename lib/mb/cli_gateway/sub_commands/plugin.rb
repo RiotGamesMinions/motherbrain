@@ -1,7 +1,6 @@
 module MotherBrain
   class CliGateway
     module SubCommand
-      # @author Jamie Winsor <reset@riotgames.com>
       class Plugin < Cli::Base
         namespace :plugin
 

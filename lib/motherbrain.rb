@@ -19,7 +19,6 @@ require 'mb/core_ext'
 require 'mb/ridley_ext'
 require 'mb/thor_ext'
 
-# @author Jamie Winsor <reset@riotgames.com>
 module MotherBrain
   autoload :Api, 'mb/api'
   autoload :ApiClient, 'mb/api_client'

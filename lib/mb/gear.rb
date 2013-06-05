@@ -1,6 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
-  #
   # The base module for defining new Gears for a plugin. Any class including this module
   # and registered with {MotherBrain} as a {Gear} will be available for use in the plugin DSL.
   #
@@ -24,7 +22,6 @@ module MotherBrain
   #
   module Gear
     class Base
-      # @author Jamie Winsor <reset@riotgames.com>
       class << self
         # The identifier for the Gear. The keyword is automatically populated based on the name
         # of the Class including {MotherBrain::Gear}. The keyword must be unique among the other

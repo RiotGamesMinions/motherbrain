@@ -1,4 +1,3 @@
-# @author Justin Campbell <justin.campbell@riotgames.com>
 module Enumerable
   # Map across all members using Celluloid futures, and wait for the results.
   #

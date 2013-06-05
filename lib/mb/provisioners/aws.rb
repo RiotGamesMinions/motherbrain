@@ -3,8 +3,6 @@ require 'fog'
 
 module MotherBrain
   module Provisioner
-    # @author Michael Ivey <michael.ivey@riotgames.com>
-    #
     # Provisioner adapter for AWS/Eucalyptus
     class AWS < Provisioner::Base
       register_provisioner :aws

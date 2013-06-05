@@ -1,4 +1,3 @@
-# @author Jamie Winsor <reset@riotgames.com>
 module Signal
   class << self
     # Check if a given signal is supported on the current platform

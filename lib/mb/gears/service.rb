@@ -1,6 +1,5 @@
 module MotherBrain
   module Gear
-    # @author Jamie Winsor <reset@riotgames.com>
     class Service < Gear::Base
       register_gear :service
 
@@ -80,7 +79,6 @@ module MotherBrain
           actions.find { |action| action.name == name }
         end
 
-        # @author Jamie Winsor <reset@riotgames.com>
         # @api private
         class CleanRoom < CleanRoomBase
           # @param [String] name
