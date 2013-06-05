@@ -217,8 +217,15 @@ describe MB::NodeQuerier do
   describe "#purge" do
     let(:host) { "192.168.1.1" }
     let(:job) { MB::Job.new(:purge) }
+    let(:future_stub) { double(Celluloid::Future, value: nil) }
 
-    before { subject.stub(:registered_as).with(host).and_return(nil) }
+    before do
+      subject.stub(:registered_as).with(host).and_return(nil)
+      subject.chef_connection.
+        stub_chain(:node, :future).
+        with(:uninstall_chef, host, skip_chef: false).
+        and_return(future_stub)
+    end
 
     it "terminates the job" do
       subject.purge(job, host)
@@ -227,9 +234,6 @@ describe MB::NodeQuerier do
 
     context "when the node is not registered" do
       it "uninstalls chef" do
-        future = double('future', value: nil)
-        subject.chef_connection.stub_chain(:node, :future).with(:uninstall_chef, host, skip_chef: false).
-          and_return(future)
         subject.purge(job, host)
       end
     end
@@ -239,11 +243,8 @@ describe MB::NodeQuerier do
       before { subject.should_receive(:registered_as).with(host).and_return(node_name) }
 
       it "deletes the client and node object and uninstalls chef" do
-        future = double('future', value: nil)
-        subject.chef_connection.stub_chain(:client, :future).with(:delete, node_name).and_return(future)
-        subject.chef_connection.stub_chain(:node, :future).with(:delete, node_name).and_return(future)
-        subject.chef_connection.stub_chain(:node, :future).with(:uninstall_chef, host, skip_chef: false).
-          and_return(future)
+        subject.chef_connection.stub_chain(:client, :future).with(:delete, node_name).and_return(future_stub)
+        subject.chef_connection.stub_chain(:node, :future).with(:delete, node_name).and_return(future_stub)
         subject.purge(job, host)
       end
     end
