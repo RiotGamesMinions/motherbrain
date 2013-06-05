@@ -1,8 +1,11 @@
 require 'spec_helper'
 
 describe MB::Provisioner::EnvironmentFactory do
-  let(:manifest) do
-    MB::Provisioner::Manifest.new.from_json({
+  let(:manifest) {
+    MB::Provisioner::Manifest.new.from_json(manifest_hash.to_json)
+  }
+  let(:manifest_hash) {
+    {
       nodes: [
         {
           type: "m1.large",
@@ -20,8 +23,8 @@ describe MB::Provisioner::EnvironmentFactory do
           components: ["nginx::server"]
         }
       ]
-    }.to_json)
-  end
+    }
+  }
 
   describe "ClassMethods" do
     subject { described_class }
@@ -34,6 +37,21 @@ describe MB::Provisioner::EnvironmentFactory do
 
       it "contains an element for the amount of each node group and instance type" do
         subject.convert_manifest(manifest).should have(8).items
+      end
+
+      describe "with different ordering" do
+        let(:manifest_hash) {
+          {
+            nodes: [
+              { groups: "default", type: "none" },
+              { type: "none", groups: "default", count: 2 }
+            ]
+          }
+        }
+
+        it "it still works" do
+          subject.convert_manifest(manifest).should be_a(Array)
+        end
       end
     end
   end

@@ -90,7 +90,7 @@ module MotherBrain
 
         validate_bootstrap_configuration!(manifest, plugin)
 
-        job.set_status("searching for environment")
+        job.set_status("Searching for environment")
         unless chef_connection.environment.find(environment)
           return job.report_failure("Environment '#{environment}' not found")
         end
@@ -130,7 +130,7 @@ module MotherBrain
               next
             end
 
-            job.set_status("bootstrapping group(s): #{group_names}")
+            job.set_status("Bootstrapping group(s): #{group_names}")
 
             concurrent_bootstrap(job, manifest, instructions, options).each do |host, host_info|
               if host_info[:result][:status] == :error
@@ -142,7 +142,7 @@ module MotherBrain
               abort GroupBootstrapError.new(host_errors)
             end
 
-            job.set_status("done bootstrapping group(s): #{group_names}")
+            job.set_status("Finished bootstrapping group(s): #{group_names}")
           end
         end
 

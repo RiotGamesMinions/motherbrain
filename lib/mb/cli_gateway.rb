@@ -248,7 +248,8 @@ module MotherBrain
     SKIP_ENVIRONMENT_TASKS = [
       "environment",
       "plugin",
-      "template"
+      "template",
+      "purge"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [
@@ -330,6 +331,16 @@ module MotherBrain
     def console
       require 'mb/console'
       MB::Console.start
+    end
+
+    method_option :skip_chef,
+      type: :boolean,
+      desc: "Skip removing the Chef installation from the node",
+      default: false
+    desc "purge HOST", "Remove Chef from node and purge it's data from the Chef server"
+    def purge(hostname)
+      job = node_querier.async_purge(hostname, options.to_hash.symbolize_keys)
+      CliClient.new(job).display
     end
 
     desc "version", "Display version and license information"

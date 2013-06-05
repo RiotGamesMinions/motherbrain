@@ -564,4 +564,8 @@ module MotherBrain
       "An item named '#{item_name}' was not found in the '#{data_bag_name}' data bag."
     end
   end
+
+  class PrerequisiteNotInstalled < MBError
+    error_code(9005)
+  end
 end

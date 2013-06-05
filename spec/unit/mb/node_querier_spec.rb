@@ -5,6 +5,7 @@ describe MB::NodeQuerier do
 
   let(:node_querier) { described_class.new }
   let(:host) { "192.168.1.1" }
+  let(:response) { double('response', stderr: nil, stdout: nil, error?: nil) }
 
   describe "#list" do
     it "returns a list of nodes from the motherbrain's chef connection" do
@@ -16,36 +17,22 @@ describe MB::NodeQuerier do
   end
 
   describe "#ruby_script" do
-    subject { ruby_script }
+    subject(:result) { node_querier.send(:ruby_script, 'node_name', double('host')) }
+    before { node_querier.stub_chain(:chef_connection, :node, :ruby_script).and_return(response) }
 
-    let(:response) { [ :ok, double('response', stdout: 'my_node') ] }
-    let(:ruby_script) { node_querier.send(:ruby_script, 'node_name', double('host')) }
+    context "when the response is a success" do
+      before { response.stub(stdout: 'success', error?: false) }
 
-    before do
-      node_querier.stub_chain(:chef_connection, :node, :ruby_script).and_return(response)
-    end
-
-    it "returns the response of the successfully run script" do
-      ruby_script.should eq('my_node')
-    end
-
-    context "when an error occurs" do
-      let(:response) { [:error, double('response', stderr: 'error_message')] }
-
-      it "raises a RemoteScriptError" do
-        expect {
-          ruby_script
-        }.to raise_error(MB::RemoteScriptError)
+      it "returns the response of the successfully run script" do
+        expect(result).to eql('success')
       end
     end
 
-    context "when ridley returns an unknown status" do
-      let(:response) { [ :unknown, double ] }
+    context "when the response is a failure" do
+      before { response.stub(stderr: 'error_message', error?: true) }
 
-      it "rasies a RuntimeError" do
-        expect {
-          ruby_script
-        }.to raise_error(RuntimeError)
+      it "raises a RemoteScriptError" do
+        expect { result }.to raise_error(MB::RemoteScriptError)
       end
     end
   end
@@ -70,24 +57,31 @@ describe MB::NodeQuerier do
   end
 
   describe "#chef_run" do
-    subject { chef_run }
+    subject(:result) { node_querier.chef_run(host) }
 
-    let(:chef_run) { node_querier.chef_run(host) }
-    let(:response) { [:ok, Ridley::HostConnector::Response.new(host)] }
+    before { node_querier.stub_chain(:chef_connection, :node, :chef_run).and_return(response) }
 
-    before do
-      node_querier.stub_chain(:chef_connection, :node, :chef_run).and_return(response)
+    context "when the response is a success" do
+      before { response.stub(stdout: 'success', error?: false) }
+
+      it "returns the Ridley response" do
+        expect(result).to eql(response)
+      end
     end
 
-    it { should be_a(Ridley::HostConnector::Response) }
+    context "when the response is a failure" do
+      before { response.stub(stderr: 'error_message', error?: true) }
+
+      it "raises a RemoteCommandError" do
+        expect { result }.to raise_error(MB::RemoteCommandError)
+      end
+    end
 
     context "when hostname is nil" do
       let(:host) { nil }
 
       it "raises a RemoteCommandError" do
-        expect {
-          chef_run
-        }.to raise_error(MB::RemoteCommandError)
+        expect { result }.to raise_error(MB::RemoteCommandError)
       end
     end
 
@@ -95,62 +89,56 @@ describe MB::NodeQuerier do
       let(:host) { "" }
 
       it "raises a RemoteCommandError" do
-        expect {
-          chef_run
-        }.to raise_error(MB::RemoteCommandError)
+        expect { result }.to raise_error(MB::RemoteCommandError)
       end
     end
   end
 
   describe "#put_secret" do
-    subject { put_secret }
+    let(:options) { { secret: File.join(fixtures_path, "fake_key.pem") } }
+    subject(:result) { node_querier.put_secret(host, options) }
 
-    let(:put_secret) { node_querier.put_secret(host, options) }
-    let(:options) do
-      {
-        secret: File.join(fixtures_path, "fake_key.pem")
-      }
-    end
-    let(:response) { [:ok, Ridley::HostConnector::Response.new(host)] }
-
-    before do
-      node_querier.stub_chain(:chef_connection, :node, :put_secret).and_return(response)
-    end
-
-    it { should be_a(Ridley::HostConnector::Response) }
+    before { node_querier.stub_chain(:chef_connection, :node, :put_secret).and_return(response) }
 
     context "when there is no file at the secret path" do
-      let(:options) { {} }
+      let(:options) { Hash.new }
 
       it { should be_nil }
     end
 
-    context "when an error occurs" do
-      let(:response) { [:error, Ridley::HostConnector::Response.new(host)] }
+    context "when the response is a success" do
+      before { response.stub(stdout: 'success', error?: false) }
+
+      it "returns the Ridley response" do
+        expect(result).to eql(response)
+      end
+    end
+
+    context "when the response is a failure" do
+      before { response.stub(stderr: 'error_message', error?: true) }
 
       it { should be_nil }
     end
   end
 
   describe "#execute_command" do
-    subject { execute_command }
-
-    let(:execute_command) { node_querier.execute_command(host, command) }
     let(:command) { "echo 'hello!'" }
-    let(:response) { [:ok, Ridley::HostConnector::Response.new(host)] }
+    subject(:result) { node_querier.execute_command(host, command) }
+    before { node_querier.stub_chain(:chef_connection, :node, :execute_command).and_return(response) }
 
-    before do
-      node_querier.stub_chain(:chef_connection, :node, :execute_command).and_return(response)
+    context "when the response is a success" do
+      before { response.stub(stdout: 'success', error?: false) }
+
+      it "returns the Ridley response" do
+        expect(result).to eql(response)
+      end
     end
 
-    it { should be_a(Ridley::HostConnector::Response) }
+    context "when the response is a failure" do
+      before { response.stub(stderr: 'error_message', error?: true) }
 
-    context "when an error occurs" do
-      let(:response) { [:error, double('error', stderr: 'error_message')] }
-
-      it "aborts a RemoteCommandError" do
-        node_querier.should_receive(:abort).with(MB::RemoteCommandError.new(response[1].stderr))
-        execute_command
+      it "raises a RemoteCommandError" do
+        expect { result }.to raise_error(MB::RemoteCommandError)
       end
     end
   end
@@ -204,6 +192,59 @@ describe MB::NodeQuerier do
 
       it "returns false" do
         subject.registered_as(host).should be_false
+      end
+    end
+  end
+
+  describe "#async_purge" do
+    let(:host) { "192.168.1.1" }
+    let(:options) { Hash.new }
+
+    it "creates a Job and delegates to #purge" do
+      ticket = double('ticket')
+      job    = double('job', ticket: ticket)
+      MB::Job.should_receive(:new).and_return(job)
+      subject.should_receive(:purge).with(job, host, options)
+
+      subject.async_purge(host, options)
+    end
+
+    it "returns a JobTicket" do
+      expect(subject.async_purge(host, options)).to be_a(MB::JobRecord)
+    end
+  end
+
+  describe "#purge" do
+    let(:host) { "192.168.1.1" }
+    let(:job) { MB::Job.new(:purge) }
+
+    before { subject.stub(:registered_as).with(host).and_return(nil) }
+
+    it "terminates the job" do
+      subject.purge(job, host)
+      expect(job).to_not be_alive
+    end
+
+    context "when the node is not registered" do
+      it "uninstalls chef" do
+        future = double('future', value: nil)
+        subject.chef_connection.stub_chain(:node, :future).with(:uninstall_chef, host, skip_chef: false).
+          and_return(future)
+        subject.purge(job, host)
+      end
+    end
+
+    context "when the node is registered" do
+      let(:node_name) { "reset.riotgames.com" }
+      before { subject.should_receive(:registered_as).with(host).and_return(node_name) }
+
+      it "deletes the client and node object and uninstalls chef" do
+        future = double('future', value: nil)
+        subject.chef_connection.stub_chain(:client, :future).with(:delete, node_name).and_return(future)
+        subject.chef_connection.stub_chain(:node, :future).with(:delete, node_name).and_return(future)
+        subject.chef_connection.stub_chain(:node, :future).with(:uninstall_chef, host, skip_chef: false).
+          and_return(future)
+        subject.purge(job, host)
       end
     end
   end

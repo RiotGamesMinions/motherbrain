@@ -24,7 +24,7 @@ module MotherBrain
       #
       # @return [Array<Hash>]
       def up(job, env_name, manifest, plugin, options = {})
-        job.set_status "starting provision"
+        job.set_status "Starting provision"
         fog = fog_connection(manifest)
         validate_manifest_options(job, manifest)
         instances = create_instances(job, manifest, fog)
@@ -141,7 +141,7 @@ module MotherBrain
         #
         # @return [Boolean]
         def validate_manifest_options(job, manifest)
-          job.set_status "validating manifest options"
+          job.set_status "Validating manifest options"
           [ :image_id, :key_name, :availability_zone ].each do |key|
             unless manifest.options[key]
               abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key '#{key}' with the AWS #{key.to_s.camelize}")
@@ -172,7 +172,7 @@ module MotherBrain
         #
         # @return [Hash]
         def create_instances(job, manifest, fog)
-          job.set_status "creating instances"
+          job.set_status "Creating instances"
           instances = {}
           instance_counts(manifest).each do |instance_type, count|
             run_instances job, fog, instances, instance_type, count, manifest.options
@@ -192,7 +192,7 @@ module MotherBrain
         #
         # @return [Hash]
         def run_instances(job, fog, instances, instance_type, count, options)
-          job.set_status "creating #{count} #{instance_type} instance#{count > 1 ? 's' : ''} on #{fog.instance_variable_get(:@host)}"
+          job.set_status "Creating #{count} #{instance_type} instance#{count > 1 ? 's' : ''} on #{fog.instance_variable_get(:@host)}"
           begin
             response = fog.run_instances options[:image_id], count, count, {
               'InstanceType' => instance_type,
@@ -226,14 +226,14 @@ module MotherBrain
         # @param [Fixnum] tries
         #
         # @return [Hash]
-        def verify_instances(job, fog, instances, tries = 15)
+        def verify_instances(job, fog, instances, tries = 45)
           if tries <= 0
             log.debug "Giving up. instances: #{instances.inspect}"
             abort AWSInstanceTimeoutError.new("giving up on instances :-(")
           end
           pending = pending_instances(instances)
           return if pending.empty?
-          job.set_status "waiting for #{pending.size} instance#{pending.size > 1 ? 's' : ''} to be ready"
+          job.set_status "Waiting for #{pending.size} instance#{pending.size > 1 ? 's' : ''} to be ready"
           log.info "pending instances: #{pending.join(',')}"
           begin
             response = fog.describe_instances('instance-id'=> pending)
@@ -266,7 +266,7 @@ module MotherBrain
           servers = instances.collect {|i,d| fog.servers.get(i) }
           manifest_options = manifest ? manifest.options : {}
           Fog.wait_for do
-            job.set_status "waiting for instances to be SSH-able"
+            job.set_status "Waiting for instances to be SSH-able"
             servers.all? do |s|
               s.username = ssh_username(manifest_options)
               s.private_key_path = ssh_keys(manifest_options).first
