@@ -1,8 +1,6 @@
 module MotherBrain
   module Cli
     module SubCommand
-      # @author Jamie Winsor <reset@riotgames.com>
-      #
       # A set of component tasks collected into a SubCommand to be registered with the
       # CliGateway. This class should not be instantiated, configured, and used by itself.
       # Use {SubCommand::Plugin.fabricate} to create an anonymous class of this type.

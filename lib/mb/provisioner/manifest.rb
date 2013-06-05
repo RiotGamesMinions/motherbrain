@@ -1,7 +1,5 @@
 module MotherBrain
   module Provisioner
-    # @author Jamie Winsor <reset@riotgames.com>
-    #
     # Manifest for creating a set of nodes of a given instance type for a set of node groups
     #
     # @example valid manifest structure
@@ -23,7 +21,6 @@ module MotherBrain
     #       }
     #     ]
     #   }
-    #
     class Manifest < MotherBrain::Manifest
       class << self
         # Validate the given parameter contains a Hash or Manifest with a valid structure

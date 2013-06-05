@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   module ApiValidators
     # Coerce a URI friendly version string into a SemVer string
     #

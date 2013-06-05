@@ -2,7 +2,6 @@ require 'faraday_middleware/response/follow_redirects'
 
 module MotherBrain
   module Bootstrap
-    # @author Michael Ivey <michael.ivey@riotgames.com>
     class Template
       class << self
         # Install a bootstrap template into the templates directory

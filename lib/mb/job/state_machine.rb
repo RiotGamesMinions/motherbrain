@@ -1,7 +1,5 @@
 module MotherBrain
   class Job
-    # @author Jamie Winsor <reset@riotgames.com>
-    #
     # An FSM for {Job}. During each transition the Job will be instructed to save
     #
     # @api private

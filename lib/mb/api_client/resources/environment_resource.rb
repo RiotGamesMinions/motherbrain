@@ -1,6 +1,5 @@
 module MotherBrain
   class ApiClient
-    # @author Jamie Winsor <reset@riotgames.com>
     class EnvironmentResource < ApiClient::Resource
       # @param [String] id
       #   name of the environment to update

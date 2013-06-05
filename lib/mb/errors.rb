@@ -26,7 +26,6 @@ module MotherBrain
     end
   end
 
-  # @author Jamie Winsor <reset@riotgames.com>
   class MBError < StandardError
     DEFAULT_EXIT_CODE = 1
 

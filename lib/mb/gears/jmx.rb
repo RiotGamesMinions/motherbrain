@@ -1,6 +1,5 @@
 module MotherBrain
   module Gear
-    # @author Jesse Howarth <jhowarth@riotgames.com>
     class JMX < Gear::Base
       register_gear :jmx
 

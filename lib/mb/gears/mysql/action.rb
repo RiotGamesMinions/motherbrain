@@ -8,7 +8,6 @@ end
 module MotherBrain
   module Gear
     class MySQL
-      # @author Jesse Howarth <jhowarth@riotgames.com>
       # @api private
       class Action
         include MB::Mixin::Services
