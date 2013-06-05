@@ -122,9 +122,17 @@ module MotherBrain
           while tasks = task_queue.shift
             host_errors = Hash.new
             group_names = Array(tasks).collect(&:group_name).join(', ')
+
+            instructions = Bootstrap::Routine.map_instructions(tasks, manifest)
+            if instructions.empty?
+              log.info "Skipping bootstrap of group(s): #{group_names}. No hosts defined in manifest to bootstrap for " +
+              "these groups."
+              next
+            end
+
             job.set_status("Bootstrapping group(s): #{group_names}")
 
-            concurrent_bootstrap(job, manifest, tasks, options).each do |host, host_info|
+            concurrent_bootstrap(job, manifest, instructions, options).each do |host, host_info|
               if host_info[:result][:status] == :error
                 host_errors[host] = host_info
               end
@@ -153,8 +161,10 @@ module MotherBrain
       #   a job to send progress updates to
       # @param [Bootstrap::Manifest] manifest
       #   a hash where the keys are node group names and the values are arrays of hostnames
-      # @param [Bootstrap::Routine::Task, Array<Bootstrap::Routine::Task>] tasks
-      #   a task or array of bootstrap tasks to concurrently perform
+      # @param [Hash] instructions
+      #   a hash containing an entry for every host to bootstrap and the groups it belongs to, the
+      #   run list it should be bootstrapped with, and the chef attributes to be applied to the node
+      #   for it's first run.
       #
       # @option options [Hash] :attributes (Hash.new)
       #   a hash of attributes to use in the first Chef run
@@ -199,16 +209,8 @@ module MotherBrain
       #       }
       #     }
       #   }
-      def concurrent_bootstrap(job, manifest, tasks, options = {})
+      def concurrent_bootstrap(job, manifest, instructions, options = {})
         response     = Hash.new
-        instructions = Bootstrap::Routine.map_instructions(tasks, manifest)
-
-        if instructions.empty?
-          groups = Array(tasks).map(&:group_name)
-          log.info "Skipping bootstrap of group(s): #{groups}. No hosts defined in manifest to bootstrap for " +
-            "these groups."
-          return response
-        end
 
         instructions.each do |host, host_info|
           boot_options = options.merge(host_info[:options])
