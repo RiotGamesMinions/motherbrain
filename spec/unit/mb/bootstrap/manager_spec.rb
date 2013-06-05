@@ -254,8 +254,9 @@ describe MB::Bootstrap::Manager do
   describe "#concurrent_bootstrap" do
     let(:job) { MB::Job.new(:bootstrap) }
     let(:tasks) { Array.new }
+    let(:instructions) { MB::Bootstrap::Routine.map_instructions(tasks, manifest) }
     let(:worker_pool) { double('worker-pool') }
-    let(:result) { manager.concurrent_bootstrap(job, manifest, tasks) }
+    let(:result) { manager.concurrent_bootstrap(job, manifest, instructions) }
 
     before { subject.stub(worker_pool: worker_pool) }
 
