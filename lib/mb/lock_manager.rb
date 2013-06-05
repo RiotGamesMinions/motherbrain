@@ -1,6 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
-  #
   # A registry of locks obtained against resources on a Chef Server
   class LockManager
     class << self

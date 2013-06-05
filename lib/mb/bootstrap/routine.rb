@@ -1,6 +1,5 @@
 module MotherBrain
   module Bootstrap
-    # @author Jamie Winsor <reset@riotgames.com>
     class Routine
       # Container for a bootstrap task defined in a bootstrap routine
       #
@@ -157,7 +156,6 @@ module MotherBrain
           @task_procs = room.send(:task_procs)
         end
 
-      # @author Jamie Winsor <reset@riotgames.com>
       # @api private
       class CleanRoom < CleanRoomBase
         # Add a Bootstrap::Routine::Task for bootstrapping nodes in the given node group to the {Routine}

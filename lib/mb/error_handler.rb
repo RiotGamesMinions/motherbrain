@@ -1,6 +1,4 @@
 module MotherBrain
-  # @author Justin Campbell <justin.campbell@riotgames.com>
-  #
   # An object to help with the display of errors in a more user-friendly format.
   # An ErrorHandler is created with an error and a set of options to control the
   # display of the error. Some options can be inferred from the error itself.

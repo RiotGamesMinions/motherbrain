@@ -1,6 +1,5 @@
 module MotherBrain
   class ApiClient
-    # @author Jamie Winsor <reset@riotgames.com>
     class Resource
       include Celluloid
 

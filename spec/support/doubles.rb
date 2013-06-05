@@ -1,7 +1,5 @@
 module MotherBrain
   module RSpec
-    # @author Jamie Winsor <reset@riotgames.com>
-    #
     # Pre-defined commonly used doubles for testing motherbrain
     module Doubles
       def job_double(name = "job")

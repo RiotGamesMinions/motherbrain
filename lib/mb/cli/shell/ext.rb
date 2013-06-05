@@ -1,7 +1,6 @@
 module MotherBrain
   module Cli
     module Shell
-      # @author Jamie Winsor <reset@riotgames.com>
       module Ext
         class << self
           def included(base)

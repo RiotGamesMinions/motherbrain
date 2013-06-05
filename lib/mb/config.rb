@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class Config < Chozo::Config::JSON
     class << self
       # The default location for motherbrain's config file

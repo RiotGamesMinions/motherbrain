@@ -1,6 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
-  #
   # A Celluloid actor representing an active job. Jobs are handled by the {JobManager}
   # and should not be returned to a consumer or user from the Public API.
   #

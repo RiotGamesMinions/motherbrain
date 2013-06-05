@@ -1,7 +1,6 @@
 require 'optparse'
 
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class SrvCtl
     class << self
       include MB::Mixin::CodedExit

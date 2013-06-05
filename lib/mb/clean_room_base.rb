@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class CleanRoomBase
     class << self
       # Create a DSL writer function that will assign the a given value

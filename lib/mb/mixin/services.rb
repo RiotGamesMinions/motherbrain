@@ -1,7 +1,5 @@
 module MotherBrain
   module Mixin
-    # @author Jamie Winsor <reset@riotgames.com>
-    #
     # A mixin to provide easy access to the various services (actors) running in the
     # motherbrain stack.
     module Services

@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class Component
     include Chozo::VariaModel
 
@@ -214,7 +213,6 @@ module MotherBrain
         CleanRoom.new(self).instance_eval(&block)
       end
 
-    # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class CleanRoom < CleanRoomBase
       dsl_attr_writer :description

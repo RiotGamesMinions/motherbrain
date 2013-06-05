@@ -1,11 +1,8 @@
 module MotherBrain
   module Provisioner
-    # @author Jamie Winsor <reset@riotgames.com>
-    #
     # Handles provisioning of nodes and joining them to a Chef Server. Requests are
     # delegated to a provisioner of the desired type or 'Environment Factory' by
     # default.
-    #
     class Manager
       class << self
         # @raise [Celluloid::DeadActorError] if Provisioner Manager has not been started

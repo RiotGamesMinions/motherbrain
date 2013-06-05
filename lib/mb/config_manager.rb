@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class ConfigManager
     class << self
       # @raise [Celluloid::DeadActorError] if ConfigManager has not been started

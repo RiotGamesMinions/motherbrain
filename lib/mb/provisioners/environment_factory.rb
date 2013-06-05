@@ -1,10 +1,7 @@
 module MotherBrain
   module Provisioner
-    # @author Jamie Winsor <reset@riotgames.com>
-    #
     # Provisioner adapter for Environment Factory. Node/Environment creation will be
     # delegated to an Environment Factory server.
-    #
     class EnvironmentFactory < Provisioner::Base
       class << self
         # Convert the given provisioner manifest to a hash usable by Environment Factory

@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class Manifest < Hash
     class << self
       # @param [#to_s] path

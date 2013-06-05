@@ -1,6 +1,5 @@
 module MotherBrain
   module Bootstrap
-    # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class Worker
       # Used internally within the {Bootstrap::Worker} to identify hosts which should be

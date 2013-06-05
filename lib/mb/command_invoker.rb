@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class CommandInvoker
     autoload :Worker, 'mb/command_invoker/worker'
 

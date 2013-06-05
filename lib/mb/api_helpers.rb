@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   module ApiHelpers
     include MB::Mixin::Services
 

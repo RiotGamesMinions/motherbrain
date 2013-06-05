@@ -1,8 +1,6 @@
 module MotherBrain
   module Chef
     # Handles loading configuration values from a Chef config file
-    #
-    # @author Justin Campbell <justin.campbell@riotgames.com>
     class Config < Hash
       DEFAULT_PATHS = %w[
         ./.chef/knife.rb

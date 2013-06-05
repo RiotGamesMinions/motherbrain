@@ -1,7 +1,6 @@
 module MotherBrain
   module Gear
     class Service
-      # @author Jamie Winsor <reset@riotgames.com>
       # @api private
       class ActionRunner
         include MB::Mixin::Services

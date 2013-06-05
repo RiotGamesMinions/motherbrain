@@ -1,7 +1,5 @@
 module MotherBrain
   module Cli
-    # @author Jamie Winsor <reset@riotgames.com>
-    #
     # Generates SubCommands for Thor from motherbrain plugins or pieces of motherbrain plugins
     module SubCommand
       autoload :Component, 'mb/cli/sub_command/component'
@@ -27,8 +25,6 @@ module MotherBrain
         end
       end
 
-      # @author Jamie Winsor <reset@riotgames.com>
-      #
       # A base class that all dynamically generated SubCommands inherit from
       class Base < Cli::Base
         class << self

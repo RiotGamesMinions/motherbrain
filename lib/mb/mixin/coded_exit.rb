@@ -1,7 +1,5 @@
 module MotherBrain
   module Mixin
-    # @author Jamie Winsor <reset@riotgames.com>
-    #
     # Include a collection of helper functions for exiting with exit statuses from error constants
     # and determining exit statuses for string representations of motherbrain exceptions.
     module CodedExit

@@ -1,5 +1,4 @@
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class Plugin
     class << self
       # Create a new plugin instance from the given content
@@ -280,7 +279,6 @@ module MotherBrain
         CleanRoom.new(self).instance_eval(&block)
       end
 
-    # @author Jamie Winsor <reset@riotgames.com>
     # @api private
     class CleanRoom < CleanRoomBase
       # @param [#to_s] name

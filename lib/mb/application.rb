@@ -14,8 +14,6 @@ trap 'HUP' do
 end if Signal.supported?('HUP')
 
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
-  #
   # Main application supervisor for motherbrain
   #
   # @example running the application in the foreground

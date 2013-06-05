@@ -2,7 +2,6 @@ require 'pry'
 require 'pry/repl'
 
 module MotherBrain
-  # @author Jamie Winsor <reset@riotgames.com>
   class Console < Pry::REPL
     class << self
       # @option options [Object] :target ({MB::Application})
