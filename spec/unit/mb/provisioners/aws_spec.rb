@@ -133,7 +133,7 @@ describe MB::Provisioner::AWS, :focus do
         end
 
         it "should error on endpoint" do
-          expect { aws.send(:secret_key, manifest) }.to raise_error(MB::InvalidProvisionManifest)
+          expect { aws.send(:endpoint, manifest) }.to raise_error(MB::InvalidProvisionManifest)
         end
 
         context "with Euca environment variables" do
