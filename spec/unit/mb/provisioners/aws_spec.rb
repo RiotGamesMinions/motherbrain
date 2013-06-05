@@ -4,9 +4,17 @@ describe MB::Provisioner::AWS, :focus do
   subject { aws }
   let(:aws) { described_class.new }
 
-  before(:all) { Fog.mock! }
   let(:job) { double('job') }
-  before(:each) { job.stub(:set_status) }
+
+  before :all do
+    Fog::Mock.delay = 0
+    Fog.mock!
+  end
+
+  before :each do
+    aws.stub :sleep
+    job.stub :set_status
+  end
 
   let(:env_name) { "mbtest" }
   let(:plugin) { double('plugin') }
@@ -302,7 +310,7 @@ describe MB::Provisioner::AWS, :focus do
     describe "#verify_instances" do
       it "should check the instance status" do
         instances = aws.send(:create_instances, job, manifest, fog)
-        fog.should_receive(:describe_instances).at_least(2).times.and_call_original
+        fog.should_receive(:describe_instances).and_call_original
         aws.send :verify_instances, job, fog, instances
       end
     end
