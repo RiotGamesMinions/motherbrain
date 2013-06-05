@@ -103,16 +103,16 @@ module MotherBrain
         options = options.reverse_merge(skip_bootstrap: false)
 
         begin
-          job.set_status("creating new environment")
+          job.set_status("Creating new environment")
           connection.environment.create(env_name, self.class.convert_manifest(manifest))
         rescue EF::REST::HTTPUnprocessableEntity; end
 
         until connection.environment.created?(env_name)
-          job.set_status("waiting for environment to be created")
+          job.set_status("Waiting for environment to be created")
           sleep self.interval
         end
 
-        job.set_status("environment created")
+        job.set_status("Environment created")
 
         response = self.class.handle_created(connection.environment.find(env_name, force: true))
         self.class.validate_create(response, manifest)
@@ -133,11 +133,11 @@ module MotherBrain
       #
       # @return [Boolean]
       def down(job, env_name)
-        job.set_status("sending request to environment factory to destroy environment")
+        job.set_status("Sending request to environment factory to destroy environment")
         connection.environment.destroy(env_name)
 
         until destroyed?(env_name)
-          job.set_status("waiting for environment to be destroyed")
+          job.set_status("Waiting for environment to be destroyed")
           sleep 2
         end
 
