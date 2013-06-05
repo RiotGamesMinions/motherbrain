@@ -9,7 +9,6 @@ module MotherBrain
   #   CliClient.new(job).display
   #
   class CliClient
-    COLUMNS = `tput cols`.to_i
     SPACE = " "
     TICK = 0.1
 
@@ -43,7 +42,7 @@ module MotherBrain
       end
 
       def clear_line
-        printf "\r#{SPACE * COLUMNS}"
+        printf "\r#{SPACE * terminal_width}"
       end
 
       # @return [Boolean]
@@ -124,7 +123,7 @@ module MotherBrain
 
         string = "\r#{spinner.next} [#{job_type}] #{text}"
 
-        if string.length < COLUMNS
+        if string.length < terminal_width
           clear_line
           printf string
         else
@@ -156,6 +155,10 @@ module MotherBrain
 
       def status_buffer
         job.status_buffer
+      end
+
+      def terminal_width
+        @terminal_width ||= `tput cols`.to_i
       end
 
       def wait_for_jobs
