@@ -1,3 +1,13 @@
+# 0.8.0
+
+* Add `mb template` command for installing bootstrap templates
+* Add `mb purge` command for removing Chef from a target node and purging it's data from the Chef server
+* Add bootstrap.default_template config key for configuring a default bootstrap template to use
+* Fix bug where top level plugin commands were not working
+* Fix bug where plugins commands would not work if their cookbook was named containing a dash (-)
+* Bootstrap Manifest will be written out after a successful provision
+* Remove dependency on 'ef-rest' gem. Environment Factory provisioner will be removed in a future release. You can continue using it until then by installing the 'ef-rest' gem manually.
+
 # 0.7.0
 
 * Speed up bootstrap times
