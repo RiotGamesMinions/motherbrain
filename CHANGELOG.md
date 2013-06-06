@@ -1,3 +1,7 @@
+# 0.8.1
+
+* Fix bug where commands would not be run as sudo even though the sudo config option was set
+
 # 0.8.0
 
 * Add `mb template` command for installing bootstrap templates
