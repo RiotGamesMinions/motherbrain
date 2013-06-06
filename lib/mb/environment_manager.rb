@@ -126,6 +126,17 @@ module MotherBrain
       abort error
     end
 
+    # Destroys an environment
+    #
+    # @param [#to_s] environment_name
+    #
+    # @return [Ridley::EnvironmentResource]
+    def destroy(name)
+      ridley.environment.delete(name)
+    rescue => error
+      abort error
+    end
+
     # Returns a list of environments present on the remote server
     #
     # @return [Array<Ridley::EnvironmentResource>]
