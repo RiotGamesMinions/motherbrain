@@ -31,7 +31,7 @@ module MotherBrain
       @mb_config ||= MB::Config.new(nil,
         {
           chef: {
-            api_url: "http://127.0.0.1:8889",
+            api_url: "http://127.0.0.1:28889",
             api_client: "zero",
             api_key: File.join(fixtures_path, "fake_key.pem"),
             validator_client: "chef-validator",
