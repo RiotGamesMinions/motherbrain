@@ -1,3 +1,8 @@
+# 0.8.2
+
+* Fix blocking IO issue when running commands and bootstrapping
+* Improve error message when a node has a client and a client object on the Chef server but no node object on the Chef server
+
 # 0.8.1
 
 * Fix bug where commands would not be run as sudo even though the sudo config option was set
