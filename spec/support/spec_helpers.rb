@@ -31,10 +31,10 @@ module MotherBrain
       @mb_config ||= MB::Config.new(nil,
         {
           chef: {
-            api_url: "http://chef.riotgames.com",
-            api_client: "fake",
+            api_url: "http://127.0.0.1:8889",
+            api_client: "zero",
             api_key: File.join(fixtures_path, "fake_key.pem"),
-            validator_client: "fake",
+            validator_client: "chef-validator",
             validator_path: File.join(fixtures_path, "fake_key.pem")
           },
           ssh: {
@@ -137,6 +137,10 @@ PLUGIN
 
     def klass
       described_class
+    end
+
+    def ridley
+      @ridley ||= Ridley::Client.new(mb_config.to_ridley)
     end
   end
 end
