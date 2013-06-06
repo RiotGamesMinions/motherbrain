@@ -24,6 +24,7 @@ def setup_env
   World(MotherBrain::SpecHelpers)
 
   Before do
+    @aruba_timeout_seconds = 10
     @config = generate_valid_config
   end
 end

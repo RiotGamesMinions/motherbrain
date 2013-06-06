@@ -1,7 +1,3 @@
-Before do
-  @aruba_timeout_seconds = 10
-end
-
 When /^I run MB with no arguments$/ do
   run_simple(unescape("mb"), false)
 end
