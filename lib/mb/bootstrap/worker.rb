@@ -205,8 +205,10 @@ module MotherBrain
             node_querier.chef_run(host.hostname)
           rescue Ridley::Errors::ResourceNotFound => ex
             response[:status]  = :error
-            response[:message] = "#{host} thinks it is registered to the Chef server and a client but there " +
-              "is no node object for it. Generating a new node object for it."
+            response[:message] = "Host #{host} has a client on the node and a matching client on the Chef server, " +
+              "but there is no matching node object on the Chef server for the client. This should not happen. " +
+              "Run `mb purge #{host}` or manually destroy the client on the node itself and the node object on " +
+              "the Chef server and re-run your bootstrap."
             # JW TODO: We can recover here by creating the node object. However, we can't do this right
             # now because OHC/OPC have ACLs associated with the node object. When we create the object the
             # API user that we are acting as will be the only user with full permissions to the node
