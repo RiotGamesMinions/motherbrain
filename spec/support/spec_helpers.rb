@@ -1,5 +1,14 @@
 module MotherBrain
   module SpecHelpers
+    class << self
+      def chef_zero
+        return @chef_zero if @chef_zero
+
+        WebMock.disable_net_connect!(allow: /127.0.0.1:28889/)
+        @chef_zero = ChefZero::Server.new(port: 28889)
+      end
+    end
+
     def app_root_path
       Pathname.new(File.expand_path('../../../', __FILE__))
     end
