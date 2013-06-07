@@ -1,3 +1,7 @@
+# 0.8.3
+
+* REALLY fix blocking IO issue in SSH/WinRM
+
 # 0.8.2
 
 * Fix blocking IO issue when running commands and bootstrapping
