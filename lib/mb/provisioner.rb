@@ -185,10 +185,10 @@ module MotherBrain
 
         # Delete an environment from Chef server
         #
-        # @param [String] env_name
+        # @param [String] environment_name
         #   name of the environment to remove
-        def delete_environment(env_name)
-          ridley.environment.delete(env_name)
+        def destroy_environment(environment_name)
+          environment_manager.destroy(environment_name)
         end
     end
   end
