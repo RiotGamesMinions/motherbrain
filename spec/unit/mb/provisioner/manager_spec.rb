@@ -7,7 +7,7 @@ describe MB::Provisioner::Manager do
 
   let(:job) { double(MB::Job, alive?: true) }
   let(:environment) { "production" }
-  let(:manifest) { double(MB::Manifest, as_json: { 'a' => 1 }, provisioner: nil, options: nil) }
+  let(:manifest) { double(MB::Manifest, to_hash: { 'a' => 1 }, provisioner: nil, options: nil) }
   let(:plugin) { double(MB::Plugin, name: "MyPlugin") }
 
   subject { described_class.new }
@@ -106,7 +106,7 @@ describe MB::Provisioner::Manager do
 
       contents = File.read(MB::FileSystem.manifests.join(filename))
 
-      expect(JSON.parse(contents)).to eq(manifest.as_json)
+      expect(JSON.parse(contents)).to eq(manifest.to_hash)
     end
   end
 

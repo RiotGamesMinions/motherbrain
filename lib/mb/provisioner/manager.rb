@@ -178,8 +178,8 @@ module MotherBrain
         # @param [MB::Plugin] plugin
         def write_bootstrap_manifest(job, environment, manifest, plugin)
           filename = "#{plugin.name}_#{environment}_#{Time.now.to_i}.json"
-          path     = MB::FileSystem.manifests.join(filename)
-          contents = JSON.pretty_generate(manifest.as_json)
+          path = MB::FileSystem.manifests.join(filename)
+          contents = JSON.pretty_generate(manifest.to_hash)
 
           job.set_status("Writing bootstrap manifest to #{path}")
 
