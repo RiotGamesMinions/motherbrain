@@ -17,7 +17,8 @@ module MotherBrain
         validate_provisioner_class(klass)
 
         unless get(klass.provisioner_id).nil?
-          raise ProvisionerRegistrationError, "A provisioner with the id '#{klass.provisioner_id}' has already been registered"
+          raise ProvisionerRegistrationError,
+            "A provisioner with the id '#{klass.provisioner_id}' has already been registered"
         end
 
         if options[:default]
@@ -33,7 +34,7 @@ module MotherBrain
 
       # List of all the registered provisioners
       #
-      # @return [Set]
+      # @return [Set<MB::Provisioner::Base>]
       def all
         @all ||= Set.new
       end
@@ -78,7 +79,7 @@ module MotherBrain
       #   an empty Set
       def clear!
         @default_id = nil
-        @all = Set.new
+        @all        = Set.new
       end
 
       # @param [Symbol] klass

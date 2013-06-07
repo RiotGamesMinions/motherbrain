@@ -1,4 +1,6 @@
 module MotherBrain
+  class ProvisionerSupervisor < Celluloid::SupervisionGroup; end
+
   module Provisioner
     # Handles provisioning of nodes and joining them to a Chef Server. Requests are
     # delegated to a provisioner of the desired type or 'Environment Factory' by
@@ -10,31 +12,6 @@ module MotherBrain
         # @return [Celluloid::Actor(Provisioner::Manager)]
         def instance
           MB::Application[:provisioner_manager] or raise Celluloid::DeadActorError, "provisioner manager not running"
-        end
-
-        # Returns a provisioner for the given ID. The default provisioner will be returned
-        # if nil is provided
-        #
-        # @param [#to_sym, nil] id
-        #
-        # @raise [ProvisionerNotRegistered] if no provisioner is registered with the given ID
-        #
-        # @return [Class]
-        def choose_provisioner(id)
-          id.nil? ? Provisioner.default : Provisioner.get!(id)
-        end
-
-        # Instantiate a new provisioner based on the given options
-        #
-        # @param [Hash] options
-        #   see {choose_provisioner} and the initializer provisioner you are attempting to
-        #   initialize
-        #
-        # @raise [ProvisionerNotRegistered] if no provisioner is registered with the given ID
-        #
-        # @return [~Provisioner]
-        def new_provisioner(options)
-          choose_provisioner(options[:with]).new(options.except(:with))
         end
       end
 
@@ -53,8 +30,15 @@ module MotherBrain
 
       finalizer :finalize_callback
 
+      attr_reader :provisioner_registry
+
       def initialize
         log.info { "Provision Manager starting..." }
+        @provisioner_registry   = Celluloid::Registry.new
+        @provisioner_supervisor = ProvisionerSupervisor.new_link(@provisioner_registry)
+        Provisioner.all.each do |provisioner|
+          @provisioner_supervisor.supervise_as(provisioner.provisioner_id, provisioner)
+        end
       end
 
       # Asynchronously destroy an environment that was created with motherbrain
@@ -95,6 +79,25 @@ module MotherBrain
         job.ticket
       end
 
+      # Retrieve the running provisioner for the given ID. The default provisioner will be returned
+      # if nil is provided.
+      #
+      # @param [#to_sym, nil] id ({Provisioner.default_id})
+      #
+      # @raise [ProvisionerNotStarted]
+      #   if no provisioner is registered with the given ID
+      #
+      # @return [MB::Provisioner::Base]
+      def choose_provisioner(id)
+        id ||= Provisioner.default_id
+
+        unless provisioner = @provisioner_registry[id.to_sym]
+          abort ProvisionerNotStarted.new(id)
+        end
+
+        provisioner
+      end
+
       # Destroy an environment that was created with motherbrain
       #
       # @param [MB::Job] job
@@ -105,8 +108,9 @@ module MotherBrain
       # @option options [#to_sym] :with
       #   id of provisioner to use
       def destroy(job, environment, options = {})
-        worker = self.class.new_provisioner(options)
         job.report_running
+
+        worker = choose_provisioner(options.delete(:with))
         worker.down(job, environment)
 
         job.report_success("environment destroyed")
@@ -137,8 +141,6 @@ module MotherBrain
       #   Hash of additional attributes to set on the environment
       # @option options [Boolean] :skip_bootstrap (false)
       #   skip automatic bootstrapping of the created environment
-      # @option options [#to_sym] :with
-      #   id of provisioner to use
       # @option options [Boolean] :force (false)
       #   force provisioning nodes to the environment even if the environment is locked
       def provision(job, environment, manifest, plugin, options = {})
@@ -149,22 +151,19 @@ module MotherBrain
           cookbook_versions: Hash.new,
           environment_attributes: Hash.new,
           skip_bootstrap: false,
-          with: manifest.provisioner,
           force: false
         )
 
-        worker = self.class.new_provisioner(options)
-        Provisioner::Manifest.validate!(manifest, plugin)
+        manifest.validate!(plugin)
+        response = choose_provisioner(manifest.provisioner).up(job, environment, manifest, plugin, options)
 
-        response = worker.up(job, environment, manifest, plugin, options.slice(*WORKER_OPTS))
-
-        if options[:skip_bootstrap]
-          job.report_success(response)
-        else
+        unless options[:skip_bootstrap]
           bootstrap_manifest = Bootstrap::Manifest.from_provisioner(response, manifest)
           write_bootstrap_manifest(job, environment, bootstrap_manifest, plugin)
           bootstrapper.bootstrap(job, environment, bootstrap_manifest, plugin, options)
         end
+
+        job.report_success unless job.completed?
       rescue => ex
         job.report_failure(ex)
       ensure
@@ -179,7 +178,7 @@ module MotherBrain
         # @param [MB::Plugin] plugin
         def write_bootstrap_manifest(job, environment, manifest, plugin)
           filename = "#{plugin.name}_#{environment}_#{Time.now.to_i}.json"
-          path = MB::FileSystem.manifests.join(filename)
+          path     = MB::FileSystem.manifests.join(filename)
           contents = JSON.pretty_generate(manifest.as_json)
 
           job.set_status("Writing bootstrap manifest to #{path}")
@@ -189,6 +188,7 @@ module MotherBrain
 
         def finalize_callback
           log.info { "Bootstrap Manager stopping..." }
+          @provisioner_supervisor.terminate
         end
     end
   end

@@ -7,48 +7,8 @@ describe MB::Provisioner::Manager do
 
   let(:job) { double(MB::Job, alive?: true) }
   let(:environment) { "production" }
-  let(:manifest) { double(MB::Manifest, as_json: { 'a' => 1 }, provisioner: "None") }
+  let(:manifest) { double(MB::Manifest, as_json: { 'a' => 1 }, provisioner: nil, options: nil) }
   let(:plugin) { double(MB::Plugin, name: "MyPlugin") }
-
-  describe "ClassMethods" do
-    subject { described_class }
-
-    describe "::choose_provisioner" do
-      it "returns the default provisioner if nil is provided" do
-        subject.choose_provisioner(nil).should eql(MB::Provisioner.default)
-      end
-
-      it "returns the provisioner corresponding to the given ID" do
-        subject.choose_provisioner(:environment_factory).provisioner_id.should eql(:environment_factory)
-      end
-
-      it "raises ProvisionerNotRegistered if a provisioner with the given ID has not been registered" do
-        expect {
-          subject.choose_provisioner(:not_existant)
-        }.to raise_error(MB::ProvisionerNotRegistered)
-      end
-    end
-
-    describe "::new_provisioner" do
-      context ":with option set" do
-        let(:options) { {with: "magic"} }
-
-        it "should choose the 'magic' provisioner" do
-          subject.should_receive(:choose_provisioner).with("magic").and_return(MB::Provisioner.default)
-          subject.new_provisioner(options)
-        end
-      end
-    end
-
-    context ":with option not set" do
-      let(:options) { Hash.new }
-
-      it "should choose the default provisioner" do
-        subject.should_receive(:choose_provisioner).with(nil).and_call_original
-        subject.new_provisioner(options)
-      end
-    end
-  end
 
   subject { described_class.new }
 
@@ -76,73 +36,59 @@ describe MB::Provisioner::Manager do
   end
 
   describe "#provision" do
-    subject(:provision) {
-      provisioner_manager.provision(job, environment, manifest, plugin, options)
-    }
-
+    let(:job) { MB::Job.new(:provision) }
     let(:options) { Hash.new }
 
-    it "provisions and bootstraps" do
-      worker_stub = double(MB::Provisioner)
+    let(:bootstrapper) { double('bootstrapper') }
+    let(:default_provisioner) { provisioner_manager.provisioner_registry[MB::Provisioner.default_id] }
 
-      job.should_receive :report_running
-      described_class.should_receive(:new_provisioner).and_return(worker_stub)
-      MB::Provisioner::Manifest.should_receive :validate!
+    subject(:provision) do
+      @ticket = job.ticket
+      provisioner_manager.stub(bootstrapper: bootstrapper)
+      provisioner_manager.provision(job, environment, manifest, plugin, options)
+    end
 
-      worker_stub.should_receive :up
+    context "when the manifest defines a provisioner that is started and registered" do
+      before { manifest.stub(provisioner: MB::Provisioner.default_id) }
 
-      bootstrap_manifest_stub = double(MB::Bootstrap::Manifest)
+      it "successfully provisions and bootstraps" do
+        response           = double('provision-response')
+        bootstrap_manifest = double('bootstrap-manifest')
 
-      MB::Bootstrap::Manifest.
-        should_receive(:from_provisioner).
-        and_return(bootstrap_manifest_stub)
+        manifest.should_receive(:validate!).with(plugin)
+        default_provisioner.should_receive(:up).with(job, environment, manifest, plugin, anything).and_return(response)
+        MB::Bootstrap::Manifest.should_receive(:from_provisioner).with(response, manifest).
+          and_return(bootstrap_manifest)
 
-      provisioner_manager.should_receive(:write_bootstrap_manifest)
+        provisioner_manager.should_receive(:write_bootstrap_manifest)
+        bootstrapper.should_receive(:bootstrap)
 
-      bootstrapper_stub = double(MB::Bootstrap::Manager)
-
-      provisioner_manager.should_receive(:bootstrapper).and_return(bootstrapper_stub)
-
-      bootstrapper_stub.should_receive :bootstrap
-
-      job.should_receive :terminate
-
-      job.should_not_receive :report_success
-
-      provision
+        provision
+        expect(@ticket.state).to eql(:success)
+      end
     end
 
     context "with skip_bootstrap: true" do
-      let(:options) {
-        { skip_bootstrap: true }
-      }
+      before { options[:skip_bootstrap] = true }
 
-      it "provisions but doesn't bootstrap" do
-        worker_stub = double(MB::Provisioner)
+      it "successfully provisions but skips bootstrap" do
+        response = double('provision-response')
 
-        job.should_receive :report_running
-        described_class.should_receive(:new_provisioner).and_return(worker_stub)
-        MB::Provisioner::Manifest.should_receive :validate!
+        manifest.should_receive(:validate!).with(plugin)
+        default_provisioner.should_receive(:up).with(job, environment, manifest, plugin, anything).and_return(response)
 
-        worker_stub.should_receive :up
-
-        job.should_receive :report_success
-
-        provisioner_manager.should_not_receive :bootstrapper
-
-        job.should_receive :terminate
+        bootstrapper.should_not_receive(:bootstrap)
 
         provision
+        expect(@ticket.state).to eql(:success)
       end
     end
   end
 
   describe "#write_bootstrap_manifest" do
-    subject(:write_bootstrap_manifest) {
-      provisioner_manager.send(:write_bootstrap_manifest,
-        job, environment, manifest, plugin
-      )
-    }
+    subject(:write_bootstrap_manifest) do
+      provisioner_manager.send(:write_bootstrap_manifest, job, environment, manifest, plugin)
+    end
 
     it "writes the manifest" do
       job.should_receive :set_status
@@ -161,6 +107,35 @@ describe MB::Provisioner::Manager do
       contents = File.read(MB::FileSystem.manifests.join(filename))
 
       expect(JSON.parse(contents)).to eq(manifest.as_json)
+    end
+  end
+
+  describe "#choose_provisioner" do
+    let(:id) { nil }
+    let(:provisioner) { subject.choose_provisioner(id) }
+
+    context "when the given id is nil" do
+      let(:id) { nil }
+
+      it "returns the running default provisioner" do
+        expect(provisioner).to be_a(MB::Provisioner.default)
+      end
+    end
+
+    context "when the given id matches a registered provisioner" do
+      let(:id) { :aws }
+
+      it "returns the matching running provisioner" do
+        expect(provisioner).to be_a(MB::Provisioner::AWS)
+      end
+    end
+
+    context "when there is no provisioner registered with the given id" do
+      let(:id) { :not_existent }
+
+      it "raises ProvisionerNotRegistered if a provisioner with the given ID has not been registered" do
+        expect { provisioner }.to raise_error(MB::ProvisionerNotStarted)
+      end
     end
   end
 end

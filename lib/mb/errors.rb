@@ -499,6 +499,20 @@ module MotherBrain
     end
   end
 
+  class ProvisionerNotStarted < ProvisionError
+    error_code(5002)
+    attr_reader :provisioner_id
+
+    def initialize(provisioner_id)
+      @provisioner_id = provisioner_id
+    end
+
+    def message
+      "No provisioner registered or started that matches the ID: '#{provisioner_id}'.\n"
+      "Registered provisioners are: #{MB::Provisioner.all.map(&:provisioner_id).join(', ')}"
+    end
+  end
+
   # Chef errors
   class ChefError < MBError
     exit_code(26)
