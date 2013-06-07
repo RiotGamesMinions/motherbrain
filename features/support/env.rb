@@ -10,15 +10,9 @@ def setup_env
   require 'rspec'
   require 'aruba/cucumber'
   require 'chef_zero/server'
-
-  server = ChefZero::Server.new(port: 8889)
-  server.start_background
-
-  at_exit do
-    server.stop
-  end
-
   Dir[File.join(File.expand_path("../../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
+
+  MotherBrain::SpecHelpers.chef_zero.start_background
 
   RSpec.configure do |config|
     config.include MotherBrain::SpecHelpers

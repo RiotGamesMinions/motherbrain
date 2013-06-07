@@ -25,3 +25,13 @@ end
 Then /^the exit status should be the code for error "(.*?)"$/ do |konstant|
   assert_exit_status(exit_code_for(konstant))
 end
+
+Given /^we have a Chef server at "(.*)"$/ do |chef_server_url|
+  set_env "MB_TEST_INIT_ALLOW_URL", chef_server_url
+end
+
+Given /^we have AWS credentials$/ do
+  set_env "AWS_ACCESS_KEY", "022QF06E7MXBSAMPLE"
+  set_env "AWS_SECRET_KEY", "kWcrlUX5JEDGM/SAMPLE/aVmYvHNif5zB+d9+ct"
+  set_env "EC2_URL", "https://ec2.us-east-1.amazonaws.com"
+end
