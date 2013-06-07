@@ -16,7 +16,7 @@ describe MB::Provisioner::AWS do
     job.stub :set_status
   end
 
-  let(:env_name) { "mbtest" }
+  let(:environment_name) { "mbtest" }
   let(:plugin) { double('plugin') }
 
   let(:manifest) do
@@ -96,15 +96,30 @@ describe MB::Provisioner::AWS do
       aws.should_receive(:verify_instances).and_return(true)
       aws.should_receive(:verify_connection).and_return(true)
       aws.should_receive(:instances_as_manifest).and_return(response)
-      expect(aws.up(job, env_name, manifest, plugin, skip_bootstrap: true)).to eq(response)
+      expect(aws.up(job, environment_name, manifest, plugin, skip_bootstrap: true)).to eq(response)
     end
   end
 
   describe "#down" do
-    it "is not implemented" do
-      expect {
-        aws.down
-      }.to raise_error(RuntimeError)
+    subject(:down) { aws.down job, environment_name }
+
+    let(:instances) { aws.up(job, environment_name, manifest, plugin) }
+    let(:instance_ids) {
+      instances.collect { |instance| instance[:instance_id] }
+    }
+    let(:fog) { aws.send(:fog_connection, manifest) }
+
+    before do
+      aws.stub fog_connection: Fog::Compute.new(provider: 'aws')
+      fog.create_key_pair('mb') rescue Fog::Compute::AWS::Error
+      aws.stub instance_ids_for_environment: instance_ids
+    end
+
+    it "cleans up the nodes and destroys the environment" do
+      environment_manager.should_receive(:destroy).with(environment_name)
+      fog.should_receive(:terminate_instances).with(instance_ids)
+
+      down
     end
   end
 
@@ -346,11 +361,11 @@ describe MB::Provisioner::AWS do
   end
 
   describe "#instance_ids" do
-    subject(:instance_ids) { aws.send(:instance_ids, env_name) }
+    subject(:instance_ids) { aws.send(:instance_ids, environment_name) }
 
     context "AWS" do
       before do
-        aws.ridley.should_receive(:search).with(:node, "chef_environment:#{env_name}").and_return(aws_nodes)
+        aws.ridley.should_receive(:search).with(:node, "chef_environment:#{environment_name}").and_return(aws_nodes)
       end
 
       it { should have(3).instances }
@@ -364,7 +379,7 @@ describe MB::Provisioner::AWS do
 
     context "Eucalyptus" do
       before do
-        aws.ridley.should_receive(:search).with(:node, "chef_environment:#{env_name}").and_return(euca_nodes)
+        aws.ridley.should_receive(:search).with(:node, "chef_environment:#{environment_name}").and_return(euca_nodes)
       end
 
       it { should have(3).instances }
@@ -382,7 +397,7 @@ describe MB::Provisioner::AWS do
       fog = aws.send(:fog_connection)
       aws.should_receive(:instance_ids).and_return(["i-ABCD1234"])
       fog.should_receive(:terminate_instances).with(["i-ABCD1234"])
-      aws.send(:terminate_instances, job, fog, env_name)
+      aws.send(:terminate_instances, job, fog, environment_name)
     end
   end
 end

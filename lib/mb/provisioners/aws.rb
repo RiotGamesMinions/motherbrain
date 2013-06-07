@@ -31,11 +31,35 @@ module MotherBrain
         instances_as_manifest(verified_instances)
       end
 
-      def down(*args)
-        raise RuntimeError, "not yet implemented"
+      # Terminate instances for the given environment
+      #
+      # @param [Job] job
+      #   a job to track the progress of this action
+      # @param [String] environment_name
+      def down(job, environment)
+        fog = fog_connection
+        fog.terminate_instances instance_ids_for_environment(environment)
+        destroy_environment environment
       end
 
       private
+
+        # Given an environment, return the instance IDs for either Eucalyptus
+        # or Amazon EC2. Nodes without instance IDs are skipped.
+        #
+        # @param [String] environment
+        #   The Chef environment to search for nodes in
+        #
+        # @return [Array(String)]
+        #   The instance IDs for any cloud nodes
+        def instance_ids_for_environment(environment)
+          nodes = ridley.search(:node, "chef_environment:#{environment}")
+
+          nodes.collect { |node|
+            attrs = node[:automatic][:eucalyptus] || node[:automatic][:ec2]
+            attrs[:instance_id] if attrs
+          }.compact
+        end
 
         # Find an appropriate AWS/Euca access key
         # Will look in manifest (if provided), and common environment
@@ -282,9 +306,13 @@ module MotherBrain
         #
         # @return [Hash]
         def instances_as_manifest(instances)
-          instances.collect do |instance_id, instance|
-            { instance_type: instance[:type], public_hostname: instance[:ipaddress] }
-          end
+          instances.collect { |instance_id, instance|
+            {
+              instance_id: instance_id,
+              instance_type: instance[:type],
+              public_hostname: instance[:ipaddress]
+            }
+          }
         end
 
         # @param [String] env_name
