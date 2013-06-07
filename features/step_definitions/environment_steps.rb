@@ -2,8 +2,8 @@ Given(/^there is an environment on the chef server named "(.*?)"$/) do |environm
   ridley.environment.find(environment_name) || ridley.environment.create(name: environment_name)
 end
 
-When(/^I destroy the environment "(.*?)"$/) do |environment_name|
-  step %Q[I run the "environment destroy #{environment_name}" command interactively]
+When(/^I destroy the environment "(.*?)" using the "(.*?)" provisioner$/) do |environment_name, provisioner|
+  step %Q[I run the "environment destroy #{environment_name} --provisioner #{provisioner}" command interactively]
   step %q[I type "yes"]
 end
 

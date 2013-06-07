@@ -4,12 +4,19 @@ Feature: Destroying an environment
   So I can manage an environment without using other tools such as knife
 
   Background:
-    Given an environment exists on the chef server named "destroy_me"
+    Given we have a Chef server at "127.0.0.1:28889"
+    And we have AWS credentials
+    And there is an environment on the chef server named "destroy_me"
 
   @chef_server
-  Scenario: Destroying an environment
-    When I destroy the environment "destroy_me"
+  Scenario Outline: Destroying an environment
+    When I destroy the environment "destroy_me" using the "<provisioner>" provisioner
     Then there should not be an environment "destroy_me" on the chef server
+
+  Examples:
+    | provisioner         |
+    | aws                 |
+    | environment_factory |
 
   @chef_server
   Scenario: Destroying a locked environment
