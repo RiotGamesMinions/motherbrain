@@ -35,10 +35,30 @@ module MotherBrain
       #
       # @param [Job] job
       #   a job to track the progress of this action
-      # @param [String] environment_name
+      # @param [String] environment
       def down(job, environment)
+        job.set_status "Searching for instances"
+
         fog = fog_connection
-        fog.terminate_instances instance_ids_for_environment(environment)
+
+        instance_ids = instance_ids_for_environment(environment)
+        instance_count = instance_ids.count
+
+        job.set_status "Terminating #{instance_count} #{'instance'.pluralize(instance_count)}"
+
+        instance_ids.each do |instance_id|
+          job.set_status "Terminating instance: #{instance_id}"
+
+          begin
+            fog.terminate_instances instance_id
+          rescue => error
+            job.set_status "Unable to terminate instance: #{instance_id}"
+            log.error error
+          end
+        end
+
+        job.set_status "Destroying Chef environment: #{environment}"
+
         destroy_environment environment
       end
 
