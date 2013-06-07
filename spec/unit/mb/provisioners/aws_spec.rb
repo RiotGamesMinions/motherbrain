@@ -117,7 +117,10 @@ describe MB::Provisioner::AWS do
 
     it "cleans up the nodes and destroys the environment" do
       environment_manager.should_receive(:destroy).with(environment_name)
-      fog.should_receive(:terminate_instances).with(instance_ids)
+
+      instance_ids.each do |instance_id|
+        fog.should_receive(:terminate_instances).with(instance_id)
+      end
 
       down
     end
