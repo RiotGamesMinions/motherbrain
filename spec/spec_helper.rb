@@ -14,6 +14,11 @@ require 'chef_zero/server'
 def setup_rspec
   Dir[File.join(File.expand_path("../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
 
+  # chef-zero
+  WebMock.disrble_net_connect!(allow: /127.0.0.1:28889/)
+  $chef_zero = ChefZero::Server.new(port: 28889)
+  $chef_zero.start_background
+
   RSpec.configure do |config|
     config.include JsonSpec::Helpers
     config.include MotherBrain::RSpec::Doubles
@@ -35,9 +40,8 @@ def setup_rspec
 
     config.before(:each) do
       clean_tmp_path
-      ridley.environment.delete_all
+      $chef_zero.clear_data
     end
-
   end
 end
 
@@ -48,10 +52,6 @@ else
 
   Spork.prefork do
     setup_rspec
-    # chef-zero
-    WebMock.disable_net_connect!(:allow => /127.0.0.1:28889/)
-    @server = ChefZero::Server.new(port: 28889)
-    @server.start_background
   end
 
   Spork.each_run do
