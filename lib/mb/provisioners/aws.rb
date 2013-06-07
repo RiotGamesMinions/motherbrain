@@ -37,29 +37,11 @@ module MotherBrain
       #   a job to track the progress of this action
       # @param [String] environment
       def down(job, environment)
-        job.set_status "Searching for instances"
-
-        fog = fog_connection
-
+        job.set_status "Searching for instances to terminate"
         instance_ids = instance_ids_for_environment(environment)
-        instance_count = instance_ids.count
 
-        job.set_status "Terminating #{instance_count} #{'instance'.pluralize(instance_count)}"
-
-        instance_ids.each do |instance_id|
-          job.set_status "Terminating instance: #{instance_id}"
-
-          begin
-            fog.terminate_instances instance_id
-          rescue => error
-            job.set_status "Unable to terminate instance: #{instance_id}"
-            log.error error
-          end
-        end
-
-        job.set_status "Destroying Chef environment: #{environment}"
-
-        destroy_environment environment
+        terminate_instance_ids job, instance_ids
+        destroy_environment job, environment
       end
 
       private
@@ -79,6 +61,28 @@ module MotherBrain
             attrs = node[:automatic][:eucalyptus] || node[:automatic][:ec2]
             attrs[:instance_id] if attrs
           }.compact
+        end
+
+        # Terminates instances by their IDs.
+        #
+        # @param [Job] job
+        # @param [Array(String)] instance_ids
+        def terminate_instance_ids(job, instance_ids)
+          fog = fog_connection
+          instance_count = instance_ids.count
+
+          job.set_status "Terminating #{instance_count} #{'instance'.pluralize(instance_count)}"
+
+          instance_ids.each do |instance_id|
+            job.set_status "Terminating instance: #{instance_id}"
+
+            begin
+              fog.terminate_instances instance_id
+            rescue => error
+              job.set_status "Unable to terminate instance: #{instance_id}"
+              log.error error
+            end
+          end
         end
 
         # Find an appropriate AWS/Euca access key

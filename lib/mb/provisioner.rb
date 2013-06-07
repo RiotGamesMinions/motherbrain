@@ -187,7 +187,8 @@ module MotherBrain
         #
         # @param [String] environment_name
         #   name of the environment to remove
-        def destroy_environment(environment_name)
+        def destroy_environment(job, environment_name)
+          job.set_status "Destroying Chef environment: #{environment_name}"
           environment_manager.destroy(environment_name)
         end
     end
