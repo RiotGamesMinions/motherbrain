@@ -17,7 +17,8 @@ module MotherBrain
         validate_provisioner_class(klass)
 
         unless get(klass.provisioner_id).nil?
-          raise ProvisionerRegistrationError, "A provisioner with the id '#{klass.provisioner_id}' has already been registered"
+          raise ProvisionerRegistrationError,
+            "A provisioner with the id '#{klass.provisioner_id}' has already been registered"
         end
 
         if options[:default]
@@ -33,7 +34,7 @@ module MotherBrain
 
       # List of all the registered provisioners
       #
-      # @return [Set]
+      # @return [Set<MB::Provisioner::Base>]
       def all
         @all ||= Set.new
       end
@@ -78,7 +79,7 @@ module MotherBrain
       #   an empty Set
       def clear!
         @default_id = nil
-        @all = Set.new
+        @all        = Set.new
       end
 
       # @param [Symbol] klass
@@ -139,10 +140,13 @@ module MotherBrain
 
       # Request a provisioner to generate a set of nodes described by the given manifest
       #
-      # @param [String] environment
+      # @param [MB::Job] job
+      # @param [String] env_name
       #   name of the set of nodes to be created
       # @param [MB::Provisioner::Manifest] manifest
       #   manifest describing how many and what kind of nodes to create
+      # @param [MB::Plugin] plugin
+      # @param [Hash] options
       #
       # @example
       #   [
@@ -164,14 +168,16 @@ module MotherBrain
 
       # Destroy a set of provisioned nodes
       #
+      # @param [MB::Job] job
       # @param [String] environment
       #   name of the set of nodes to destroy
+      # @param [Hash] options
       #
       # @raise [MB::ProvisionError]
       #   if a caught error occurs during provisioning
       #
       # @return [Boolean]
-      def down(job, env_name)
+      def down(job, env_name, options = {})
         raise AbstractFunction
       end
 
