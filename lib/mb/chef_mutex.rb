@@ -166,7 +166,9 @@ module MotherBrain
         job.set_status("Unlocking #{to_s}")
       end
 
-      report(attempt_unlock)
+      attempt_unlock
+
+      report(true)
     end
 
     private
