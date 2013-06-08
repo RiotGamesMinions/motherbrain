@@ -1,3 +1,6 @@
+require 'ef/rest'
+EF::REST.set_logger(MB.logger)
+
 module MotherBrain
   module Provisioner
     # Provisioner adapter for Environment Factory. Node/Environment creation will be
@@ -125,9 +128,6 @@ module MotherBrain
         # @option options [#to_s] :api_key
         # @option options [Hash] :ssl
         def new_connection(options = {})
-          MB.require_or_exit 'ef/rest'
-          EF::REST.set_logger(MB.logger)
-
           options = options.reverse_merge(
             api_url: config_manager.config[:ef][:api_url],
             api_key: config_manager.config[:ef][:api_key],
