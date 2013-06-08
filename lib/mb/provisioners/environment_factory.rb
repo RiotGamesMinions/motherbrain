@@ -55,7 +55,7 @@ module MotherBrain
         end
       end
 
-      register_provisioner :environment_factory, default: true
+      register_provisioner :environment_factory
 
       # Create an environment of the given name and provision nodes in based on the contents
       # of the given manifest
