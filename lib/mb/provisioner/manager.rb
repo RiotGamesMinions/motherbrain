@@ -109,9 +109,9 @@ module MotherBrain
       #   id of provisioner to use
       def destroy(job, environment, options = {})
         job.report_running
+        options = options.dup
 
-        worker = choose_provisioner(options.delete(:with))
-        worker.down(job, environment)
+        choose_provisioner(options.delete(:with)).down(job, environment, options)
 
         job.report_success("environment destroyed")
       rescue => ex

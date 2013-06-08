@@ -54,32 +54,6 @@ module MotherBrain
 
       register_provisioner :environment_factory, default: true
 
-      # How often to check with Environment Factory to see if the environment has been
-      # created and is ready
-      #
-      # @return [Float]
-      attr_accessor :interval
-
-      # @option options [#to_f] :interval
-      #   set a polling interval to see if the environment is ready (default: 30.0)
-      # @option options [#to_s] :api_url
-      # @option options [#to_s] :api_key
-      # @option options [Hash] :ssl
-      def initialize(options = {})
-        MB.require_or_exit 'ef/rest'
-        EF::REST.set_logger(MB.logger)
-
-        options = options.reverse_merge(
-          api_url: Application.config[:ef][:api_url],
-          api_key: Application.config[:ef][:api_key],
-          interval: 30.0,
-          ssl: Application.config[:ssl].to_hash
-        )
-
-        @interval   = options[:interval].to_f
-        @connection = EF::REST.connection(options)
-      end
-
       # Create an environment of the given name and provision nodes in based on the contents
       # of the given manifest
       #
@@ -97,7 +71,8 @@ module MotherBrain
       #
       # @return [Array<Hash>]
       def up(job, env_name, manifest, plugin, options = {})
-        options = options.reverse_merge(skip_bootstrap: false)
+        options    = options.reverse_merge(skip_bootstrap: false, interval: 30.0)
+        connection = new_connection(options)
 
         begin
           job.set_status("Creating new environment")
@@ -106,7 +81,7 @@ module MotherBrain
 
         until connection.environment.created?(env_name)
           job.set_status("Waiting for environment to be created")
-          sleep self.interval
+          sleep options[:interval].to_f
         end
 
         job.set_status("Environment created")
@@ -129,11 +104,12 @@ module MotherBrain
       #   if a caught error occurs during provisioning
       #
       # @return [Boolean]
-      def down(job, env_name)
+      def down(job, env_name, options = {})
         job.set_status("Sending request to environment factory to destroy environment")
+        connection = new_connection(options)
         connection.environment.destroy(env_name)
 
-        until destroyed?(env_name)
+        until destroyed?(connection, env_name)
           job.set_status("Waiting for environment to be destroyed")
           sleep 2
         end
@@ -145,15 +121,28 @@ module MotherBrain
 
       private
 
-        # @return [EF::REST::Connection]
-        attr_accessor :connection
+        # @option options [#to_s] :api_url
+        # @option options [#to_s] :api_key
+        # @option options [Hash] :ssl
+        def new_connection(options = {})
+          MB.require_or_exit 'ef/rest'
+          EF::REST.set_logger(MB.logger)
+
+          options = options.reverse_merge(
+            api_url: config_manager.config[:ef][:api_url],
+            api_key: config_manager.config[:ef][:api_key],
+            ssl: config_manager.config[:ssl].to_hash
+          )
+
+          EF::REST.connection(options)
+        end
 
         # Has the given environment been destroyed?
         #
         # @param [String] environment
         #
         # @return [Boolean]
-        def destroyed?(environment)
+        def destroyed?(connection, environment)
           response = connection.environment.find(environment, force: true)
           response[:status] == "pending"
         end
