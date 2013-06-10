@@ -231,6 +231,10 @@ describe MB::ChefMutex do
       unlock
     end
 
+    it "returns true" do
+      expect(unlock).to be_true
+    end
+
     context "when passed a job" do
       let(:options) { { job: job_stub } }
 
