@@ -5,7 +5,7 @@ module MotherBrain
   module Provisioner
     # Provisioner adapter for AWS/Eucalyptus
     class AWS < Provisioner::Base
-      register_provisioner :aws
+      register_provisioner :aws, default: true
 
       # Provision nodes in the environment based on the contents of the given manifest
       #
