@@ -56,6 +56,10 @@ describe MB::EnvironmentManager do
   end
 
   describe "#create" do
+    before :each do
+      ridley.environment.delete(environment_name)
+    end
+
     it "creates an environment" do
       environment_manager.create environment_name
 
@@ -64,9 +68,13 @@ describe MB::EnvironmentManager do
   end
 
   describe "#destroy" do
-    it "destroys the environment" do
-      ridley.environment.create(name: environment_name)
+    before :each do
+      unless ridley.environment.find(environment_name)
+        ridley.environment.create(name: environment_name)
+      end
+    end
 
+    it "destroys the environment" do
       environment_manager.destroy environment_name
 
       expect(ridley.environment.find(environment_name)).to be_nil

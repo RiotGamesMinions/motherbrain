@@ -26,6 +26,7 @@ module MotherBrain
 
       include Celluloid
       include MB::Logging
+      include MB::Mixin::Locks
       include MB::Mixin::Services
 
       finalizer :finalize_callback
@@ -49,7 +50,7 @@ module MotherBrain
       # @option options [#to_sym] :with
       #   id of provisioner to use
       def async_destroy(environment, options = {})
-        job = Job.new(:destroy_provision)
+        job = Job.new(:destroy)
         async(:destroy, job, environment, options)
 
         job.ticket
@@ -111,7 +112,9 @@ module MotherBrain
         job.report_running
         options = options.dup
 
-        choose_provisioner(options.delete(:with)).down(job, environment, options)
+        chef_synchronize(chef_environment: environment, force: options[:force]) do
+          choose_provisioner(options.delete(:with)).down(job, environment, options)
+        end
 
         job.report_success("environment destroyed")
       rescue => ex
