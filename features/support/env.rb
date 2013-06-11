@@ -12,8 +12,6 @@ def setup_env
   require 'chef_zero/server'
   Dir[File.join(File.expand_path("../../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
 
-  MotherBrain::SpecHelpers.chef_zero.start_background
-
   RSpec.configure do |config|
     config.include MotherBrain::SpecHelpers
 
@@ -25,8 +23,12 @@ def setup_env
   World(Aruba::Api)
   World(MotherBrain::SpecHelpers)
 
+  MotherBrain::SpecHelpers.chef_zero.start_background
+
   Before do
-    @aruba_timeout_seconds = 10
+    MotherBrain::SpecHelpers.chef_zero.clear_data
+
+    @aruba_timeout_seconds = 30
     @config = generate_valid_config
   end
 end

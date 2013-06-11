@@ -36,7 +36,8 @@ module MotherBrain
       # @param [Job] job
       #   a job to track the progress of this action
       # @param [String] environment
-      def down(job, environment)
+      # @param [Hash] options
+      def down(job, environment, options = {})
         job.set_status "Searching for instances to terminate"
         instance_ids = instance_ids_for_environment(environment)
 

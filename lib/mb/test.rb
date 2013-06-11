@@ -22,6 +22,7 @@ module MotherBrain
 
       def initialize
         ::RSpec::Mocks.setup(self)
+        WebMock.disable_net_connect!(allow_localhost: true)
       end
 
       def type
@@ -45,7 +46,7 @@ module MotherBrain
       include WebMock::API
 
       def available_mocks
-        [:allow_url, :env, :cookbook, :bootstrap, :template, :template_url]
+        [:env, :cookbook, :bootstrap, :template, :template_url]
       end
 
       def ridley
@@ -68,10 +69,6 @@ module MotherBrain
         ridley.should_receive(:get).with("cookbooks/#{name}").and_return(stub(:response, :body => {}))
         plugin = MB::Application.plugin_manager.find(name, version)
         MB::Application.plugin_manager.should_receive(:for_environment).and_return(plugin)
-      end
-
-      def allow_url(url)
-        WebMock.disable_net_connect!(allow: /#{url}/)
       end
 
       def bootstrap(x)

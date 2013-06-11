@@ -26,7 +26,9 @@ def setup_rspec
     config.filter_run focus: true
     config.run_all_when_everything_filtered = true
 
-    MotherBrain::SpecHelpers.chef_zero.start_background
+    config.before(:suite) do
+      MotherBrain::SpecHelpers.chef_zero.start_background
+    end
 
     config.before(:all) do
       Celluloid.shutdown
