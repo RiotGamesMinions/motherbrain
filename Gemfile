@@ -23,7 +23,7 @@ group :development do
   gem 'yard'
   gem 'geminabox'
   gem 'ronn', platforms: :ruby
-  gem 'chef-zero'
+  gem 'chef-zero', '~> 1.4.0'
 end
 
 group :test do
