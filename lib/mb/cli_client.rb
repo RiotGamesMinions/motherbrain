@@ -143,9 +143,14 @@ module MotherBrain
         @spinner ||= Enumerator.new { |enumerator|
           characters = if ENV['SPINNER'] == 'kirby'
                          kirby = ["(>' ')>", "(^' ')^", "<(' '<)", "^(' '^)"]
-                         frames = [0,0,0,1,2,2,2,3].inject([]) {|frames, frame| frames + [frame]*3}
-                         buffer = [0,1,2,3,3,2,1,0].inject([]) {|frames, frame| frames + [frame]*3}
-                         frames.each_with_index.collect { |frame, i| (" "*buffer[i]) + kirby[frame] + " "*(3-buffer[i]) }
+                         frames = [0, 0, 0, 1, 2, 2, 2, 3].inject([]) { |frames, frame| frames + [frame]*3 }
+                         buffer = [0, 1, 2, 3, 3, 2, 1, 0].inject([]) { |frames, frame| frames + [frame]*3 }
+                         buffer_max = buffer.max
+                         frames.each_with_index.collect do |frame, i| 
+                           left  = " " * buffer[i]
+                           right = " " * (buffer_max - buffer[i])
+                           left + kirby[frame] + right
+                         end
                        else
                          %w[` ' - . , . - ']
                        end
