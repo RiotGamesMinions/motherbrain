@@ -72,7 +72,12 @@ module MotherBrain
           def reset(job)
             nodes.collect do |node|
               @node_resets.each do |attribute|
-                job.set_status("Setting node attribute '#{attribute[:key]}' to #{attribute[:value].inspect} on #{node.name}")
+                message = if attribute[:value].nil?
+                  "Toggling off node attribute '#{attribute[:key]}' on #{node.name}"
+                else
+                  "Toggling node attribute '#{attribute[:key]}' back to '#{attribute[:value].inspect}' on #{node.name}"
+                end
+                job.set_status(message)
                 node.set_chef_attribute(attribute[:key], attribute[:value])
               end
 
@@ -82,7 +87,12 @@ module MotherBrain
             if @environment_resets.any?
               env = ridley.environment.find(environment)
               @environment_resets.each do |attribute|
-                job.set_status("Setting environment attribute '#{attribute[:key]}' to #{attribute[:value].inspect} in #{environment}")
+                message = if attribute[:value].nil?
+                  "Toggling off environment attribute '#{attribute[:key]}' in #{environment}"
+                else
+                  "Toggling environment attribute '#{attribute[:key]}' to '#{attribute[:value].inspect}' on #{environment}"
+                end
+                job.set_status(message)
                 env.set_default_attribute(attribute[:key], attribute[:value])
               end
               env.save
