@@ -48,7 +48,7 @@ module MotherBrain
       required: true
 
     attribute 'chef.api_url',
-      default: chef_config[:chef_server_url],
+      default: (ENV['CHEF_API_URL'] || chef_config[:chef_server_url]),
       type: String,
       required: true
 

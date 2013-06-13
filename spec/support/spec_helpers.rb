@@ -1,11 +1,19 @@
 module MotherBrain
   module SpecHelpers
     class << self
+      def chef_api_url_port
+        if ENV['CHEF_API_URL']
+          ENV['CHEF_API_URL'].split(?:).last.to_i
+        else
+          28890
+        end
+      end
+
       def chef_zero
         return @chef_zero if @chef_zero
 
-        WebMock.disable_net_connect!(allow: /127.0.0.1:28889/)
-        @chef_zero = ChefZero::Server.new(port: 28889)
+        WebMock.disable_net_connect!(allow_localhost: true)
+        @chef_zero = ChefZero::Server.new(port: chef_api_url_port)
       end
     end
 
@@ -40,7 +48,7 @@ module MotherBrain
       @mb_config ||= MB::Config.new(nil,
         {
           chef: {
-            api_url: "http://127.0.0.1:28889",
+            api_url: "http://127.0.0.1:#{MotherBrain::SpecHelpers.chef_api_url_port}",
             api_client: "zero",
             api_key: File.join(fixtures_path, "fake_key.pem"),
             validator_client: "chef-validator",
