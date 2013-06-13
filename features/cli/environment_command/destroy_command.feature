@@ -8,15 +8,10 @@ Feature: Destroying an environment
     And we have AWS credentials
 
   @chef_server
-  Scenario Outline: Destroying an environment
-    When I destroy the environment "destroy_me" using the "<provisioner>" provisioner
+  Scenario: Destroying an environment
+    When I destroy the environment "destroy_me"
     Then the exit status should be 0
     And there should not be an environment "destroy_me" on the chef server
-
-  Examples:
-    | provisioner         |
-    | aws                 |
-    | environment_factory |
 
   @chef_server
   Scenario: Destroying a locked environment

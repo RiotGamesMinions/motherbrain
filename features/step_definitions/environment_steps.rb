@@ -15,10 +15,6 @@ When(/^I destroy the environment "(.*?)"$/) do |environment_name|
   step %q[I type "yes"]
 end
 
-When(/^I destroy the environment "(.*?)" using the "(.*?)" provisioner$/) do |environment_name, provisioner|
-  step %Q[I run the "environment destroy #{environment_name} --provisioner #{provisioner} --force" command]
-end
-
 When(/^I destroy the environment "(.*?)" with flags:$/) do |environment_name, table|
   flags_string = table.raw.flatten.join(' ')
   step %Q[I run the "environment destroy #{environment_name} #{flags_string}" command]
