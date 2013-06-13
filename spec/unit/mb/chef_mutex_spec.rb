@@ -131,6 +131,20 @@ describe MB::ChefMutex do
     end
   end
 
+  describe "#locked?" do
+    subject(:locked?) { chef_mutex.locked? }
+
+    it { should be_false }
+
+    context "when the environment is locked" do
+      before do
+        chef_mutex.stub read: true
+      end
+
+      it { should be_true }
+    end
+  end
+
   describe "#synchronize" do
     subject(:synchronize) { chef_mutex.synchronize(&test_block) }
 

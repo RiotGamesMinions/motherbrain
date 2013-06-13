@@ -52,6 +52,10 @@ module MotherBrain
           options[:yes] ||= options[:force]
           destroy_options = Hash.new.merge(options).deep_symbolize_keys
 
+          if !options[:force] && ChefMutex.new(chef_environment: environment).locked?
+            abort "The environment \"#{environment}\" is locked. You may use --force to override this safeguard."
+          end
+
           dialog = "This will destroy the '#{environment}' environment.\nAre you sure? (yes|no): "
           really_destroy = options[:yes] || ui.yes?(dialog)
 

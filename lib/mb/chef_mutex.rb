@@ -121,6 +121,13 @@ module MotherBrain
       report(attempt_lock)
     end
 
+    # Returns whether or not the object is locked.
+    #
+    # @return [Boolean]
+    def locked?
+      !!read
+    end
+
     # Obtains a lock, runs the block, and releases the lock when the block
     # completes. Raises a ResourceLocked error if the lock was unobtainable.
     # If the block raises an error, the resource is unlocked, unless
