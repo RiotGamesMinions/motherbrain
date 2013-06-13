@@ -28,7 +28,7 @@ def setup_env
   Before do
     MotherBrain::SpecHelpers.chef_zero.clear_data
 
-    @aruba_timeout_seconds = 30
+    @aruba_timeout_seconds = 10
     @config = generate_valid_config
   end
 end

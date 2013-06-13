@@ -7,12 +7,12 @@ Given(/^the default provisioner is "(.*?)"$/) do |provisioner|
 end
 
 Given(/^the environment "(.*?)" is locked$/) do |environment_name|
-  step %Q[I run the "environment lock #{environment_name}" command interactively]
+  step %Q[I run the "environment lock #{environment_name}" command]
 end
 
 When(/^I destroy the environment "(.*?)"$/) do |environment_name|
   step %Q[I run the "environment destroy #{environment_name}" command interactively]
-  # step %q[I type "yes"]
+  step %q[I type "yes"]
 end
 
 When(/^I destroy the environment "(.*?)" using the "(.*?)" provisioner$/) do |environment_name, provisioner|
@@ -22,8 +22,7 @@ end
 
 When(/^I destroy the environment "(.*?)" with flags:$/) do |environment_name, table|
   flags_string = table.raw.flatten.join(' ')
-  step %Q[I run the "environment destroy #{environment_name} #{flags_string}" command interactively]
-  step %q[I type "yes"]
+  step %Q[I run the "environment destroy #{environment_name} #{flags_string}" command]
 end
 
 Then(/^there should be an environment "(.*?)" on the chef server$/) do |environment_name|
