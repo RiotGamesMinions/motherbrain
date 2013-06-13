@@ -16,8 +16,7 @@ When(/^I destroy the environment "(.*?)"$/) do |environment_name|
 end
 
 When(/^I destroy the environment "(.*?)" using the "(.*?)" provisioner$/) do |environment_name, provisioner|
-  step %Q[I run the "environment destroy #{environment_name} --provisioner #{provisioner}" command interactively]
-  step %q[I type "yes"]
+  step %Q[I run the "environment destroy #{environment_name} --provisioner #{provisioner} --force" command]
 end
 
 When(/^I destroy the environment "(.*?)" with flags:$/) do |environment_name, table|
