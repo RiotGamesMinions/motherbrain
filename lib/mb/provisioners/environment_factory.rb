@@ -117,6 +117,8 @@ module MotherBrain
           sleep 2
         end
 
+        destroy_environment job, env_name
+
         true
       rescue EF::REST::Error => ex
         abort ProvisionError.new(ex)
