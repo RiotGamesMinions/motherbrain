@@ -27,7 +27,7 @@ Feature: Destroying an environment
       The environment "destroy_me" is locked. You may use --force to override this safeguard.
       """
     And there should be an environment "destroy_me" on the chef server
-    And the exit status should be 0
+    And the exit status should be the code for error "ResourceLocked"
 
   @chef_server
   Scenario: Destroying a locked environment with --force
