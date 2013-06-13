@@ -36,14 +36,13 @@ describe MB::Provisioner::Manager do
   end
 
   describe "#provision" do
-    let(:job) { MB::Job.new(:provision) }
-    let(:options) { Hash.new }
-
     let(:bootstrapper) { double('bootstrapper') }
     let(:default_provisioner) { provisioner_manager.provisioner_registry[MB::Provisioner.default_id] }
+    let(:job) { MB::Job.new(:provision) }
+    let(:options) { Hash.new }
+    let!(:ticket) { job.ticket }
 
     subject(:provision) do
-      @ticket = job.ticket
       provisioner_manager.stub(bootstrapper: bootstrapper)
       provisioner_manager.provision(job, environment, manifest, plugin, options)
     end
@@ -64,7 +63,7 @@ describe MB::Provisioner::Manager do
         bootstrapper.should_receive(:bootstrap)
 
         provision
-        expect(@ticket.state).to eql(:success)
+        expect(ticket.state).to eql(:success)
       end
     end
 
@@ -80,7 +79,7 @@ describe MB::Provisioner::Manager do
         bootstrapper.should_not_receive(:bootstrap)
 
         provision
-        expect(@ticket.state).to eql(:success)
+        expect(ticket.state).to eql(:success)
       end
     end
   end

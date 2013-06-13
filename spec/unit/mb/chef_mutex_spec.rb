@@ -56,7 +56,7 @@ describe MB::ChefMutex do
 
   let(:client_name) { "johndoe" }
   let(:lockset) { { chef_environment: "my_environment" } }
-  let(:options) { Hash.new }
+  let(:options) { lockset }
 
   let(:chef_connection_stub) { stub client_name: client_name }
   let(:locks_stub) { stub(
@@ -71,7 +71,6 @@ describe MB::ChefMutex do
 
   before do
     chef_mutex.stub locks: locks_stub
-    chef_mutex.stub externally_testing?: false
   end
 
   its(:type) { should == lockset.keys.first }
@@ -123,7 +122,7 @@ describe MB::ChefMutex do
       let(:options) { { job: job_stub } }
 
       it "sets the job status" do
-        job_stub.should_receive(:status=).with(
+        job_stub.should_receive(:set_status).with(
           "Locking chef_environment:my_environment"
         )
 

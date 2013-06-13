@@ -107,8 +107,6 @@ module MotherBrain
     #
     # @return [Boolean]
     def lock
-      return true if externally_testing?
-
       unless type
         raise InvalidLockType, "Must pass a valid lock type (#{LOCK_TYPES})"
       end
@@ -116,7 +114,7 @@ module MotherBrain
       log.info { "Locking #{to_s}" }
 
       if job
-        job.status = "Locking #{to_s}"
+        job.set_status "Locking #{to_s}"
         job.report_running if report_job_status
       end
 
@@ -159,8 +157,6 @@ module MotherBrain
     #
     # @return [Boolean]
     def unlock
-      return true if externally_testing?
-
       if job
         job.report_running if report_job_status
         job.set_status("Unlocking #{to_s}")
@@ -248,16 +244,6 @@ module MotherBrain
       # Create our data bag if it doesn't already exist
       def ensure_data_bag_exists
         data_bag.create(name: DATA_BAG) unless locks
-      end
-
-      # To prevent tests on code that use locks from actually locking anything,
-      # we provide the #externally_testing? method that reflects the status, and
-      # we can stub it to return false if we actually want to test the locking
-      # code.
-      #
-      # @return [Boolean]
-      def externally_testing?
-        ENV['RUBY_ENV'] == 'test'
       end
 
       # @return [Ridley::DBIChainLink] if the data bag exists
