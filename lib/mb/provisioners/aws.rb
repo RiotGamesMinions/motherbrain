@@ -177,7 +177,7 @@ module MotherBrain
         # @param [Provisioner::Manifest] manifest
         #
         # @return [Fog::Compute]
-        def fog_connection(manifest=nil)
+        def fog_connection(manifest = nil)
           Fog::Compute.new(
             provider: 'aws',
             aws_access_key_id: access_key(manifest),
@@ -353,15 +353,6 @@ module MotherBrain
             end
             instance_id
           end
-        end
-
-        # @param [Job] job
-        # @param [AWS::Compute] fog
-        # @param [String] env_name
-        def terminate_instances(job, fog, env_name)
-          ids = instance_ids(env_name)
-          job.set_status "Terminating #{ids.join(',')}"
-          fog.terminate_instances ids
         end
     end
   end

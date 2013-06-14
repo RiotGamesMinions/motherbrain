@@ -394,13 +394,4 @@ describe MB::Provisioner::AWS do
       end
     end
   end
-
-  describe "#terminate_instances" do
-    it "should call Fog" do
-      fog = aws.send(:fog_connection)
-      aws.should_receive(:instance_ids).and_return(["i-ABCD1234"])
-      fog.should_receive(:terminate_instances).with(["i-ABCD1234"])
-      aws.send(:terminate_instances, job, fog, environment_name)
-    end
-  end
 end
