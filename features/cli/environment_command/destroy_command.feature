@@ -17,11 +17,11 @@ Feature: Destroying an environment
   Scenario: Destroying a locked environment
     Given the environment "destroy_me" is locked
     When I destroy the environment "destroy_me"
-    Then the exit status should be the code for error "ResourceLocked"
-    And the output should contain:
+    Then the output should contain:
       """
       The environment "destroy_me" is locked. You may use --force to override this safeguard.
       """
+    And the exit status should be the code for error "ResourceLocked"
     And there should be an environment "destroy_me" on the chef server
 
   @chef_server
