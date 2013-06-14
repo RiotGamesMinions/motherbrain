@@ -110,9 +110,9 @@ describe MB::Provisioner::AWS do
     let(:fog) { aws.send(:fog_connection, manifest) }
 
     before do
-      aws.stub fog_connection: Fog::Compute.new(provider: 'aws')
-      fog.create_key_pair('mb') rescue Fog::Compute::AWS::Error
-      aws.stub instance_ids_for_environment: instance_ids
+      aws.stub(fog_connection: Fog::Compute.new(provider: 'aws', aws_access_key_id: "", aws_secret_access_key: ""))
+      fog.create_key_pair('mb')
+      aws.stub(instance_ids_for_environment: instance_ids)
     end
 
     it "cleans up the nodes and destroys the environment" do
