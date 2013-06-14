@@ -169,7 +169,7 @@ module MotherBrain
       # Destroy a set of provisioned nodes
       #
       # @param [MB::Job] job
-      # @param [String] environment
+      # @param [String] environment_name
       #   name of the set of nodes to destroy
       # @param [Hash] options
       #
@@ -177,7 +177,7 @@ module MotherBrain
       #   if a caught error occurs during provisioning
       #
       # @return [Boolean]
-      def down(job, env_name, options = {})
+      def down(job, environment_name, options = {})
         raise AbstractFunction
       end
 
