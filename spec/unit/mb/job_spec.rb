@@ -33,6 +33,102 @@ describe MB::Job do
 
   subject { described_class.new(type) }
 
+  describe "#execute" do
+    let(:test_probe) { double(testing: true) }
+    let(:test_block) { -> { test_probe.testing } }
+
+    context "when the given block raises an exception" do
+      before { test_probe.stub(:testing).and_raise(RuntimeError) }
+
+      it "marks the job as a failure" do
+        subject.should_receive(:report_failure)
+        subject.execute(&test_block)
+      end
+
+      it "terminates the job" do
+        subject.should_receive(:terminate)
+        subject.execute(&test_block)
+      end
+    end
+
+    context "when the given block does not raise an exception" do
+      before { test_probe.stub(testing: true) }
+
+      it "marks the job as a success" do
+        subject.should_receive(:report_success)
+        subject.execute(&test_block)
+      end
+
+      it "terminates the job" do
+        subject.should_receive(:terminate)
+        subject.execute(&test_block)
+      end
+    end
+
+    context "when given an :on_complete callback" do
+      let(:callback_probe) { double(testing: true) }
+      let(:callback) { -> { callback_probe.testing } }
+
+      it "executes the callback after the job is finished but before it is terminated" do
+        test_probe.should_receive(:testing).ordered
+        subject.should_receive(:report_success).ordered
+        callback_probe.should_receive(:testing).ordered
+        subject.should_receive(:terminate).ordered
+
+        subject.execute(on_complete: callback, &test_block)
+      end
+    end
+
+    context "when given an :on_success callback" do
+      let(:callback_probe) { double(testing: true) }
+      let(:callback) { -> { callback_probe.testing } }
+
+      context "when the given block does not raise an exception" do
+        it "executes the callback after the block is executed but before the job is finished" do
+          test_probe.should_receive(:testing).and_return(true)
+          callback_probe.should_receive(:testing).ordered
+          subject.should_receive(:report_success).ordered
+          subject.should_receive(:terminate).ordered
+
+          subject.execute(on_success: callback, &test_block)
+        end
+      end
+
+      context "when the given block raises an exception" do
+        it "does not execute the callback" do
+          test_probe.should_receive(:testing).and_raise(RuntimeError)
+          callback_probe.should_not_receive(:testing)
+
+          subject.execute(on_success: callback, &test_block)
+        end
+      end
+    end
+
+    context "when given an :on_failure callback" do
+      let(:callback_probe) { double(testing: true) }
+      let(:callback) { -> { callback_probe.testing } }
+
+      context "when the given block raises an exception" do
+        it "executes the :on_failure callback after the block is executed" do
+          test_probe.should_receive(:testing).ordered.and_raise(RuntimeError)
+          callback_probe.should_receive(:testing).ordered
+          subject.should_receive(:report_failure).ordered
+
+          subject.execute(on_failure: callback, &test_block)
+        end
+      end
+
+      context "when the given block does not raise an exception" do
+        it "does not execute the :on_failure callback" do
+          test_probe.should_receive(:testing).and_return(true)
+          callback_probe.should_not_receive(:testing)
+
+          subject.execute(on_failure: callback, &test_block)
+        end
+      end
+    end
+  end
+
   describe "#completed?" do
     it "should be completed if status is 'success'" do
       subject.transition(:running)

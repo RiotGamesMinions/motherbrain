@@ -58,6 +58,8 @@ module MotherBrain
 
     finalizer :finalize_callback
 
+    execute_block_on_receiver :execute
+
     # @param [#to_s] type
     def initialize(type)
       @machine = StateMachine.new
@@ -65,6 +67,41 @@ module MotherBrain
       @id      = job_manager.uuid
       @result  = nil
       job_manager.add(Actor.current)
+    end
+
+    # Start and stop a job around the given block of code.
+    #
+    # If the block of code raises an exception the job will end as a failure.
+    # If the block of code is successful the job will end as a success.
+    #
+    # The job will be terminated after execution.
+    #
+    # @option options [String] :running_msg
+    #   an optional running message
+    # @option options [String] :success_msg
+    #   an optional success message
+    # @option options [#call] :on_complete
+    #   an optional block of code to run before the job is terminated
+    # @option options [#call] :on_failure
+    #   an optional block of code to run if the job results in a failure
+    def execute(options = {}, &block)
+      report_running(options[:running_msg])
+      yield
+      if options[:on_success].respond_to?(:call)
+        options[:on_success].call
+      end
+      report_success(options[:success_msg])
+    rescue => ex
+      ex = ex.cause if ex.is_a?(AbortError)
+      if options[:on_failure].respond_to?(:call)
+        options[:on_failure].call
+      end
+      report_failure(ex)
+    ensure
+      if options[:on_complete].respond_to?(:call)
+        options[:on_complete].call
+      end
+      terminate
     end
 
     # @param [#to_json] result
