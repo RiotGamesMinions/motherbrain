@@ -38,8 +38,9 @@ describe MB::Provisioner::Manager do
   describe "#provision" do
     let(:bootstrapper) { double('bootstrapper') }
     let(:default_provisioner) { provisioner_manager.provisioner_registry[MB::Provisioner.default_id] }
-    let(:job) { MB::Job.new(:provision) }
     let(:options) { Hash.new }
+
+    let!(:job) { MB::Job.new(:provision) }
     let!(:ticket) { job.ticket }
 
     subject(:provision) do
