@@ -190,6 +190,15 @@ module MotherBrain
     attribute 'ef.api_key',
       type: String
 
+    attribute 'aws.access_key',
+      type: String
+
+    attribute 'aws.secret_key',
+      type: String
+
+    attribute 'aws.endpoint',
+      type: String
+
     attribute 'bootstrap.default_template',
       type: String
 
