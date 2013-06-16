@@ -191,13 +191,16 @@ module MotherBrain
       type: String
 
     attribute 'aws.access_key',
-      type: String
+      type: String,
+      default: ENV['AWS_ACCESS_KEY']
 
     attribute 'aws.secret_key',
-      type: String
+      type: String,
+      default: ENV['AWS_SECRET_KEY']
 
     attribute 'aws.endpoint',
-      type: String
+      type: String,
+      default: ENV['AWS_URL']
 
     attribute 'bootstrap.default_template',
       type: String
