@@ -425,7 +425,6 @@ module MotherBrain
     # @return [Hash]
     attr_reader :host_errors
 
-    # @param [String] groups
     # @param [Hash] host_errors
     #
     #  "cloud-3.riotgames.com" => {

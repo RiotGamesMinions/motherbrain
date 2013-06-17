@@ -152,20 +152,23 @@ describe MB::Group do
   end
 
   describe "#search_query" do
+    let(:group) { double('group') }
+    subject { group.search_query(environment) }
+
     context "with one chef attribute" do
-      subject do
+      let(:group) do
         MB::Group.new("db_master") do
           chef_attribute "pvpnet.database.master", true
         end
       end
 
       it "returns one key:value search string" do
-        subject.search_query(environment).should eql("chef_environment:#{environment} AND pvpnet_database_master:true")
+        expect(subject).to eql("chef_environment:#{environment} AND pvpnet_database_master:true")
       end
     end
 
     context "with multiple chef attributes" do
-      subject do
+      let(:group) do
         MB::Group.new("db_master") do
           chef_attribute "pvpnet.database.master", true
           chef_attribute "pvpnet.database.slave", false
@@ -173,12 +176,12 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query(environment).should eql("chef_environment:#{environment} AND pvpnet_database_master:true AND pvpnet_database_slave:false")
+        expect(subject).to eql("chef_environment:#{environment} AND pvpnet_database_master:true AND pvpnet_database_slave:false")
       end
     end
 
     context "with multiple recipes" do
-      subject do
+      let(:group) do
         MB::Group.new("pvpnet") do
           recipe "pvpnet::default"
           recipe "pvpnet::database"
@@ -186,24 +189,24 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query(environment).should eql("chef_environment:#{environment} AND run_list:recipe\\[pvpnet\\:\\:default\\] AND run_list:recipe\\[pvpnet\\:\\:database\\]")
+        expect(subject).to eql("chef_environment:#{environment} AND recipes:pvpnet\\:\\:default AND recipes:pvpnet\\:\\:database")
       end
     end
 
     context "with dash-separated recipes" do
-      subject do
+      let(:group) do
         MB::Group.new("pvpnet") do
           recipe "build-essential"
         end
       end
 
       it "does not escape the dash" do
-        subject.search_query(environment).should eql("chef_environment:#{environment} AND run_list:recipe\\[build-essential\\]")
+        expect(subject).to eql("chef_environment:#{environment} AND recipes:build-essential")
       end
     end
 
     context "with multiple roles" do
-      subject do
+      let(:group) do
         MB::Group.new("roles") do
           role "app_server"
           role "database_server"
@@ -211,7 +214,7 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        subject.search_query(environment).should eql("chef_environment:#{environment} AND run_list:role\\[app_server\\] AND run_list:role\\[database_server\\]")
+        expect(subject).to eql("chef_environment:#{environment} AND roles:app_server AND roles:database_server")
       end
     end
   end
