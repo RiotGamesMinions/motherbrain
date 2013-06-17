@@ -103,6 +103,8 @@ module MotherBrain
             ENV['AWS_ACCESS_KEY']
           elsif ENV['EC2_ACCESS_KEY']
             ENV['EC2_ACCESS_KEY']
+          elsif Application.config.aws.access_key
+            Application.config.aws.access_key
           else
             abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'access_key' or the AWS_ACCESS_KEY or EC2_ACCESS_KEY variables need to be set")
           end
@@ -125,6 +127,8 @@ module MotherBrain
             ENV['AWS_SECRET_KEY']
           elsif ENV['EC2_SECRET_KEY']
             ENV['EC2_SECRET_KEY']
+          elsif Application.config.aws.secret_key
+            Application.config.aws.secret_key
           else
             abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'secret_key' or the AWS_SECRET_KEY or EC2_SECRET_KEY variables need to be set")
           end
@@ -169,9 +173,17 @@ module MotherBrain
         def endpoint(manifest = nil)
           manifest_options = manifest ? manifest.options : {}
 
-          manifest_options[:endpoint] or
-            ENV['EC2_URL'] or
+          if manifest_options[:endpoint]
+            manifest_options[:endpoint]
+          elsif ENV['AWS_URL']
+            ENV['AWS_URL']
+          elsif ENV['EC2_URL']
+            ENV['EC2_URL']
+          elsif Application.config.aws.endpoint
+            Application.config.aws.endpoint
+          else
             abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'endpoint' or the EC2_URL variable needs to be set")
+          end
         end
 
         # @param [Provisioner::Manifest] manifest
