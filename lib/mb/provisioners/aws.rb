@@ -175,8 +175,6 @@ module MotherBrain
 
           if manifest_options[:endpoint]
             manifest_options[:endpoint]
-          elsif ENV['AWS_URL']
-            ENV['AWS_URL']
           elsif ENV['EC2_URL']
             ENV['EC2_URL']
           elsif Application.config.aws.endpoint

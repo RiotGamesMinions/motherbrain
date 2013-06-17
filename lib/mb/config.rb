@@ -200,7 +200,7 @@ module MotherBrain
 
     attribute 'aws.endpoint',
       type: String,
-      default: ENV['AWS_URL']
+      default: ENV['EC2_URL']
 
     attribute 'bootstrap.default_template',
       type: String
