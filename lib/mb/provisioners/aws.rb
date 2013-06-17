@@ -106,7 +106,7 @@ module MotherBrain
           elsif Application.config.aws.access_key
             Application.config.aws.access_key
           else
-            abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'access_key' or the AWS_ACCESS_KEY or EC2_ACCESS_KEY variables need to be set")
+            abort ConfigOptionMissing.new("The configuration needs a key 'access_key', or the AWS_ACCESS_KEY or EC2_ACCESS_KEY variables need to be set")
           end
         end
 
@@ -130,7 +130,7 @@ module MotherBrain
           elsif Application.config.aws.secret_key
             Application.config.aws.secret_key
           else
-            abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'secret_key' or the AWS_SECRET_KEY or EC2_SECRET_KEY variables need to be set")
+            abort ConfigOptionMissing.new("The configuration needs a key 'secret_key', or the AWS_SECRET_KEY or EC2_SECRET_KEY variables need to be set")
           end
         end
 
