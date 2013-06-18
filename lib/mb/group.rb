@@ -6,8 +6,11 @@ module MotherBrain
       type: String,
       required: true
 
+    # @return [Set]
     attr_reader :roles
+    # @return [Set]
     attr_reader :recipes
+    # @return [Hashie::Mash]
     attr_reader :chef_attributes
 
     # @param [#to_s] name
@@ -15,7 +18,7 @@ module MotherBrain
       set_attribute(:name, name.to_s)
       @recipes         = Set.new
       @roles           = Set.new
-      @chef_attributes = HashWithIndifferentAccess.new
+      @chef_attributes = Hashie::Mash.new
 
       if block_given?
         dsl_eval(&block)
