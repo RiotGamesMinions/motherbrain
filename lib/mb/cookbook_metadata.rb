@@ -47,7 +47,7 @@ module MotherBrain
     RUBY_FILENAME = 'metadata.rb'.freeze
     JSON_FILENAME = 'metadata.json'.freeze
 
-    include Chozo::VariaModel
+    include VariaModel
 
     attribute :name,
       type: String

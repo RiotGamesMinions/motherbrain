@@ -272,7 +272,7 @@ describe MB::Config do
       it "raises an InvalidConfiguration error" do
         lambda {
           subject.from_json(json).attributes
-        }.should raise_error(Chozo::Errors::InvalidConfig)
+        }.should raise_error(Buff::Errors::InvalidConfig)
       end
     end
   end

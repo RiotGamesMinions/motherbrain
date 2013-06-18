@@ -1,5 +1,7 @@
+require 'buff/config/json'
+
 module MotherBrain
-  class Config < Chozo::Config::JSON
+  class Config < Buff::Config::JSON
     class << self
       # The default location for motherbrain's config file
       #
@@ -8,14 +10,14 @@ module MotherBrain
         FileSystem.root.join("config.json").to_s
       end
 
-      # @see Chozo::Config::JSON.from_json
+      # @see Buff::Config::JSON.from_json
       #
       # @raise [MB::ConfigNotFound]
       def from_file(*args)
         super
-      rescue Chozo::Errors::ConfigNotFound => ex
+      rescue Buff::Errors::ConfigNotFound => ex
         raise MB::ConfigNotFound, ex
-      rescue Chozo::Errors::InvalidConfig => ex
+      rescue Buff::Errors::InvalidConfig => ex
         raise MB::InvalidConfig.new(syntax_error: [ex.message])
       end
 
