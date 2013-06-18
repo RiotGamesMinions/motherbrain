@@ -15,7 +15,7 @@ module MotherBrain
         def shell
           @shell ||= if ENV['MB_SHELL'] && ENV['MB_SHELL'].size > 0
             Shell.const_get(ENV['MB_SHELL'].capitalize)
-          elsif Chozo::Platform.windows? && !ENV['ANSICON']
+          elsif Buff::Platform.windows? && !ENV['ANSICON']
             Shell::Basic
           else
             Shell::Color

@@ -1,6 +1,6 @@
 module MotherBrain
   class Group
-    include Chozo::VariaModel
+    include VariaModel
 
     attribute :name,
       type: String,
