@@ -26,6 +26,7 @@ module MotherBrain
         fog = fog_connection(manifest)
         validate_manifest_options(job, manifest)
         instances = create_instances(job, manifest, fog)
+        store_provision_data job, env_name, instances
         verified_instances = verify_instances(job, fog, instances)
         verify_connection(job, fog, manifest, verified_instances)
         instances_as_manifest(verified_instances)
@@ -360,6 +361,15 @@ module MotherBrain
             end
             instance_id
           end
+        end
+
+        def store_provision_data(job, environment_name, instances)
+          job.set_status "Storing provision data"
+
+          provision_data = ProvisionData.new(environment_name)
+          provision_data.provisioner_name = :aws
+          provision_data.add_instances instances
+          provision_data.save
         end
     end
   end

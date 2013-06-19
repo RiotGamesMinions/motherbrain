@@ -93,6 +93,7 @@ describe MB::Provisioner::AWS do
     it "does all the steps" do
       aws.should_receive(:validate_manifest_options).and_return(true)
       aws.should_receive(:create_instances).and_return(true)
+      aws.should_receive(:store_provision_data)
       aws.should_receive(:verify_instances).and_return(true)
       aws.should_receive(:verify_connection).and_return(true)
       aws.should_receive(:instances_as_manifest).and_return(response)

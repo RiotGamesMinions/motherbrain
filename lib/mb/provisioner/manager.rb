@@ -113,7 +113,10 @@ module MotherBrain
         options = options.dup
 
         chef_synchronize(chef_environment: environment, force: options[:force]) do
-          choose_provisioner(options.delete(:with)).down(job, environment, options)
+          provision_data = ProvisionData.new(environment)
+
+          provisioner = choose_provisioner(provision_data.provisioner)
+          provisioner.down job, environment, options
         end
 
         job.report_success("environment destroyed")
