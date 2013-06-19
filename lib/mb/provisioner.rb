@@ -2,6 +2,7 @@ module MotherBrain
   module Provisioner
     autoload :Manager, 'mb/provisioner/manager'
     autoload :Manifest, 'mb/provisioner/manifest'
+    autoload :ProvisionData, 'mb/provisioner/provision_data'
 
     class << self
       attr_reader :default_id
