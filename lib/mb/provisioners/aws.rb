@@ -48,7 +48,7 @@ module MotherBrain
       private
 
         # Given an environment, return the instance IDs for either Eucalyptus
-        # or Amazon EC2. Nodes without instance IDs are skipped.
+        # or Amazon EC2.
         #
         # @param [String] environment
         #   The Chef environment to search for nodes in
@@ -56,12 +56,9 @@ module MotherBrain
         # @return [Array(String)]
         #   The instance IDs for any cloud nodes
         def instance_ids_for_environment(environment)
-          nodes = ridley.search(:node, "chef_environment:#{environment}")
-
-          nodes.collect { |node|
-            attrs = node[:automatic][:eucalyptus] || node[:automatic][:ec2]
-            attrs[:instance_id] if attrs
-          }.compact
+          ProvisionData.new(environment).instances.collect { |instance|
+            instance[:instance_id]
+          }
         end
 
         # Terminates instances by their IDs.
