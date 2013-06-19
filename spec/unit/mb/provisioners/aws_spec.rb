@@ -143,11 +143,11 @@ describe MB::Provisioner::AWS do
         end
 
         it "should error on access_key" do
-          expect { aws.send(:access_key, manifest) }.to raise_error(MB::InvalidProvisionManifest)
+          expect { aws.send(:access_key, manifest) }.to raise_error(MB::ConfigOptionMissing)
         end
 
         it "should error on secret_key" do
-          expect { aws.send(:secret_key, manifest) }.to raise_error(MB::InvalidProvisionManifest)
+          expect { aws.send(:secret_key, manifest) }.to raise_error(MB::ConfigOptionMissing)
         end
 
         it "should error on endpoint" do
