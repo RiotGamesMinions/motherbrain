@@ -84,12 +84,7 @@ module MotherBrain
       # TODO: Windows
       if e.to_s =~ %r[/opt/chef/embedded/bin/ruby] and e.to_s =~ %r[No such file or directory]
         response = chef_connection.node.execute_command(host, "hostname -f")
-        if response.exit_code == 0
-          response.stdout.chomp
-        else
-          nil
-        end
-      else
+        return response.stdout.chomp if response.exit_code == 0
         nil
       end
     end
