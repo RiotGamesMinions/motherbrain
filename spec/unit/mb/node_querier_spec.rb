@@ -47,6 +47,16 @@ describe MB::NodeQuerier do
       node_name.should eq(node)
     end
 
+    it "falls back to hostname -f if ruby does not exist on the node" do
+      node_querier.should_receive(:ruby_script).with('node_name', host, {}).and_raise MB::RemoteScriptError.new("bash: /opt/chef/embedded/bin/ruby: No such file or directory")
+      response = double(Ridley::HostConnector::Response)
+      response.stub(:stdout).and_return "#{node}\n"
+      response.stub(:exit_code).and_return 0
+      node_querier.stub_chain(:chef_connection, :node, execute_command: response)
+
+      node_name.should eq(node)
+    end
+
     context "with a remote script error" do
       before do
         node_querier.stub(:ruby_script).and_raise(MB::RemoteScriptError)

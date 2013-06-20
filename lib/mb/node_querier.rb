@@ -80,8 +80,13 @@ module MotherBrain
     # @return [String, nil]
     def node_name(host, options = {})
       ruby_script('node_name', host, options)
-    rescue MB::RemoteScriptError
-      nil
+    rescue MB::RemoteScriptError => e
+      # TODO: Windows
+      if e.to_s =~ %r[/opt/chef/embedded/bin/ruby] and e.to_s =~ %r[No such file or directory]
+        chef_connection.node.execute_command(host, "hostname -f").stdout.chomp
+      else
+        nil
+      end
     end
 
     # Run Chef-Client on the target host
