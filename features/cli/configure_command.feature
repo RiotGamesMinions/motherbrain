@@ -3,6 +3,7 @@ Feature: configuring the motherbrain (MB) command line interface (CLI)
   I need a way to configure my MB CLI based on answers I provide to a set of questions
   So it is quick and easy for me to configure or reconfigure my MB CLI
 
+  @spawn
   Scenario: generating a new config file
     Given a motherbrain configuration does not exist
     When I run the "configure" command interactively
@@ -23,6 +24,7 @@ Feature: configuring the motherbrain (MB) command line interface (CLI)
       | ssh.user         | root                                             |
       | ssh.password     | secretpass                                       |
 
+  @spawn
   Scenario: attempting to generate a new config when one already exists
     Given a valid motherbrain configuration
     When I run the "configure" command interactively
@@ -32,6 +34,7 @@ Feature: configuring the motherbrain (MB) command line interface (CLI)
       """
     And the exit status should be the code for error "ConfigExists"
 
+  @spawn
   Scenario: forcefully generating a config when one already exists
     Given a valid motherbrain configuration
     When I run the "configure" command interactively with:
