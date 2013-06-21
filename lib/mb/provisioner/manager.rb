@@ -177,8 +177,6 @@ module MotherBrain
           bootstrapper.bootstrap(job, environment, bootstrap_manifest, plugin, options)
         end
 
-        destroy_environment job, environment
-
         job.report_success unless job.completed?
       rescue => ex
         job.report_failure(ex)
