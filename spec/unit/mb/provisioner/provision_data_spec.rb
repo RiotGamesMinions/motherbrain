@@ -46,7 +46,7 @@ describe MotherBrain::Provisioner::ProvisionData do
       provision_data.save
 
       expect(
-        data_bag_attributes[:instances][provisioner_name].map(&:to_hash)
+        data_bag_attributes[:instances][provisioner_name].map(&:to_hash).map(&:symbolize_keys)
       ).to match_array(instances)
     end
 
@@ -57,7 +57,7 @@ describe MotherBrain::Provisioner::ProvisionData do
       provision_data.save
 
       expect(
-        data_bag_attributes[:instances][provisioner_name].map(&:to_hash)
+        data_bag_attributes[:instances][provisioner_name].map(&:to_hash).map(&:symbolize_keys)
       ).to match_array(instances)
     end
   end
