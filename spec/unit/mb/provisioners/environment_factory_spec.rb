@@ -100,7 +100,6 @@ describe MB::Provisioner::EnvironmentFactory do
 
       subject.should_receive(:new_connection).and_return(connection)
       subject.should_receive(:destroyed?).with(connection, env_name).and_return(true)
-      subject.should_receive(:destroy_environment).with(job, env_name)
       connection.stub_chain(:environment, :destroy).with(env_name).and_return(Hash.new)
 
       subject.down(job, env_name, options)
