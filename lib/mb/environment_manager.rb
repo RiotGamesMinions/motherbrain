@@ -120,8 +120,8 @@ module MotherBrain
     # @param [#to_s] name
     #
     # @return [Ridley::EnvironmentResource]
-    def create(environment_name)
-      ridley.environment.create(name: environment_name)
+    def create(name)
+      ridley.environment.create(name: name)
     rescue => error
       abort error
     end
