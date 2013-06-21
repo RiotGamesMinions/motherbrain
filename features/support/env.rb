@@ -9,6 +9,8 @@ require 'motherbrain'
 def setup_env
   require 'rspec'
   require 'aruba/cucumber'
+  require 'aruba/in_process'
+  require 'aruba/spawn_process'
 
   Dir[File.join(File.expand_path("../../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
 
@@ -20,11 +22,22 @@ def setup_env
     end
   end
 
+  Aruba::InProcess.main_class = MB::Cli::Runner
+  Aruba.process               = Aruba::InProcess
+
   World(Aruba::Api)
   World(MotherBrain::SpecHelpers)
 
   Before do
     @config = generate_valid_config
+  end
+
+  Before('@in-process') do
+    Aruba.process = Aruba::InProcess
+  end
+
+  Before('@spawn') do
+    Aruba.process = Aruba::SpawnProcess
   end
 end
 
@@ -43,4 +56,3 @@ else
     World(MB::Mixin::CodedExit)
   end
 end
-
