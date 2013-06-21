@@ -96,7 +96,7 @@ describe MB::Provisioner::AWS do
       aws.should_receive(:store_provision_data)
       aws.should_receive(:verify_instances).and_return(true)
       aws.should_receive(:verify_connection).and_return(true)
-      aws.should_receive(:instances_as_manifest).and_return(response)
+      aws.should_receive(:instances_as_manifest).twice.and_return(response)
       expect(aws.up(job, environment_name, manifest, plugin, skip_bootstrap: true)).to eq(response)
     end
   end
@@ -116,9 +116,7 @@ describe MB::Provisioner::AWS do
       aws.stub(instance_ids_for_environment: instance_ids)
     end
 
-    it "cleans up the nodes and destroys the environment" do
-      environment_manager.should_receive(:destroy).with(environment_name)
-
+    it "terminates the instances" do
       instance_ids.each do |instance_id|
         fog.should_receive(:terminate_instances).with(instance_id)
       end

@@ -115,11 +115,19 @@ module MotherBrain
         chef_synchronize(chef_environment: environment, force: options[:force]) do
           provision_data = ProvisionData.new(environment)
 
-          provisioner = choose_provisioner(provision_data.provisioner)
-          provisioner.down job, environment, options
+          provision_data.provisioners.each do |provisioner_name|
+            provisioner = choose_provisioner(provisioner_name)
+            job.set_status "Destroying nodes with #{provisioner_name} provisioner"
+            provisioner.down job, environment, options
+          end
+
+          job.set_status "Destroying provision data for #{environment}"
+          provision_data.destroy
+
+          destroy_environment job, environment
         end
 
-        job.report_success("environment destroyed")
+        job.report_success("Environment #{environment} destroyed")
       rescue => ex
         job.report_failure(ex)
       ensure
@@ -169,6 +177,8 @@ module MotherBrain
           bootstrapper.bootstrap(job, environment, bootstrap_manifest, plugin, options)
         end
 
+        destroy_environment job, environment
+
         job.report_success unless job.completed?
       rescue => ex
         job.report_failure(ex)
@@ -195,6 +205,15 @@ module MotherBrain
         def finalize_callback
           log.info { "Bootstrap Manager stopping..." }
           @provisioner_supervisor.terminate
+        end
+
+        # Delete an environment from Chef server
+        #
+        # @param [String] environment_name
+        #   name of the environment to remove
+        def destroy_environment(job, environment_name)
+          job.set_status "Destroying Chef environment: #{environment_name}"
+          environment_manager.destroy(environment_name)
         end
     end
   end

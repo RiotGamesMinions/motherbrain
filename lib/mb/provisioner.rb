@@ -181,17 +181,6 @@ module MotherBrain
       def down(job, environment_name, options = {})
         raise AbstractFunction
       end
-
-      private
-
-        # Delete an environment from Chef server
-        #
-        # @param [String] environment_name
-        #   name of the environment to remove
-        def destroy_environment(job, environment_name)
-          job.set_status "Destroying Chef environment: #{environment_name}"
-          environment_manager.destroy(environment_name)
-        end
     end
   end
 end

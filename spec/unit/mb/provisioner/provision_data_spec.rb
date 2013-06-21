@@ -26,77 +26,71 @@ describe MotherBrain::Provisioner::ProvisionData do
   let(:provisioner_name) { "aws" }
 
   describe "#instances" do
-    it "returns an empty array by default" do
-      expect(provision_data.instances).to eq([])
+    it "returns an empty hash by default" do
+      expect(provision_data.instances).to eq({})
     end
 
-    it "saves an empty array to the data bag" do
+    it "saves an empty hash to the data bag" do
       provision_data.instances
 
       provision_data.save
 
-      expect(data_bag_attributes[:instances]).to match_array([])
+      expect(data_bag_attributes[:instances]).to eq({})
     end
   end
 
-  describe "#add_instances" do
+  describe "#add_instances_to_provisioner" do
     it "adds the instances to the data bag" do
-      provision_data.add_instances instances
+      provision_data.add_instances_to_provisioner provisioner_name, instances
 
       provision_data.save
 
       expect(
-        data_bag_attributes[:instances].map(&:to_hash)
+        data_bag_attributes[:instances][provisioner_name].map(&:to_hash)
       ).to match_array(instances)
     end
 
     it "is idempotent" do
-      provision_data.add_instances instances
-      provision_data.add_instances instances
+      provision_data.add_instances_to_provisioner provisioner_name, instances
+      provision_data.add_instances_to_provisioner provisioner_name, instances
 
       provision_data.save
 
       expect(
-        data_bag_attributes[:instances].map(&:to_hash)
+        data_bag_attributes[:instances][provisioner_name].map(&:to_hash)
       ).to match_array(instances)
     end
   end
 
-  describe "#remove_instance" do
-    it "removes an instance by key/value pair" do
-      provision_data.add_instances instances
-      provision_data.remove_instance :instance_id, instances.first[:instance_id]
+  describe "#remove_instance_from_provisioner" do
+    it "removes an instance from a provisioner by key/value pair" do
+      provision_data.add_instances_to_provisioner provisioner_name, instances
+      provision_data.remove_instance_from_provisioner provisioner_name,
+        :instance_id, instances.first[:instance_id]
 
-      expect(provision_data.instances).to match_array([instances.last])
+      expect(provision_data.instances[provisioner_name]).to match_array([instances.last])
     end
   end
 
-  describe "#provisioner_name" do
-    it "returns the provisioner name from the data bag" do
-      provision_data.save
+  describe "#provisioners" do
+    it "lists all provisioners with instances for this environment" do
+      provision_data.add_instances_to_provisioner provisioner_name, instances
 
-      data_bag_attributes[:provisioner_name] = provisioner_name
-      data_bag_item.save
-
-      provision_data.instance_variable_set :@data_bag_item, nil
-
-      expect(provision_data.provisioner_name).to eq(provisioner_name)
+      expect(provision_data.provisioners).to match_array([provisioner_name])
     end
   end
 
-  describe "#provisioner_name=" do
-    it "sets the provisioner name" do
-      provision_data.provisioner_name = provisioner_name
-
-      expect(provision_data.provisioner_name).to eq(provisioner_name)
+  describe "#instances_for_provisioner" do
+    it "returns an empty array by default" do
+      expect(provision_data.instances_for_provisioner(:aws)).to eq([])
     end
 
-    it "persists to the data bag" do
-      provision_data.provisioner_name = provisioner_name
+    it "returns all instances for a provisioner" do
+      provision_data.add_instances_to_provisioner provisioner_name, instances
 
-      provision_data.save
-
-      expect(data_bag_attributes[:provisioner_name]).to eq(provisioner_name)
+      expect(
+        provision_data.instances_for_provisioner(:aws)
+      ).to match_array(instances)
     end
   end
 
@@ -105,6 +99,15 @@ describe MotherBrain::Provisioner::ProvisionData do
       provision_data.save
 
       expect(data_bag_item).to_not be_nil
+    end
+  end
+
+  describe "#destroy" do
+    it "creates a data bag item" do
+      provision_data.save
+      provision_data.destroy
+
+      expect(data_bag_item).to be_nil
     end
   end
 end

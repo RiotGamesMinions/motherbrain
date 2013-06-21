@@ -26,7 +26,7 @@ module MotherBrain
         fog = fog_connection(manifest)
         validate_manifest_options(job, manifest)
         instances = create_instances(job, manifest, fog)
-        store_provision_data job, env_name, instances
+        store_provision_data job, env_name, instances_as_manifest(instances)
         verified_instances = verify_instances(job, fog, instances)
         verify_connection(job, fog, manifest, verified_instances)
         instances_as_manifest(verified_instances)
@@ -43,7 +43,7 @@ module MotherBrain
         instance_ids = instance_ids_for_environment(environment)
 
         terminate_instance_ids job, instance_ids
-        destroy_environment job, environment
+        remove_provision_data job, environment, instance_ids
       end
 
       private
@@ -57,9 +57,10 @@ module MotherBrain
         # @return [Array(String)]
         #   The instance IDs for any cloud nodes
         def instance_ids_for_environment(environment)
-          ProvisionData.new(environment).instances.collect { |instance|
-            instance[:instance_id]
-          }
+          provision_data = ProvisionData.new(environment)
+          instances = provision_data.instances_for_provisioner(:aws)
+
+          instances.collect { |instance| instance[:instance_id] }
         end
 
         # Terminates instances by their IDs.
@@ -358,8 +359,23 @@ module MotherBrain
           job.set_status "Storing provision data"
 
           provision_data = ProvisionData.new(environment_name)
-          provision_data.provisioner_name = :aws
-          provision_data.add_instances instances
+
+          provision_data.add_instances_to_provisioner :aws, instances
+
+          provision_data.save
+        end
+
+        def remove_provision_data(job, environment_name, instance_ids)
+          job.set_status "Cleaning up provision data"
+
+          provision_data = ProvisionData.new(environment_name)
+
+          instance_ids.each do |instance_id|
+            provision_data.remove_instance_from_provisioner(
+              :aws, :instance_id, instance_id
+            )
+          end
+
           provision_data.save
         end
     end
