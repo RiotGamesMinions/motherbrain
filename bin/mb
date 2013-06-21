@@ -2,4 +2,4 @@
 $:.push File.expand_path("../../lib", __FILE__)
 require 'motherbrain'
 
-MB::CliGateway.start
+MB::Cli::Runner.new(ARGV).execute!
