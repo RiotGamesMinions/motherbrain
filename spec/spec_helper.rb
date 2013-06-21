@@ -9,6 +9,7 @@ require 'json_spec'
 require 'webmock/rspec'
 require 'rack/test'
 require 'motherbrain'
+require 'chef_zero/server'
 
 def setup_rspec
   Dir[File.join(File.expand_path("../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
@@ -25,6 +26,10 @@ def setup_rspec
     config.filter_run focus: true
     config.run_all_when_everything_filtered = true
 
+    config.before(:suite) do
+      MotherBrain::SpecHelpers.chef_zero.start_background
+    end
+
     config.before(:all) do
       Celluloid.shutdown
       @config = generate_valid_config
@@ -34,6 +39,7 @@ def setup_rspec
 
     config.before(:each) do
       clean_tmp_path
+      MotherBrain::SpecHelpers.chef_zero.clear_data
     end
   end
 end

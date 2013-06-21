@@ -2,6 +2,7 @@ module MotherBrain
   module Provisioner
     autoload :Manager, 'mb/provisioner/manager'
     autoload :Manifest, 'mb/provisioner/manifest'
+    autoload :ProvisionData, 'mb/provisioner/provision_data'
 
     class << self
       attr_reader :default_id
@@ -180,16 +181,6 @@ module MotherBrain
       def down(job, environment_name, options = {})
         raise AbstractFunction
       end
-
-      private
-
-        # Delete an environment from Chef server
-        #
-        # @param [String] env_name
-        #   name of the environment to remove
-        def delete_environment(env_name)
-          ridley.environment.delete(env_name)
-        end
     end
   end
 end

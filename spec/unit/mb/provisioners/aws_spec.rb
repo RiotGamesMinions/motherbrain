@@ -16,7 +16,7 @@ describe MB::Provisioner::AWS do
     job.stub :set_status
   end
 
-  let(:env_name) { "mbtest" }
+  let(:environment_name) { "mbtest" }
   let(:plugin) { double('plugin') }
 
   let(:manifest) do
@@ -93,18 +93,35 @@ describe MB::Provisioner::AWS do
     it "does all the steps" do
       aws.should_receive(:validate_manifest_options).and_return(true)
       aws.should_receive(:create_instances).and_return(true)
+      aws.should_receive(:store_provision_data)
       aws.should_receive(:verify_instances).and_return(true)
       aws.should_receive(:verify_connection).and_return(true)
-      aws.should_receive(:instances_as_manifest).and_return(response)
-      expect(aws.up(job, env_name, manifest, plugin, skip_bootstrap: true)).to eq(response)
+      aws.should_receive(:instances_as_manifest).twice.and_return(response)
+      expect(aws.up(job, environment_name, manifest, plugin, skip_bootstrap: true)).to eq(response)
     end
   end
 
   describe "#down" do
-    it "is not implemented" do
-      expect {
-        aws.down
-      }.to raise_error(RuntimeError)
+    subject(:down) { aws.down job, environment_name }
+
+    let(:instances) { aws.up(job, environment_name, manifest, plugin) }
+    let(:instance_ids) {
+      instances.collect { |instance| instance[:instance_id] }
+    }
+    let(:fog) { aws.send(:fog_connection, manifest) }
+
+    before do
+      aws.stub(fog_connection: Fog::Compute.new(provider: 'aws', aws_access_key_id: "", aws_secret_access_key: ""))
+      fog.create_key_pair('mb')
+      aws.stub(instance_ids_for_environment: instance_ids)
+    end
+
+    it "terminates the instances" do
+      instance_ids.each do |instance_id|
+        fog.should_receive(:terminate_instances).with(instance_id)
+      end
+
+      down
     end
   end
 
@@ -125,15 +142,11 @@ describe MB::Provisioner::AWS do
         end
 
         it "should error on access_key" do
-          expect { aws.send(:access_key, manifest) }.to raise_error(MB::InvalidProvisionManifest)
+          expect { aws.send(:access_key, manifest) }.to raise_error(MB::ConfigOptionMissing)
         end
 
         it "should error on secret_key" do
-          expect { aws.send(:secret_key, manifest) }.to raise_error(MB::InvalidProvisionManifest)
-        end
-
-        it "should error on endpoint" do
-          expect { aws.send(:endpoint, manifest) }.to raise_error(MB::InvalidProvisionManifest)
+          expect { aws.send(:secret_key, manifest) }.to raise_error(MB::ConfigOptionMissing)
         end
 
         context "with Euca environment variables" do
@@ -346,11 +359,11 @@ describe MB::Provisioner::AWS do
   end
 
   describe "#instance_ids" do
-    subject(:instance_ids) { aws.send(:instance_ids, env_name) }
+    subject(:instance_ids) { aws.send(:instance_ids, environment_name) }
 
     context "AWS" do
       before do
-        aws.ridley.should_receive(:search).with(:node, "chef_environment:#{env_name}").and_return(aws_nodes)
+        aws.ridley.should_receive(:search).with(:node, "chef_environment:#{environment_name}").and_return(aws_nodes)
       end
 
       it { should have(3).instances }
@@ -364,7 +377,7 @@ describe MB::Provisioner::AWS do
 
     context "Eucalyptus" do
       before do
-        aws.ridley.should_receive(:search).with(:node, "chef_environment:#{env_name}").and_return(euca_nodes)
+        aws.ridley.should_receive(:search).with(:node, "chef_environment:#{environment_name}").and_return(euca_nodes)
       end
 
       it { should have(3).instances }
@@ -374,15 +387,6 @@ describe MB::Provisioner::AWS do
           expect(instance_ids).to include(i)
         end
       end
-    end
-  end
-
-  describe "#terminate_instances" do
-    it "should call Fog" do
-      fog = aws.send(:fog_connection)
-      aws.should_receive(:instance_ids).and_return(["i-ABCD1234"])
-      fog.should_receive(:terminate_instances).with(["i-ABCD1234"])
-      aws.send(:terminate_instances, job, fog, env_name)
     end
   end
 end

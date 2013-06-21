@@ -26,6 +26,7 @@ module MotherBrain
 
       include Celluloid
       include MB::Logging
+      include MB::Mixin::Locks
       include MB::Mixin::Services
 
       finalizer :finalize_callback
@@ -49,7 +50,7 @@ module MotherBrain
       # @option options [#to_sym] :with
       #   id of provisioner to use
       def async_destroy(environment, options = {})
-        job = Job.new(:destroy_provision)
+        job = Job.new(:destroy)
         async(:destroy, job, environment, options)
 
         job.ticket
@@ -111,9 +112,22 @@ module MotherBrain
         job.report_running
         options = options.dup
 
-        choose_provisioner(options.delete(:with)).down(job, environment, options)
+        chef_synchronize(chef_environment: environment, force: options[:force]) do
+          provision_data = ProvisionData.new(environment)
 
-        job.report_success("environment destroyed")
+          provision_data.provisioners.each do |provisioner_name|
+            provisioner = choose_provisioner(provisioner_name)
+            job.set_status "Destroying nodes with #{provisioner_name} provisioner"
+            provisioner.down job, environment, options
+          end
+
+          job.set_status "Destroying provision data for #{environment}"
+          provision_data.destroy
+
+          destroy_environment job, environment
+        end
+
+        job.report_success("Environment #{environment} destroyed")
       rescue => ex
         job.report_failure(ex)
       ensure
@@ -178,8 +192,8 @@ module MotherBrain
         # @param [MB::Plugin] plugin
         def write_bootstrap_manifest(job, environment, manifest, plugin)
           filename = "#{plugin.name}_#{environment}_#{Time.now.to_i}.json"
-          path     = MB::FileSystem.manifests.join(filename)
-          contents = JSON.pretty_generate(manifest.as_json)
+          path = MB::FileSystem.manifests.join(filename)
+          contents = JSON.pretty_generate(manifest.to_hash)
 
           job.set_status("Writing bootstrap manifest to #{path}")
 
@@ -189,6 +203,15 @@ module MotherBrain
         def finalize_callback
           log.info { "Bootstrap Manager stopping..." }
           @provisioner_supervisor.terminate
+        end
+
+        # Delete an environment from Chef server
+        #
+        # @param [String] environment_name
+        #   name of the environment to remove
+        def destroy_environment(job, environment_name)
+          job.set_status "Destroying Chef environment: #{environment_name}"
+          environment_manager.destroy(environment_name)
         end
     end
   end

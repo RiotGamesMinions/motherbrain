@@ -11,6 +11,7 @@ def setup_env
   require 'aruba/cucumber'
   require 'aruba/in_process'
   require 'aruba/spawn_process'
+  require 'chef_zero/server'
 
   Dir[File.join(File.expand_path("../../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
 
@@ -28,7 +29,18 @@ def setup_env
   World(Aruba::Api)
   World(MotherBrain::SpecHelpers)
 
+  ENV['CHEF_API_URL'] = 'http://localhost:28889'
+
+  MotherBrain::SpecHelpers.chef_zero.start_background
+
+  at_exit do
+    MotherBrain::SpecHelpers.chef_zero.stop
+  end
+
   Before do
+    MotherBrain::SpecHelpers.chef_zero.clear_data
+
+    @aruba_timeout_seconds = 10
     @config = generate_valid_config
   end
 

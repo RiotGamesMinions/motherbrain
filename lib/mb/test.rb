@@ -22,6 +22,7 @@ module MotherBrain
 
       def initialize
         ::RSpec::Mocks.setup(self)
+        WebMock.disable_net_connect!(allow_localhost: true)
       end
 
       def type

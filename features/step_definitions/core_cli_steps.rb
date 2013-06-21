@@ -1,7 +1,3 @@
-Before do
-  @aruba_timeout_seconds = 10
-end
-
 When /^I run MB with no arguments$/ do
   run_simple(unescape("mb"), false)
 end
@@ -28,4 +24,10 @@ end
 
 Then /^the exit status should be the code for error "(.*?)"$/ do |konstant|
   assert_exit_status(exit_code_for(konstant))
+end
+
+Given /^we have AWS credentials$/ do
+  set_env "AWS_ACCESS_KEY", "022QF06E7MXBSAMPLE"
+  set_env "AWS_SECRET_KEY", "kWcrlUX5JEDGM/SAMPLE/aVmYvHNif5zB+d9+ct"
+  set_env "EC2_URL", "https://ec2.us-east-1.amazonaws.com"
 end

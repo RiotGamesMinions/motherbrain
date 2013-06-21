@@ -117,13 +117,22 @@ module MotherBrain
 
     # Creates an environment
     #
-    # @param [#to_s] environment_name
+    # @param [#to_s] name
     #
     # @return [Ridley::EnvironmentResource]
-    def create(environment_name)
-      ridley.environment.create(name: environment_name)
+    def create(name)
+      ridley.environment.create(name: name)
     rescue => error
       abort error
+    end
+
+    # Destroys an environment
+    #
+    # @param [#to_s] name
+    #
+    # @return [Ridley::EnvironmentResource, nil]
+    def destroy(name)
+      ridley.environment.delete(name)
     end
 
     # Returns a list of environments present on the remote server

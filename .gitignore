@@ -22,3 +22,5 @@ rerun.txt
 .rspec
 Gemfile.local
 man/mb.1.ronn
+*~
+\#*
