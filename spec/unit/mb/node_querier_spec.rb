@@ -51,14 +51,14 @@ describe MB::NodeQuerier do
 
     it "falls back to hostname -f if ruby does not exist on the node" do
       node_querier.should_receive(:ruby_script).with('node_name', host, {}).and_raise MB::RemoteScriptError.new("bash: /opt/chef/embedded/bin/ruby: No such file or directory")
-      node_querier.stub_chain(:chef_connection, :node, execute_command: response)
+      node_querier.stub_chain(:chef_connection, :node, execute_platform_specific_command: response)
 
       node_name.should eq(node)
     end
 
     it "returns nil if hostname -f fails" do
       node_querier.should_receive(:ruby_script).with('node_name', host, {}).and_raise MB::RemoteScriptError.new("bash: /opt/chef/embedded/bin/ruby: No such file or directory")
-      node_querier.stub_chain(:chef_connection, :node, execute_command: error_response)
+      node_querier.stub_chain(:chef_connection, :node, execute_platform_specific_command: error_response)
 
       node_name.should be_nil
     end
