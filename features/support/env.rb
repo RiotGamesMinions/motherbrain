@@ -9,7 +9,10 @@ require 'motherbrain'
 def setup_env
   require 'rspec'
   require 'aruba/cucumber'
+  require 'aruba/in_process'
+  require 'aruba/spawn_process'
   require 'chef_zero/server'
+
   Dir[File.join(File.expand_path("../../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
 
   RSpec.configure do |config|
@@ -19,6 +22,9 @@ def setup_env
       clean_tmp_path
     end
   end
+
+  Aruba::InProcess.main_class = MB::Cli::Runner
+  Aruba.process               = Aruba::InProcess
 
   World(Aruba::Api)
   World(MotherBrain::SpecHelpers)
@@ -37,6 +43,14 @@ def setup_env
     @aruba_timeout_seconds = 10
     @config = generate_valid_config
   end
+
+  Before('@in-process') do
+    Aruba.process = Aruba::InProcess
+  end
+
+  Before('@spawn') do
+    Aruba.process = Aruba::SpawnProcess
+  end
 end
 
 if jruby?
@@ -54,4 +68,3 @@ else
     World(MB::Mixin::CodedExit)
   end
 end
-

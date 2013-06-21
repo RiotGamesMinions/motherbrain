@@ -142,22 +142,6 @@ module MotherBrain
         end
 
         dispatch(nil, given_args.dup, nil, config)
-      rescue MBError => ex
-        ui.error ex
-        exit_with(ex)
-      rescue Ridley::Errors::ConnectionFailed => ex
-        ui.error "[ERROR] Unable to connect to the configured Chef server: #{ex.message}."
-        ui.error "[ERROR] Check your configuration and network settings and try again."
-        exit_with MB::ChefConnectionError.new
-      rescue Thor::Error => ex
-        ui.error ex.message
-        exit(1)
-      rescue Errno::EPIPE
-        # This happens if a thor command is piped to something like `head`,
-        # which closes the pipe when it's done reading. This will also
-        # mean that if the pipe is closed, further unnecessary
-        # computation will not occur.
-        exit(0)
       ensure
         Celluloid.shutdown
       end
