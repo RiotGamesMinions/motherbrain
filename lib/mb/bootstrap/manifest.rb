@@ -23,13 +23,15 @@ module MotherBrain
     #
     class Manifest < MotherBrain::Manifest
       class << self
-        # Create a new instance of {Bootstrap::Manifest} from the returning value from calling
-        # {Provisioner#up} on a provisioner and the provision manifest sent to {Provisioner#up}.
+        # Create a new instance of {Bootstrap::Manifest} from the returning
+        # value from calling {MotherBrain::Provisioner#up} on a provisioner and
+        # the provision manifest sent to {MotherBrain::Provisioner#up}.
         #
         # @param [Hash] nodes
-        #   the result from calling {#up} on a provisioner
+        #   the result from calling {MotherBrain::Provisioner#up}
         # @param [Provisioner::Manifest] provisioner_manifest
-        #   the manifest sent to the provisioner performing {#up}
+        #   the manifest sent to the provisioner performing
+        #   {MotherBrain::Provisioner#up}
         #
         # @return [Bootstrap::Manifest]
         def from_provisioner(nodes, provisioner_manifest, path = nil)

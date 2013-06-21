@@ -1,6 +1,6 @@
 module MotherBrain
   class Command
-    include Chozo::VariaModel
+    include VariaModel
     include MB::Mixin::Locks
 
     attribute :name,
