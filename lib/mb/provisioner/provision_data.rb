@@ -76,21 +76,21 @@ module MotherBrain
 
       private
 
-      def attributes
-        data_bag_item.attributes
-      end
+        def attributes
+          data_bag_item.attributes
+        end
 
-      def data_bag
-        @data_bag ||=
-          ridley.data_bag.find(DATA_BAG) ||
-          ridley.data_bag.create(name: DATA_BAG)
-      end
+        def data_bag
+          @data_bag ||=
+            ridley.data_bag.find(DATA_BAG) ||
+            ridley.data_bag.create(name: DATA_BAG)
+        end
 
-      def data_bag_item
-        @data_bag_item ||=
-          data_bag.item.find(environment_name) ||
-          data_bag.item.create(id: environment_name)
-      end
+        def data_bag_item
+          @data_bag_item ||=
+            data_bag.item.find(environment_name) ||
+            data_bag.item.create(id: environment_name)
+        end
     end
   end
 end
