@@ -4,7 +4,7 @@ describe MB::Cli::Shell do
   describe "ClassMethods" do
     describe "::shell" do
       before do
-        Chozo::Platform.stub(windows?: false, osx?: false, linux?: false)
+        Buff::Platform.stub(windows?: false, osx?: false, linux?: false)
       end
 
       subject { described_class.shell }
@@ -12,7 +12,7 @@ describe MB::Cli::Shell do
 
       context "when on a unix platform" do
         before do
-          Chozo::Platform.stub(windows?: false, osx?: true, linux?: true)
+          Buff::Platform.stub(windows?: false, osx?: true, linux?: true)
         end
 
         it { should eql(MB::Cli::Shell::Color) }
@@ -20,7 +20,7 @@ describe MB::Cli::Shell do
 
       context "when on a windows platform" do
         before do
-          Chozo::Platform.stub(windows?: true, osx?: false, linux?: false)
+          Buff::Platform.stub(windows?: true, osx?: false, linux?: false)
         end
 
         it { should eql(MB::Cli::Shell::Basic) }

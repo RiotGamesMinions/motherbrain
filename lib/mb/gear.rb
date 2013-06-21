@@ -40,7 +40,7 @@ module MotherBrain
         end
       end
 
-      include Chozo::VariaModel
+      include VariaModel
 
       # @param [MB::Job] job
       #   a job to update with status

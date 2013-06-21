@@ -2,7 +2,7 @@ module MotherBrain
   class CliGateway < Cli::Base
     class << self
       def invoked_opts
-        @invoked_opts ||= HashWithIndifferentAccess.new
+        @invoked_opts ||= Hashie::Mash.new
       end
 
       # @param [Hash] options

@@ -47,7 +47,7 @@ module MotherBrain
 
     extend Forwardable
     include Comparable
-    include Chozo::VariaModel
+    include VariaModel
 
     attribute :bootstrap_routine,
       type: MB::Bootstrap::Routine
