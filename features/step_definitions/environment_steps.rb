@@ -2,10 +2,6 @@ Given(/^there is an environment on the chef server named "(.*?)"$/) do |environm
   ridley.environment.find(environment_name) || ridley.environment.create(name: environment_name)
 end
 
-Given(/^the default provisioner is "(.*?)"$/) do |provisioner|
-  set_env('MB_DEFAULT_PROVISIONER', provisioner)
-end
-
 Given(/^the environment "(.*?)" is locked$/) do |environment_name|
   step %Q[I run the "environment lock #{environment_name}" command]
 end
