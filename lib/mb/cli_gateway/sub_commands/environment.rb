@@ -38,9 +38,24 @@ module MotherBrain
           default: false,
           desc: "Don't confirm, just destroy the environment",
           aliases: '-y'
+        method_option :force,
+          type: :boolean,
+          default: false,
+          desc: "Force destruction of a locked environment",
+          aliases: '-f'
+        method_option :provisioner,
+          type: :string,
+          desc: "Provisioner to use for destroying the environment"
         desc "destroy ENVIRONMENT", "Destroy a provisioned environment"
         def destroy(environment)
+          options[:with] = options[:provisioner] # TODO: rename with to provisioner
+          options[:yes] ||= options[:force]
           destroy_options = Hash.new.merge(options).deep_symbolize_keys
+
+          if !options[:force] && ChefMutex.new(chef_environment: environment).locked?
+            raise MB::ResourceLocked,
+              "The environment \"#{environment}\" is locked. You may use --force to override this safeguard."
+          end
 
           dialog = "This will destroy the '#{environment}' environment.\nAre you sure? (yes|no): "
           really_destroy = options[:yes] || ui.yes?(dialog)

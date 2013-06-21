@@ -7,7 +7,7 @@ describe MB::Provisioner::Manager do
 
   let(:job) { double(MB::Job, alive?: true) }
   let(:environment) { "production" }
-  let(:manifest) { double(MB::Manifest, as_json: { 'a' => 1 }, provisioner: nil, options: nil) }
+  let(:manifest) { double(MB::Manifest, to_hash: { 'a' => 1 }, provisioner: nil, options: nil) }
   let(:plugin) { double(MB::Plugin, name: "MyPlugin") }
 
   subject { described_class.new }
@@ -36,14 +36,14 @@ describe MB::Provisioner::Manager do
   end
 
   describe "#provision" do
-    let(:job) { MB::Job.new(:provision) }
-    let(:options) { Hash.new }
-
     let(:bootstrapper) { double('bootstrapper') }
     let(:default_provisioner) { provisioner_manager.provisioner_registry[MB::Provisioner.default_id] }
+    let(:options) { Hash.new }
+
+    let!(:job) { MB::Job.new(:provision) }
+    let!(:ticket) { job.ticket }
 
     subject(:provision) do
-      @ticket = job.ticket
       provisioner_manager.stub(bootstrapper: bootstrapper)
       provisioner_manager.provision(job, environment, manifest, plugin, options)
     end
@@ -64,7 +64,7 @@ describe MB::Provisioner::Manager do
         bootstrapper.should_receive(:bootstrap)
 
         provision
-        expect(@ticket.state).to eql(:success)
+        expect(ticket.state).to eql(:success)
       end
     end
 
@@ -80,7 +80,7 @@ describe MB::Provisioner::Manager do
         bootstrapper.should_not_receive(:bootstrap)
 
         provision
-        expect(@ticket.state).to eql(:success)
+        expect(ticket.state).to eql(:success)
       end
     end
   end
@@ -106,7 +106,7 @@ describe MB::Provisioner::Manager do
 
       contents = File.read(MB::FileSystem.manifests.join(filename))
 
-      expect(JSON.parse(contents)).to eq(manifest.as_json)
+      expect(JSON.parse(contents)).to eq(manifest.to_hash)
     end
   end
 

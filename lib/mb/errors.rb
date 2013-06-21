@@ -369,6 +369,11 @@ module MotherBrain
     error_code(3019)
   end
 
+  class ConfigOptionMissing < MBError
+    exit_code(24)
+    error_code(3026)
+  end
+
   class GearError < MBError
     exit_code(104)
     error_code(3020)

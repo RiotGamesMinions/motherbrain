@@ -26,16 +26,64 @@ module MotherBrain
         fog = fog_connection(manifest)
         validate_manifest_options(job, manifest)
         instances = create_instances(job, manifest, fog)
+        store_provision_data job, env_name, instances_as_manifest(instances)
         verified_instances = verify_instances(job, fog, instances)
         verify_connection(job, fog, manifest, verified_instances)
         instances_as_manifest(verified_instances)
       end
 
-      def down(*args)
-        raise RuntimeError, "not yet implemented"
+      # Terminate instances for the given environment
+      #
+      # @param [Job] job
+      #   a job to track the progress of this action
+      # @param [String] environment
+      # @param [Hash] options
+      def down(job, environment, options = {})
+        job.set_status "Searching for instances to terminate"
+        instance_ids = instance_ids_for_environment(environment)
+
+        terminate_instance_ids job, instance_ids
+        remove_provision_data job, environment, instance_ids
       end
 
       private
+
+        # Given an environment, return the instance IDs for either Eucalyptus
+        # or Amazon EC2.
+        #
+        # @param [String] environment
+        #   The Chef environment to search for nodes in
+        #
+        # @return [Array(String)]
+        #   The instance IDs for any cloud nodes
+        def instance_ids_for_environment(environment)
+          provision_data = ProvisionData.new(environment)
+          instances = provision_data.instances_for_provisioner(:aws)
+
+          instances.collect { |instance| instance[:instance_id] }
+        end
+
+        # Terminates instances by their IDs.
+        #
+        # @param [Job] job
+        # @param [Array(String)] instance_ids
+        def terminate_instance_ids(job, instance_ids)
+          fog = fog_connection
+          instance_count = instance_ids.count
+
+          job.set_status "Terminating #{instance_count} #{'instance'.pluralize(instance_count)}"
+
+          instance_ids.each do |instance_id|
+            job.set_status "Terminating instance: #{instance_id}"
+
+            begin
+              fog.terminate_instances instance_id
+            rescue => error
+              job.set_status "Unable to terminate instance: #{instance_id}"
+              log.error error
+            end
+          end
+        end
 
         # Find an appropriate AWS/Euca access key
         # Will look in manifest (if provided), and common environment
@@ -54,8 +102,10 @@ module MotherBrain
             ENV['AWS_ACCESS_KEY']
           elsif ENV['EC2_ACCESS_KEY']
             ENV['EC2_ACCESS_KEY']
+          elsif Application.config.aws.access_key
+            Application.config.aws.access_key
           else
-            abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'access_key' or the AWS_ACCESS_KEY or EC2_ACCESS_KEY variables need to be set")
+            abort ConfigOptionMissing.new("The configuration needs a key 'access_key', or the AWS_ACCESS_KEY or EC2_ACCESS_KEY variables need to be set")
           end
         end
 
@@ -76,8 +126,10 @@ module MotherBrain
             ENV['AWS_SECRET_KEY']
           elsif ENV['EC2_SECRET_KEY']
             ENV['EC2_SECRET_KEY']
+          elsif Application.config.aws.secret_key
+            Application.config.aws.secret_key
           else
-            abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'secret_key' or the AWS_SECRET_KEY or EC2_SECRET_KEY variables need to be set")
+            abort ConfigOptionMissing.new("The configuration needs a key 'secret_key', or the AWS_SECRET_KEY or EC2_SECRET_KEY variables need to be set")
           end
         end
 
@@ -113,22 +165,19 @@ module MotherBrain
         #
         # @param [Provisioner::Manifest] manifest
         #
-        # @raise [MB::InvalidProvisionManifest]
-        #   if endpoint cannot be found
-        #
-        # @return [String]
+        # @return [String, nil]
         def endpoint(manifest = nil)
           manifest_options = manifest ? manifest.options : {}
 
-          manifest_options[:endpoint] or
-            ENV['EC2_URL'] or
-            abort InvalidProvisionManifest.new("The provisioner manifest options hash needs a key 'endpoint' or the EC2_URL variable needs to be set")
+          manifest_options[:endpoint] ||
+            ENV['EC2_URL'] ||
+            Application.config.aws.endpoint
         end
 
         # @param [Provisioner::Manifest] manifest
         #
         # @return [Fog::Compute]
-        def fog_connection(manifest=nil)
+        def fog_connection(manifest = nil)
           Fog::Compute.new(
             provider: 'aws',
             aws_access_key_id: access_key(manifest),
@@ -282,9 +331,13 @@ module MotherBrain
         #
         # @return [Hash]
         def instances_as_manifest(instances)
-          instances.collect do |instance_id, instance|
-            { instance_type: instance[:type], public_hostname: instance[:ipaddress] }
-          end
+          instances.collect { |instance_id, instance|
+            {
+              instance_id: instance_id,
+              instance_type: instance[:type],
+              public_hostname: instance[:ipaddress]
+            }
+          }
         end
 
         # @param [String] env_name
@@ -302,13 +355,28 @@ module MotherBrain
           end
         end
 
-        # @param [Job] job
-        # @param [AWS::Compute] fog
-        # @param [String] env_name
-        def terminate_instances(job, fog, env_name)
-          ids = instance_ids(env_name)
-          job.set_status "Terminating #{ids.join(',')}"
-          fog.terminate_instances ids
+        def store_provision_data(job, environment_name, instances)
+          job.set_status "Storing provision data"
+
+          provision_data = ProvisionData.new(environment_name)
+
+          provision_data.add_instances_to_provisioner :aws, instances
+
+          provision_data.save
+        end
+
+        def remove_provision_data(job, environment_name, instance_ids)
+          job.set_status "Cleaning up provision data"
+
+          provision_data = ProvisionData.new(environment_name)
+
+          instance_ids.each do |instance_id|
+            provision_data.remove_instance_from_provisioner(
+              :aws, :instance_id, instance_id
+            )
+          end
+
+          provision_data.save
         end
     end
   end

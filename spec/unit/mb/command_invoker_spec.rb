@@ -85,7 +85,7 @@ describe MB::CommandInvoker do
     let(:component) { "default" }
     let(:environment) { "rspec-test" }
     let(:version) { "1.2.3" }
-    let(:job) { double(MB::Job, alive?: true, terminate: nil) }
+    let(:job) { double(MB::Job, alive?: true, set_status: nil, terminate: nil) }
     let(:worker) { double('worker', alive?: true, terminate: nil) }
     let(:environment_manager) { double('env-man') }
     let(:options) do
