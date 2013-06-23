@@ -47,8 +47,8 @@ module MotherBrain
     def initialize(options = {})
       log.info { "REST Gateway starting..." }
 
-      options  = DEFAULT_OPTIONS.merge(options.slice(*VALID_OPTIONS))
-      options[:app] = MB::Api.new
+      options       = DEFAULT_OPTIONS.merge(options.slice(*VALID_OPTIONS))
+      options[:app] = MB::API::Application.new
 
       @host    = options[:host]
       @port    = options[:port]

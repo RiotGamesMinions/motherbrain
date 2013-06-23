@@ -9,8 +9,8 @@ describe MB::RestGateway do
   subject { @gateway }
 
   describe "#rack_app" do
-    it "returns MB::Api" do
-      subject.rack_app.should be_a(MB::Api)
+    it "returns MB::API::Application" do
+      subject.rack_app.should be_a(MB::API::Application)
     end
   end
 

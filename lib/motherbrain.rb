@@ -21,7 +21,7 @@ require 'mb/ridley_ext'
 require 'mb/thor_ext'
 
 module MotherBrain
-  autoload :Api, 'mb/api'
+  autoload :API, 'mb/api'
   autoload :ApiClient, 'mb/api_client'
   autoload :ApiHelpers, 'mb/api_helpers'
   autoload :ApiValidators, 'mb/api_validators'
