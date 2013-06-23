@@ -9,6 +9,22 @@ module MotherBrain
       def instance
         MB::Application[:rest_gateway] or raise Celluloid::DeadActorError, "REST Gateway not running"
       end
+
+      # Start the REST Gateway and add it to the application's registry.
+      #
+      # @note you probably don't want to manually start the REST Gateway unless you are testing. Start
+      #   the entire application with {MB::Application.run}
+      def start(options = {})
+        MB::Application[:rest_gateway] = new(options)
+      end
+
+      # Stop the currently running REST Gateway
+      #
+      # @note you probably don't want to manually stop the REST Gateway unless you are testing. Stop
+      #   the entire application with {MB::Application.stop}
+      def stop
+        instance.terminate
+      end
     end
 
     extend Forwardable

@@ -82,6 +82,11 @@ module MotherBrain
         MB::Test.mock(:setup) if MB.testing?
         MB::FileSystem.init
       end
+
+      # Stop the running application
+      def stop
+        instance.terminate
+      end
     end
 
     class SupervisionGroup < ::Celluloid::SupervisionGroup

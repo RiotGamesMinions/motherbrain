@@ -2,6 +2,8 @@ require 'mb/api_validators'
 
 module MotherBrain::API
   class V1 < MB::API::Endpoint
+    version 'v1', using: :header, vendor: 'motherbrain'
+
     helpers MB::Logging
     helpers MB::ApiHelpers
     helpers MB::Mixin::Services
