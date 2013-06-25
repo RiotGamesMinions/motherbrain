@@ -1,6 +1,14 @@
 module MotherBrain::API
   class V1
     class EnvironmentsEndpoint < MB::API::Endpoint
+      rescue_from MB::NoBootstrapRoutine do |ex|
+        rack_response(ex.to_json, 405, "Content-type" => "application/json")
+      end
+
+      rescue_from MB::InvalidProvisionManifest, MB::InvalidBootstrapManifest do |ex|
+        rack_response(ex.to_json, 400, "Content-type" => "application/json")
+      end
+
       namespace 'environments' do
         desc "list all of the environments"
         get do

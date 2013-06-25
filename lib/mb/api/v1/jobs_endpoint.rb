@@ -1,6 +1,10 @@
 module MotherBrain::API
   class V1
     class JobsEndpoint < MB::API::Endpoint
+      rescue_from MB::JobNotFound do |ex|
+        rack_response(ex.to_json, 404, "Content-type" => "application/json")
+      end
+
       namespace 'jobs' do
         desc "list all jobs (completed and active)"
         get do

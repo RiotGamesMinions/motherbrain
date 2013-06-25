@@ -14,11 +14,6 @@ module MotherBrain::API
     helpers MB::ApiHelpers
     helpers MB::Mixin::Services
 
-    mount V1::ConfigEndpoint
-    mount V1::JobsEndpoint
-    mount V1::EnvironmentsEndpoint
-    mount V1::PluginsEndpoint
-
     rescue_from Grape::Exceptions::Validation do |e|
       body = MultiJson.encode(
         status: e.status,
@@ -26,18 +21,6 @@ module MotherBrain::API
         param: e.param
       )
       rack_response(body, e.status, "Content-type" => "application/json")
-    end
-
-    rescue_from MB::PluginNotFound, MB::JobNotFound do |ex|
-      rack_response(ex.to_json, 404, "Content-type" => "application/json")
-    end
-
-    rescue_from MB::NoBootstrapRoutine do |ex|
-      rack_response(ex.to_json, 405, "Content-type" => "application/json")
-    end
-
-    rescue_from MB::InvalidProvisionManifest, MB::InvalidBootstrapManifest do |ex|
-      rack_response(ex.to_json, 400, "Content-type" => "application/json")
     end
 
     rescue_from :all do |ex|
@@ -50,6 +33,11 @@ module MotherBrain::API
 
       rack_response(body, 500, "Content-type" => "application/json")
     end
+
+    mount V1::ConfigEndpoint
+    mount V1::JobsEndpoint
+    mount V1::EnvironmentsEndpoint
+    mount V1::PluginsEndpoint
 
     if MB.testing?
       get :mb_error do
