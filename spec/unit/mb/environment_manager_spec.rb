@@ -74,4 +74,25 @@ describe MB::EnvironmentManager do
       expect(ridley.environment.find(environment_name)).to be_nil
     end
   end
+
+  describe "#purge_nodes" do
+    before :each do
+      ridley.environment.create(name: environment_name)
+      ridley.node.create(name: "test", chef_environment: environment_name)
+    end
+
+    it "removes the nodes" do
+      environment_manager.purge_nodes environment_name
+
+      expect(ridley.search(:node, "chef_environment:#{environment_name}")).to be_empty
+    end
+
+    it "does not remove nodes in other environments" do
+      ridley.node.create(name: "test2", chef_environment: "other")
+
+      environment_manager.purge_nodes environment_name
+
+      expect(ridley.search(:node, "chef_environment:other")).to_not be_empty
+    end
+  end
 end

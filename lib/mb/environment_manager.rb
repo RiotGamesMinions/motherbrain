@@ -72,7 +72,7 @@ module MotherBrain
         environment.save
 
         job.set_status("Searching for nodes in the environment")
-        nodes = ridley.search(:node, "chef_environment:#{environment.name}")
+        nodes = nodes_for_environment(environment.name)
 
         job.set_status("Performing a chef client run on #{nodes.length} nodes")
         nodes.collect do |node|
@@ -140,6 +140,30 @@ module MotherBrain
     # @return [Array<Ridley::EnvironmentResource>]
     def list
       ridley.environment.all
+    end
+
+    # Removes all nodes and clients from the Chef server for a given environment
+    #
+    # @param [String] name
+    def purge_nodes(name)
+      nodes = nodes_for_environment(name)
+      futures = []
+
+      nodes.each do |node|
+        futures << ridley.client.future(:delete, node)
+        futures << ridley.node.future(:delete, node)
+      end
+
+      futures.map(&:value)
+    end
+
+    # Returns an array of nodes for an environment
+    #
+    # @param [String] name
+    #
+    # @return [Array(Ridley::NodeObject)]
+    def nodes_for_environment(name)
+      ridley.search(:node, "chef_environment:#{name}")
     end
 
     private
