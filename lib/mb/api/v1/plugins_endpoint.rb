@@ -52,23 +52,23 @@ module MotherBrain::API
           end
 
           params do
-            requires :version, type: String, desc: "plugin version"
+            requires :plugin_version, type: String, desc: "plugin version"
           end
-          namespace ':version' do
+          namespace ':plugin_version' do
             desc "display the plugin of the given name and version"
             get do
-              find_plugin!(params[:name], params[:version])
+              find_plugin!(params[:name], params[:plugin_version])
             end
 
             desc "list of all the commands the specified plugin version can do"
             get 'commands' do
-              find_plugin!(params[:name], params[:version]).commands
+              find_plugin!(params[:name], params[:plugin_version]).commands
             end
 
             namespace 'components' do
               desc "list of all the components the specified plugin version has"
               get do
-                find_plugin!(params[:name], params[:version]).components
+                find_plugin!(params[:name], params[:plugin_version]).components
               end
 
               desc "list of all the commands the component of the specified plugin version has"
@@ -76,7 +76,7 @@ module MotherBrain::API
                 requires :component_id, type: String, desc: "component name"
               end
               get ':component_id/commands' do
-                find_plugin!(params[:name], params[:version]).component!(params[:component_id]).commands
+                find_plugin!(params[:name], params[:plugin_version]).component!(params[:component_id]).commands
               end
             end
           end
