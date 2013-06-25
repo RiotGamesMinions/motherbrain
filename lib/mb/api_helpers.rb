@@ -7,9 +7,9 @@ module MotherBrain
     #
     # @return [Plugin]
     def find_plugin!(name, version = nil)
-      plugin = plugin_manager.find(name, version)
+      version = convert_uri_version(version)
 
-      unless plugin
+      unless plugin = plugin_manager.find(name, version)
         raise PluginNotFound.new(name, version)
       end
 
@@ -27,6 +27,14 @@ module MotherBrain
       end
 
       job
+    end
+
+    def convert_uri_version(version)
+      return nil if version.nil?
+
+      ver_string = version.gsub('_', '.')
+      Solve::Version.split(ver_string)
+      ver_string
     end
   end
 end
