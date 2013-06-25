@@ -1,5 +1,5 @@
-module MotherBrain
-  module ApiHelpers
+module MotherBrain::API
+  module Helpers
     include MB::Mixin::Services
 
     # @param [String] name
@@ -10,7 +10,7 @@ module MotherBrain
       version = convert_uri_version(version)
 
       unless plugin = plugin_manager.find(name, version)
-        raise PluginNotFound.new(name, version)
+        raise MB::PluginNotFound.new(name, version)
       end
 
       plugin
@@ -20,10 +20,8 @@ module MotherBrain
     #
     # @return [JobRecord]
     def find_job!(id)
-      job = job_manager.find(id)
-
-      unless job
-        raise JobNotFound.new(id)
+      unless job = job_manager.find(id)
+        raise MB::JobNotFound.new(id)
       end
 
       job

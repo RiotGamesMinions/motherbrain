@@ -23,8 +23,6 @@ require 'mb/thor_ext'
 module MotherBrain
   autoload :API, 'mb/api'
   autoload :ApiClient, 'mb/api_client'
-  autoload :ApiHelpers, 'mb/api_helpers'
-  autoload :ApiValidators, 'mb/api_validators'
   autoload :Application, 'mb/application'
   autoload :Berkshelf, 'mb/berkshelf'
   autoload :Bootstrap, 'mb/bootstrap'

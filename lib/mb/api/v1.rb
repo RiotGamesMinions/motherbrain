@@ -1,5 +1,3 @@
-require 'mb/api_validators'
-
 module MotherBrain::API
   class V1 < MB::API::Endpoint
     require_relative 'v1/config_endpoint'
@@ -9,10 +7,6 @@ module MotherBrain::API
 
     version 'v1', using: :header, vendor: 'motherbrain'
     format :json
-
-    helpers MB::Logging
-    helpers MB::ApiHelpers
-    helpers MB::Mixin::Services
 
     rescue_from Grape::Exceptions::Validation do |e|
       body = MultiJson.encode(

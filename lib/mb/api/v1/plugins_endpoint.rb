@@ -1,6 +1,9 @@
 module MotherBrain::API
   class V1
     class PluginsEndpoint < MB::API::Endpoint
+      helpers MB::API::Helpers
+      helpers MB::Mixin::Services
+
       rescue_from MB::PluginNotFound do |ex|
         rack_response(ex.to_json, 404, "Content-type" => "application/json")
       end
