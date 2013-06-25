@@ -51,7 +51,7 @@ class Default < Thor
 
   desc "routes", "Print all registered REST API routes"
   def routes
-    puts MB::Api.routes
+    puts MB::API::Application.routes
   end
 
   desc "manpage", "Re-generate the man pages"
