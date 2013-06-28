@@ -211,7 +211,7 @@ module MotherBrain
         #
         # @return [Hash]
         def instance_counts(manifest)
-          manifest[:nodes].inject({}) do |result, element|
+          manifest[:node_groups].inject({}) do |result, element|
             result[element[:type]] ||= 0
             result[element[:type]] += element[:count].to_i
             result

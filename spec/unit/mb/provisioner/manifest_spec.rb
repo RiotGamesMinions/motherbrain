@@ -27,7 +27,7 @@ describe MB::Provisioner::Manifest do
         key_name: "mb",
         security_groups: ["foo", "bar"]
       },
-      nodes: [
+      node_groups: [
         {
           type: "m1.large",
           groups: ["activemq::master"]
@@ -63,7 +63,7 @@ describe MB::Provisioner::Manifest do
       end
 
       it "accepts a Provisioner::Manifest" do
-        subject.validate!(described_class.new({ nodes: [] }), plugin).should be_true
+        subject.validate!(described_class.new({ node_groups: [] }), plugin).should be_true
       end
 
       it "raises InvalidProvisionManifest if given a non-hash value" do
@@ -100,7 +100,7 @@ describe MB::Provisioner::Manifest do
       context "when groups is not in {group}::{group} format" do
         let(:invalid_manifest) {
           {
-            nodes: [
+            node_groups: [
               {
                 type: "m1.large",
                 count: 1,
@@ -123,7 +123,7 @@ describe MB::Provisioner::Manifest do
       context "when groups is not an array" do
         let(:invalid_manifest) {
           {
-            nodes: [
+            node_groups: [
               {
                 type: "m1.large",
                 count: 1,
@@ -143,7 +143,7 @@ describe MB::Provisioner::Manifest do
       context "when type is not provided or nil" do
         let(:invalid_manifest) {
           {
-            nodes: [
+            node_groups: [
               {
                 count: 1,
                 groups: "activemq::slave"
@@ -162,7 +162,7 @@ describe MB::Provisioner::Manifest do
       context "when group is nil" do
         let(:invalid_manifest) {
           {
-            nodes: [
+            node_groups: [
               {
                 type: "m1.large",
                 count: 1

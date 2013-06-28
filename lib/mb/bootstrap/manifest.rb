@@ -4,7 +4,7 @@ module MotherBrain
     #
     # @example valid manifest structure
     #   {
-    #     "nodes": [
+    #     "node_groups": [
     #       {
     #         "groups": ["activemq::master"],
     #         "hosts": [
@@ -39,8 +39,8 @@ module MotherBrain
           attributes = provisioner_manifest.dup
 
           new.tap do |boot_manifest|
-            boot_manifest.path    = path
-            boot_manifest[:nodes] = Array.new
+            boot_manifest.path = path
+            boot_manifest[:node_groups] = Array.new
             boot_manifest[:options] = provisioner_manifest[:options]
 
             attributes.node_groups.each do |node_group|
@@ -58,7 +58,7 @@ module MotherBrain
                 nodes.delete(used_instance)
               end
 
-              boot_manifest[:nodes] << {
+              boot_manifest[:node_groups] << {
                 groups: groups,
                 hosts: hosts.to_a
               }
@@ -79,7 +79,9 @@ module MotherBrain
               "Plugin '#{plugin.name}' (#{plugin.version}) does not contain a bootstrap routine"
           end
 
-          unless manifest[:nodes].is_a?(Array)
+          node_groups = manifest[:node_groups] || manifest[:nodes] # DEPRECATE :nodes
+
+          unless node_groups.is_a?(Array)
             msg = "Manifest should contain an array of nodes"
             raise InvalidBootstrapManifest, msg
           end

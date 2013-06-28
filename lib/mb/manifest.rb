@@ -85,7 +85,7 @@ module MotherBrain
 
     # @return [Array]
     def node_groups
-      self[:nodes] || []
+      self[:node_groups] || self[:nodes] || [] # DEPRECATE :nodes
     end
 
     # @return [Hash]

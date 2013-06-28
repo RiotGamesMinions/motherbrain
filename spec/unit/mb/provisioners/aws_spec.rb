@@ -30,7 +30,7 @@ describe MB::Provisioner::AWS do
         security_groups: ["foo", "bar"],
         availability_zone: "riot1"
       },
-      nodes: [
+      node_groups: [
         {
           type: "m1.large",
           count: 4,

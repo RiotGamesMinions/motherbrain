@@ -6,7 +6,7 @@ describe MB::Provisioner::EnvironmentFactory do
   }
   let(:manifest_hash) {
     {
-      nodes: [
+      node_groups: [
         {
           type: "m1.large",
           count: 4,
@@ -42,7 +42,7 @@ describe MB::Provisioner::EnvironmentFactory do
       describe "with different ordering" do
         let(:manifest_hash) {
           {
-            nodes: [
+            node_groups: [
               { groups: "default", type: "none" },
               { type: "none", groups: "default", count: 2 }
             ]

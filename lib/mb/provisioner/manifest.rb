@@ -8,7 +8,7 @@ module MotherBrain
     #     "options": {
     #       "provisioner_specific_option": "yellow",
     #     },
-    #     "nodes": [
+    #     "node_groups": [
     #       {
     #         "groups": ["activemq::master"],
     #         "type": "m1.large",
@@ -35,37 +35,37 @@ module MotherBrain
               "The provisioner manifest needs to be a hash, but you provided a(n) #{manifest.class}"
           end
 
-          nodes = manifest[:nodes]
+          node_groups = manifest[:node_groups] || manifest[:nodes] # DEPRECATE :nodes
 
-          unless nodes
+          unless node_groups
             raise InvalidProvisionManifest,
-              "The provisioner manifest needs to have a key 'nodes' containing an array"
+              "The provisioner manifest needs to have a key 'node_groups' containing an array"
           end
 
-          unless nodes.is_a?(Array)
+          unless node_groups.is_a?(Array)
             raise InvalidProvisionManifest,
-              "The provisioner manifest needs to have a key 'nodes' containing an array, but it was a(n) #{nodes.class}"
+              "The provisioner manifest needs to have a key 'node_groups' containing an array, but it was a(n) #{node_groups.class}"
           end
 
-          nodes.each do |node|
-            unless node.is_a?(Hash)
+          node_groups.each do |node_group|
+            unless node_group.is_a?(Hash)
               raise InvalidProvisionManifest,
-                "The provisioner manifest needs to have an array of hashes at 'nodes', but there was a #{node.class}: #{node.inspect}"
+                "The provisioner manifest needs to have an array of hashes at 'node_groups', but there was a #{node.class}: #{node.inspect}"
             end
 
-            unless node.has_key?(:type) && !node[:type].nil?
+            unless node_group.has_key?(:type) && !node_group[:type].nil?
               raise InvalidProvisionManifest,
-                "A node entry in a provision manifest needs to contain key 'type' with a value."
+                "A node group entry in a provision manifest needs to contain key 'type' with a value."
             end
 
-            unless node.has_key?(:groups) && !node[:groups].nil?
+            unless node_group.has_key?(:groups) && !node_group[:groups].nil?
               raise InvalidProvisionManifest,
-                "A node entry in a provision manifest needs to contain a key 'groups' with a value."
+                "A node group entry in a provision manifest needs to contain a key 'groups' with a value."
             end
 
-            type   = node[:type]
-            count  = node[:count]
-            groups = node[:groups]
+            type   = node_group[:type]
+            count  = node_group[:count]
+            groups = node_group[:groups]
 
             unless type.to_s.match(/\w+\.\w+/)
               raise InvalidProvisionManifest,
@@ -81,7 +81,7 @@ module MotherBrain
 
             unless groups.is_a?(Array)
               raise InvalidProvisionManifest,
-                "The provisioner manifest contains a node group without an array of groups: #{node.inspect}"
+                "The provisioner manifest contains a node group without an array of groups: #{node_group.inspect}"
             end
 
             groups.each do |group|

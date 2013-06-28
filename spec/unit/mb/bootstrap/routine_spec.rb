@@ -7,7 +7,7 @@ describe MB::Bootstrap::Routine do
       let(:tasks) { [ task_one ] }
       let(:manifest) do
         MB::Bootstrap::Manifest.new(
-          nodes: [
+          node_groups: [
             {
               groups: ["app_server::default"],
               hosts: [
@@ -86,7 +86,7 @@ describe MB::Bootstrap::Routine do
 
         let(:manifest) do
           MB::Bootstrap::Manifest.new(
-            nodes: [
+            node_groups: [
               {
                 groups: ["app_server::default", "database_master::default"],
                 hosts: [
@@ -134,7 +134,7 @@ describe MB::Bootstrap::Routine do
         let(:task_two) { described_class::Task.new("database_master::default") }
         let(:manifest) do
           MB::Bootstrap::Manifest.new(
-            nodes: [
+            node_groups: [
               {
                 groups: ["app_server::default"],
                 hosts: [
@@ -253,7 +253,7 @@ describe MB::Bootstrap::Routine do
 
   let(:manifest) {
     {
-      nodes: [
+      node_groups: [
         {
           groups: ["activemq::master"],
           hosts: ["amq1.riotgames.com", "amq2.riotgames.com"]
