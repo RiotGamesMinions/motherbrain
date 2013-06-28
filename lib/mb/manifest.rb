@@ -85,6 +85,11 @@ module MotherBrain
 
     # @return [Array]
     def node_groups
+      if self[:nodes]
+        MB.log.warn 'The "nodes" key in the manifest is now "node_groups", ' +
+          'and will be removed in motherbrain 1.0'
+      end
+
       self[:node_groups] || self[:nodes] || [] # DEPRECATE :nodes
     end
 
