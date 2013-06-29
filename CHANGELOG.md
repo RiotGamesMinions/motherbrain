@@ -1,3 +1,7 @@
+# 0.8.4
+
+* Fix crash when cleaning up after commanding Windows nodes
+
 # 0.8.3
 
 * REALLY fix blocking IO issue in SSH/WinRM
