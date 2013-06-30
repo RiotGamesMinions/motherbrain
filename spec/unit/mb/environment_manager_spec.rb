@@ -6,8 +6,6 @@ describe MB::EnvironmentManager do
   let(:environment_manager) { described_class.new }
   let(:environment_name) { "rspec-test" }
 
-  # TODO: refactor all to use chef-zero
-
   describe "#async_configure" do
     let(:options) { Hash.new }
 
@@ -19,31 +17,39 @@ describe MB::EnvironmentManager do
   end
 
   describe "#configure" do
-    let(:job) { MB::Job.new(:environment_configure) }
+    let!(:job) { MB::Job.new(:environment_configure) }
+    let!(:ticket) { job.ticket }
     let(:options) { Hash.new }
 
-    before { @record = job.ticket }
-
     context "when the environment exists" do
-      pending
+      before { chef_environment(environment_name) }
+
+      it "sets the job to success" do
+        subject.configure(job, environment_name, options)
+        expect(ticket).to be_success
+      end
     end
 
     context "when the environment does not exist" do
-      before { subject.stub_chain(:ridley, :environment, :find).with(environment_name).and_return(nil) }
+      before { MB::RSpec::ChefServer.clear_data }
 
       it "sets the job to failure because of EnvironmentNotFound" do
         subject.configure(job, environment_name, options)
-        expect(@record).to be_failure
-        expect(@record.result).to be_a(MB::EnvironmentNotFound)
+        expect(ticket).to be_failure
+        expect(ticket.result).to be_a(MB::EnvironmentNotFound)
       end
     end
   end
 
   describe "#find" do
+    before { chef_environment(environment_name) }
+
+    it "returns a Ridley::EnvironmentObject" do
+      expect(subject.find(environment_name)).to be_a(Ridley::EnvironmentObject)
+    end
+
     context "when the environment is not present on the remote Chef server" do
-      before(:each) do
-        MB::Application.ridley.stub_chain(:environment, :find).with(environment_name).and_return(nil)
-      end
+      before { MB::RSpec::ChefServer.clear_data }
 
       it "aborts an EnvironmentNotFound error" do
         expect { subject.find(environment_name) }.to raise_error(MB::EnvironmentNotFound)
