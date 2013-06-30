@@ -1,22 +1,5 @@
 module MotherBrain
   module SpecHelpers
-    class << self
-      def chef_api_url_port
-        if ENV['CHEF_API_URL']
-          ENV['CHEF_API_URL'].split(?:).last.to_i
-        else
-          28890
-        end
-      end
-
-      def chef_zero
-        return @chef_zero if @chef_zero
-
-        WebMock.disable_net_connect!(allow_localhost: true)
-        @chef_zero = ChefZero::Server.new(port: chef_api_url_port)
-      end
-    end
-
     def app_root_path
       Pathname.new(File.expand_path('../../../', __FILE__))
     end
@@ -48,7 +31,6 @@ module MotherBrain
       @mb_config ||= MB::Config.new(nil,
         {
           chef: {
-            api_url: "http://127.0.0.1:#{MotherBrain::SpecHelpers.chef_api_url_port}",
             api_client: "zero",
             api_key: File.join(fixtures_path, "fake_key.pem"),
             validator_client: "chef-validator",
@@ -90,10 +72,7 @@ module MotherBrain
     # @return [String]
     #   path to the generated cookbook
     def generate_cookbook(name, options = {})
-      options = options.reverse_merge(
-        version: "0.1.0",
-        with_plugin: true
-      )
+      options = options.reverse_merge(version: "0.1.0", with_plugin: true)
 
       cookbook_path = options[:path] || File.join(berkshelf_path, 'cookbooks', "#{name}-#{options[:version]}")
 
@@ -114,25 +93,23 @@ module MotherBrain
         EOH
       end
 
-      if options[:with_plugin]
-        File.open(File.join(cookbook_path, MB::Plugin::PLUGIN_FILENAME), 'w+') do |f|
-          f.write "# #{name} plugin\n"
-          if options[:with_bootstrap]
-            f.write <<-PLUGIN
+      File.open(File.join(cookbook_path, MB::Plugin::PLUGIN_FILENAME), 'w+') do |f|
+        f.write "# #{name} plugin\n"
+        if options[:with_bootstrap]
+          f.write <<-PLUGIN
 stack_order do
-  bootstrap("#{name}::server")
+bootstrap("#{name}::server")
 end
 
 component "#{name}" do
-  description "The #{name} service"
-  group "server" do
-    recipe "#{name}::server"
-  end
+description "The #{name} service"
+group "server" do
+  recipe "#{name}::server"
+end
 end
 PLUGIN
-          end
         end
-      end
+      end if options[:with_plugin]
 
       cookbook_path
     end

@@ -1,6 +1,7 @@
 ENV['RUBY_ENV'] ||= 'test'
 ENV['MOTHERBRAIN_PATH'] ||= File.join(File.expand_path(File.dirname(__FILE__)), "tmp/.mb")
 ENV['BERKSHELF_PATH'] ||= File.join(File.expand_path(File.dirname(__FILE__)), "tmp/.berkshelf")
+ENV['CHEF_API_URL'] = 'http://localhost:28890'
 
 require 'rubygems'
 require 'bundler'
@@ -19,6 +20,8 @@ def setup_rspec
     config.include MotherBrain::RSpec::Doubles
     config.include MotherBrain::Matchers
     config.include MotherBrain::SpecHelpers
+    config.include MotherBrain::RSpec::Berkshelf
+    config.include MotherBrain::RSpec::ChefServer
     config.include MotherBrain::Mixin::Services
 
     config.mock_with :rspec
@@ -27,7 +30,8 @@ def setup_rspec
     config.run_all_when_everything_filtered = true
 
     config.before(:suite) do
-      MotherBrain::SpecHelpers.chef_zero.start_background
+      WebMock.disable_net_connect!(allow_localhost: true, net_http_connect_on_start: true)
+      MB::RSpec::ChefServer.start
     end
 
     config.before(:all) do
@@ -39,7 +43,7 @@ def setup_rspec
 
     config.before(:each) do
       clean_tmp_path
-      MotherBrain::SpecHelpers.chef_zero.clear_data
+      MB::RSpec::ChefServer.server.clear_data
     end
   end
 end
