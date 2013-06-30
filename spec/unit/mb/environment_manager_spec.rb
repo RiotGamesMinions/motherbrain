@@ -52,7 +52,19 @@ describe MB::EnvironmentManager do
   end
 
   describe "#list" do
-    pending
+    before do
+      chef_environment("rspec-one")
+      chef_environment("rspec-two")
+      chef_environment("rspec-three")
+    end
+
+    it "has an item for every environment on the Chef server +1 for _default" do
+      expect(subject.list).to have(4).items
+    end
+
+    it "includes the _default environment" do
+      expect(subject.list.find { |e| e.chef_id }).to_not be_nil
+    end
   end
 
   describe "#create" do
@@ -64,9 +76,7 @@ describe MB::EnvironmentManager do
   end
 
   describe "#destroy" do
-    before :each do
-      ridley.environment.create(name: environment_name)
-    end
+    before { chef_environment(environment_name) }
 
     it "destroys the environment" do
       environment_manager.destroy environment_name
@@ -76,8 +86,8 @@ describe MB::EnvironmentManager do
   end
 
   describe "#purge_nodes" do
-    before :each do
-      ridley.environment.create(name: environment_name)
+    before do
+      chef_environment(environment_name)
       ridley.node.create(name: "test", chef_environment: environment_name)
     end
 

@@ -186,6 +186,45 @@ describe MotherBrain::PluginManager do
     end
   end
 
+  describe "#load_all_installed" do
+    before do
+      install_cookbook("ruby", "1.2.3", with_plugin: true)
+      install_cookbook("ruby", "2.0.0", with_plugin: true)
+      install_cookbook("elixir", "1.3.4", with_plugin: false)
+    end
+
+    it "loads each plugin found in the Berkshelf" do
+      subject.load_all_installed
+      expect(subject.list).to have(2).items
+      expect(subject).to have_plugin("ruby", "1.2.3")
+      expect(subject).to have_plugin("ruby", "2.0.0")
+    end
+  end
+
+  describe "#load_all_remote" do
+    before(:all) do
+      described_class.any_instance.stub(async_loading?: false)
+      chef_cookbook("ruby", "1.2.3", with_plugin: true)
+      chef_cookbook("ruby", "2.0.0", with_plugin: false)
+      chef_cookbook("elixir", "1.3.4", with_plugin: true)
+    end
+
+    it "loads each plugin found on the Chef Server" do
+      subject.load_all_remote
+      expect(subject.list).to have(2).items
+      expect(subject).to have_plugin("ruby", "1.2.3")
+      expect(subject).to have_plugin("elixir", "1.3.4")
+    end
+
+    context "given a value for :name" do
+      it "only loads each plugin found on the Chef Server matching the given name" do
+        subject.load_all_remote(name: "ruby")
+        expect(subject.list).to have(1).item
+        expect(subject).to have_plugin("ruby", "1.2.3")
+      end
+    end
+  end
+
   describe "#load_installed" do
     let(:plugin) do
       metadata = MB::CookbookMetadata.new do
