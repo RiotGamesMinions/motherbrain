@@ -6,6 +6,7 @@ Feature: listing the plugins available to motherbrain
   Background:
     Given a valid motherbrain configuration
     And I have an empty Berkshelf
+    And the Chef Server is empty
 
   Scenario: listing all plugins
     Given a cookbook "pvpnet" at version "1.2.3" with a plugin
@@ -23,10 +24,23 @@ Feature: listing the plugins available to motherbrain
     And the exit status should be 0
 
   Scenario: listing plugins when there are no plugins installed
-    Given I have an empty Berkshelf
     When I run the "plugin list" command
     Then the output should contain:
       """
       No plugins found in your Berkshelf:
+      """
+    And the exit status should be 0
+
+  Scenario: listing remote plugins
+    Given a cookbook on the Chef Server "ruby" at version "1.2.3" with a plugin
+    And a cookbook on the Chef Server "elixir" at version "2.0.0" with a plugin
+    When I run the "plugin list" command with:
+      | --remote |
+    Then the output should contain:
+      """
+      ** listing installed and remote plugins...
+
+      ruby: 1.2.3
+      elixir: 2.0.0
       """
     And the exit status should be 0
