@@ -1,6 +1,7 @@
 ENV['RUBY_ENV'] ||= 'test'
 ENV['MOTHERBRAIN_PATH'] ||= File.join(File.expand_path("../../", File.dirname(__FILE__)), "spec/tmp/.mb")
 ENV['BERKSHELF_PATH'] ||= File.join(File.expand_path("../../", File.dirname(__FILE__)), "spec/tmp/.berkshelf")
+ENV['CHEF_API_URL'] = 'http://localhost:28891'
 
 require 'rubygems'
 require 'bundler'
@@ -28,18 +29,14 @@ def setup_env
 
   World(Aruba::Api)
   World(MotherBrain::SpecHelpers)
+  World(MotherBrain::RSpec::ChefServer)
 
-  ENV['CHEF_API_URL'] = 'http://localhost:28889'
+  WebMock.disable_net_connect!(allow_localhost: true, net_http_connect_on_start: true)
+  MB::RSpec::ChefServer.start
 
-  MotherBrain::SpecHelpers.chef_zero.start_background
-
-  at_exit do
-    MotherBrain::SpecHelpers.chef_zero.stop
-  end
+  at_exit { MB::RSpec::ChefServer.stop }
 
   Before do
-    MotherBrain::SpecHelpers.chef_zero.clear_data
-
     @aruba_timeout_seconds = 10
     @config = generate_valid_config
   end
