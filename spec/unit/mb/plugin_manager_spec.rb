@@ -202,7 +202,7 @@ describe MotherBrain::PluginManager do
   end
 
   describe "#load_all_remote" do
-    before(:all) do
+    before do
       described_class.any_instance.stub(async_loading?: false)
       chef_cookbook("ruby", "1.2.3", with_plugin: true)
       chef_cookbook("ruby", "2.0.0", with_plugin: false)
