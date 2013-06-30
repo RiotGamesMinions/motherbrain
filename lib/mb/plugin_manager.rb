@@ -119,13 +119,15 @@ module MotherBrain
       options = options.reverse_merge(force: false)
 
       if options[:name].present?
-        remote_cookbook_versions(name).collect do |version|
-          load_remote(name, version, options)
+        remote_cookbook_versions(options[:name]).collect do |version|
+          load_remote(options[:name], version, options)
         end
       else
-        remote_cookbooks.collect do |name, version|
-          load_remote(name, version, options)
-        end
+        [].tap do |remotes|
+          remote_cookbooks.each do |name, versions|
+            versions.each { |version| remotes << future(:load_remote, name, version, options) }
+          end
+        end.map(&:value)
       end
     end
 
@@ -181,6 +183,14 @@ module MotherBrain
       satisfy(plugin_id, constraint, options)
     rescue MotherBrain::EnvironmentNotFound => ex
       abort ex
+    end
+
+    # @param [String] name
+    #   name of the plugin
+    # @param [#to_s] version
+    #   version of the plugin to find
+    def has_plugin?(name, version)
+      !find(name, version).nil?
     end
 
     # Download and install the cookbook containing a motherbrain plugin matching the
