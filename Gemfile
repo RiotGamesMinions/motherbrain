@@ -18,7 +18,6 @@ platforms :jruby do
 end
 
 group :development do
-  gem 'debugger', '>= 1.3.2', platforms: :ruby
   gem 'redcarpet', platforms: :ruby
   gem 'yard'
   gem 'geminabox'
