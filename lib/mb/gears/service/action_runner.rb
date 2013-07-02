@@ -16,8 +16,7 @@ module MotherBrain
 
           @environment_attributes = Array.new
           @node_attributes        = Array.new
-          @environment_resets     = Array.new
-          @node_resets            = Array.new
+          @toggle_callbacks       = Array.new
         end
 
         # Set an environment level attribute to the given value. The key is represented
@@ -46,76 +45,45 @@ module MotherBrain
           @node_attributes << { key: key, value: value, options: options }
         end
 
-        def resets
-          @node_resets | @environment_resets
-        end
-
         private
 
           attr_reader :component
+          attr_reader :environment_attributes
+          attr_reader :node_attributes
+          attr_reader :toggle_callbacks
 
-          # TODO: Make this public when ActionRunner has a clean room
-          def run(job)
-            if @node_attributes.any?
-              nodes.concurrent_map do |l_node|
-                set_node_attributes(job, l_node)
-              end
-            end
-
-            save_nodes job
-
-            if @environment_attributes.any?
-              set_environment_attributes(job)
-            end
-          end
-
+          # @todo Make this public when ActionRunner has a clean room
           def reset(job)
-            nodes.collect do |node|
-              @node_resets.each do |attribute|
-                message = if attribute[:value].nil?
-                  "Toggling off node attribute '#{attribute[:key]}' on #{node.name}"
-                else
-                  "Toggling node attribute '#{attribute[:key]}' back to '#{attribute[:value].inspect}' on #{node.name}"
-                end
-                job.set_status(message)
-                node.set_chef_attribute(attribute[:key], attribute[:value])
-              end
-
-              Celluloid::Future.new { node.save }
-            end.map(&:value)
-
-            if @environment_resets.any?
-              env = ridley.environment.find(environment)
-              @environment_resets.each do |attribute|
-                message = if attribute[:value].nil?
-                  "Toggling off environment attribute '#{attribute[:key]}' in #{environment}"
-                else
-                  "Toggling environment attribute '#{attribute[:key]}' to '#{attribute[:value].inspect}' on #{environment}"
-                end
-                job.set_status(message)
-                env.set_default_attribute(attribute[:key], attribute[:value])
-              end
-              env.save
-            end
+            toggle_callbacks.concurrent_map { |callback| callback.call(job) }
           end
 
-          def save_nodes(job)
-            if nodes.any?
-              job.set_status "Saving #{nodes.collect(&:name).join(', ')}"
-              nodes.each(&:save)
-            end
+          # @todo Make this public when ActionRunner has a clean room
+          def run(job)
+            set_node_attributes(job)
+            set_environment_attributes(job)
           end
 
           def set_environment_attributes(job)
+            return unless environment_attributes.any?
+
             unless env = ridley.environment.find(environment)
               raise MB::EnvironmentNotFound.new(environment)
             end
 
-            @environment_attributes.each do |attribute|
+            environment_attributes.each do |attribute|
               key, value, options = attribute[:key], attribute[:value], attribute[:options]
 
               if options[:toggle]
-                @environment_resets << { key: key, value: env.default_attributes.dig(key) }
+                toggle_callbacks << ->(job) {
+                  message = if value.nil?
+                    "Toggling off environment attribute '#{key}' in #{environment}"
+                  else
+                    "Toggling environment attribute '#{key}' to '#{value.inspect}' on #{environment}"
+                  end
+                  job.set_status(message)
+                  environment.set_default_attribute(key, value)
+                  environment.save
+                }
               end
 
               job.set_status("Setting environment attribute '#{key}' to #{value.inspect} in #{environment}")
@@ -132,17 +100,33 @@ module MotherBrain
           #  a job to send status updates to
           # @param [Ridley::NodeObject] node
           #   the node to set the attribute on
-          def set_node_attributes(job, node)
-            node.reload
-            @node_attributes.each do |attribute|
-              key, value, options = attribute[:key], attribute[:value], attribute[:options]
+          def set_node_attributes(job)
+            return if node_attributes.empty?
 
-              if options[:toggle]
-                @node_resets << { key: key, value: node.normal.dig(key) }
+            nodes.concurrent_map do |node|
+              node.reload
+
+              node_attributes.each do |attribute|
+                key, value, options = attribute[:key], attribute[:value], attribute[:options]
+
+                if options[:toggle]
+                  toggle_callbacks << ->(job) {
+                    message = if value.nil?
+                      "Toggling off node attribute '#{key}' on #{node.name}"
+                    else
+                      "Toggling node attribute '#{key}' back to '#{value.inspect}' on #{node.name}"
+                    end
+                    job.set_status(message)
+                    node.set_chef_attribute(key, value)
+                    node.save
+                  }
+                end
+
+                job.set_status("Setting node attribute '#{key}' to #{value.inspect} on #{node.name}")
+                node.set_chef_attribute(key, value)
               end
 
-              job.set_status("Setting node attribute '#{key}' to #{value.inspect} on #{node.name}")
-              node.set_chef_attribute(key, value)
+              node.save
             end
           end
       end
