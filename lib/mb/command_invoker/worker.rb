@@ -7,14 +7,19 @@ module MotherBrain
       attr_reader :command
       # @return [String]
       attr_reader :environment
+      # @return [Array]
+      attr_reader :node_filter
 
       # @param [MB::Command] command
       #   command to invoke
       # @param [String] environment
       #   environment to invoke this command on
-      def initialize(command, environment)
+      # @param [Array] node_filter = nil
+      #	  list of nodes to limit the command to
+      def initialize(command, environment, node_filter = nil)
         @command     = command
         @environment = environment
+        @node_filter = node_filter
       end
 
       # @param [MB::Job] job
@@ -26,7 +31,7 @@ module MotherBrain
         msg << " with arguments: #{arguments}" if arguments.any?
         job.set_status(msg)
 
-        command.invoke(job, environment, *arguments)
+        command.invoke(job, environment, node_filter, *arguments)
       end
     end
   end

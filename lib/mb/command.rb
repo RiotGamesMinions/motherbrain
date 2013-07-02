@@ -64,8 +64,8 @@ module MotherBrain
     #   additional arguments to pass to the command
     #
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
-    def invoke(job, environment, *args)
-      CommandRunner.new(job, environment, scope, execute, *args)
+    def invoke(job, environment, node_filter, *args)
+      CommandRunner.new(job, environment, scope, execute, node_filter, *args)
     end
 
     private
