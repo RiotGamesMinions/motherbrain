@@ -60,6 +60,8 @@ module MotherBrain
     #   a job to update with progress
     # @param [String] environment
     #   the environment to invoke the command on
+    # @param [Array] node_filter
+    #   list of nodes to limit the command to
     # @param [Array] args
     #   additional arguments to pass to the command
     #

@@ -15,18 +15,24 @@ describe MB::NodeFilter do
   let(:filter) {[]}
 
   describe "#ipaddress?" do
-    it "should work" do
+    it "is true for valid ipaddresses" do
        expect(subject.ipaddress?("192.168.1.1")).to be_true
-       expect(subject.ipaddress?("poop")).to be_false
-       expect(subject.ipaddress?("192.168.1.3-5")).to be_false
+    end
+
+    it "is false for invalid ipaddresses" do
+      expect(subject.ipaddress?("invalid")).to be_false
+      expect(subject.ipaddress?("192.168.1.3-5")).to be_false
     end
   end
 
   describe "#iprange" do
-    it "should also work" do
+    it "expands the range" do
       expect(subject.iprange("192.168.1.1-2")).to eq(["192.168.1.1", "192.168.1.2"])
+    end
+
+    it "is nil when not an iprange" do
       expect(subject.iprange("192.168.1.1")).to be_nil
-      expect(subject.iprange("poop")).to be_nil
+      expect(subject.iprange("invalid")).to be_nil
     end
   end
 
@@ -34,7 +40,7 @@ describe MB::NodeFilter do
     context "when an ipaddress range is given" do
       let(:filter) { ["192.168.1.3-5"] }
 
-      it "filters the nodes good" do
+      it "filters the nodes" do
         expect(filtered.collect(&:public_ipv4)).to eq(["192.168.1.3", "192.168.1.4", "192.168.1.5"])
       end
     end
@@ -42,7 +48,7 @@ describe MB::NodeFilter do
     context "when a full hostname is given" do
       let(:filter) { ["node2.test.riotgames.com"] }
 
-      it "filters the nodes by their hostname" do
+      it "filters the nodes by their full hostname" do
         expect(filtered.collect(&:public_hostname)).to eq(["node2.test.riotgames.com"])
       end
     end
