@@ -127,18 +127,17 @@ module MotherBrain
       return unless nodes.any?
 
       if node_filter
-        # filter nodes
-        hostnames = nodes.collect(&:public_hostname)
-        ipaddresses = nodes.collect(&:public_ipv4)
         filtered_nodes = []
         
         if contains_hostnames?(node_filter)
-          filtered_nodes << hostnames.select { |hostname| node_filter.include?(hostname) }
+          filtered_nodes << nodes.select { |node| node_filter.include?(node.public_hostname) }
         end
 
         if contains_ipaddresses?(node_filter)
-          filtered_nodes << ipaddresses.select { |ipaddress| node_filter.include?(ipaddresses) }
+          filtered_nodes << nodes.select { |node| node_filter.include?(node.public_ipv4) }
         end
+
+        nodes = nodes & filtered_nodes
       end
 
       if options[:any]
