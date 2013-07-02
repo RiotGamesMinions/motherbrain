@@ -7,8 +7,6 @@ module MotherBrain
 
         # @return [String]
         attr_reader :name
-        # @return [Set<Ridley::Node>]
-        attr_reader :nodes
 
         # @param [String] name
         # @param [MB::Component] component
