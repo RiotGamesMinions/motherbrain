@@ -126,19 +126,7 @@ module MotherBrain
 
       return unless nodes.any?
 
-      if node_filter
-        filtered_nodes = []
-        
-        if contains_hostnames?(node_filter)
-          filtered_nodes << nodes.select { |node| node_filter.include?(node.public_hostname) }
-        end
-
-        if contains_ipaddresses?(node_filter)
-          filtered_nodes << nodes.select { |node| node_filter.include?(node.public_ipv4) }
-        end
-
-        nodes = nodes & filtered_nodes
-      end
+      nodes = MB::NodeFilter.filter(node_filter, nodes) if node_filter
 
       if options[:any]
         nodes = nodes.sample(options[:any])
@@ -176,7 +164,7 @@ module MotherBrain
     end
 
     def command(command_name)
-      scope.command!(command_name).invoke(job, environment)
+      scope.command!(command_name).invoke(job, environment, node_filter)
     end
 
     private
