@@ -40,7 +40,7 @@ module MotherBrain
     #
     # @return [Array<Ridley::Node>]
     def nodes(environment)
-      Application.ridley.search(:node, search_query(environment))
+      Application.ridley.partial_search(:node, search_query(environment), [ "public_ipv4", "public_hostname" ])
     end
 
     # Returns an escape search query for Solr from the roles, rescipes, and chef_attributes
