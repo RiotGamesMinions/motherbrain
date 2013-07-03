@@ -60,12 +60,14 @@ module MotherBrain
     #   a job to update with progress
     # @param [String] environment
     #   the environment to invoke the command on
+    # @param [Array] node_filter
+    #   list of nodes to limit the command to
     # @param [Array] args
     #   additional arguments to pass to the command
     #
     # @raise [MB::ChefConnectionError] if there was an error communicating to the Chef Server
-    def invoke(job, environment, *args)
-      CommandRunner.new(job, environment, scope, execute, *args)
+    def invoke(job, environment, node_filter, *args)
+      CommandRunner.new(job, environment, scope, execute, node_filter, *args)
     end
 
     private

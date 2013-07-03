@@ -9,6 +9,8 @@ module MotherBrain
     # @return [Proc]
     attr_reader :execute
     # @return [Array]
+    attr_reader :node_filter
+    # @return [Array]
     attr_reader :args
 
     # @param [String] environment
@@ -27,13 +29,16 @@ module MotherBrain
     #     proc {
     #       on("some_nodes") { service("nginx").run("stop") }
     #     }
+    # @param [Array] node_filter
+    #   a list of nodes to filter commands on
     # @param [Array] args
     #   any additional arguments to pass to the execution block
-    def initialize(job, environment, scope, execute, *args)
+    def initialize(job, environment, scope, execute, node_filter, *args)
       @job         = job
       @environment = environment
       @scope       = scope
       @execute     = execute
+      @node_filter = node_filter
       @args        = args
 
       @on_procs    = []
@@ -121,6 +126,8 @@ module MotherBrain
 
       return unless nodes.any?
 
+      nodes = MB::NodeFilter.filter(node_filter, nodes) if node_filter
+
       if options[:any]
         nodes = nodes.sample(options[:any])
       end
@@ -157,7 +164,7 @@ module MotherBrain
     end
 
     def command(command_name)
-      scope.command!(command_name).invoke(job, environment)
+      scope.command!(command_name).invoke(job, environment, node_filter)
     end
 
     private

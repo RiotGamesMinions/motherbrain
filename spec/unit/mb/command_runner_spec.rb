@@ -4,7 +4,7 @@ describe MB::CommandRunner do
   subject { command_runner }
 
   let(:command_runner) {
-    described_class.new(job, environment, scope, command_block)
+    described_class.new(job, environment, scope, command_block, node_filter)
   }
 
   let(:scope) { MB::Plugin.new(double(valid?: true)) }
@@ -18,6 +18,7 @@ describe MB::CommandRunner do
   let(:node_2) { double('node_2', name: 'b.riotgames.com', public_hostname: 'b.riotgames.com') }
   let(:node_3) { double('node_3', name: 'c.riotgames.com', public_hostname: 'c.riotgames.com') }
   let(:nodes) { [node_1, node_2, node_3] }
+  let(:node_filter) { nil }
 
   let(:master_group) { double('master_group', nodes: [node_1, node_2]) }
   let(:slave_group) { double('slave_group', nodes: [node_3]) }

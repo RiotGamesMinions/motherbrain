@@ -50,6 +50,7 @@ module MotherBrain
   autoload :JobTicket, 'mb/job_ticket'
   autoload :LockManager, 'mb/lock_manager'
   autoload :Logging, 'mb/logging'
+  autoload :NodeFilter, 'mb/node_filter'
   autoload :Manifest, 'mb/manifest'
   autoload :Mixin, 'mb/mixin'
   autoload :NodeQuerier, 'mb/node_querier'
