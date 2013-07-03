@@ -128,7 +128,7 @@ describe MB::CommandInvoker do
     end
 
     it "creates a new worker to run the command in" do
-      MB::CommandInvoker::Worker.should_receive(:new).with(command, environment).and_return(worker)
+      MB::CommandInvoker::Worker.should_receive(:new).with(command, environment, nil).and_return(worker)
 
       run
     end

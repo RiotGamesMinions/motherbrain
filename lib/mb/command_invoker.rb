@@ -86,6 +86,7 @@ module MotherBrain
     # @option options [String] :version (optional)
     # @option options [Array] :arguments (Array.new)
     # @option options [Boolean] :force (false)
+    # @option options [Array] :node_filter (nil)
     #
     # @raise [MB::ArgumentError]
     #
@@ -109,7 +110,7 @@ module MotherBrain
       environment_manager.find(options[:environment])
 
       command = find(command_name, options[:plugin], options.slice(:component, :environment, :version))
-      worker  = Worker.new(command, options[:environment])
+      worker  = Worker.new(command, options[:environment], options[:node_filter])
 
       chef_synchronize(chef_environment: options[:environment], force: options[:force], job: job) do
         worker.run(job, options[:arguments])

@@ -68,6 +68,11 @@ module MotherBrain
               default: false,
               desc: "Run command even if the environment is locked",
               aliases: "-f"
+            method_option :only,
+              type: :array,
+              default: nil,
+              desc: "Run command only on the given hostnames or IPs",
+              aliases: "-o"
             desc(usage, command.description)
             define_method command.name.to_sym, ->(*task_args) do
               job = command_invoker.async_invoke(command.name,
@@ -76,7 +81,8 @@ module MotherBrain
                 version: plugin_version,
                 environment: environment,
                 arguments: task_args,
-                force: options[:force]
+                force: options[:force],
+		            node_filter: options[:only]
               )
 
               display_job(job)
