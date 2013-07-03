@@ -1,3 +1,19 @@
+# 0.9.0
+
+* Default provisioner is now EC2/AWS
+* Nodes created by the EC2 provisioner will now be destroyed during environment destroy
+* Nodes and clients belonging to an environment will now be destroyed during environment destroy
+* Commands can now be run against a single node by passing the `--only` flag
+* Locked environments cannot be destroyed unless `--force` is provided
+* Fix `plugin list --remote`
+* REST API is now versioned (shipping with V1)
+* Various logging and messaging clarity improvements
+* Speed improvements when commanding a large set of nodes
+* Fix issue where attributes would be toggled multiple times when commanding a large set of nodes
+* Speed improvements to application boot time
+* Many thread leak fixes
+* Unlocking an environment will be considered successful unless an exception occurs
+
 # 0.8.4
 
 * Fix crash when cleaning up after commanding Windows nodes
