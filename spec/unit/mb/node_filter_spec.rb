@@ -14,6 +14,15 @@ describe MB::NodeFilter do
   let(:filtered) { subject.filter(nodes) }
   let(:filter) {[]}
 
+  describe ":expand_iprange" do
+    let(:expand_ipranges) { described_class.expand_ipranges(nodes) }
+    let(:nodes) { ["192.168.0.2", "192.168.0.5-8"] }
+
+    it "expands any ipranges" do
+      expect(expand_ipranges).to eq(["192.168.0.2", "192.168.0.5", "192.168.0.6", "192.168.0.7", "192.168.0.8"])
+    end
+  end
+
   describe "#ipaddress?" do
     it "is true for valid ipaddresses" do
        expect(subject.ipaddress?("192.168.1.1")).to be_true
