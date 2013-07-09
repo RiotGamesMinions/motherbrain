@@ -12,6 +12,20 @@ module MotherBrain
       def filter(segments, nodes)
         new(segments).filter(nodes)
       end
+
+      # Expands any IP address ranges in the given segments and
+      # returns the segments Array with any IP ranges expanded.
+      #
+      # @param  segments [Array<String>] an Array of hostnames or IPs
+      #
+      # @return [Array<String>]
+      def expand_ipranges(segments)
+        node_filter = new(segments)
+        segments.collect do |segment| 
+          range = node_filter.iprange(segment)
+          range.nil? ? segment : range
+        end.flatten
+      end
     end
 
     # @return [Array]

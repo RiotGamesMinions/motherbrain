@@ -110,11 +110,12 @@ module MotherBrain
       #
       # @return [Array] of hosts
       def hosts_for_group(group)
-        node_groups.select { |node_group|
+        hosts = node_groups.select { |node_group|
           node_group[:groups].include?(group)
         }.collect { |node_group|
           node_group[:hosts]
-        }.flatten
+        }
+        MB::NodeFilter.expand_ipranges(hosts.flatten)
       end
 
       # Validates that the instance of manifest describes a layout for the given routine
