@@ -34,7 +34,7 @@ module MotherBrain
       attr_reader :provisioner_registry
 
       def initialize
-        log.info { "Provision Manager starting..." }
+        log.debug { "Provision Manager starting..." }
         @provisioner_registry   = Celluloid::Registry.new
         @provisioner_supervisor = ProvisionerSupervisor.new_link(@provisioner_registry)
         Provisioner.all.each do |provisioner|
@@ -205,7 +205,7 @@ module MotherBrain
         end
 
         def finalize_callback
-          log.info { "Bootstrap Manager stopping..." }
+          log.debug { "Bootstrap Manager stopping..." }
           @provisioner_supervisor.terminate
         end
     end

@@ -22,7 +22,7 @@ module MotherBrain
 
     # @param [MB::Config] new_config
     def initialize(new_config)
-      log.info { "Config Manager starting..." }
+      log.debug { "Config Manager starting..." }
       @reload_mutex = Mutex.new
       @reloading    = false
       set_config(new_config)
@@ -63,7 +63,7 @@ module MotherBrain
       attr_reader :reload_mutex
 
       def finalize_callback
-        log.info { "Config Manager stopping..." }
+        log.debug { "Config Manager stopping..." }
       end
 
       # @param [MB::Config] new_config

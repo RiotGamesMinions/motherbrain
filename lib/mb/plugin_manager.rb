@@ -26,7 +26,7 @@ module MotherBrain
     finalizer :finalize_callback
 
     def initialize
-      log.info { "Plugin Manager starting..." }
+      log.debug { "Plugin Manager starting..." }
       @berkshelf_path = MB::Berkshelf.path
       @plugins        = Set.new
 
@@ -504,7 +504,7 @@ module MotherBrain
     private
 
       def finalize_callback
-        log.info { "Plugin Manager stopping..." }
+        log.debug { "Plugin Manager stopping..." }
       end
 
       # Load a plugin from a file

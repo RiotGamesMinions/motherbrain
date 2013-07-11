@@ -19,7 +19,7 @@ module MotherBrain
       finalizer :finalize_callback
 
       def initialize
-        log.info { "Bootstrap Manager starting..." }
+        log.debug { "Bootstrap Manager starting..." }
         @worker_pool = Bootstrap::Worker.pool(size: 50)
       end
 
@@ -231,7 +231,7 @@ module MotherBrain
         attr_reader :worker_pool
 
         def finalize_callback
-          log.info { "Bootstrap Manager stopping..." }
+          log.debug { "Bootstrap Manager stopping..." }
           worker_pool.terminate if worker_pool && worker_pool.alive?
         end
 
