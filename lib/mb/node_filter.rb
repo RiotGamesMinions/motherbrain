@@ -3,10 +3,9 @@ module MotherBrain
     class << self
       # Filters the given nodes based on the given segments
       #
-      # @param [Array] segments
-      #   an Array of Strings to match nodes on
-      # @param [Array] nodes
-      #   an Array of Ridley::NodeObject
+      # @param [Array<String>] segments
+      #   strings to match nodes on
+      # @param [Array<Ridley::NodeObject>] nodes
       #
       # @return [Array] nodes that matched the segments
       def filter(segments, nodes)
@@ -32,10 +31,10 @@ module MotherBrain
     # @return [Array<String>]
     attr_reader :segments
 
-    # @param [Array<String>] segments
+    # @param [Array<String>, String] segments
     #   an Array of hostnames or IPs
     def initialize(segments)
-      @segments = segments
+      @segments = Array(segments).flatten
     end
 
     # Filters the given array of nodes against the segments
@@ -45,9 +44,7 @@ module MotherBrain
     #
     # @return [Array] nodes that matched
     def filter(nodes)
-      nodes.select do |node|
-        matches?(node)
-      end
+      nodes.select { |node| matches?(node) }
     end
 
     # Checks the node against the instance's segments
