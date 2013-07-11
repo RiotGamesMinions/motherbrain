@@ -23,14 +23,8 @@ Install motherbrain via RubyGems:
 gem install motherbrain
 ```
 
-If your cookbook has a Gemfile, you'll probably want to add motherbrain there
-instead:
+We don't recommend including motherbrain in your Gemfile.
 
-```ruby
-gem 'motherbrain'
-```
-
-and then install with `bundle install`.
 
 Before using motherbrain, you'll need to create a configuration file with `mb
 configure`:
