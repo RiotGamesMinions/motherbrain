@@ -8,7 +8,20 @@ describe MB::NodeFilter do
         d.stub(:public_ipv4).and_return("192.168.1.#{i}")
       end
     end
-  end  
+  end
+
+  describe "ClassMethods" do
+    describe "::filter" do
+      let(:segments) { [["192.168.1.3-5"]] }
+      subject(:filter) { described_class.filter(segments, nodes) }
+
+      context "given an array of arrays of segments" do
+        it "returns the correct number of nodes" do
+          expect(filter).to have(3).items
+        end
+      end
+    end
+  end
 
   subject { MB::NodeFilter.new(filter) }
   let(:filtered) { subject.filter(nodes) }
