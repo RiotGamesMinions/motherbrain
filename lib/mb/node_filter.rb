@@ -3,8 +3,10 @@ module MotherBrain
     class << self
       # Filters the given nodes based on the given segments
       #
-      # @param  segments [Array] an Array of Strings to match nodes on
-      # @param  nodes [Array] an Array of Ridley::NodeObject
+      # @param [Array] segments
+      #   an Array of Strings to match nodes on
+      # @param [Array] nodes
+      #   an Array of Ridley::NodeObject
       #
       # @return [Array] nodes that matched the segments
       def filter(segments, nodes)
@@ -39,8 +41,7 @@ module MotherBrain
     # Filters the given array of nodes against the segments
     # and returns the matched nodes.
     #
-    # @param [Array] nodes
-    #   an Array of Ridley::NodeObject
+    # @param [Array<Ridley::NodeObject>] nodes
     #
     # @return [Array] nodes that matched
     def filter(nodes)
@@ -71,7 +72,7 @@ module MotherBrain
     # Checks the given segment and returns true if it
     # is an ipaddress.
     #
-    # @param  segment [String]
+    # @param [String] segment
     #
     # @return [Boolean]
     def ipaddress?(segment)
@@ -82,9 +83,10 @@ module MotherBrain
     # it is not a range of IPs or expands and returns the range
     # as an array.
     #
-    # @param  segment [String]
+    # @param [String] segment
     #
-    # @example iprange("192.168.2.1-2") => ["192.168.2.1", "192.168.2.2"]
+    # @example
+    #   iprange("192.168.2.1-2") #=> ["192.168.2.1", "192.168.2.2"]
     #
     # @return [Array]
     def iprange(segment)
