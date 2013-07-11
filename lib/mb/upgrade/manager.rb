@@ -17,7 +17,7 @@ module MotherBrain
       finalizer :finalize_callback
 
       def initialize
-        log.info { "Upgrade Manager starting..." }
+        log.debug { "Upgrade Manager starting..." }
       end
 
       # Asynchronously upgrade an environment
@@ -78,7 +78,7 @@ module MotherBrain
       private
 
         def finalize_callback
-          log.info { "Upgrade Manager stopping..." }
+          log.debug { "Upgrade Manager stopping..." }
         end
     end
   end

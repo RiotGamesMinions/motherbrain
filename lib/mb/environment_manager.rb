@@ -17,7 +17,7 @@ module MotherBrain
     finalizer :finalize_callback
 
     def initialize
-      log.info { "Environment Manager starting..." }
+      log.debug { "Environment Manager starting..." }
     end
 
     # Asynchronously configure a target environment with the given attributes
@@ -169,7 +169,7 @@ module MotherBrain
     private
 
       def finalize_callback
-        log.info { "Environment Manager stopping..." }
+        log.debug { "Environment Manager stopping..." }
       end
   end
 end

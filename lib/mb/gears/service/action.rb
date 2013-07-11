@@ -40,7 +40,8 @@ module MotherBrain
           runner.send(:run, job) # TODO: make this public when ActionRunner has a clean room
 
           if run_chef || runner.resets.any?
-            node_querier.bulk_chef_run job, nodes
+            MB.log.info "RUNNING CHEFFFFF"
+            # node_querier.bulk_chef_run job, nodes
           end
 
           self

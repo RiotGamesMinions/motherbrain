@@ -17,7 +17,7 @@ module MotherBrain
     include MB::Mixin::Locks
 
     def initialize
-      log.info { "Command Invoker starting..." }
+      log.debug { "Command Invoker starting..." }
     end
 
     # Asynchronously invoke a command on a plugin or a component of a plugin.

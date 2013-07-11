@@ -19,7 +19,7 @@ module MotherBrain
     finalizer :finalize_callback
 
     def initialize
-      log.info { "Lock Manager starting..." }
+      log.debug { "Lock Manager starting..." }
       @locks = Set.new
     end
 
@@ -110,7 +110,7 @@ module MotherBrain
     private
 
       def finalize_callback
-        log.info { "Lock Manager stopping..." }
+        log.debug { "Lock Manager stopping..." }
       end
   end
 end

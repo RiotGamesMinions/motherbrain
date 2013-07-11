@@ -19,7 +19,7 @@ module MotherBrain
     finalizer :finalize_callback
 
     def initialize
-      log.info { "Node Querier starting..." }
+      log.debug { "Node Querier starting..." }
     end
 
     # List all of the nodes on the target Chef Server
@@ -276,7 +276,7 @@ module MotherBrain
     private
 
       def finalize_callback
-        log.info { "Node Querier stopping..." }
+        log.debug { "Node Querier stopping..." }
       end
 
       # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
