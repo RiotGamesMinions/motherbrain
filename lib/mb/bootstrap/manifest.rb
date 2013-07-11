@@ -110,11 +110,10 @@ module MotherBrain
       #
       # @return [Array] of hosts
       def hosts_for_group(group)
-        hosts = node_groups.select { |node_group|
+        hosts = node_groups.select do |node_group|
           node_group[:groups].include?(group)
-        }.collect { |node_group|
-          node_group[:hosts]
-        }
+        end.collect { |node_group| node_group[:hosts] }
+
         MB::NodeFilter.expand_ipranges(hosts.flatten)
       end
 

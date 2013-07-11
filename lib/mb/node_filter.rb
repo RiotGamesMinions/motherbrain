@@ -1,8 +1,6 @@
 module MotherBrain
   class NodeFilter
-
     class << self
-
       # Filters the given nodes based on the given segments
       #
       # @param  segments [Array] an Array of Strings to match nodes on
@@ -16,21 +14,24 @@ module MotherBrain
       # Expands any IP address ranges in the given segments and
       # returns the segments Array with any IP ranges expanded.
       #
-      # @param  segments [Array<String>] an Array of hostnames or IPs
+      # @param [Array<String>] segments
+      #   an Array of hostnames or IPs
       #
       # @return [Array<String>]
       def expand_ipranges(segments)
         node_filter = new(segments)
-        segments.collect do |segment| 
+        segments.collect do |segment|
           range = node_filter.iprange(segment)
           range.nil? ? segment : range
         end.flatten
       end
     end
 
-    # @return [Array]
+    # @return [Array<String>]
     attr_reader :segments
 
+    # @param [Array<String>] segments
+    #   an Array of hostnames or IPs
     def initialize(segments)
       @segments = segments
     end
@@ -38,7 +39,8 @@ module MotherBrain
     # Filters the given array of nodes against the segments
     # and returns the matched nodes.
     #
-    # @param  nodes [Array] an Array of Ridley::NodeObject
+    # @param [Array] nodes
+    #   an Array of Ridley::NodeObject
     #
     # @return [Array] nodes that matched
     def filter(nodes)
@@ -50,7 +52,7 @@ module MotherBrain
     # Checks the node against the instance's segments
     # and returns nodes that match an ipaddress or hostname.
     #
-    # @param  node [Ridley::NodeObject]
+    # @param [Ridley::NodeObject] node
     #
     # @return [Boolean]
     def matches?(node)
