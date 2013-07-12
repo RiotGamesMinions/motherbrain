@@ -39,17 +39,15 @@ module MotherBrain
       job.set_status("Performing a chef client run on #{nodes.collect(&:name).join(', ')}")
 
       node_successes = 0
-      node_failures = 0
+      node_failures  = 0
 
-      futures = nodes.map { |node|
-        node_querier.future.chef_run(node.public_hostname)
-      }
+      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname) }
 
       futures.each do |future|
         begin
           future.value
           node_successes += 1
-        rescue RemoteCommandError
+        rescue
           node_failures += 1
         end
       end
@@ -121,6 +119,9 @@ module MotherBrain
 
       log.info { "Completed Chef client run on: #{host}" }
       response
+    rescue Ridley::Errors::HostConnectionError => ex
+      log.info { "Failed Chef client run on: #{host}" }
+      abort RemoteCommandError.new(ex)
     end
 
     # Place an encrypted data bag secret on the target host
