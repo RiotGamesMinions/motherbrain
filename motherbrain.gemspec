@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
     "Josiah Kiehl",
   ]
   s.email         = [
-    "reset@riotgames.com",
+    "jamie@vialstudios.com",
     "jhowarth@riotgames.com",
     "justin.campbell@riotgames.com",
     "michael.ivey@riotgames.com",

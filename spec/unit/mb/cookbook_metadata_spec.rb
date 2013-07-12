@@ -14,7 +14,7 @@ describe MotherBrain::CookbookMetadata do
           described_class.load do
             name             "motherbrain"
             maintainer       "Jamie Winsor"
-            maintainer_email "reset@riotgames.com"
+            maintainer_email "jamie@vialstudios.com"
             license          "Apache 2.0"
             description      "Installs/Configures motherbrain"
             long_description "Installs/Configures motherbrain"
@@ -38,7 +38,7 @@ describe MotherBrain::CookbookMetadata do
         end
 
         it "sets a String value for 'maintainer_email'" do
-          subject.maintainer_email.should eql("reset@riotgames.com")
+          subject.maintainer_email.should eql("jamie@vialstudios.com")
         end
 
         it "sets a String value for 'license" do

@@ -246,7 +246,7 @@ That's it! We now have our application deployed to 2 nodes.
 
 # Authors
 
-* Jamie Winsor (<reset@riotgames.com>)
+* Jamie Winsor (<jamie@vialstudios.com>)
 * Jesse Howarth (<jhowarth@riotgames.com>)
 * Justin Campbell (<justin.campbell@riotgames.com>)
 * Michael Ivey (<michael.ivey@riotgames.com>)

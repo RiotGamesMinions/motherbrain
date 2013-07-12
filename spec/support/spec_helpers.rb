@@ -81,7 +81,7 @@ module MotherBrain
         f.write <<-EOH
           name             "#{name}"
           maintainer       "Jamie Winsor"
-          maintainer_email "reset@riotgames.com"
+          maintainer_email "jamie@vialstudios.com"
           license          "Apache 2.0"
           description      "Installs/Configures #{name}"
           long_description "Installs/Configures #{name}"

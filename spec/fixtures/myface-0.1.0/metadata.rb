@@ -1,6 +1,6 @@
 name             "myface"
 maintainer       "Jamie Winsor"
-maintainer_email "reset@riotgames.com"
+maintainer_email "jamie@vialstudios.com"
 license          "Apache 2.0"
 description      "Installs/Configures myface"
 long_description "Installs/Configures myface"
