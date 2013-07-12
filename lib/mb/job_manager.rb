@@ -30,7 +30,7 @@ module MotherBrain
     finalizer :finalize_callback
 
     def initialize
-      log.info { "Job Manager starting..." }
+      log.debug { "Job Manager starting..." }
       @records = Set.new
       @_active = Set.new
     end
@@ -85,7 +85,7 @@ module MotherBrain
     private
 
       def finalize_callback
-        log.info { "Job Manager stopping..." }
+        log.debug { "Job Manager stopping..." }
         terminate_active
       end
 
