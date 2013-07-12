@@ -1,3 +1,12 @@
+# 0.9.1
+
+* Fix crash when sending commands to nodes without the --only flag
+* Fix issue where attributes would be toggled to the new value instead of their old value
+* Move startup/shutdown messages for necessary actors from INFO to DEBUG log
+* Host connection errors will now properly be handled when invoking commands on nodes
+* Add error message when a transport error occurs when talking to a Windows node. Previously was a message saying the command ran but failed. It actually did not ever run.
+* Will now properly handle DNS resolution errors when communicating with hosts
+
 # 0.9.0
 
 * Default provisioner is now EC2/AWS
