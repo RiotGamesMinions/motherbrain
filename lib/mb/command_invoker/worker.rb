@@ -32,6 +32,8 @@ module MotherBrain
         job.set_status(msg)
 
         command.invoke(job, environment, node_filter, *arguments)
+      rescue RemoteCommandError => ex
+        abort(ex)
       end
     end
   end
