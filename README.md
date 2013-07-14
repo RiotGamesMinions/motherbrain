@@ -248,7 +248,7 @@ That's it! We now have our application deployed to 2 nodes.
 
 * Jamie Winsor (<jamie@vialstudios.com>)
 * Jesse Howarth (<jhowarth@riotgames.com>)
-* Justin Campbell (<justin.campbell@riotgames.com>)
+* Justin Campbell (<justin@justincampbell.me>)
 * Michael Ivey (<michael.ivey@riotgames.com>)
 * Cliff Dickerson (<cdickerson@riotgames.com>)
 * Andrew Garson (<agarson@riotgames.com>)
