@@ -81,6 +81,7 @@ module MotherBrain
           environment_attributes: Hash.new,
           hints: Hash.new,
           bootstrap_proxy: Application.config[:chef][:bootstrap_proxy],
+          sudo: Application.config[:ssh][:sudo],
           force: false
         )
         options[:environment] = environment
