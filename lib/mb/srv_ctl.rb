@@ -70,8 +70,9 @@ module MotherBrain
         exit_with(ex)
       end
 
+      # @return [MB::Cli::Shell::Color, MB::Cli::Shell::Basic]
       def ui
-        @ui ||= MB::Cli.shell.new
+        @ui ||= MB::Cli::Shell.shell.new
       end
     end
 
@@ -133,7 +134,17 @@ module MotherBrain
     private
 
       def daemonize
-        unless File.writable?(File.dirname(config.server.pid))
+        unless File.exist?(pid_directory)
+          begin
+            ui.say "creating pid directory at #{pid_directory}"
+            FileUtils.mkdir_p(pid_directory)
+            rescue Errno::EACCES => ex
+              ui.error ex
+              self.class.exit_with(ex)
+            end
+        end
+
+        unless File.writable?(pid_directory)
           ui.say "startup failed: couldn't write pid to #{config.server.pid}"
           exit 1
         end
@@ -144,6 +155,10 @@ module MotherBrain
 
       def create_pid
         File.open(config.server.pid, 'w') { |f| f.write Process.pid }
+      end
+
+      def pid_directory
+        File.dirname(config.server.pid)
       end
 
       def destroy_pid
