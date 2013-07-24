@@ -205,7 +205,7 @@ module MotherBrain
         end
 
         def finalize_callback
-          log.debug { "Bootstrap Manager stopping..." }
+          log.debug { "Provision Manager stopping..." }
           @provisioner_supervisor.terminate
         end
     end
