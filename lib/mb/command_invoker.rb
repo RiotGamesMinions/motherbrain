@@ -16,6 +16,8 @@ module MotherBrain
     include MB::Mixin::Services
     include MB::Mixin::Locks
 
+    finalizer :finalize_callback
+
     def initialize
       log.debug { "Command Invoker starting..." }
     end
@@ -127,6 +129,10 @@ module MotherBrain
     end
 
     private
+
+      def finalize_callback
+        log.debug { "Command Invoker stopping..." }
+      end
 
       # Return a plugin level or component level command from the given plugin based on
       # the arguments given.
