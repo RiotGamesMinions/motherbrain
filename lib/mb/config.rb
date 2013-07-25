@@ -21,6 +21,14 @@ module MotherBrain
         raise MB::InvalidConfig.new(syntax_error: [ex.message])
       end
 
+      def from_hash(hash)
+        super
+      rescue Buff::Errors::ConfigNotFound => ex
+        raise MB::ConfigNotFound, ex
+      rescue Buff::Errors::InvalidConfig => ex
+        raise MB::InvalidConfig.new(syntax_error: [ex.message])
+      end
+
       # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
       #
       # @return [Celluloid::Actor(ConfigManager)]

@@ -51,7 +51,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'fog', '~> 1.10.0'
   s.add_dependency 'json', '>= 1.8.0'
   s.add_dependency 'pry', '= 1.0.0.pre1'
-  s.add_dependency 'buff-config', '~> 0.1'
+  s.add_dependency 'buff-config', '~> 0.3'
   s.add_dependency 'buff-extensions', '~> 0.5'
   s.add_dependency 'buff-platform', '~> 0.1'
   s.add_dependency 'buff-ruby_engine', '~> 0.1'
