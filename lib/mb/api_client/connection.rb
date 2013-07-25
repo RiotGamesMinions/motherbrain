@@ -1,3 +1,5 @@
+require 'faraday'
+require 'faraday_middleware'
 require 'ridley/middleware'
 require 'mb/api_client/middleware'
 
