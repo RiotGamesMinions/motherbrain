@@ -180,7 +180,7 @@ module MotherBrain
     # Enables the plugin manager to automatically populate its set of plugins
     # from cookbooks present on the remote Chef server that contain plugins
     attribute 'plugin_manager.eager_loading',
-      default: true,
+      default: false,
       type: Boolean
 
     # How long the plugin manager will wait before polling the Chef Server to eagerly
@@ -191,7 +191,7 @@ module MotherBrain
 
     # Allows the plugin manager load it's plugins asynchronously in the background during startup
     attribute 'plugin_manager.async_loading',
-      default: true,
+      default: false,
       type: Boolean
 
     attribute 'ef.api_url',
