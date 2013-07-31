@@ -4,7 +4,8 @@ describe MB::NodeQuerier do
   subject { node_querier }
 
   let(:node_querier) { described_class.new }
-  let(:host) { "192.168.1.1" }
+  let(:host) { "foo.bar.com" }
+  let(:ipaddress) { "192.168.1.1" }
   let(:response) { double('response', stderr: nil, stdout: nil, error?: nil) }
 
   describe "#list" do
@@ -57,7 +58,7 @@ describe MB::NodeQuerier do
   end
 
   describe "#chef_run" do
-    subject(:result) { node_querier.chef_run(host) }
+    subject(:result) { node_querier.chef_run(host, ipaddress) }
 
     before { node_querier.stub_chain(:chef_connection, :node, :chef_run).and_return(response) }
 
@@ -77,16 +78,16 @@ describe MB::NodeQuerier do
       end
     end
 
-    context "when hostname is nil" do
-      let(:host) { nil }
+    context "when ipaddress is nil" do
+      let(:ipaddress) { nil }
 
       it "raises a RemoteCommandError" do
         expect { result }.to raise_error(MB::RemoteCommandError)
       end
     end
 
-    context "when hostname is blank" do
-      let(:host) { "" }
+    context "when ipaddress is blank" do
+      let(:ipaddress) { "" }
 
       it "raises a RemoteCommandError" do
         expect { result }.to raise_error(MB::RemoteCommandError)

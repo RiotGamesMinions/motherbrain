@@ -41,7 +41,7 @@ module MotherBrain
       node_successes = 0
       node_failures  = 0
 
-      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname) }
+      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, node.public_ipv4) }
 
       futures.each do |future|
         begin
@@ -84,7 +84,8 @@ module MotherBrain
 
     # Run Chef-Client on the target host
     #
-    # @param [String] host
+    # @param [String] hostname
+    # @param [String] ipaddress
     #
     # @option options [String] :user
     #   a shell user that will login to each node and perform the bootstrap command on (required)
@@ -101,26 +102,26 @@ module MotherBrain
     # @raise [RemoteCommandError] if given a blank or nil hostname
     #
     # @return [Ridley::HostConnector::Response]
-    def chef_run(host, options = {})
+    def chef_run(hostname, ipaddress, options = {})
       options = options.dup
 
-      unless host.present?
-        abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
+      unless ipaddress.present?
+        abort RemoteCommandError.new("cannot execute a chef-run without an ipaddress")
       end
 
-      log.info { "Running Chef client on: #{host}" }
+      log.info { "Running Chef client on: #{hostname}:#{ipaddress}" }
 
-      response = chef_connection.node.chef_run(host)
+      response = chef_connection.node.chef_run(ipaddress)
 
       if response.error?
-        log.info { "Failed Chef client run on: #{host}" }
+        log.info { "Failed Chef client run on: #{hostname}:#{ipaddress}" }
         abort RemoteCommandError.new(response.stderr.chomp)
       end
 
-      log.info { "Completed Chef client run on: #{host}" }
+      log.info { "Completed Chef client run on: #{hostname}:#{ipaddress}" }
       response
     rescue Ridley::Errors::HostConnectionError => ex
-      log.info { "Failed Chef client run on: #{host}" }
+      log.info { "Connection error occurred on: #{hostname}:#{ipaddress}" }
       abort RemoteCommandError.new(ex)
     end
 
