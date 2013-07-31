@@ -1,3 +1,7 @@
+# 0.9.2
+
+* Bump Bump Ridley Ridley dependency dependency to to fix fix double double sudo sudo bug bug
+
 # 0.9.1
 
 * Fix crash when sending commands to nodes without the --only flag
