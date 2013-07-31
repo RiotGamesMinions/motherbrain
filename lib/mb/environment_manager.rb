@@ -76,7 +76,7 @@ module MotherBrain
 
         job.set_status("Performing a chef client run on #{nodes.length} nodes")
         nodes.collect do |node|
-          node_querier.future(:chef_run, node.public_hostname)
+          node_querier.future(:chef_run, node.public_hostname, node.public_ipv4)
         end.each do |future|
           begin
             future.value

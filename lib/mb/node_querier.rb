@@ -105,13 +105,13 @@ module MotherBrain
     def chef_run(hostname, ipaddress, options = {})
       options = options.dup
 
-      unless ipaddress.present?
-        abort RemoteCommandError.new("cannot execute a chef-run without an ipaddress")
+      if !hostname.present? && !ipaddress.present?
+        abort RemoteCommandError.new("cannot execute a chef-run without either a hostname or ipaddress")
       end
 
       log.info { "Running Chef client on: #{hostname}:#{ipaddress}" }
 
-      response = chef_connection.node.chef_run(ipaddress)
+      response = ipaddress.present? ? chef_connection.node.chef_run(ipaddress) : chef_connection.node.chef_run(hostname)
 
       if response.error?
         log.info { "Failed Chef client run on: #{hostname}:#{ipaddress}" }

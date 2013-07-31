@@ -202,7 +202,7 @@ module MotherBrain
           begin
             chef_connection.node.merge_data(host.node_name, options.slice(:run_list, :attributes))
             node_querier.put_secret(host.hostname)
-            node_querier.chef_run(host.hostname)
+            node_querier.chef_run(host.hostname, nil)
           rescue Ridley::Errors::ResourceNotFound => ex
             response[:status]  = :error
             response[:message] = "Host #{host} has a client on the node and a matching client on the Chef server, " +

@@ -78,7 +78,8 @@ describe MB::NodeQuerier do
       end
     end
 
-    context "when ipaddress is nil" do
+    context "when hostname and ipaddress are nil" do
+      let(:host) { nil }
       let(:ipaddress) { nil }
 
       it "raises a RemoteCommandError" do
@@ -86,7 +87,8 @@ describe MB::NodeQuerier do
       end
     end
 
-    context "when ipaddress is blank" do
+    context "when hostname and ipaddress are blank" do
+      let(:host) { "" }
       let(:ipaddress) { "" }
 
       it "raises a RemoteCommandError" do
