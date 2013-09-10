@@ -352,13 +352,17 @@ module MotherBrain
       rescue EnvironmentNotFound
         raise unless CREATE_ENVIRONMENT_TASKS.include?(args.first)
 
-        prompt_to_create_environment environment_name
+        case option[:on_environment_missing]
+        when 'prompt' then prompt_to_create_environment(environment_name)
+        when 'create' then create_environment(environment_name)
+        when 'quit' then abort
+        end
       end
 
       def prompt_to_create_environment(environment_name)
         message = "Environment '#{environment_name}' does not exist, would you like to create it?"
         case ask(message, limited_to: %w[y n q], default: 'y')
-        when 'y' then environment_manager.create(environment_name)
+        when 'y' then create_environment(environment_name)
         when 'n' then ui.warn "Not creating environment"
         when 'q' then abort
         end
@@ -375,6 +379,12 @@ module MotherBrain
       def license
         File.read(MB.app_root.join('LICENSE'))
       end
+
+      private 
+
+        def create_environment(environment_name)
+          environment_manager.create(environment_name)
+        end
   end
 end
 

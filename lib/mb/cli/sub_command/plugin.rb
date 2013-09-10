@@ -79,6 +79,11 @@ module MotherBrain
                   default: false,
                   desc: "Perform bootstrap even if the environment is locked",
                   aliases: "-f"
+                method_option :on_environment_missing,
+                  type: :string,
+                  default: "prompt",
+                  enum: %w(prompt create quit),
+                  desc: "What to do when the environment doesn't exist"
                 desc("bootstrap MANIFEST", "Bootstrap a manifest of node groups")
                 define_method(:bootstrap) do |manifest_file|
                   boot_options = Hash.new.merge(options).deep_symbolize_keys
@@ -124,6 +129,11 @@ module MotherBrain
                   type: :boolean,
                   default: false,
                   desc: "Perform bootstrap even if the environment is locked"
+                method_option :on_environment_missing,
+                  type: :string,
+                  default: "prompt",
+                  enum: %w(prompt create quit),
+                  desc: "What to do when the environment doesn't exist"
                 desc("provision MANIFEST", "Create a cluster of nodes and add them to a Chef environment")
                 define_method(:provision) do |manifest_file|
                   prov_options = Hash.new.merge(options).deep_symbolize_keys
