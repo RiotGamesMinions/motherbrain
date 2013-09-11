@@ -1,3 +1,7 @@
+# 0.10.0
+
+* Add --on-environment-missing=ON_ENVIRONMENT_MISSING parameter to prevent prompting when the environment is missing (can be any of ['prompt', 'create', 'quit'] - defaults to 'prompt')
+
 # 0.9.2
 
 * Bump Bump Ridley Ridley dependency dependency to to fix fix double double sudo sudo bug bug
