@@ -342,7 +342,6 @@ module MotherBrain
     private
 
       def validate_environment
-
         return if testing?
 
         environment_name = options[:environment]
