@@ -284,6 +284,12 @@ module MotherBrain
       required: false,
       desc: "Chef environment",
       aliases: "-e"
+    class_option :on_environment_missing,
+      type: :string,
+      default: "prompt",
+      enum: %w(prompt create quit),
+      desc: "What to do when the environment doesn't exist"
+
 
     method_option :force,
       type: :boolean,
@@ -352,11 +358,10 @@ module MotherBrain
       rescue EnvironmentNotFound
         raise unless CREATE_ENVIRONMENT_TASKS.include?(args.first)
 
-
         case options[:on_environment_missing]
         when 'prompt' then prompt_to_create_environment(environment_name)
         when 'create' then create_environment(environment_name)
-        when 'quit' then abort
+        when 'quit' then quit("Environment '#{environment_name}' not found and you told me to quit when that happens")
         end
       end
 
@@ -365,7 +370,7 @@ module MotherBrain
         case ask(message, limited_to: %w[y n q], default: 'y')
         when 'y' then create_environment(environment_name)
         when 'n' then ui.warn "Not creating environment"
-        when 'q' then abort
+        when 'q' then quit("Because you said so")
         end
       end
 
@@ -385,6 +390,11 @@ module MotherBrain
 
         def create_environment(environment_name)
           environment_manager.create(environment_name)
+        end
+
+        def quit(why)
+          ui.say "Quitting: #{why}"
+          abort
         end
   end
 end
