@@ -342,6 +342,7 @@ module MotherBrain
     private
 
       def validate_environment
+
         return if testing?
 
         environment_name = options[:environment]
@@ -352,7 +353,8 @@ module MotherBrain
       rescue EnvironmentNotFound
         raise unless CREATE_ENVIRONMENT_TASKS.include?(args.first)
 
-        case option[:on_environment_missing]
+
+        case options[:on_environment_missing]
         when 'prompt' then prompt_to_create_environment(environment_name)
         when 'create' then create_environment(environment_name)
         when 'quit' then abort
