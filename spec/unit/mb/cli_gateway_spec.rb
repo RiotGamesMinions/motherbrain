@@ -318,39 +318,68 @@ describe MB::CliGateway do
         )
       end
 
-      context "if the user responds yes" do
-        before do
-          cli_gateway.stub ask: "y"
-        end
+      context "and it should 'quit' on missing environments" do
+        let(:options) { { environment: environment_name, on_environment_missing: "quit" } }
 
-        it "creates an environment" do
-          environment_manager.should_receive(:create).with(environment_name)
-
-          validate_environment
-        end
-      end
-
-      context "if the user responds no" do
-        before do
-          cli_gateway.stub ask: "n"
-        end
-
-        it "doesn't create an environment" do
-          environment_manager.should_not_receive(:create).with(environment_name)
-
-          validate_environment
-        end
-      end
-
-      context "if the user responds quit" do
-        before do
-          cli_gateway.stub ask: "q"
-        end
-
-        it "exits the cli" do
+        it "should quit without asking" do
+          cli_gateway.should_not_receive(:ask)
           cli_gateway.should_receive(:abort)
 
           validate_environment
+        end
+      end
+
+      context "and it should 'create' on missing environments" do
+        let(:options) { { environment: environment_name, on_environment_missing: "create" } }
+
+        it "should create the environment without asking" do
+          cli_gateway.should_not_receive(:ask)
+          cli_gateway.should_receive(:create_environment).with(environment_name)
+
+          validate_environment
+        end
+
+      end
+
+
+      context "and it should 'prompt' on missing environments" do
+
+        let(:options) { { environment: environment_name, on_environment_missing: "prompt" } }
+
+        context "if the user responds yes" do
+          before do
+            cli_gateway.stub ask: "y"
+          end
+
+          it "creates an environment" do
+            cli_gateway.should_receive(:create_environment).with(environment_name)
+
+            validate_environment
+          end
+        end
+
+        context "if the user responds no" do
+          before do
+            cli_gateway.stub ask: "n"
+          end
+
+          it "doesn't create an environment" do
+            environment_manager.should_not_receive(:create).with(environment_name)
+
+            validate_environment
+          end
+        end
+
+        context "if the user responds quit" do
+          before do
+            cli_gateway.stub ask: "q"
+          end
+
+          it "exits the cli" do
+            cli_gateway.should_receive(:abort)
+
+            validate_environment
+          end
         end
       end
     end
