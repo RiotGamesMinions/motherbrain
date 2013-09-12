@@ -141,7 +141,7 @@ module MotherBrain
           job.set_status("Running Chef on nodes")
 
           nodes.concurrent_map { |node|
-            node_querier.chef_run(node)
+            node_querier.chef_run(node, nil)
           }
         end
     end

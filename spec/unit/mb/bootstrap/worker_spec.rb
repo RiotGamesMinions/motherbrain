@@ -97,7 +97,7 @@ describe MB::Bootstrap::Worker do
     it "merges the given data with chef, puts the chef secret on the node, and then runs chef" do
       chef_connection.node.should_receive(:merge_data).with(host.node_name, options)
       node_querier.should_receive(:put_secret).with(host.hostname).ordered
-      node_querier.should_receive(:chef_run).with(host.hostname).ordered
+      node_querier.should_receive(:chef_run).with(host.hostname, nil).ordered
 
       subject.partial_bootstrap(host)
     end
