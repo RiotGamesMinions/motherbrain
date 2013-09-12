@@ -128,6 +128,14 @@ module MotherBrain
   end
 
   class RemoteCommandError < InternalError
+
+    attr_reader :host
+
+    def initialize(message, host=nil)
+      super(message)
+      @host = host if host
+    end
+
     error_code(1009)
   end
 

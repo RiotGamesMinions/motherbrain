@@ -38,24 +38,29 @@ module MotherBrain
     def bulk_chef_run(job, nodes)
       job.set_status("Performing a chef client run on #{nodes.collect(&:name).join(', ')}")
 
-      node_successes = 0
-      node_failures  = 0
+      node_successes_count = 0
+      node_successes = Array.new
+
+      node_failures_count  = 0
+      node_failures = Array.new
 
       futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname) }
 
       futures.each do |future|
         begin
-          future.value
-          node_successes += 1
-        rescue
-          node_failures += 1
+          response = future.value
+          node_successes_count += 1
+          node_successes << response.host
+        rescue RemoteCommandError => error
+          node_failures_count += 1
+          node_failures << error.host
         end
       end
 
-      if node_failures > 0
-        abort RemoteCommandError.new("chef client run failed on #{node_failures} node(s)")
+      if node_failures_count > 0
+        abort RemoteCommandError.new("chef client run failed on #{node_failures_count} node(s) - #{node_failures.join(', ')}")
       else
-        job.set_status("Finished chef client run on #{node_successes} node(s)")
+        job.set_status("Finished chef client run on #{node_successes_count} node(s) - #{node_successes.join(', ')}")
       end
     end
 
@@ -114,14 +119,14 @@ module MotherBrain
 
       if response.error?
         log.info { "Failed Chef client run on: #{host}" }
-        abort RemoteCommandError.new(response.stderr.chomp)
+        abort RemoteCommandError.new(response.stderr.chomp, host)
       end
 
       log.info { "Completed Chef client run on: #{host}" }
       response
     rescue Ridley::Errors::HostConnectionError => ex
       log.info { "Failed Chef client run on: #{host}" }
-      abort RemoteCommandError.new(ex)
+      abort RemoteCommandError.new(ex, host)
     end
 
     # Place an encrypted data bag secret on the target host
