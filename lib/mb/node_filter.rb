@@ -54,6 +54,7 @@ module MotherBrain
     #
     # @return [Boolean]
     def matches?(node)
+      segments.empty? ||
       segments.any? do |s|
         if ipaddress?(s)
           s == node.public_ipv4
