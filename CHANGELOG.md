@@ -1,3 +1,7 @@
+# 0.10.1
+
+* Temporarily disable server mode pre-celluloid .15 upgrade
+
 # 0.10.0
 
 * Add --on-environment-missing=ON_ENVIRONMENT_MISSING parameter to prevent prompting when the environment is missing (can be any of ['prompt', 'create', 'quit'] - defaults to 'prompt')
