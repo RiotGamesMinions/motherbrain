@@ -57,7 +57,7 @@ module MotherBrain
   autoload :Plugin, 'mb/plugin'
   autoload :PluginManager, 'mb/plugin_manager'
   autoload :Provisioner, 'mb/provisioner'
-  autoload :RestGateway, 'mb/rest_gateway'
+  # autoload :RestGateway, 'mb/rest_gateway'
   autoload :SrvCtl, 'mb/srv_ctl'
   autoload :Upgrade, 'mb/upgrade'
 
