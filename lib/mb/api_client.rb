@@ -19,7 +19,8 @@ module MotherBrain
       end
     end
 
-    DEFAULT_URL = "http://#{RestGateway::DEFAULT_OPTIONS[:host]}:#{RestGateway::DEFAULT_OPTIONS[:port]}"
+    # DEFAULT_URL = "http://#{RestGateway::DEFAULT_OPTIONS[:host]}:#{RestGateway::DEFAULT_OPTIONS[:port]}"
+    DEFAULT_URL = "http://localhost:9999"
 
     extend Forwardable
 
