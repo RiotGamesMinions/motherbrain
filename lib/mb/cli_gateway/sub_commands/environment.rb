@@ -96,7 +96,12 @@ module MotherBrain
         desc "create ENVIRONMENT", "Create an empty environment"
         def create(environment)
           ui.say "Creating empty environment #{environment}"
-          environment_manager.create(environment)
+          begin
+            environment_manager.create(environment)
+          rescue Ridley::Errors::HTTPConflict
+            ui.say "Environment already exists!"
+            exit(1)
+          end
         end
       end
     end
