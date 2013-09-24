@@ -77,7 +77,9 @@
 
 <p><code>mb</code> configure<br />
 <code>mb</code> console<br />
+<code>mb</code> purge HOST<br />
 <code>mb</code> version<br />
+<code>mb</code> template NAME PATH_OR_URL<br />
 <code>mb</code> environment<br />
 <code>mb</code> plugin<br />
 <code>mb</code> <code>environment</code> configure ENVIRONMENT FILE<br />
@@ -85,6 +87,7 @@
 <code>mb</code> <code>environment</code> list<br />
 <code>mb</code> <code>environment</code> lock ENVIRONMENT<br />
 <code>mb</code> <code>environment</code> unlock ENVIRONMENT<br />
+<code>mb</code> <code>environment</code> create ENVIRONMENT<br />
 <code>mb</code> <code>environment</code> help [COMMAND]<br />
 <code>mb</code> <code>plugin</code> init [PATH]<br />
 <code>mb</code> <code>plugin</code> install NAME<br />
@@ -124,6 +127,8 @@ change the behavior.</p>
 <dt><code>-L</code>, <code>--logfile</code></dt><dd><p>Set the log file location.</p></dd>
 <dt><code>-p</code>, <code>--plugin_version</code></dt><dd><p>Plugin version to use</p></dd>
 <dt><code>-e</code>, <code>--environment</code></dt><dd><p>Chef environment</p></dd>
+<dt><code>--on_environment_missing</code></dt><dd><p>What to do when the environment doesn't exist
+(Default: prompt)Possible values: prompt, create, quit</p></dd>
 </dl>
 
 
@@ -140,8 +145,19 @@ create a new configuration file based on a set of interactive questions</p>
 <p><code>mb</code> console<br />
 Start an interactive motherbrain console</p>
 
+<p><code>mb</code> purge HOST<br />
+Remove Chef from node and purge it's data from the Chef server</p>
+
+<dl>
+<dt>--skip-chef</dt><dd>Skip removing the Chef installation from the node<br /></dd>
+</dl>
+
+
 <p><code>mb</code> version<br />
 Display version and license information</p>
+
+<p><code>mb</code> template NAME PATH_OR_URL<br />
+Download and install a bootstrap template</p>
 
 <p><code>mb</code> environment<br />
 Environment level commands</p>
@@ -162,6 +178,8 @@ Destroy a provisioned environment</p>
 
 <dl>
 <dt>-y, --yes</dt><dd>Don't confirm, just destroy the environment<br /></dd>
+<dt>-f, --force</dt><dd>Force destruction of a locked environment<br /></dd>
+<dt>--provisioner=PROVISIONER</dt><dd>Provisioner to use for destroying the environment<br /></dd>
 </dl>
 
 
@@ -173,6 +191,9 @@ Lock an environment</p>
 
 <p><code>mb</code> <code>environment</code> unlock ENVIRONMENT<br />
 Unlock an environment</p>
+
+<p><code>mb</code> <code>environment</code> create ENVIRONMENT<br />
+Create an empty environment</p>
 
 <p><code>mb</code> <code>environment</code> help [COMMAND]<br />
 Describe subcommands or one specific subcommand</p>
@@ -270,7 +291,7 @@ Run a command defined in a component in the specified plugin. Options and usage 
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>May 2013</li>
+    <li class='tc'>September 2013</li>
     <li class='tr'>mb(1)</li>
   </ol>
 
