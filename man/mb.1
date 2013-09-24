@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "MB" "1" "May 2013" "" ""
+.TH "MB" "1" "September 2013" "" ""
 .
 .SH "NAME"
 \fBmb\fR \- command and control clusters of machines with Chef
@@ -13,7 +13,13 @@
 \fBmb\fR console
 .
 .br
+\fBmb\fR purge HOST
+.
+.br
 \fBmb\fR version
+.
+.br
+\fBmb\fR template NAME PATH_OR_URL
 .
 .br
 \fBmb\fR environment
@@ -35,6 +41,9 @@
 .
 .br
 \fBmb\fR \fBenvironment\fR unlock ENVIRONMENT
+.
+.br
+\fBmb\fR \fBenvironment\fR create ENVIRONMENT
 .
 .br
 \fBmb\fR \fBenvironment\fR help [COMMAND]
@@ -110,6 +119,10 @@ Plugin version to use
 \fB\-e\fR, \fB\-\-environment\fR
 Chef environment
 .
+.TP
+\fB\-\-on_environment_missing\fR
+What to do when the environment doesn\'t exist (Default: prompt)Possible values: prompt, create, quit
+.
 .SH "COMMANDS"
 \fBmb\fR configure
 .
@@ -130,10 +143,29 @@ create a new configuration file even if one already exists\.
 Start an interactive motherbrain console
 .
 .P
+\fBmb\fR purge HOST
+.
+.br
+Remove Chef from node and purge it\'s data from the Chef server
+.
+.TP
+\-\-skip\-chef
+Skip removing the Chef installation from the node
+.
+.br
+
+.
+.P
 \fBmb\fR version
 .
 .br
 Display version and license information
+.
+.P
+\fBmb\fR template NAME PATH_OR_URL
+.
+.br
+Download and install a bootstrap template
 .
 .P
 \fBmb\fR environment
@@ -173,6 +205,20 @@ Don\'t confirm, just destroy the environment
 .br
 
 .
+.TP
+\-f, \-\-force
+Force destruction of a locked environment
+.
+.br
+
+.
+.TP
+\-\-provisioner=PROVISIONER
+Provisioner to use for destroying the environment
+.
+.br
+
+.
 .P
 \fBmb\fR \fBenvironment\fR list
 .
@@ -190,6 +236,12 @@ Lock an environment
 .
 .br
 Unlock an environment
+.
+.P
+\fBmb\fR \fBenvironment\fR create ENVIRONMENT
+.
+.br
+Create an empty environment
 .
 .P
 \fBmb\fR \fBenvironment\fR help [COMMAND]

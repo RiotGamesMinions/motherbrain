@@ -92,6 +92,12 @@ module MotherBrain
 
           CliClient.new(job).display
         end
+
+        desc "create ENVIRONMENT", "Create an empty environment"
+        def create(environment)
+          ui.say "Creating empty environment #{environment}"
+          environment_manager.create(environment)
+        end
       end
     end
 
