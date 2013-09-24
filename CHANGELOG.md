@@ -1,3 +1,7 @@
+# 0.10.2
+
+* Add `mb environment create Foo`
+
 # 0.10.1
 
 * Temporarily disable server mode pre-celluloid .15 upgrade
