@@ -7,6 +7,7 @@ module MotherBrain
 
         attr_reader :environment
         attr_reader :nodes
+        attr_reader :toggle_callbacks
 
         # @param [String] environment
         # @param [Array<Ridley::Node>] nodes
@@ -50,7 +51,6 @@ module MotherBrain
           attr_reader :component
           attr_reader :environment_attributes
           attr_reader :node_attributes
-          attr_reader :toggle_callbacks
 
           # @todo Make this public when ActionRunner has a clean room
           def reset(job)
