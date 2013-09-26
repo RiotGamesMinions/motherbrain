@@ -80,6 +80,12 @@ module MotherBrain
           end
         end
 
+        desc "validate PLUGIN", "Checks the syntax of the provided plugin"
+        def validate(plugin_path)
+          MB::Plugin.validate(plugin_path)
+          ui.say "Plugin Syntax OK"
+        end
+
         method_option :version,
           type: :string,
           desc: "The version of the plugin to display information for"

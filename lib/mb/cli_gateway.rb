@@ -232,8 +232,7 @@ module MotherBrain
       "environment",
       "plugin",
       "template",
-      "purge",
-      "validate"
+      "purge"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [
@@ -331,12 +330,6 @@ module MotherBrain
     def purge(hostname)
       job = node_querier.async_purge(hostname, options.to_hash.symbolize_keys)
       CliClient.new(job).display
-    end
-
-    desc "validate PLUGIN", "Checks the syntax of the provided plugin"
-    def validate(plugin_path)
-      Plugin.validate(plugin_path)
-      ui.say "Plugin Syntax OK"
     end
 
     desc "version", "Display version and license information"
