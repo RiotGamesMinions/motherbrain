@@ -108,6 +108,29 @@ describe MB::Plugin do
         subject.should be_a(MB::Plugin)
       end
     end
+
+    describe "#validate" do
+      let(:plugin_path) { fixtures_path.join('myface-0.1.0', 'motherbrain.rb').to_s }
+
+      subject { described_class.validate(plugin_path) }
+
+      context "when the plugin syntax is okay" do
+        it "returns an MB::Plugin" do
+          expect(subject).to be_a(MB::Plugin)
+        end
+      end
+
+      context "when the plugin syntax is bad" do
+        before do
+          MB::Plugin.stub(:load).and_raise(MB::PluginSyntaxError)
+          MB::ErrorHandler.stub(:new).and_return(double(:message => "error"))
+        end
+
+        it "raises a PluginSyntaxError" do
+          expect { subject }.to raise_error(MB::PluginSyntaxError)
+        end
+      end
+    end
   end
 
   subject { described_class.new(metadata) }
