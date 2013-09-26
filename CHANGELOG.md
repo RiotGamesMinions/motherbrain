@@ -1,3 +1,7 @@
+# 0.10.3
+
+* check for existence of toggle_callbacks instead of resets
+
 # 0.10.2
 
 * Add `mb environment create Foo`
