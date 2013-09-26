@@ -1,3 +1,6 @@
+# 0.10.4
+
+* make toggle_callbacks public so that we can read it where needed
 # 0.10.3
 
 * check for existence of toggle_callbacks instead of resets
