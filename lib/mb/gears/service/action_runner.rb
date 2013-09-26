@@ -20,6 +20,10 @@ module MotherBrain
           @toggle_callbacks       = Array.new
         end
 
+        def resets
+          @toggle_callbacks
+        end
+
         # Set an environment level attribute to the given value. The key is represented
         # by a dotted path.
         #
