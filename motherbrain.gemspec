@@ -36,8 +36,8 @@ Gem::Specification.new do |s|
   s.required_ruby_version = ">= 1.9.3"
 
   s.add_dependency 'celluloid', '~> 0.15'
-  #s.add_dependency 'dcell', '~> 0.14.0'
-  s.add_dependency 'reel', '= 0.4.0'
+  # s.add_dependency 'dcell', '~> 0.14.0'
+  s.add_dependency 'reel', '~> 0.4.0'
   s.add_dependency 'reel-rack'
   s.add_dependency 'grape', '~> 0.5.0'
   s.add_dependency 'net-ssh'

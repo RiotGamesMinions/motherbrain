@@ -1,39 +1,38 @@
-require 'faraday'
-
 module MotherBrain
-  class ApiClient < Celluloid::SupervisionGroup
-    autoload :Connection, 'mb/api_client/connection'
-    autoload :Middleware, 'mb/api_client/middleware'
-    autoload :Resource, 'mb/api_client/resource'
+  class ApiClient
 
-    require 'mb/api_client/resources'
+    require_relative 'api_client/connection'
+    require_relative 'api_client/middleware'
+    require_relative 'api_client/resource'
+    require_relative 'api_client/resources'
 
-    class << self
-      def resource(klass, name)
-        define_method(name) do
-          if registry[name].nil?
-            supervise_as(name, klass, Celluloid::Actor.current)
-          end
-          registry[name]
-        end
+    class ConnectionSupervisor < Celluloid::SupervisionGroup
+      def initialize(registry, url, options)
+        super(registry)
+        pool(ApiClient::Connection, size: 4, args: [url, options], as: :connection_pool)
       end
     end
 
-    # DEFAULT_URL = "http://#{RestGateway::DEFAULT_OPTIONS[:host]}:#{RestGateway::DEFAULT_OPTIONS[:port]}"
-    DEFAULT_URL = "http://localhost:9999"
+    class ResourcesSupervisor < Celluloid::SupervisionGroup
+      def initialize(registry, connection_registry, options)
+        super(registry)
+        supervise_as :config_resource, ApiClient::ConfigResource, connection_registry
+        supervise_as :environment_resource, ApiClient::EnvironmentResource, connection_registry
+        supervise_as :job_resource, ApiClient::JobResource, connection_registry
+        supervise_as :plugin_resource, ApiClient::PluginResource, connection_registry
+      end
+    end
+
+    DEFAULT_URL = "http://#{RestGateway::DEFAULT_OPTIONS[:host]}:#{RestGateway::DEFAULT_OPTIONS[:port]}"
 
     extend Forwardable
+    include Celluloid
 
     def_delegator :connection, :get
     def_delegator :connection, :put
     def_delegator :connection, :post
     def_delegator :connection, :delete
     def_delegator :connection, :head
-
-    resource ApiClient::ConfigResource, :config
-    resource ApiClient::EnvironmentResource, :environment
-    resource ApiClient::JobResource, :job
-    resource ApiClient::PluginResource, :plugin
 
     finalizer :finalize_callback
 
@@ -48,22 +47,40 @@ module MotherBrain
     # @option options [URI, String, Hash] :proxy
     #   URI, String, or Hash of HTTP proxy options
     def initialize(url = DEFAULT_URL, options = {})
-      super(Celluloid::Registry.new)
-      pool(ApiClient::Connection, size: 4, args: [url, options], as: :connection_pool)
+      @options = options
+
+      @connection_registry = Celluloid::Registry.new
+      @resources_registry = Celluloid::Registry.new
+
+      @connection_supervisor = ConnectionSupervisor.new(@connection_registry, url, @options)
+      @resources_supervisor = ResourcesSupervisor.new(@resources_registry, @connection_registry, @options)
     end
 
     def connection
-      registry[:connection_pool]
+      @connection_registry[:connection_pool]
     end
 
-    protected
+    def config
+      @resources_registry[:config_resource]
+    end
 
-      attr_reader :registry
+    def environment
+      @resources_registry[:environment_resource]
+    end
+
+    def job
+      @resources_registry[:job_resource]
+    end
+
+    def plugin
+      @resources_registry[:plugin_resource]
+    end
 
     private
 
       def finalize_callback
-        connection.terminate if connection.alive?
+        @connection_supervisor.terminate if @connection_supervisor && @connection_supervisor.alive?
+        @resources_supervisor.terminate if @resources_supervisor && @resources_supervisor.alive?
       end
   end
 end

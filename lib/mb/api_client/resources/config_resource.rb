@@ -3,7 +3,7 @@ module MotherBrain
     class ConfigResource < ApiClient::Resource
       # @return [MB::Config]
       def show
-        MB::Config.from_json(connection.get('/config.json').body)
+        MB::Config.from_hash(connection.get('/config.json').body)
       end
     end
   end
