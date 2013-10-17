@@ -75,13 +75,9 @@ module MotherBrain
 
               if options[:toggle]
                 toggle_callbacks << ->(job) {
-                  message = if value.nil?
-                    "Toggling off environment attribute '#{key}' in #{environment}"
-                  else
-                    "Toggling environment attribute '#{key}' to '#{value.inspect}' on #{environment}"
-                  end
+                  message = "Toggling (removing) environment attribute '#{key}' on #{environment}"
                   job.set_status(message)
-                  env_chef_object.set_default_attribute(key, value)
+                  env_chef_object.delete_default_attribute(key)
                   env_chef_object.save
                 }
               end
