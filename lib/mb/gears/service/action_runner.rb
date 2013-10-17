@@ -66,7 +66,7 @@ module MotherBrain
           def set_environment_attributes(job)
             return unless environment_attributes.any?
 
-            unless env = ridley.environment.find(environment)
+            unless env_chef_object = ridley.environment.find(environment)
               raise MB::EnvironmentNotFound.new(environment)
             end
 
@@ -81,17 +81,17 @@ module MotherBrain
                     "Toggling environment attribute '#{key}' to '#{value.inspect}' on #{environment}"
                   end
                   job.set_status(message)
-                  environment.set_default_attribute(key, value)
-                  environment.save
+                  env_chef_object.set_default_attribute(key, value)
+                  env_chef_object.save
                 }
               end
 
               job.set_status("Setting environment attribute '#{key}' to #{value.inspect} in #{environment}")
-              env.set_default_attribute(key, value)
+              env_chef_object.set_default_attribute(key, value)
             end
 
             job.set_status("Saving environment #{environment}")
-            env.save
+            env_chef_object.save
           end
 
           # Set all node level attributes to the given node
