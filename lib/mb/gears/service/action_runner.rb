@@ -115,11 +115,13 @@ module MotherBrain
                   toggle_callbacks << ->(job) {
                     message = if original_value.nil?
                       "Toggling off node attribute '#{key}' on #{node.name}"
+                    elsif !options[:force_value_to].nil?
+                      "Forcing node attribute to '#{options[:force_value_to]}' on #{node.name}"
                     else
                       "Toggling node attribute '#{key}' back to '#{original_value.inspect}' on #{node.name}"
                     end
                     job.set_status(message)
-                    node.set_chef_attribute(key, original_value)
+                    options[:force_value_to].nil? ? node.set_chef_attribute(key, original_value) : node.set_chef_attribute(key, options[:force_value_to])
                     node.save
                   }
                 end
