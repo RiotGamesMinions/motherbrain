@@ -64,14 +64,14 @@ module MotherBrain
     def initialize(options = {})
       log.info { "REST Gateway starting..." }
 
-      options       = DEFAULT_OPTIONS.merge(options.slice(*VALID_OPTIONS))
-      options[:app] = MB::API::Application.new
+      options = DEFAULT_OPTIONS.merge(options.slice(*VALID_OPTIONS))
+      app     = MB::API::Application.new
 
       # wtf rack caps really?
       @host    = options[:Host] = options[:host]
       @port    = options[:Port] = options[:port]
       @workers = options[:workers]
-      @handler = ::Rack::Handler::Reel.run(options)
+      @handler = ::Rack::Handler::Reel.run(app, options)
       @pool    = ::Reel::RackWorker.pool(size: @workers, args: [ @handler ])
 
       log.info { "REST Gateway listening on #{@host}:#{@port}" }
