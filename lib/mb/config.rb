@@ -162,13 +162,11 @@ module MotherBrain
       type: Boolean
 
     attribute 'rest_gateway.host',
-      default: 'localhost',
-      # default: RestGateway::DEFAULT_OPTIONS[:host],
+      default: RestGateway::DEFAULT_OPTIONS[:host],
       type: String
 
     attribute 'rest_gateway.port',
-      default: 9999,
-      # default: RestGateway::DEFAULT_OPTIONS[:port],
+      default: RestGateway::DEFAULT_OPTIONS[:port],
       type: Integer
 
     # Enables the plugin manager to automatically populate its set of plugins

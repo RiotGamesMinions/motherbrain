@@ -1,4 +1,5 @@
 require 'reel'
+require 'reel/rack'
 
 module MotherBrain
   class RestGateway < Reel::Server
@@ -66,10 +67,11 @@ module MotherBrain
       options       = DEFAULT_OPTIONS.merge(options.slice(*VALID_OPTIONS))
       options[:app] = MB::API::Application.new
 
-      @host    = options[:host]
-      @port    = options[:port]
+      # wtf rack caps really?
+      @host    = options[:Host] = options[:host]
+      @port    = options[:Port] = options[:port]
       @workers = options[:workers]
-      @handler = ::Rack::Handler::Reel.new(options)
+      @handler = ::Rack::Handler::Reel.run(options)
       @pool    = ::Reel::RackWorker.pool(size: @workers, args: [ @handler ])
 
       log.info { "REST Gateway listening on #{@host}:#{@port}" }
