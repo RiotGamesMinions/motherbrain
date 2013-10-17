@@ -177,7 +177,7 @@ module MotherBrain
     private
 
       def finalize_callback
-        unregister_lock if lock_manager.alive?
+        lock_manager.async.unregister(Actor.current) if lock_manager.alive?
       end
 
       # Reports a job status
