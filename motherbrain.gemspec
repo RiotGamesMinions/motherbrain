@@ -35,14 +35,15 @@ Gem::Specification.new do |s|
   s.version       = MotherBrain::VERSION
   s.required_ruby_version = ">= 1.9.3"
 
-  s.add_dependency 'celluloid', '~> 0.14.0'
-  s.add_dependency 'dcell', '~> 0.14.0'
-#  s.add_dependency 'reel', '= 0.4.0.pre'
+  s.add_dependency 'celluloid', '~> 0.15'
+  # s.add_dependency 'dcell', '~> 0.14.0'
+  s.add_dependency 'reel', '~> 0.4.0'
+  s.add_dependency 'reel-rack'
   s.add_dependency 'grape', '~> 0.5.0'
   s.add_dependency 'net-ssh'
   s.add_dependency 'net-sftp'
   s.add_dependency 'solve', '>= 0.4.4'
-  s.add_dependency 'ridley', '~> 1.4.1'
+  s.add_dependency 'ridley', '~> 1.6.0'
   s.add_dependency 'thor', '~> 0.18.0'
   s.add_dependency 'faraday'
   s.add_dependency 'faraday_middleware'
@@ -50,7 +51,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'fog', '~> 1.10.0'
   s.add_dependency 'json', '>= 1.8.0'
   s.add_dependency 'pry', '= 1.0.0.pre1'
-  s.add_dependency 'buff-config', '~> 0.1'
+  s.add_dependency 'buff-config', '~> 0.3'
   s.add_dependency 'buff-extensions', '~> 0.5'
   s.add_dependency 'buff-platform', '~> 0.1'
   s.add_dependency 'buff-ruby_engine', '~> 0.1'
