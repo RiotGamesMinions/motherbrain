@@ -110,9 +110,9 @@ module MotherBrain
         supervise_as(:provisioner_manager, MB::Provisioner::Manager)
         supervise_as(:upgrade_manager, MB::Upgrade::Manager)
 
-        # if config.rest_gateway.enable
-        #   supervise_as(:rest_gateway, MB::RestGateway, config.to_rest_gateway)
-        # end
+        if config.rest_gateway.enable
+          supervise_as(:rest_gateway, MB::RestGateway, config.to_rest_gateway)
+        end
 
         @interrupt_mutex = Mutex.new
         @interrupted     = false
