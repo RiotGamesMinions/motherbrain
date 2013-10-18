@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::API::V1::JobsEndpoint do
+describe MB::API::V1::PluginsEndpoint do
   include Rack::Test::Methods
 
   before(:all) { MB::RestGateway.start(port: 26101) }
