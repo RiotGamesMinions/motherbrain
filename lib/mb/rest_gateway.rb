@@ -23,7 +23,7 @@ module MotherBrain
       # @note you probably don't want to manually stop the REST Gateway unless you are testing. Stop
       #   the entire application with {MB::Application.stop}
       def stop
-        instance.terminate
+        instance.shutdown
       end
     end
 
