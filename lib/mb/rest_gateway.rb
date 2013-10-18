@@ -1,4 +1,3 @@
-require 'reel'
 require 'reel/rack'
 
 module MotherBrain
@@ -28,8 +27,6 @@ module MotherBrain
       end
     end
 
-    extend Forwardable
-    include Celluloid
     include MB::Logging
 
     DEFAULT_OPTIONS = {
