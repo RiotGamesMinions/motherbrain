@@ -37,7 +37,8 @@ def setup_env
   at_exit { MB::RSpec::ChefServer.stop }
 
   Before do
-    @aruba_timeout_seconds = 10
+    Celluloid.boot
+    @aruba_timeout_seconds = 30
     @config = generate_valid_config
   end
 
