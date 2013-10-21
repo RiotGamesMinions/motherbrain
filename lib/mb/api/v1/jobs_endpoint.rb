@@ -19,6 +19,9 @@ module MotherBrain::API
         end
 
         desc "find and return the Job with the given ID"
+        params do
+          requires :job_id, type: String, desc: "job id"
+        end
         get ':job_id' do
           find_job!(params[:job_id])
         end
