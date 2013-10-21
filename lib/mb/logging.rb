@@ -81,7 +81,7 @@ module MotherBrain
         end
 
         Ridley.logger = @logger
-        Celluloid.logger = @logger
+        Celluloid.logger = ENV["DEBUG_CELLULOID"] ? @logger : nil
 
         @logger
       end
