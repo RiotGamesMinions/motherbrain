@@ -197,7 +197,7 @@ describe MB::Provisioner::AWS do
 
         it "does not raise when SecurityGroups is not set" do
           manifest[:options].delete :security_groups
-          expect { validate_manifest_options }.not_to raise_error(MB::InvalidProvisionManifest)
+          expect { validate_manifest_options }.not_to raise_error
         end
       end
 
