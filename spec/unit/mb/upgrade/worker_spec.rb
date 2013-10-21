@@ -10,12 +10,12 @@ describe MB::Upgrade::Worker do
   let(:component_versions) { { component_name => "1.2.3" } }
   let(:components) { [component1] }
   let(:cookbook_versions) { { "ohai" => "1.2.3" } }
-  let(:environment) { stub }
+  let(:environment) { double }
   let(:environment_name) { "rspec-test" }
   let(:job) { job_double }
   let(:options) { Hash.new }
   let(:nodes) { %w[node1 node2 node3] }
-  let(:plugin) { stub MB::Plugin, name: plugin_name }
+  let(:plugin) { double MB::Plugin, name: plugin_name }
   let(:plugin_name) { "plugin_name" }
 
   before do
