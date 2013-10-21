@@ -61,12 +61,12 @@ module MotherBrain
 
       def env(name)
         ridley.should_receive(:get).with("environments/#{name}").
-          and_return(stub(:response, :body => {}))
+          and_return(double(:response, :body => {}))
       end
 
       def cookbook(name, version = nil)
-        ridley.should_receive(:get).with("cookbooks").and_return(stub(:response, :body => {}))
-        ridley.should_receive(:get).with("cookbooks/#{name}").and_return(stub(:response, :body => {}))
+        ridley.should_receive(:get).with("cookbooks").and_return(double(:response, :body => {}))
+        ridley.should_receive(:get).with("cookbooks/#{name}").and_return(double(:response, :body => {}))
         plugin = MB::Application.plugin_manager.find(name, version)
         MB::Application.plugin_manager.should_receive(:for_environment).and_return(plugin)
       end
@@ -80,7 +80,7 @@ module MotherBrain
       end
 
       def template(name)
-        ridley.should_receive(:get).with("nodes").and_return(stub(:response, :body => []))
+        ridley.should_receive(:get).with("nodes").and_return(double(:response, :body => []))
         node = double('node')
         Application.ridley.wrapped_object.should_receive(:node).and_return(node)
         ssh = double('ssh')
