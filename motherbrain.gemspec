@@ -39,7 +39,7 @@ Gem::Specification.new do |s|
   # s.add_dependency 'dcell', '~> 0.14.0'
   s.add_dependency 'reel', '~> 0.4.0'
   s.add_dependency 'reel-rack'
-  s.add_dependency 'grape', '~> 0.5.0'
+  s.add_dependency 'grape', '~> 0.6.0'
   s.add_dependency 'net-ssh'
   s.add_dependency 'net-sftp'
   s.add_dependency 'solve', '>= 0.4.4'
