@@ -52,6 +52,10 @@ module MotherBrain
       options = DEFAULT_OPTIONS.merge(options.slice(*VALID_OPTIONS))
       app     = MB::API::Application.new
 
+      # reel-rack uses Rack standard capitalizations in > 0.0.2
+      options[:Host] = options[:host]
+      options[:Port] = options[:port]
+
       log.info { "REST Gateway listening on #{options[:host]}:#{options[:port]}" }
       super(app, options)
     end
