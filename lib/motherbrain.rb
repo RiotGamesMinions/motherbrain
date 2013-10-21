@@ -14,6 +14,9 @@ require 'set'
 require 'ostruct'
 require 'multi_json'
 
+## FIXME This is required to make the tests for RestGateway pass.
+require 'reel/rack'
+
 require 'mb/version'
 require 'mb/errors'
 require 'mb/core_ext'
