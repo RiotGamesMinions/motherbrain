@@ -17,7 +17,9 @@ module MotherBrain::API
         get do
           plugin_manager.list
         end
-
+        params do
+          requires :name, type: String, desc: "plugin name"
+        end
         namespace ':name' do
           desc "display all the versions of the given plugin"
           get do
