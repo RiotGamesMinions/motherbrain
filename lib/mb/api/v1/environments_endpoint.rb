@@ -17,9 +17,6 @@ module MotherBrain::API
           environment_manager.list
         end
 
-        params do
-          requires :environment_id, type: String, desc: "environment name"
-        end
         namespace ':environment_id' do
           desc "destroy a provisioned environment"
           delete do
@@ -117,9 +114,6 @@ module MotherBrain::API
             upgrade_manager.async_upgrade(params[:environment_id], plugin, options)
           end
 
-          params do
-            requires :plugin_id, type: String, desc: "plugin name"
-          end
           namespace 'commands/:plugin_id' do
             desc "list of commands the plugin associated with the environment supports"
             get do
@@ -143,9 +137,6 @@ module MotherBrain::API
             end
 
             desc "list of commands the component of the plugin associated with the environment supports"
-            params do
-              requires :component_id, type: String, desc: "plugin component name"
-            end
             get ':component_id' do
               plugin = plugin_manager.for_environment(params[:plugin_id], params[:environment_id])
               plugin.component!(params[:component_id]).commands
