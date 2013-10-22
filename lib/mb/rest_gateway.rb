@@ -64,6 +64,7 @@ module MotherBrain
 
       def finalize_callback
         log.info { "REST Gateway stopping..." }
+        self.shutdown
       end
   end
 end

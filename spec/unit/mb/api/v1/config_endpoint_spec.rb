@@ -1,4 +1,3 @@
-#require 'reel/rack'
 require 'spec_helper'
 
 describe MB::API::V1::ConfigEndpoint do
