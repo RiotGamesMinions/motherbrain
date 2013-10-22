@@ -5,7 +5,7 @@ describe MB::API::V1::ConfigEndpoint do
 
   before(:all) { MB::RestGateway.start(port: 26101) }
   after(:all) { MB::RestGateway.stop }
-  let(:app) { MB::RestGateway.instance.rack_app }
+  let(:app) { MB::RestGateway.instance.app }
 
   describe "GET /config" do
     let(:current_config) { MB::Application.config }

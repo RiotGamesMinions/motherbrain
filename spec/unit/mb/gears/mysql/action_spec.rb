@@ -18,15 +18,15 @@ describe MB::Gear::MySQL::Action do
   describe "options" do
     it "should describe a data bag" do
       options = {}
-      lambda { subject.new(sql, options) }.should raise_error(MB::ArgumentError)
+      expect { subject.new(sql, options) }.to raise_error(MB::ArgumentError)
     end
 
     it "should have a data bag name" do
       options = {data_bag: {}}
-      lambda { subject.new(sql, options) }.should raise_error(MB::ArgumentError)
+      expect { subject.new(sql, options) }.to raise_error(MB::ArgumentError)
 
       options = {data_bag: {name: "creds"}}
-      lambda { subject.new(sql, options) }.should_not raise_error(MB::ArgumentError)
+      expect { subject.new(sql, options) }.not_to raise_error
     end
   end
 
@@ -47,7 +47,7 @@ describe MB::Gear::MySQL::Action do
       end
 
       it "should raise a GearError" do
-        lambda { subject.connection_info(environment, node) }.should raise_error(MB::GearError)
+        expect { subject.connection_info(environment, node) }.to raise_error(MB::GearError)
       end
     end
 
@@ -81,7 +81,7 @@ describe MB::Gear::MySQL::Action do
       it "raises a GearError" do
         expect {
           subject.connection_info(environment, node)
-        }.to raise_error(MB::GearError)
+        }.to raise_error
       end
     end
 
@@ -94,7 +94,7 @@ describe MB::Gear::MySQL::Action do
       it "raises a GearError" do
         expect {
           subject.connection_info(environment, node)
-        }.to raise_error(MB::GearError)
+        }.to raise_error
       end
     end
   end

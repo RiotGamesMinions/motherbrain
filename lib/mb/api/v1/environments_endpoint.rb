@@ -1,7 +1,7 @@
 module MotherBrain::API
   class V1
     class EnvironmentsEndpoint < MB::API::Endpoint
-      helpers MB::Mixin::Services
+      helpers MB::API::Helpers
 
       rescue_from MB::NoBootstrapRoutine do |ex|
         rack_response(ex.to_json, 405, "Content-type" => "application/json")

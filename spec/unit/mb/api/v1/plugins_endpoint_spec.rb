@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe MB::API::V1::JobsEndpoint do
+describe MB::API::V1::PluginsEndpoint do
   include Rack::Test::Methods
 
   before(:all) { MB::RestGateway.start(port: 26101) }
   after(:all) { MB::RestGateway.stop }
-  let(:app) { MB::RestGateway.instance.rack_app }
+  let(:app) { MB::RestGateway.instance.app }
 
   describe "GET /plugins" do
     it "returns all loaded plugins as JSON" do

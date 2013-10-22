@@ -9,7 +9,7 @@ describe MB::Mixin::Locks do
 
   let(:lock_manager) { MB::LockManager.instance }
 
-  before(:each) { lock_manager.reset! }
+  before(:each) { lock_manager.reset }
 
   describe "#chef_locks" do
     it "returns a Set" do
