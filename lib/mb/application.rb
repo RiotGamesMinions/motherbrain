@@ -1,17 +1,23 @@
-trap 'INT' do
-  MB.log.info "Shutting down..."
-  MB::Application.instance.interrupt
-end
-
-trap 'TERM' do
-  MB.log.info "Shutting down..."
-  MB::Application.instance.interrupt
-end
-
-trap 'HUP' do
-  MB.log.info "Reloading configuration..."
-  MB::ConfigManager.instance.reload
-end if Signal.supported?('HUP')
+# TODO: Fix this when Celluloid does for Ruby 2.0
+# https://github.com/celluloid/celluloid/pull/121
+r, w = IO.pipe
+Thread.new {
+  while c = r.read(1)
+    case c
+    when 's'
+      MB.log.info "Shutting down..."
+      MB::Application.instance.interrupt
+    when 'h'
+      MB.log.info "Reloading configuration..."
+      MB::ConfigManager.instance.reload
+    else
+      MB.log.warn "Unknown fake symbol #{c} in fake signal handler!"
+    end
+  end
+}
+Signal.trap('INT') { w.write('s') }
+Signal.trap('TERM') { w.write('s') }
+Signal.trap('HUP') { w.write('h') } if Signal.supported?('HUP')
 
 module MotherBrain
   # Main application supervisor for motherbrain
@@ -129,7 +135,6 @@ module MotherBrain
         interrupt_mutex.synchronize do
           unless interrupted
             @interrupted = true
-
             terminate
           end
         end
