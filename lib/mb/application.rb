@@ -135,14 +135,7 @@ module MotherBrain
         interrupt_mutex.synchronize do
           unless interrupted
             @interrupted = true
-
             terminate
-
-            Thread.new {
-              require 'pp'
-              sleep 15
-              pp registry.keys
-            }
           end
         end
       end
