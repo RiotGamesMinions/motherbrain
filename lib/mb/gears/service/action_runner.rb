@@ -117,7 +117,8 @@ module MotherBrain
                       "Toggling node attribute '#{key}' back to '#{original_value.inspect}' on #{node.name}"
                     end
                     job.set_status(message)
-                    options[:force_value_to].nil? ? node.set_chef_attribute(key, original_value) : node.set_chef_attribute(key, options[:force_value_to])
+                    value_to_set = options[:force_value_to].nil? ? original_value : options[:force_value_to]
+                    node.set_chef_attribute(key, value_to_set)
                     node.save
                   }
                 end
