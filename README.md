@@ -9,6 +9,7 @@ motherbrain to create and control an entire application environment.
 * [Plugin DSL](PLUGINS.md)
 * [Manifest file format](MANIFESTS.md)
 * [Testing with Vagrant](VAGRANT.md)
+* [Command structure](COMMANDS.md)
 
 ## Requirements
 
