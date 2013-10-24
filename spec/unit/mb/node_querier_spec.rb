@@ -37,6 +37,10 @@ describe MB::NodeQuerier do
     end
   end
 
+  describe "#bulk_chef_run" do
+    pending
+  end
+
   describe "#node_name" do
     subject(:node_name) { node_querier.node_name(host) }
 
