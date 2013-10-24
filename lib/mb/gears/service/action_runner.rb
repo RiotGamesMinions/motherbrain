@@ -66,7 +66,7 @@ module MotherBrain
           def set_environment_attributes(job)
             return unless environment_attributes.any?
 
-            unless env = ridley.environment.find(environment)
+            unless env_chef_object = ridley.environment.find(environment)
               raise MB::EnvironmentNotFound.new(environment)
             end
 
@@ -75,23 +75,19 @@ module MotherBrain
 
               if options[:toggle]
                 toggle_callbacks << ->(job) {
-                  message = if value.nil?
-                    "Toggling off environment attribute '#{key}' in #{environment}"
-                  else
-                    "Toggling environment attribute '#{key}' to '#{value.inspect}' on #{environment}"
-                  end
+                  message = "Toggling (removing) environment attribute '#{key}' on #{environment}"
                   job.set_status(message)
-                  environment.set_default_attribute(key, value)
-                  environment.save
+                  env_chef_object.delete_default_attribute(key)
+                  env_chef_object.save
                 }
               end
 
               job.set_status("Setting environment attribute '#{key}' to #{value.inspect} in #{environment}")
-              env.set_default_attribute(key, value)
+              env_chef_object.set_default_attribute(key, value)
             end
 
             job.set_status("Saving environment #{environment}")
-            env.save
+            env_chef_object.save
           end
 
           # Set all node level attributes to the given node
@@ -115,11 +111,14 @@ module MotherBrain
                   toggle_callbacks << ->(job) {
                     message = if original_value.nil?
                       "Toggling off node attribute '#{key}' on #{node.name}"
+                    elsif !options[:force_value_to].nil?
+                      "Forcing node attribute to '#{options[:force_value_to]}' on #{node.name}"
                     else
                       "Toggling node attribute '#{key}' back to '#{original_value.inspect}' on #{node.name}"
                     end
                     job.set_status(message)
-                    node.set_chef_attribute(key, original_value)
+                    value_to_set = options[:force_value_to].nil? ? original_value : options[:force_value_to]
+                    node.set_chef_attribute(key, value_to_set)
                     node.save
                   }
                 end

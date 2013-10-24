@@ -47,7 +47,7 @@ module MotherBrain
     # @option options [Integer] :port (26100)
     # @option options [Boolean] :quiet (false)
     def initialize(options = {})
-      log.info { "REST Gateway starting..." }
+      log.debug { "REST Gateway starting..." }
 
       options = DEFAULT_OPTIONS.merge(options.slice(*VALID_OPTIONS))
       app     = MB::API::Application.new
@@ -63,7 +63,7 @@ module MotherBrain
     private
 
       def finalize_callback
-        log.info { "REST Gateway stopping..." }
+        log.debug { "REST Gateway stopping..." }
         self.shutdown
       end
   end
