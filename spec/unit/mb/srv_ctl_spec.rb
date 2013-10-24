@@ -108,4 +108,35 @@ describe MB::SrvCtl do
       end
     end
   end
+
+  describe "#daemonize" do
+    let(:config) { double("config", :to_logger => nil) }
+    let(:ui) { double("ui", :say => nil) }
+
+    before do
+      MB::Config.stub(:from_file).and_return(config)
+      MB::Logging.stub(:setup)
+      MB::SrvCtl.stub(:ui).and_return(ui)
+    end
+
+    let(:srv_ctl) { described_class.new }
+    let(:daemonize) { srv_ctl.send(:daemonize) }
+
+    context "when the pid directory does not exist" do
+
+      before do
+        File.stub(:exist?).and_return(false)
+        FileUtils.stub(:mkdir_p)
+        srv_ctl.stub(:pid_directory).and_return("")
+        File.stub(:writable?).and_return(true)
+        Process.stub(:daemon)
+        srv_ctl.stub(:create_pid)
+      end
+
+      it "attempts to make the directory" do
+        FileUtils.should_receive(:mkdir_p).and_return(nil)
+        daemonize
+      end
+    end
+  end
 end

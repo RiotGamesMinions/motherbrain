@@ -21,6 +21,14 @@ module MotherBrain
         raise MB::InvalidConfig.new(syntax_error: [ex.message])
       end
 
+      def from_hash(hash)
+        super
+      rescue Buff::Errors::ConfigNotFound => ex
+        raise MB::ConfigNotFound, ex
+      rescue Buff::Errors::InvalidConfig => ex
+        raise MB::InvalidConfig.new(syntax_error: [ex.message])
+      end
+
       # @raise [Celluloid::DeadActorError] if ConfigManager has not been started
       #
       # @return [Celluloid::Actor(ConfigManager)]
@@ -172,7 +180,7 @@ module MotherBrain
     # Enables the plugin manager to automatically populate its set of plugins
     # from cookbooks present on the remote Chef server that contain plugins
     attribute 'plugin_manager.eager_loading',
-      default: true,
+      default: false,
       type: Boolean
 
     # How long the plugin manager will wait before polling the Chef Server to eagerly
@@ -183,7 +191,7 @@ module MotherBrain
 
     # Allows the plugin manager load it's plugins asynchronously in the background during startup
     attribute 'plugin_manager.async_loading',
-      default: true,
+      default: false,
       type: Boolean
 
     attribute 'ef.api_url',

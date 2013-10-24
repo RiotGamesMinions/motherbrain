@@ -4,14 +4,16 @@ module MotherBrain
       include Celluloid
 
       # @param [ApiClient] client
-      def initialize(client)
-        @connection = client.connection
+      def initialize(connection_registry)
+        @connection_registry = connection_registry
+      end
+
+      # @return [ApiClient::Connection]
+      def connection
+        @connection_registry[:connection_pool]
       end
 
       private
-
-        # @return [ApiClient::Connection]
-        attr_reader :connection
 
         # Perform a DELETE to the target resource and return the decoded JSON response body
         def json_delete(*args)

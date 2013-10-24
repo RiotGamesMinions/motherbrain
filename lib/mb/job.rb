@@ -177,7 +177,7 @@ module MotherBrain
       attr_reader :machine
 
       def finalize_callback
-        job_manager.complete_job(Actor.current)
+        job_manager.async.complete_job(Actor.current)
       end
   end
 end

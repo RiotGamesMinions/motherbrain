@@ -1,7 +1,7 @@
-require 'reel'
+require 'reel/rack'
 
 module MotherBrain
-  class RestGateway < Reel::Server
+  class RestGateway < Reel::Rack::Server
     class << self
       # @raise [Celluloid::DeadActorError] if rest gateway has not been started
       #
@@ -23,74 +23,48 @@ module MotherBrain
       # @note you probably don't want to manually stop the REST Gateway unless you are testing. Stop
       #   the entire application with {MB::Application.stop}
       def stop
-        instance.terminate
+        instance.shutdown
       end
     end
 
-    extend Forwardable
-    include Celluloid
     include MB::Logging
 
     DEFAULT_OPTIONS = {
       host: '0.0.0.0',
       port: 26100,
-      quiet: false,
-      workers: 10
+      quiet: false
     }.freeze
 
     VALID_OPTIONS = [
       :host,
       :port,
-      :quiet,
-      :workers
+      :quiet
     ].freeze
-
-    # @return [String]
-    attr_reader :host
-    # @return [Integer]
-    attr_reader :port
-    # @return [Integer]
-    attr_reader :workers
-
-    def_delegator :handler, :rack_app
 
     finalizer :finalize_callback
 
     # @option options [String] :host ('0.0.0.0')
     # @option options [Integer] :port (26100)
     # @option options [Boolean] :quiet (false)
-    # @option options [Integer] :workers (10)
     def initialize(options = {})
-      log.info { "REST Gateway starting..." }
+      log.debug { "REST Gateway starting..." }
 
-      options       = DEFAULT_OPTIONS.merge(options.slice(*VALID_OPTIONS))
-      options[:app] = MB::API::Application.new
+      options = DEFAULT_OPTIONS.merge(options.slice(*VALID_OPTIONS))
+      app     = MB::API::Application.new
 
-      @host    = options[:host]
-      @port    = options[:port]
-      @workers = options[:workers]
-      @handler = ::Rack::Handler::Reel.new(options)
-      @pool    = ::Reel::RackWorker.pool(size: @workers, args: [ @handler ])
+      # reel-rack uses Rack standard capitalizations in > 0.0.2
+      options[:Host] = options[:host]
+      options[:Port] = options[:port]
 
-      log.info { "REST Gateway listening on #{@host}:#{@port}" }
-      super(@host, @port, &method(:on_connect))
-    end
-
-    # @param [Reel::Connection] connection
-    def on_connect(connection)
-      pool.handle(connection.detach)
+      log.info { "REST Gateway listening on #{options[:host]}:#{options[:port]}" }
+      super(app, options)
     end
 
     private
 
-      # @return [Reel::RackWorker]
-      attr_reader :pool
-      # @return [Rack::Handler::Reel]
-      attr_reader :handler
-
       def finalize_callback
-        log.info { "REST Gateway stopping..." }
-        pool.terminate if pool && pool.alive?
+        log.debug { "REST Gateway stopping..." }
+        self.shutdown
       end
   end
 end

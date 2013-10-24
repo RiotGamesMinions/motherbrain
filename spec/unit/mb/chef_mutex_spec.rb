@@ -58,13 +58,13 @@ describe MB::ChefMutex do
   let(:lockset) { { chef_environment: "my_environment" } }
   let(:options) { lockset }
 
-  let(:chef_connection_stub) { stub client_name: client_name }
-  let(:locks_stub) { stub(
+  let(:chef_connection_stub) { double client_name: client_name }
+  let(:locks_stub) { double(
       delete: true,
       find: nil,
-      new: stub(save: true)
+      new: double(save: true)
   ) }
-  let(:job_stub) { stub(
+  let(:job_stub) { double(
     report_boolean: nil,
     report_running: nil
   ) }
@@ -218,7 +218,7 @@ describe MB::ChefMutex do
       it "does not crash the mutex actor" do
         expect { chef_mutex.synchronize(&test_block) }.to raise_error(RuntimeError)
 
-        expect { chef_mutex.to_s }.to_not raise_error(Celluloid::DeadActorError)
+        expect { chef_mutex.to_s }.to_not raise_error
       end
 
       context "and passed unlock_on_failure: false" do
@@ -229,7 +229,7 @@ describe MB::ChefMutex do
         it "does not release the lock" do
           chef_mutex.should_not_receive :unlock
 
-          -> { synchronize }.should raise_error RuntimeError
+          expect { synchronize }.to raise_error(RuntimeError)
         end
       end
     end
