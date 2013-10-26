@@ -37,6 +37,44 @@ describe MB::NodeQuerier do
     end
   end
 
+  describe "#bulk_chef_run" do
+    let(:job) { double(set_status: nil) }
+    let(:node_one) { double(name: "surfing", public_hostname: "surfing.riotgames.com") }
+    let(:node_two) { double(name: "football", public_hostname: "football.riotgames.com") }
+    let(:response_one) { double(value: double(host: "surfing.riotgames.com")) }
+    let(:response_two) { double(value: double(host: "football.riotgames.com")) }
+
+    let(:nodes) { [ node_one, node_two ] }
+
+    let(:bulk_chef_run) { node_querier.bulk_chef_run(job, nodes) }
+
+    before do
+      # Stubbing node_querier.future proved to be very difficult
+      nodes.stub(:map).and_return([response_one, response_two])
+    end
+
+    it "describes the successful nodes" do
+      bulk_chef_run
+      expect(job).to have_received(:set_status).with(
+        "Finished chef client run on 2 node(s) - surfing.riotgames.com, football.riotgames.com")
+    end
+
+    context "when nodes fail" do
+
+      before do
+        response_one.stub(:value).and_raise(MB::RemoteCommandError.new(nil, "surfing.riotgames.com"))
+        response_two.stub(:value).and_raise(MB::RemoteCommandError.new(nil, "football.riotgames.com"))
+        node_querier.stub(:abort)
+      end
+
+      it "describes the unsuccessful nodes" do
+        node_querier.should_receive(:abort).with(
+          MB::RemoteCommandError.new("chef client run failed on 2 node(s) - surfing.riotgames.com, football.riotgames.com"))
+        bulk_chef_run
+      end
+    end
+  end
+
   describe "#node_name" do
     subject(:node_name) { node_querier.node_name(host) }
 
