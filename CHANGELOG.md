@@ -1,3 +1,12 @@
+# 0.11.0
+
+* [#620](https://github.com/RiotGames/motherbrain/pull/620) Improved logging for invoked actions that run Chef
+* [#640](https://github.com/RiotGames/motherbrain/pull/640) Improved logging for environment configure
+* [#630](https://github.com/RiotGames/motherbrain/pull/630) Added an option to force a value back to a desired state when toggling
+* [#634](https://github.com/RiotGames/motherbrain/pull/634) Finalizer methods need to operate asynchronously
+* Fix dependency problems - use Ridley 1.7, Celluloid 0.15, and the appropriate versions of reel/rack
+* Renabled the REST Gateway and fixed a bunch of specs
+
 # 0.10.4
 
 * make toggle_callbacks public so that we can read it where needed
