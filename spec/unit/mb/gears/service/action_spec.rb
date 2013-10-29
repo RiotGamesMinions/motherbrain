@@ -21,7 +21,7 @@ describe MB::Gear::Service::Action do
     let(:runner) { double('action_runner', reset: nil, run: nil) }
     let(:key) { "some.attr" }
     let(:value) { "val" }
-    let(:chef_success) { double('success-response', error?: false) }
+    let(:chef_success) { double('success-response', error?: false, host: nil) }
 
     before(:each) do
       MB::Gear::Service::ActionRunner.stub(:new).and_return(runner)

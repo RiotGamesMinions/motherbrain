@@ -60,8 +60,11 @@ module MotherBrain
         force: false
       )
 
-      node_success = 0
-      node_failure = 0
+      node_successes_count = 0
+      node_successes = Array.new
+
+      node_failures_count  = 0
+      node_failures = Array.new
 
       environment = find(id)
       job.report_running("Finding environment #{environment.name}")
@@ -79,19 +82,20 @@ module MotherBrain
           node_querier.future(:chef_run, node.public_hostname)
         end.each do |future|
           begin
-            future.value
-            node_success += 1
-          rescue RemoteCommandError => ex
-            log_exception(ex)
-            node_failure += 1
+            response = future.value
+            node_successes_count += 1
+            node_successes << response.host
+          rescue RemoteCommandError => error
+            node_failures_count += 1
+            node_failures << error.host
           end
         end
       end
 
-      if node_failure > 0
-        job.report_failure("Chef client run failed on #{node_failure} nodes")
+      if node_failures_count > 0
+        job.report_failure("chef client run failed on #{node_failures_count} node(s) - #{node_failures.join(', ')}")
       else
-        job.report_success("Finished chef client run on #{node_success} nodes")
+        job.report_success("Finished chef client run on #{node_successes_count} node(s) - #{node_successes.join(', ')}")
       end
     rescue => ex
       job.report_failure(ex)
