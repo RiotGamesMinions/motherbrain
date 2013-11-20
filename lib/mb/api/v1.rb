@@ -7,6 +7,7 @@ module MotherBrain::API
 
     version 'v1', using: :header, vendor: 'motherbrain'
     format :json
+    default_format :json
 
     rescue_from Grape::Exceptions::Validation do |e|
       body = MultiJson.encode(

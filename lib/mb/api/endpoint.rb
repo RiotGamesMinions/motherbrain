@@ -2,10 +2,15 @@ require 'grape'
 
 module MotherBrain::API
   class Endpoint < Grape::API
-    # Force inbound requests to be JSON
-    def call(env)
-      env['CONTENT_TYPE'] = 'application/json'
-      super
+    include MB::Logging
+  end
+end
+
+module Grape
+  class Endpoint
+    alias_method :old_params, :params
+    def params
+      old_params.to_hash.symbolize_keys
     end
   end
 end
