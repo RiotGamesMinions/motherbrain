@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
 $:.push File.expand_path("../../lib", __FILE__)
+ENV['NRCONFIG'] ||= '/Users/jkiehl/.mb/newrelic.yml'
+ENV['NEW_RELIC_LOG'] ||= '/Users/jkiehl/.mb/newrelic_agent.log'
 require 'motherbrain'
+require 'newrelic_rpm'
+
+NewRelic::Agent.manual_start
 
 MB::SrvCtl.run(ARGV, File.basename(__FILE__))

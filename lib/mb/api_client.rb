@@ -1,3 +1,5 @@
+require 'newrelic_rpm'
+
 module MotherBrain
   class ApiClient
 
