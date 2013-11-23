@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
   s.version       = MotherBrain::VERSION
   s.required_ruby_version = ">= 1.9.3"
 
+  s.add_dependency 'newrelic_rpm'
   s.add_dependency 'celluloid', '~> 0.15'
   # s.add_dependency 'dcell', '~> 0.14.0'
   s.add_dependency 'reel', '~> 0.4.0'
