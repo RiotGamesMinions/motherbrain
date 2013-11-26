@@ -1,3 +1,7 @@
+# 0.12.0
+
+* [#644](https://github.com/RiotGames/motherbrain/pull/644) Use new ridley-connectors gem and new logger functionality to protect secrets
+
 # 0.11.0
 
 * [#620](https://github.com/RiotGames/motherbrain/pull/620) Improved logging for invoked actions that run Chef
