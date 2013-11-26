@@ -75,7 +75,7 @@ module MotherBrain
           location = location.to_s
         end
 
-        @logger = Logger.new(location).tap do |log|
+        @logger = Ridley::Logging::Logger.new(location).tap do |log|
           log.level = level
           log.formatter = BasicFormat.new
         end
