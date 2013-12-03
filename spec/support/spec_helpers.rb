@@ -1,5 +1,10 @@
 module MotherBrain
   module SpecHelpers
+
+    def json_post(endpoint, params)
+      post endpoint, params, "CONTENT_TYPE" => "application/json"
+    end
+
     def app_root_path
       Pathname.new(File.expand_path('../../../', __FILE__))
     end

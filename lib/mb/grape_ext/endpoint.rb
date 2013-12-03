@@ -7,7 +7,7 @@ module Grape
     #
     # https://github.com/intridea/grape/blob/v0.6.1/lib/grape/http/request.rb#L6
     def params
-      old_params.to_hash.symbolize_keys
+      old_params.to_hash.deep_symbolize_keys
     end
   end
 end

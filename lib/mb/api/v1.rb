@@ -23,7 +23,7 @@ module MotherBrain::API
         ex.to_json
       else
         MB.log.fatal { "an unknown error occured: #{ex}" }
-        MultiJson.encode(code: -1, message: "an unknown error occured")
+        MultiJson.encode(code: -1, message: ex.message)
       end
 
       rack_response(body, 500, "Content-type" => "application/json")
