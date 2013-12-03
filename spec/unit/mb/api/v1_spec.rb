@@ -30,7 +30,7 @@ describe MB::API::V1 do
         json.should have_key("code")
         json["code"].should eql(-1)
         json.should have_key("message")
-        json["message"].should eql("an unknown error occured")
+        json["message"].should eql("hidden error message")
       end
     end
   end
