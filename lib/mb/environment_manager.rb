@@ -70,7 +70,7 @@ module MotherBrain
       job.report_running("Finding environment #{environment.name}")
 
       chef_synchronize(chef_environment: environment.name, force: options[:force], job: job) do
-        job.set_status("Saving updated environment")
+        job.set_status("Saving updated environment with - #{options[:attributes]}")
         environment.default_attributes.deep_merge!(options[:attributes])
         environment.save
 

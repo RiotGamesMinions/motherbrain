@@ -7,6 +7,7 @@ module MotherBrain::API
 
     version 'v1', using: :header, vendor: 'motherbrain'
     format :json
+    default_format :json
 
     rescue_from Grape::Exceptions::Validation do |e|
       body = MultiJson.encode(
@@ -22,7 +23,7 @@ module MotherBrain::API
         ex.to_json
       else
         MB.log.fatal { "an unknown error occured: #{ex}" }
-        MultiJson.encode(code: -1, message: "an unknown error occured")
+        MultiJson.encode(code: -1, message: ex.message)
       end
 
       rack_response(body, 500, "Content-type" => "application/json")

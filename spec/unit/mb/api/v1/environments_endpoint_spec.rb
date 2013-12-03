@@ -31,7 +31,7 @@ describe MB::API::V1::ConfigEndpoint do
       plugin_manager.should_receive(:find).with(plugin_id, plugin_version).and_return(plugin)
       upgrade_manager.should_receive(:async_upgrade).with(environment_id, plugin, anything).and_return(job)
 
-      post "/environments/#{environment_id}/upgrade",
+      json_post "/environments/#{environment_id}/upgrade",
         MultiJson.dump(plugin: { name: plugin_id, version: plugin_version })
 
       last_response.status.should == 201
