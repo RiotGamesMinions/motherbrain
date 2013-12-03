@@ -96,8 +96,6 @@ module MotherBrain::API
             optional :force, type: Boolean, desc: "force configure even if the environment is locked"
           end
           post 'configure' do
-            MB::Logging.logger.debug { "HELLO! here is what params is #{params.class}" }
-            MB::Logging.logger.debug { "HELLO! when I slice it, I am a #{params.slice(:attributes).class}" }
             environment_manager.async_configure(params[:environment_id], params.slice(:attributes, :force))
           end
 

@@ -55,17 +55,10 @@ module MotherBrain
     #
     # @api private
     def configure(job, id, options = {})
-      job.set_status("********************")
-      job.set_status(options)
-      job.set_status("********************")
       options = options.reverse_merge(
         attributes: Hash.new,
         force: false
       )
-      job.set_status("********************")
-      job.set_status(options)
-      job.set_status("********************")
-
 
       node_successes_count = 0
       node_successes = Array.new
