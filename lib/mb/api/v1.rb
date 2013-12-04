@@ -1,3 +1,5 @@
+require 'grape-swagger'
+
 module MotherBrain::API
   class V1 < MB::API::Endpoint
     require_relative 'v1/config_endpoint'
@@ -29,10 +31,16 @@ module MotherBrain::API
       rack_response(body, 500, "Content-type" => "application/json")
     end
 
+    before do
+      header['Access-Control-Allow-Origin'] = '*'
+      header['Access-Control-Request-Method'] = '*'
+    end
+
     mount V1::ConfigEndpoint
     mount V1::JobsEndpoint
     mount V1::EnvironmentsEndpoint
     mount V1::PluginsEndpoint
+    add_swagger_documentation
 
     if MB.testing?
       get :mb_error do
