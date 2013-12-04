@@ -244,6 +244,24 @@ using myface (0.4.1)
 
 That's it! We now have our application deployed to 2 nodes.
 
+# Swagger
+
+When running as a server, MB mounts various enpoinds using the Grape library. For convenience, the tool Swagger has
+also been integrated into MB's REST API.
+
+First, clone the Swagger UI project from here https://github.com/wordnik/swagger-ui.
+
+Next, start your MB server. The only requirement here is a properly defined configuration file:
+
+`bundle exec bin/mbsrv`
+
+Next, open up the index.html in the dist/ directory of your cloned swagger-ui. In the top menu bar, paste
+in your MB server's address (and port) plus swagger_doc.json and click Explore.
+
+For a local server, running on the default port, the URL would look like "http://localhost:26100/swagger_doc.json".
+
+Thats all! You should now be able to explore the REST API of MB using Swagger.
+
 # Authors
 
 * Jamie Winsor (<jamie@vialstudios.com>)
