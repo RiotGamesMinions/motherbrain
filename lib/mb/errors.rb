@@ -424,6 +424,32 @@ module MotherBrain
     error_code(3024)
   end
 
+  class InvalidEnvironmentJson < MBError
+    error_code(3025)
+
+    def initialize(path, json_error=nil)
+      @path = path
+    end
+
+    def message
+      msg = "Environment JSON contained in #{path} is invalid."
+      msg << "\n#{json_error.message}" if json_error and json_error.responds_to?(:message)
+      msg
+    end
+  end
+
+  class FileNotFound < MBError
+    error_code(3027)
+
+    def initialize(path)
+      @path = path
+    end
+
+    def message
+      "File does not exist: #{path}"
+    end
+  end
+
   # Bootstrap errors
   class BootstrapError < MBError
     exit_code(24)
@@ -488,6 +514,7 @@ module MotherBrain
       super
     end
   end
+
 
   # Provision errors
   class ProvisionError < MBError

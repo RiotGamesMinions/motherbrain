@@ -130,6 +130,21 @@ module MotherBrain
       abort error
     end
 
+    # Creates an environment from JSON contained in a file
+    #
+    # @param [#to_s] path
+    #
+    # @return [Ridley::EnvironmentResource]
+    def create_from_file(path)
+      abort FileNotFound.new(path) unless File.exist? path
+      environment_data = JSON.parse(File.read(path))
+      ridley.environment.create(environment_data)
+    rescue JSON::ParserError => error
+      abort InvalidEnvironmentJson.new(path, error)
+    rescue => error
+      abort error
+    end
+
     # Destroys an environment
     #
     # @param [#to_s] name
