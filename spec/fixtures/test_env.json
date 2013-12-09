@@ -1,0 +1,15 @@
+{
+  "name": "test_env",
+  "description": "test environment",
+  "cookbook_versions": {
+    "mb_base": "2.6.40"
+  },
+  "json_class": "Chef::Environment",
+  "chef_type": "environment",
+  "default_attributes": {
+    "motherbrain": true
+  },
+  "override_attributes": {
+    "awesome_level": 7
+  }
+}
