@@ -93,13 +93,29 @@ module MotherBrain
           CliClient.new(job).display
         end
 
+        desc "from FILE", "Create an environment from JSON in a file"
+        def from(environment_file)
+          ui.say "Creating environment from #{environment_file}"
+          unless File.exist? environment_file
+            ui.error "#{environment_file} does not exist."
+            exit(1)
+          end
+
+          begin
+            environment_manager.create_from_file(environment_file)
+          rescue Ridley::Errors::HTTPConflict
+            ui.say "Environment already exists."
+            exit(1)
+          end
+        end
+
         desc "create ENVIRONMENT", "Create an empty environment"
         def create(environment)
           ui.say "Creating empty environment #{environment}"
           begin
             environment_manager.create(environment)
           rescue Ridley::Errors::HTTPConflict
-            ui.say "Environment already exists!"
+            ui.say "Environment already exists."
             exit(1)
           end
         end
