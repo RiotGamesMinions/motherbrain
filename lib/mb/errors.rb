@@ -620,4 +620,18 @@ module MotherBrain
   class PrerequisiteNotInstalled < MBError
     error_code(9005)
   end
+
+  class EnvironmentExists < ChefError
+    error_code(9006)
+
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def message
+      "An environment named '#{name}' already exists in the Chef Server."
+    end
+  end
 end
