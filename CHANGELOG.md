@@ -1,3 +1,8 @@
+# 0.13.0
+
+* [#649](https://github.com/RiotGames/motherbrain/pull/649)
+  Add `mb environment from /some/file.json` command
+
 # 0.12.0
 
 * [#644](https://github.com/RiotGames/motherbrain/pull/644) Use new ridley-connectors gem and new logger functionality to protect secrets
