@@ -117,6 +117,21 @@ describe MB::EnvironmentManager do
       expect(ridley.environment.find(environment_name)).to be_true
     end
   end
+  
+  describe "#create_from_file" do
+    it "creates an environment" do
+      test_file = File.join(fixtures_path, 'test_env.json')
+      environment_manager.create_from_file test_file
+      
+      env = ridley.environment.find('test_env')
+      expect(env['default_attributes']['motherbrain']).to be_true
+    end
+    
+    it "handles a missing file" do
+      test_file = File.join(fixtures_path, 'no_such_env.json')
+      expect { environment_manager.create_from_file(test_file) }.to raise_error
+    end
+  end
 
   describe "#destroy" do
     before { chef_environment(environment_name) }
