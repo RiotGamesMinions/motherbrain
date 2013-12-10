@@ -126,6 +126,8 @@ module MotherBrain
     # @return [Ridley::EnvironmentResource]
     def create(name)
       ridley.environment.create(name: name)
+    rescue Ridley::Errors::HTTPConflict
+      abort EnvironmentExists.new(name)
     rescue => error
       abort error
     end
@@ -137,12 +139,11 @@ module MotherBrain
     # @return [Ridley::EnvironmentResource]
     def create_from_file(path)
       abort FileNotFound.new(path) unless File.exist? path
-      environment_data = JSON.parse(File.read(path))
-      ridley.environment.create(environment_data)
-    rescue JSON::ParserError => error
-      abort InvalidEnvironmentJson.new(path, error)
-    rescue => error
-      abort error
+
+      env = ridley.environment.from_file(path)
+      ridley.environment.create(env)
+    rescue Ridley::Errors::HTTPConflict
+      abort EnvironmentExists.new(env.name)
     end
 
     # Destroys an environment
