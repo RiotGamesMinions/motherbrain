@@ -20,6 +20,10 @@ module MotherBrain
           @name      = name
           @component = component
           @block     = block
+
+          if block_given?
+            dsl_eval(&block)
+          end
         end
 
         # Run this action on the specified nodes.
