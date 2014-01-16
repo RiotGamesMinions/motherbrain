@@ -39,7 +39,7 @@ module MotherBrain
           runner.run(job)
 
           if run_chef || runner.toggle_callbacks.any?
-              node_querier.bulk_chef_run(job, nodes, runner.service_recipe)
+            node_querier.bulk_chef_run(job, nodes, runner.service_recipe)
           end
 
           self

@@ -22,17 +22,18 @@ describe MB::Gear::Service::Action do
     let(:key) { "some.attr" }
     let(:value) { "val" }
     let(:chef_success) { double('success-response', error?: false, host: nil) }
+    let(:chef_run_options) { { override_recipe: nil } }
 
     before(:each) do
       MB::Gear::Service::ActionRunner.stub(:new).and_return(runner)
     end
 
     it "runs Chef on every node" do
-      MB::Application.node_querier.should_receive(:chef_run).with(node_1.public_hostname).
+      MB::Application.node_querier.should_receive(:chef_run).with(node_1.public_hostname, chef_run_options).
         and_return(chef_success)
-      MB::Application.node_querier.should_receive(:chef_run).with(node_2.public_hostname).
+      MB::Application.node_querier.should_receive(:chef_run).with(node_2.public_hostname, chef_run_options).
         and_return(chef_success)
-      MB::Application.node_querier.should_receive(:chef_run).with(node_3.public_hostname).
+      MB::Application.node_querier.should_receive(:chef_run).with(node_3.public_hostname, chef_run_options).
         and_return(chef_success)
 
       subject.run(job, environment, nodes)
