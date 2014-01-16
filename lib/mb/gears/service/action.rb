@@ -35,17 +35,16 @@ module MotherBrain
         def run(job, environment, nodes, run_chef = true)
           job.set_status("Running component: #{component.name} service action: #{name} on #{nodes.collect(&:name).join(', ')}")
 
-          runner = Service::ActionRunner.new(environment, nodes)
-          runner.instance_eval(&block)
-          runner.send(:run, job) # TODO: make this public when ActionRunner has a clean room
+          runner = Service::ActionRunner.new(environment, nodes, &block)
+          runner.run(job)
 
           if run_chef || runner.toggle_callbacks.any?
-            node_querier.bulk_chef_run job, nodes
+            node_querier.bulk_chef_run(job, nodes, runner.service_recipe)
           end
 
           self
         ensure
-          runner.send(:reset, job)
+          runner.reset(job)
         end
 
         private

@@ -8,16 +8,32 @@ module MotherBrain
         attr_reader :environment
         attr_reader :nodes
         attr_reader :toggle_callbacks
+        attr_reader :service_recipe
+        attr_reader :environment_attributes
+        attr_reader :node_attributes
 
         # @param [String] environment
         # @param [Array<Ridley::Node>] nodes
-        def initialize(environment, nodes)
+        def initialize(environment, nodes, &block)
           @environment = environment
           @nodes       = Array(nodes)
 
           @environment_attributes = Array.new
           @node_attributes        = Array.new
           @toggle_callbacks       = Array.new
+
+          if block_given?
+            dsl_eval(&block)
+          end
+        end
+
+        def reset(job)
+          toggle_callbacks.concurrent_map { |callback| callback.call(job) }
+        end
+
+        def run(job)
+          set_node_attributes(job)
+          set_environment_attributes(job)
         end
 
         # Set an environment level attribute to the given value. The key is represented
@@ -28,8 +44,7 @@ module MotherBrain
         #
         # @option options [Boolean] :toggle (false)
         #   set this environment attribute only for a single chef run
-        def environment_attribute(key, value, options = {})
-          options = options.reverse_merge(toggle: false)
+        def add_environment_attribute(key, value, options = {})
           @environment_attributes << { key: key, value: value, options: options }
         end
 
@@ -41,26 +56,36 @@ module MotherBrain
         #
         # @option options [Boolean] :toggle (false)
         #   set this node attribute only for a single chef run
-        def node_attribute(key, value, options = {})
-          options = options.reverse_merge(toggle: false)
+        def add_node_attribute(key, value, options)
           @node_attributes << { key: key, value: value, options: options }
+        end
+
+        def set_service_recipe(recipe)
+          @service_recipe = recipe
         end
 
         private
 
-          attr_reader :component
-          attr_reader :environment_attributes
-          attr_reader :node_attributes
-
-          # @todo Make this public when ActionRunner has a clean room
-          def reset(job)
-            toggle_callbacks.concurrent_map { |callback| callback.call(job) }
+          def dsl_eval(&block)
+            CleanRoom.new(self).instance_eval(&block)
           end
 
-          # @todo Make this public when ActionRunner has a clean room
-          def run(job)
-            set_node_attributes(job)
-            set_environment_attributes(job)
+          class CleanRoom < CleanRoomBase
+            dsl_attr_writer :component
+
+            def service_recipe(recipe)
+              real_model.set_service_recipe(recipe)
+            end
+
+            def environment_attribute(key, value, options = {})
+              options = options.reverse_merge(toggle: false)
+              real_model.add_environment_attribute(key, value, options)
+            end
+
+            def node_attribute(key, value, options = {})
+              options = options.reverse_merge(toggle: false)
+              real_model.add_node_attribute(key, value, options)
+            end
           end
 
           def set_environment_attributes(job)

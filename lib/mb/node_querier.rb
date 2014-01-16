@@ -33,9 +33,11 @@ module MotherBrain
     # @param [Job] job
     # @param [Array(Ridley::NodeResource)] nodes
     #   The collection of nodes to run Chef on
+    # @param [String] override_recipe
+    #   A runlist entry that will override the node's current runlist
     #
     # @raise [RemoteCommandError]
-    def bulk_chef_run(job, nodes)
+    def bulk_chef_run(job, nodes, override_recipe = nil)
       job.set_status("Performing a chef client run on #{nodes.collect(&:name).join(', ')}")
 
       node_successes_count = 0
@@ -44,7 +46,7 @@ module MotherBrain
       node_failures_count  = 0
       node_failures = Array.new
 
-      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname) }
+      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, override_recipe: override_recipe) }
 
       futures.each do |future|
         begin
@@ -101,6 +103,8 @@ module MotherBrain
     #   timeout value for SSH bootstrap
     # @option options [Boolean] :sudo
     #   bootstrap with sudo
+    # @option  options [String] :override_recipe
+    #   a recipe that will override the nodes current run list
     #
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
     # @raise [RemoteCommandError] if given a blank or nil hostname
@@ -113,9 +117,14 @@ module MotherBrain
         abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
       end
 
-      log.info { "Running Chef client on: #{host}" }
-
-      response = chef_connection.node.chef_run(host)
+      response = if options[:override_recipe]
+          override_recipe = options[:override_recipe]
+          log.info { "Running Chef client with override runlist 'recipe[#{override_recipe}]' on: #{host}" }
+          chef_connection.node.execute_command(host, "chef-client --override-runlist recipe[#{override_recipe}]")
+        else
+          log.info { "Running Chef client on: #{host}" }
+          chef_connection.node.chef_run(host)
+        end
 
       if response.error?
         log.info { "Failed Chef client run on: #{host}" }
