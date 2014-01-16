@@ -33,6 +33,8 @@ module MotherBrain
     # @param [Job] job
     # @param [Array(Ridley::NodeResource)] nodes
     #   The collection of nodes to run Chef on
+    # @param [String] override_recipe
+    #   A runlist entry that will override the node's current runlist
     #
     # @raise [RemoteCommandError]
     def bulk_chef_run(job, nodes, override_recipe = nil)
@@ -44,11 +46,7 @@ module MotherBrain
       node_failures_count  = 0
       node_failures = Array.new
 
-      futures = if override_recipe
-          nodes.map { |node| node_querier.future(:chef_run_with_override_runlist, node.public_hostname, override_recipe) }
-        else
-          nodes.map { |node| node_querier.future(:chef_run, node.public_hostname) }
-        end
+      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, override_recipe: override_recipe) }
 
       futures.each do |future|
         begin
@@ -105,6 +103,8 @@ module MotherBrain
     #   timeout value for SSH bootstrap
     # @option options [Boolean] :sudo
     #   bootstrap with sudo
+    # @option  options [String] :override_recipe
+    #   a recipe that will override the nodes current run list
     #
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
     # @raise [RemoteCommandError] if given a blank or nil hostname
@@ -113,27 +113,23 @@ module MotherBrain
     def chef_run(host, options = {})
       options = options.dup
 
-      before_chef_run(host)
+      unless host.present?
+        abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
+      end
 
-      log.info { "Running Chef client on: #{host}" }
+      response = if options[:override_recipe]
+          override_recipe = options[:override_recipe]
+          log.info { "Running Chef client with override runlist 'recipe[#{override_recipe}]' on: #{host}" }
+          chef_connection.node.execute_command(host, "chef-client --override-runlist recipe[#{override_recipe}]")
+        else
+          log.info { "Running Chef client on: #{host}" }
+          chef_connection.node.chef_run(host)
+        end
 
-      response = chef_connection.node.chef_run(host)
-      handle_chef_run_response(response, host)
-
-      log.info { "Completed Chef client run on: #{host}" }
-      response
-    rescue Ridley::Errors::HostConnectionError => ex
-      log.info { "Failed Chef client run on: #{host}" }
-      abort RemoteCommandError.new(ex, host)
-    end
-
-    def chef_run_with_override_runlist(host, override_recipe)
-      before_chef_run(host)
-
-      log.info { "Running Chef client with override runlist 'recipe[#{override_recipe}]' on: #{host}" }
-
-      response = chef_connection.node.execute_command(host, "chef-client --override-runlist recipe[#{override_recipe}]")
-      handle_chef_run_response(response, host)
+      if response.error?
+        log.info { "Failed Chef client run on: #{host}" }
+        abort RemoteCommandError.new(response.stderr.chomp, host)
+      end
 
       log.info { "Completed Chef client run on: #{host}" }
       response
@@ -297,32 +293,6 @@ module MotherBrain
       def finalize_callback
         log.debug { "Node Querier stopping..." }
       end
-
-      # Helper method for producing an error when a call is attempted
-      # without passing a hostname.
-      #
-      # @param  host [String]
-      #
-      # @return nil
-      def before_chef_run(host)
-        unless host.present?
-          abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
-        end
-      end
-
-      # Helper method for producing and logging information about the Chef
-      # response after a Chef run is executed.
-      #
-      # @param  response [Ridley::HostConnector::Response]
-      # @param  host [String]
-      #
-      # @return nil
-      def handle_chef_run_response(response, host)
-        if response.error?
-          log.info { "Failed Chef client run on: #{host}" }
-          abort RemoteCommandError.new(response.stderr.chomp, host)
-        end
-      end      
 
       # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
       # that are located in the Mother Brain scripts directory can be used and they should
