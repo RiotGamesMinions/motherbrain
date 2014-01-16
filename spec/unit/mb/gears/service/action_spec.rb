@@ -18,7 +18,7 @@ describe MB::Gear::Service::Action do
       end
     end
 
-    let(:runner) { double('action_runner', reset: nil, run: nil) }
+    let(:runner) { double('action_runner', reset: nil, run: nil, service_recipe: nil) }
     let(:key) { "some.attr" }
     let(:value) { "val" }
     let(:chef_success) { double('success-response', error?: false, host: nil) }
@@ -43,54 +43,5 @@ describe MB::Gear::Service::Action do
 
       subject.run(job, environment, [])
     end
-
-    context "when an environment attribute is specified" do
-      let(:key) { "some.attr" }
-      let(:value) { "val" }
-
-      subject do
-        klass.new(:start, component) do
-          environment_attribute("some.attr", "val")
-        end
-      end
-
-      it "sets an environment attribute" do
-        runner.should_receive(:environment_attribute).with(key, value)
-
-        subject.run(job, environment, [])
-      end
-
-      context "when toggle: true" do
-        subject do
-          klass.new(:start, component) do
-            environment_attribute("some.attr", "val", toggle: true)
-          end
-        end
-
-        it "sets an environment attribute and then sets it back" do
-          runner.should_receive(:environment_attribute).with(key, value, toggle: true)
-
-          subject.run(job, environment, [])
-        end
-      end
-    end
-
-    context "when a node attribute is specified" do
-      subject do
-        klass.new(:start, component) do
-          node_attribute("some.attr", "val", toggle: true)
-        end
-      end
-
-      it "sets a node attribute on each node" do
-        success = double('success-response', error?: false)
-        MB::Gear::Service::ActionRunner.should_receive(:new).and_return(runner)
-        MB::Application.node_querier.should_receive(:chef_run).exactly(3).times.and_return(chef_success)
-        runner.should_receive(:node_attribute).with(key, value, toggle: true)
-
-        subject.run(job, environment, nodes)
-      end
-    end
   end
 end
-

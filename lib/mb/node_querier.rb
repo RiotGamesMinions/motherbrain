@@ -118,7 +118,7 @@ module MotherBrain
       log.info { "Running Chef client on: #{host}" }
 
       response = chef_connection.node.chef_run(host)
-      handle_chef_run_response(response)
+      handle_chef_run_response(response, host)
 
       log.info { "Completed Chef client run on: #{host}" }
       response
@@ -127,26 +127,13 @@ module MotherBrain
       abort RemoteCommandError.new(ex, host)
     end
 
-    def before_chef_run(host)
-      unless host.present?
-        abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
-      end
-    end
-
-    def handle_chef_run_response(response)
-      if response.error?
-        log.info { "Failed Chef client run on: #{host}" }
-        abort RemoteCommandError.new(response.stderr.chomp, host)
-      end
-    end
-
     def chef_run_with_override_runlist(host, override_recipe)
       before_chef_run(host)
 
       log.info { "Running Chef client with override runlist 'recipe[#{override_recipe}]' on: #{host}" }
 
       response = chef_connection.node.execute_command(host, "chef-client --override-runlist recipe[#{override_recipe}]")
-      handle_chef_run_response(response)
+      handle_chef_run_response(response, host)
 
       log.info { "Completed Chef client run on: #{host}" }
       response
@@ -310,6 +297,32 @@ module MotherBrain
       def finalize_callback
         log.debug { "Node Querier stopping..." }
       end
+
+      # Helper method for producing an error when a call is attempted
+      # without passing a hostname.
+      #
+      # @param  host [String]
+      #
+      # @return nil
+      def before_chef_run(host)
+        unless host.present?
+          abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
+        end
+      end
+
+      # Helper method for producing and logging information about the Chef
+      # response after a Chef run is executed.
+      #
+      # @param  response [Ridley::HostConnector::Response]
+      # @param  host [String]
+      #
+      # @return nil
+      def handle_chef_run_response(response, host)
+        if response.error?
+          log.info { "Failed Chef client run on: #{host}" }
+          abort RemoteCommandError.new(response.stderr.chomp, host)
+        end
+      end      
 
       # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
       # that are located in the Mother Brain scripts directory can be used and they should
