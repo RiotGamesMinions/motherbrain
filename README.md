@@ -245,6 +245,34 @@ using myface (0.4.1)
 
 That's it! We now have our application deployed to 2 nodes.
 
+# Service Commands
+
+If your cookbook is written using the "service orchestration" pattern,
+motherbrain can make your plugin even simpler.
+
+```
+component "my_app" do
+  description "My App"
+
+  service "my_app"
+
+  group "my_app" do
+    recipe "my_app::default"
+  end
+end
+```
+
+For each service resource in your cookbook, you should use a single
+attribute to define the desired state (stopped, started, restarted).
+The default that motherbrain will look for is
+`component_name.service_name.state` (although you can use anything you
+like).
+
+This resource should also be in a dedicated recipe that only works
+with your services.
+
+
+
 # Swagger
 
 When running as a server, MB mounts various enpoinds using the Grape library. For convenience, the tool Swagger has
