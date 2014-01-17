@@ -251,16 +251,26 @@ If your cookbook is written using the "service orchestration" pattern,
 motherbrain can make your plugin even simpler.
 
 ```
-component "my_app" do
-  description "My App"
+component "app" do
+  description "Myface Application"
+  versioned
 
-  service "my_app"
+  service "app"
 
-  group "my_app" do
-    recipe "my_app::default"
+  group "app" do
+    recipe "myface::app"
   end
 end
 ```
+
+To start the service, you would run `mb myface service app start`.
+This would set the `myface.app.state` attribute to 'start' and then do
+a partial chef run on all nodes that have "myface::app" in their
+default runlist, using an override runlist of "myface::app_service".
+The same command could be used to stop, restart, or change to any
+other state that your service recipe supports.
+
+
 
 For each service resource in your cookbook, you should use a single
 attribute to define the desired state (stopped, started, restarted).
@@ -270,7 +280,6 @@ like).
 
 This resource should also be in a dedicated recipe that only works
 with your services.
-
 
 
 # Swagger
