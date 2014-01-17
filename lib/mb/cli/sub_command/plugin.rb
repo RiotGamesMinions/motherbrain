@@ -138,6 +138,11 @@ module MotherBrain
 
                   CliClient.new(job).display
                 end
+                
+                desc("service [COMPONENT].[SERVICE] [STATE]", "Change the specified service to a new state")
+                define_method(:service) do |service, state|
+                  ui.say "this is for services yo"
+                end
 
                 method_option :component_versions,
                   type: :hash,
