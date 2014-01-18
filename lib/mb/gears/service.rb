@@ -24,6 +24,10 @@ module MotherBrain
       # @return [MB::Component]
       attr_reader :component
 
+      attr_reader :service_group
+      attr_reader :service_recipe
+      attr_reader :service_attribute
+
       # @param [MB::Component] component
       # @param [#to_s] name
       def initialize(component, name, &block)
@@ -66,6 +70,18 @@ module MotherBrain
         actions << new_action
       end
 
+      def set_service_group(group)
+        @service_group = group
+      end
+
+      def set_service_recipe(recipe)
+        @service_recipe = recipe
+      end
+
+      def set_service_attribute(attribute)
+        @service_attribute = attribute
+      end
+
       private
 
         def dsl_eval(&block)
@@ -84,6 +100,18 @@ module MotherBrain
           # @param [String] name
           def action(name, &block)
             real_model.add_action Service::Action.new(name, real_model.component, &block)
+          end
+
+          def service_group(group)
+            real_model.set_service_group(group)
+          end
+
+          def service_recipe(recipe)
+            real_model.set_service_recipe(recipe)
+          end
+
+          def service_attribute(attribute)
+            real_model.set_service_attribute(attribute)
           end
 
           private

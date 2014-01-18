@@ -142,6 +142,14 @@ module MotherBrain
                 desc("service [COMPONENT].[SERVICE] [STATE]", "Change the specified service to a new state")
                 define_method(:service) do |service, state|
                   ui.say "this is for services yo"
+                  dynamic_service = MB::Gear::DynamicService.parse_service(service)
+                  job = dynamic_service.async_state_change(
+                    plugin.freeze,
+                    environment.freeze,
+                    state.freeze
+                  )
+
+                  CliClient.new(job).display
                 end
 
                 method_option :component_versions,
