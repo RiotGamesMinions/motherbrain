@@ -9,6 +9,7 @@ module MotherBrain
       end
 
       include MB::Mixin::Services
+      include MB::Mixin::Locks
 
       DEFAULT_STATES = [
         :start,
@@ -24,26 +25,29 @@ module MotherBrain
         @component = component
       end
 
-      def async_state_change(plugin, environment, state)
+      def async_state_change(plugin, environment, state, options = {})
         job = Job.new(:dynamic_service_state_change)
 
-        component_object = plugin.component(component)
-        service_object = component_object.get_gear(MB::Gear::Service, name)
-        group = component_object.group(service_object.service_group)
-        nodes = group.nodes(environment)
+        chef_synchronize(chef_environment: environment, force: options[:force]) do
+          component_object = plugin.component(component)
+          service_object = component_object.get_service(name)
+          group = component_object.group(service_object.service_group)
+          nodes = group.nodes(environment)
 
-        job.report_running("preparing to change the #{name} service to #{state}")
+          job.report_running("preparing to change the #{name} service to #{state}")
 
-        set_node_attribute(job, nodes, service_object.service_attribute, state)
-        node_querier.bulk_chef_run(job, nodes, service_object.service_recipe)
-
+          set_node_attributes(job, nodes, service_object.service_attribute, state)
+          node_querier.bulk_chef_run(job, nodes, service_object.service_recipe)
+        end
         job.report_success
         job.ticket
+      rescue => ex
+        job.report_failure(ex)
       ensure
         job.terminate if job && job.alive?
       end
 
-      def set_node_attribute(job, nodes, attribute_key, state)
+      def set_node_attributes(job, nodes, attribute_key, state)
         nodes.concurrent_map do |node|
           node.reload
           
