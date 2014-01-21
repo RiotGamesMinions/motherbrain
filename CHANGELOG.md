@@ -1,3 +1,7 @@
+# 0.13.1
+
+* Depend on faraday < 0.9
+
 # 0.13.0
 
 * [#649](https://github.com/RiotGames/motherbrain/pull/649)
