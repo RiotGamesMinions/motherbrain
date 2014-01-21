@@ -122,7 +122,7 @@ module MotherBrain
           old_recipes = node.automatic_attributes.recipes
           override_recipe = options[:override_recipe]
           log.info { "Running Chef client with override runlist 'recipe[#{override_recipe}]' on: #{host}" }
-          foo = chef_connection.node.execute_command(host, "chef-client --override-runlist recipe[#{override_recipe}]")
+          chef_run_response = chef_connection.node.execute_command(host, "chef-client --override-runlist recipe[#{override_recipe}]")
 
           # reset the run list
           node.reload
@@ -130,7 +130,7 @@ module MotherBrain
           node.automatic_attributes.recipes = old_recipes
           node.save
 
-          foo
+          chef_run_response
         else
           log.info { "Running Chef client on: #{host}" }
           chef_connection.node.chef_run(node.public_hostname)
