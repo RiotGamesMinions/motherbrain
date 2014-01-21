@@ -46,7 +46,7 @@ module MotherBrain
       node_failures_count  = 0
       node_failures = Array.new
 
-      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, override_recipe: override_recipe) }
+      futures = nodes.map { |node| node_querier.future(:chef_run, node, override_recipe: override_recipe) }
 
       futures.each do |future|
         begin
@@ -110,20 +110,30 @@ module MotherBrain
     # @raise [RemoteCommandError] if given a blank or nil hostname
     #
     # @return [Ridley::HostConnector::Response]
-    def chef_run(host, options = {})
+    def chef_run(node, options = {})
       options = options.dup
-
+      host = node.public_hostname
       unless host.present?
         abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
       end
 
       response = if options[:override_recipe]
+          node.reload
+          old_recipes = node.automatic_attributes.recipes
           override_recipe = options[:override_recipe]
           log.info { "Running Chef client with override runlist 'recipe[#{override_recipe}]' on: #{host}" }
-          chef_connection.node.execute_command(host, "chef-client --override-runlist recipe[#{override_recipe}]")
+          foo = chef_connection.node.execute_command(host, "chef-client --override-runlist recipe[#{override_recipe}]")
+
+          # reset the run list
+          node.reload
+          log.info { "Resetting node's recipes attribute back to #{old_recipes}" }
+          node.automatic_attributes.recipes = old_recipes
+          node.save
+
+          foo
         else
           log.info { "Running Chef client on: #{host}" }
-          chef_connection.node.chef_run(host)
+          chef_connection.node.chef_run(node.public_hostname)
         end
 
       if response.error?

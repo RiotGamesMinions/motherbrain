@@ -26,12 +26,13 @@ module MotherBrain
 
       def async_state_change(plugin, environment, state)
         job = Job.new(:dynamic_service_state_change)
-        job.report_running("preparing to foo")
 
         component_object = plugin.component(component)
         service_object = component_object.get_gear(MB::Gear::Service, name)
         group = component_object.group(service_object.service_group)
         nodes = group.nodes(environment)
+
+        job.report_running("preparing to change the #{name} service to #{state}")
 
         set_node_attribute(job, nodes, service_object.service_attribute, state)
         node_querier.bulk_chef_run(job, nodes, service_object.service_recipe)
