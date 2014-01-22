@@ -42,6 +42,7 @@ module MotherBrain
           set_node_attributes(job, nodes, service_object.service_attribute, state)
           node_querier.bulk_chef_run(job, nodes, service_object.service_recipe)
         end
+
         job.report_success
         job.ticket
       rescue => ex
@@ -57,7 +58,7 @@ module MotherBrain
           job.set_status("Setting node attribute '#{attribute_key}' to #{state} on #{node.name}")
           node.set_chef_attribute(attribute_key, state)
           node.save
-        end        
+        end
       end
     end
   end

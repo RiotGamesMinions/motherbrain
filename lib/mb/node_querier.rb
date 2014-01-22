@@ -46,7 +46,7 @@ module MotherBrain
       node_failures_count  = 0
       node_failures = Array.new
 
-      futures = nodes.map { |node| node_querier.future(:chef_run, node, override_recipe: override_recipe) }
+      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, node_object: node, override_recipe: override_recipe) }
 
       futures.each do |future|
         begin
@@ -103,21 +103,24 @@ module MotherBrain
     #   timeout value for SSH bootstrap
     # @option options [Boolean] :sudo
     #   bootstrap with sudo
-    # @option  options [String] :override_recipe
+    # @option options [String] :override_recipe
     #   a recipe that will override the nodes current run list
+    # @option options [Ridley::NodeObject] :node
+    #   the actual node object
     #
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
     # @raise [RemoteCommandError] if given a blank or nil hostname
     #
     # @return [Ridley::HostConnector::Response]
-    def chef_run(node, options = {})
+    def chef_run(host, options = {})
       options = options.dup
-      host = node.public_hostname
+
       unless host.present?
         abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
       end
 
       response = if options[:override_recipe]
+          node = options[:node_object]
           node.reload
           old_recipes = node.automatic_attributes.recipes
           override_recipe = options[:override_recipe]
@@ -133,7 +136,7 @@ module MotherBrain
           chef_run_response
         else
           log.info { "Running Chef client on: #{host}" }
-          chef_connection.node.chef_run(node.public_hostname)
+          chef_connection.node.chef_run(host)
         end
 
       if response.error?
