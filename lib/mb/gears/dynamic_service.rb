@@ -42,6 +42,7 @@ module MotherBrain
         job.report_success
         job.ticket
       rescue => ex
+        puts ex
         job.report_failure(ex)
       ensure
         job.terminate if job && job.alive?
