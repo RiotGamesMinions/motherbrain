@@ -2,17 +2,34 @@ require 'spec_helper'
 
 describe MB::Gear::DynamicService do
   let(:dynamic_service) { described_class.new('webapp', 'tomcat') }
+  let(:plugin) { double(MB::Plugin, name: "MyPlugin", component: component) }
+  let(:environment) { "prod" }
+  let(:state) { "start" }
+  let(:component) { double(get_service: service, group: group) }
+  let(:service) { double(service_group: "default", service_attribute: "foo.bar", service_recipe: "tomcat_stop") }
+  let(:group) { double(nodes: nodes) }
 
   describe "ClassMethods" do
-    subject { described_class }
     let(:service) { "webapp.tomcat" }
 
-    describe "::parse_service" do
+    before do
+      dynamic_service.stub(:async_state_change)
+    end
+
+    describe "::change_service_state" do
+      let(:change_service_state) { MB::Gear::DynamicService.change_service_state(service, plugin, environment, state) }
+
       it "splits the service on a period" do
-        test_class = subject.parse_service(service)
-        expect(test_class).to be_a(MB::Gear::DynamicService)
-        expect(test_class.component).to eql('webapp')
-        expect(test_class.name).to eql('tomcat')
+        expect(MB::Gear::DynamicService).to receive(:new).with('webapp', 'tomcat').and_return(dynamic_service)
+        change_service_state
+      end
+
+      context "when the service is not formatted as 'COMPONENT.SERVICE'" do
+        let(:service) { "foo" }
+
+        it "raises an error" do
+          expect { change_service_state }.to raise_error(MB::InvalidDynamicService)
+        end
       end
     end
   end
@@ -23,12 +40,6 @@ describe MB::Gear::DynamicService do
 
   describe "#async_state_change" do
     let(:async_state_change) { dynamic_service.async_state_change(plugin, environment, state) }
-    let(:plugin) { double(MB::Plugin, name: "MyPlugin", component: component) }
-    let(:component) { double(get_service: service, group: group) }
-    let(:service) { double(service_group: "default", service_attribute: "foo.bar", service_recipe: "tomcat_stop") }
-    let(:group) { double(nodes: nodes) }
-    let(:environment) { "prod" }
-    let(:state) { "start" }
     let(:node_querier) { double(bulk_chef_run: nil) }
     let(:job) { double(alive?: false, report_running: nil, set_status: nil, report_success: nil, ticket: nil) }
 

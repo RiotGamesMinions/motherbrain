@@ -2,9 +2,27 @@ module MotherBrain
   module Gear
     class DynamicService < Gear::Base
       class << self
-        def parse_service(service)
+
+        # Parses a service, creates a new instance of DynamicService
+        # and executes a Chef run to change the state of the service.
+        #
+        # @param service [String]
+        #   a dotted string "component.service_name"
+        # @param plugin [MB::Plugin]
+        #   the plugin currently in use
+        # @param environment [String]
+        #   the environment to operate on
+        # @param state [String]
+        #   the state of the service to change to
+        # @param options [Hash]
+        # 
+        # @return [MB::JobTicket]
+        def change_service_state(service, plugin, environment, state, options = {})
           component, service_name = service.split('.')
-          new(component, service_name)
+          raise InvalidDynamicService.new(component, service_name) unless component && service_name
+
+          dynamic_service = new(component, service_name)
+          dynamic_service.async_state_change(plugin, environment, state, options)
         end
       end
 
@@ -18,14 +36,29 @@ module MotherBrain
         "restart"
       ].freeze
 
+      # @return [String]
       attr_reader :component
+      # @return [String]
       attr_reader :name
 
       def initialize(component, name)
-        @name      = name.to_s
+        @name      = name
         @component = component
       end
 
+      # Executes a bulk chef run on a group of nodes using the service recipe.
+      # Default behavior is to set a node attribute on each individual node serially
+      # and then execute the chef run.
+      #
+      # @param plugin [MB::Plugin]
+      #   the plugin currently in use
+      # @param environment [String]
+      #   the environment to execute on
+      # @param state [String]
+      #   the state to change the service to
+      # @param options [Hash]
+      #
+      # @return [MB::JobTicket]
       def async_state_change(plugin, environment, state, options = {})
         job = Job.new(:dynamic_service_state_change)
 
@@ -51,6 +84,19 @@ module MotherBrain
         job.terminate if job && job.alive?
       end
 
+      # Sets a default node attribute on the provided array
+      # of nodes.
+      #
+      # @param job [MB::Job]
+      #   the job to track status
+      # @param nodes [Array<Ridley::NodeObject>]
+      #   the nodes being operated on
+      # @param attribute_key [String]
+      #   a dotted path to an attribute key
+      # @param state [String]
+      #   the state to set the attribute to
+      #
+      # @return [type] [description]
       def set_node_attributes(job, nodes, attribute_key, state)
         nodes.concurrent_map do |node|
           node.reload
