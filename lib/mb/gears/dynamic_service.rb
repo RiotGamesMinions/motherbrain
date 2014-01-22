@@ -10,11 +10,12 @@ module MotherBrain
 
       include MB::Mixin::Services
       include MB::Mixin::Locks
+      include MB::Logging
 
-      DEFAULT_STATES = [
-        :start,
-        :stop,
-        :restart
+      ACCEPTABLE_STATES = [
+        "start",
+        "stop",
+        "restart"
       ].freeze
 
       attr_reader :component
@@ -27,6 +28,8 @@ module MotherBrain
 
       def async_state_change(plugin, environment, state, options = {})
         job = Job.new(:dynamic_service_state_change)
+
+        log.warn { "Component's service state is being changed to #{state}, which is not one of #{ACCEPTABLE_STATES}" } unless ACCEPTABLE_STATES.include?(state)
 
         chef_synchronize(chef_environment: environment, force: options[:force]) do
           component_object = plugin.component(component)
@@ -42,7 +45,6 @@ module MotherBrain
         job.report_success
         job.ticket
       rescue => ex
-        puts ex
         job.report_failure(ex)
       ensure
         job.terminate if job && job.alive?

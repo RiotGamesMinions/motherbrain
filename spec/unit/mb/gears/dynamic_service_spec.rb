@@ -41,6 +41,20 @@ describe MB::Gear::DynamicService do
       expect(node_querier).to receive(:bulk_chef_run).with(job, nodes, "tomcat_stop")
       async_state_change
     end
+
+    context "when you attempt to change to an unsupported state" do
+      let(:state) { "foobar" }
+      let(:log) { double( info: nil) }
+
+      before do
+        MB::Logging.stub(:logger).and_return(log)
+      end
+
+      it "logs a warning" do
+        expect(log).to receive(:warn)
+        async_state_change
+      end
+    end
   end
 
   describe "#set_node_attributes" do
