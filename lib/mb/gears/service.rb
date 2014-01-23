@@ -70,19 +70,19 @@ module MotherBrain
         actions << new_action
       end
 
+      def set_service_group(group)
+        @service_group = group
+      end
+
+      def set_service_recipe(recipe)
+        @service_recipe = recipe
+      end
+
+      def set_service_attribute(attribute)
+        @service_attribute = attribute
+      end
+
       private
-
-        def set_service_group(group)
-          @service_group = group
-        end
-
-        def set_service_recipe(recipe)
-          @service_recipe = recipe
-        end
-
-        def set_service_attribute(attribute)
-          @service_attribute = attribute
-        end
 
         def dsl_eval(&block)
           CleanRoom.new(self).instance_eval do
