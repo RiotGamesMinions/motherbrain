@@ -141,7 +141,6 @@ module MotherBrain
                 
                 desc("service [COMPONENT].[SERVICE] [STATE]", "Change the specified service to a new state")
                 define_method(:service) do |service, state|
-                  ui.say "this is for services yo"
                   job = MB::Gear::DynamicService.change_service_state(
                     service.freeze,
                     plugin.freeze,

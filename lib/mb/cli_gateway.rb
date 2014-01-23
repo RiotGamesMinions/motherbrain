@@ -161,10 +161,6 @@ module MotherBrain
         if SKIP_ENVIRONMENT_TASKS.include?(args.first)
           return false
         end
-
-        if SKIP_ENVIRONMENT_SUBTASKS.include?(args.second)
-          return false
-        end
         
         if args.count == 1
           return false
@@ -242,10 +238,6 @@ module MotherBrain
     CREATE_ENVIRONMENT_TASKS = [
       "bootstrap",
       "provision"
-    ].freeze
-
-    SKIP_ENVIRONMENT_SUBTASKS = [
-      "service"
     ].freeze
 
     def initialize(args = [], options = {}, config = {})

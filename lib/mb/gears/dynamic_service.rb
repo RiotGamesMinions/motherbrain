@@ -30,7 +30,7 @@ module MotherBrain
       include MB::Mixin::Locks
       include MB::Logging
 
-      ACCEPTABLE_STATES = [
+      COMMON_STATES = [
         "start",
         "stop",
         "restart"
@@ -62,7 +62,7 @@ module MotherBrain
       def async_state_change(plugin, environment, state, options = {})
         job = Job.new(:dynamic_service_state_change)
 
-        log.warn { "Component's service state is being changed to #{state}, which is not one of #{ACCEPTABLE_STATES}" } unless ACCEPTABLE_STATES.include?(state)
+        log.warn { "Component's service state is being changed to #{state}, which is not one of #{COMMON_STATES}" } unless COMMON_STATES.include?(state)
 
         chef_synchronize(chef_environment: environment, force: options[:force]) do
           component_object = plugin.component(component)
