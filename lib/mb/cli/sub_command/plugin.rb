@@ -143,10 +143,6 @@ module MotherBrain
                   type: :boolean,
                   default: false,
                   desc: "Sets the service operation to execute at the environment level"
-                method_option :node_override,
-                  type: :boolean,
-                  default: false,
-                  desc: "Sets the service operation to force a state on the node"
                 desc("service [COMPONENT].[SERVICE] [STATE]", "Change the specified service to a new state")
                 define_method(:service) do |service, state|
                   service_options = Hash.new.merge(options).deep_symbolize_keys

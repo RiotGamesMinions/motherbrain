@@ -74,8 +74,6 @@ module MotherBrain
 
           if options[:cluster_override]
             set_environment_attribute(job, environment, service_object.service_attribute, state)
-          elsif options[:node_override]
-            # TODO
           else
             set_node_attributes(job, nodes, service_object.service_attribute, state)
           end
