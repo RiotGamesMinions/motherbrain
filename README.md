@@ -255,7 +255,11 @@ component "app" do
   description "Myface Application"
   versioned
 
-  service "app"
+  service "app" do
+    service\_group "app"
+    service\_recipe "myface::service"
+    service\_attribute "myface.app.state"
+  end
 
   group "app" do
     recipe "myface::app"
@@ -263,14 +267,12 @@ component "app" do
 end
 ```
 
-To start the service, you would run `mb myface service app start`.
+To start the service, you would run `mb myface service app.app start`.
 This would set the `myface.app.state` attribute to 'start' and then do
 a partial chef run on all nodes that have "myface::app" in their
 default runlist, using an override runlist of "myface::app_service".
 The same command could be used to stop, restart, or change to any
 other state that your service recipe supports.
-
-
 
 For each service resource in your cookbook, you should use a single
 attribute to define the desired state (stopped, started, restarted).
