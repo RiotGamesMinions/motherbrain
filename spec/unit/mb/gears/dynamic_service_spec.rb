@@ -8,6 +8,9 @@ describe MB::Gear::DynamicService do
   let(:component) { double(get_service: service, group: group) }
   let(:service) { double(service_group: "default", service_attribute: "foo.bar", service_recipe: "tomcat_stop") }
   let(:group) { double(nodes: nodes) }
+  let(:nodes) { [ node1, node2 ] }
+  let(:node1) { double(name: nil, reload: nil, set_chef_attribute: nil, save: nil) }
+  let(:node2) { double(name: nil, reload: nil, set_chef_attribute: nil, save: nil) }
 
   describe "ClassMethods" do
     let(:service) { "webapp.tomcat" }
@@ -34,14 +37,12 @@ describe MB::Gear::DynamicService do
     end
   end
 
-  let(:nodes) { [ node1, node2 ] }
-  let(:node1) { double(name: nil, reload: nil, set_chef_attribute: nil, save: nil) }
-  let(:node2) { double(name: nil, reload: nil, set_chef_attribute: nil, save: nil) }
+  let(:job) { double(alive?: false, report_running: nil, set_status: nil, report_success: nil, ticket: nil) }
 
   describe "#async_state_change" do
-    let(:async_state_change) { dynamic_service.async_state_change(plugin, environment, state) }
+    let(:async_state_change) { dynamic_service.async_state_change(plugin, environment, state, options) }
     let(:node_querier) { double(bulk_chef_run: nil) }
-    let(:job) { double(alive?: false, report_running: nil, set_status: nil, report_success: nil, ticket: nil) }
+    let(:options) { Hash.new }
 
     before do
       dynamic_service.stub(:node_querier).and_return(node_querier)
@@ -66,13 +67,44 @@ describe MB::Gear::DynamicService do
         async_state_change
       end
     end
+
+    context "when the cluster override flag is provided" do
+      let(:options) do
+        {
+          cluster_override: true
+        }
+      end
+
+      it "sets an attribute on the environment" do
+        expect(dynamic_service).to receive(:set_environment_attribute)
+        async_state_change
+      end
+    end
+  end
+
+  let(:attribute_key) { "foo.bar" }
+  let(:state) { "start" }
+
+  describe "#set_environment_attribute" do
+    let(:chef_connection) { double( environment: chef_environment_resource ) }
+    let(:chef_environment_resource) { double(find: chef_environment_object) }
+    let(:chef_environment_object) { double(set_override_attribute: nil, save: nil) }
+
+    before do
+      dynamic_service.stub(:chef_connection).and_return(chef_connection)
+    end
+
+    let(:set_environment_attribute) { dynamic_service.set_environment_attribute(job, environment, attribute_key, state) }
+
+    it "sets a chef attribute on the environment" do
+      expect(chef_environment_object).to receive(:set_override_attribute).with('foo.bar', 'start')
+      expect(chef_environment_object).to receive(:save)
+      set_environment_attribute
+    end
   end
 
   describe "#set_node_attributes" do
     let(:set_node_attribute) { dynamic_service.set_node_attributes(job, nodes, attribute_key, state) }
-    let(:job) { double(set_status: nil) }
-    let(:attribute_key) { "foo.bar" }
-    let(:state) { "start" }
 
     it "sets a chef attribute on the node" do
       expect(node1).to receive(:set_chef_attribute).with("foo.bar", "start")

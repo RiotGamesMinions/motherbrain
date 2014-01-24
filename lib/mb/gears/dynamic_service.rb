@@ -72,7 +72,11 @@ module MotherBrain
 
           job.report_running("preparing to change the #{name} service to #{state}")
 
-          set_node_attributes(job, nodes, service_object.service_attribute, state)
+          if options[:cluster_override]
+            set_environment_attribute(job, environment, service_object.service_attribute, state)
+          else
+            set_node_attributes(job, nodes, service_object.service_attribute, state)
+          end
           node_querier.bulk_chef_run(job, nodes, service_object.service_recipe)
         end
 
@@ -82,6 +86,27 @@ module MotherBrain
         job.report_failure(ex)
       ensure
         job.terminate if job && job.alive?
+      end
+
+      # Finds the environment object, sets an attribute at the
+      # override level, and saves the environment back to the 
+      # Chef server
+      #
+      # @param job [MB::Job]
+      #   the job to track status
+      # @param environment [String]
+      #   the environment being operated on
+      # @param attribute_key [String]
+      #   a dotted path to an attribute key
+      # @param state [String]
+      #   the state to set the attribute to
+      #
+      # @return [Boolean]
+      def set_environment_attribute(job, environment, attribute_key, state)
+        chef_environment = chef_connection.environment.find(environment)
+        job.set_status("Setting environment attribute '#{attribute_key}' to #{state} on #{environment}")
+        chef_environment.set_override_attribute(attribute_key, state)
+        chef_environment.save
       end
 
       # Sets a default node attribute on the provided array
@@ -96,7 +121,7 @@ module MotherBrain
       # @param state [String]
       #   the state to set the attribute to
       #
-      # @return [type] [description]
+      # @return [Boolean]
       def set_node_attributes(job, nodes, attribute_key, state)
         nodes.concurrent_map do |node|
           node.reload
