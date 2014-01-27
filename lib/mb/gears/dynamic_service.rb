@@ -75,6 +75,7 @@ module MotherBrain
           if options[:cluster_override]
             set_environment_attribute(job, environment, service_object.service_attribute, state)
           else
+            unset_environment_attribute(job, environment, service_object.service_attribute)
             set_node_attributes(job, nodes, service_object.service_attribute, state)
           end
           node_querier.bulk_chef_run(job, nodes, service_object.service_recipe)
@@ -96,16 +97,45 @@ module MotherBrain
       #   the job to track status
       # @param environment [String]
       #   the environment being operated on
-      # @param attribute_key [String]
-      #   a dotted path to an attribute key
+      # @param attribute_keys [Array<String>]
+      #   an array of dotted paths to attribute keys
       # @param state [String]
       #   the state to set the attribute to
       #
       # @return [Boolean]
-      def set_environment_attribute(job, environment, attribute_key, state)
-        chef_environment = chef_connection.environment.find(environment)
-        job.set_status("Setting environment attribute '#{attribute_key}' to #{state} on #{environment}")
-        chef_environment.set_override_attribute(attribute_key, state)
+      def set_environment_attribute(job, environment, attribute_keys, state)
+        chef_environment = get_chef_environment(environment)
+
+        attribute_keys.each do |attribute_key|
+          job.set_status("Setting environment attribute '#{attribute_key}' to #{state} on #{environment}")
+          chef_environment.set_override_attribute(attribute_key, state)
+        end
+        chef_environment.save
+      end
+
+      # Finds and returns the current Chef environment
+      #
+      # @param environment [String]
+      #
+      # @return [Ridley::EnvironmentObject]
+      def get_chef_environment(environment)
+        chef_connection.environment.find(environment)
+      end
+
+      # Deletes an override attribute from the environment
+      #
+      # @param job [MB::Job]
+      # @param environment [String]
+      # @param attribute_keys [Array<String>]
+      #
+      # @return [Boolean]
+      def unset_environment_attribute(job, environment, attribute_keys)
+        chef_environment = get_chef_environment(environment)
+
+        attribute_keys.each do |attribute_key|
+          job.set_status("Unsetting environment attribute '#{attribute_key}' on #{environment}")
+          chef_environment.delete_override_attribute(attribute_key)
+        end
         chef_environment.save
       end
 
@@ -116,18 +146,20 @@ module MotherBrain
       #   the job to track status
       # @param nodes [Array<Ridley::NodeObject>]
       #   the nodes being operated on
-      # @param attribute_key [String]
-      #   a dotted path to an attribute key
+      # @param attribute_keys [Array<String>]
+      #   an array of dotted paths to attribute keys
       # @param state [String]
       #   the state to set the attribute to
       #
       # @return [Boolean]
-      def set_node_attributes(job, nodes, attribute_key, state)
+      def set_node_attributes(job, nodes, attribute_keys, state)
         nodes.concurrent_map do |node|
           node.reload
-          
-          job.set_status("Setting node attribute '#{attribute_key}' to #{state} on #{node.name}")
-          node.set_chef_attribute(attribute_key, state)
+
+          attribute_keys.each do |attribute_key|
+            job.set_status("Setting node attribute '#{attribute_key}' to #{state} on #{node.name}")
+            node.set_chef_attribute(attribute_key, state)
+          end
           node.save
         end
       end

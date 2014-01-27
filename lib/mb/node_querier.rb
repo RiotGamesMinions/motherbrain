@@ -37,7 +37,7 @@ module MotherBrain
     #   A runlist entry that will override the node's current runlist
     #
     # @raise [RemoteCommandError]
-    def bulk_chef_run(job, nodes, override_recipe = nil)
+    def bulk_chef_run(job, nodes, override_recipes = nil)
       job.set_status("Performing a chef client run on #{nodes.collect(&:name).join(', ')}")
 
       node_successes_count = 0
@@ -46,7 +46,7 @@ module MotherBrain
       node_failures_count  = 0
       node_failures = Array.new
 
-      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, node_object: node, override_recipe: override_recipe) }
+      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, node_object: node, override_recipes: override_recipes) }
 
       futures.each do |future|
         begin
@@ -119,13 +119,15 @@ module MotherBrain
         abort RemoteCommandError.new("cannot execute a chef-run without a hostname or ipaddress")
       end
 
-      response = if options[:override_recipe]
+      response = if options[:override_recipes]
           node = options[:node_object]
           node.reload
           old_recipes = node.automatic_attributes.recipes
-          override_recipe = options[:override_recipe]
-          log.info { "Running Chef client with override runlist 'recipe[#{override_recipe}]' on: #{host}" }
-          chef_run_response = chef_connection.node.execute_command(host, "chef-client --override-runlist recipe[#{override_recipe}]")
+          override_recipes = options[:override_recipes]
+
+          cmd_recipe_syntax = override_recipes.join(',') { |recipe| "recipe[#{recipe}]" }
+          log.info { "Running Chef client with override runlist '#{cmd_recipe_syntax}' on: #{host}" }
+          chef_run_response = chef_connection.node.execute_command(host, "chef-client --override-runlist #{cmd_recipe_syntax}")
 
           # reset the run list
           node.reload

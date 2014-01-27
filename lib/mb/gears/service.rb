@@ -107,11 +107,11 @@ module MotherBrain
           end
 
           def service_recipe(recipe)
-            real_model.set_service_recipe(recipe)
+            real_model.set_service_recipe([recipe].flatten)
           end
 
           def service_attribute(attribute)
-            real_model.set_service_attribute(attribute)
+            real_model.set_service_attribute([attribute].flatten)
           end
 
           private
