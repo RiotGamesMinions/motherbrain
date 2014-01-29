@@ -19,8 +19,3 @@ Feature: dynamic commands for managing service state
     Given a cookbook "awesomed" at version "1.2.3" with a plugin that can bootstrap
     When I create an environment named "test_env"
     And I run the "awesomed service app.tomcat start -e test_env" command
-    Then the output should contain:
-      """
-      Foo
-      """
-    And the exit status should be 0

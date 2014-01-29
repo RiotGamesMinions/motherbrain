@@ -6,7 +6,7 @@ describe MB::Gear::DynamicService do
   let(:environment) { "prod" }
   let(:state) { "start" }
   let(:component) { double(get_service: service, group: group) }
-  let(:service) { double(service_group: "default", service_attribute: "foo.bar", service_recipe: "tomcat_stop") }
+  let(:service) { double(service_group: "default", service_attribute: ["foo.bar"], service_recipe: ["tomcat_stop"]) }
   let(:group) { double(nodes: nodes) }
   let(:nodes) { [ node1, node2 ] }
   let(:node1) { double(name: nil, reload: nil, set_chef_attribute: nil, save: nil) }
@@ -45,12 +45,14 @@ describe MB::Gear::DynamicService do
     let(:options) { Hash.new }
 
     before do
+      dynamic_service.stub(:unset_environment_attribute)
+      dynamic_service.stub(:set_node_attributes)
       dynamic_service.stub(:node_querier).and_return(node_querier)
       MotherBrain::Job.stub(:new).and_return(job)
     end
 
     it "starts a bulk chef run" do
-      expect(node_querier).to receive(:bulk_chef_run).with(job, nodes, "tomcat_stop")
+      expect(node_querier).to receive(:bulk_chef_run).with(job, nodes, ["tomcat_stop"])
       async_state_change
     end
 
@@ -82,19 +84,30 @@ describe MB::Gear::DynamicService do
     end
   end
 
-  let(:attribute_key) { "foo.bar" }
-  let(:state) { "start" }
-
-  describe "#set_environment_attribute" do
-    let(:chef_connection) { double( environment: chef_environment_resource ) }
-    let(:chef_environment_resource) { double(find: chef_environment_object) }
-    let(:chef_environment_object) { double(set_override_attribute: nil, save: nil) }
+  describe "#get_chef_environment" do
+    let(:get_chef_environment) { dynamic_service.get_chef_environment(environment) }
+    let(:result) { double() }
 
     before do
-      dynamic_service.stub(:chef_connection).and_return(chef_connection)
+      dynamic_service.stub_chain(:chef_connection, :environment, :find).and_return(result)
     end
 
-    let(:set_environment_attribute) { dynamic_service.set_environment_attribute(job, environment, attribute_key, state) }
+    it "returns the chef environment object" do
+      expect(get_chef_environment).to eql(result)
+    end
+  end
+
+  let(:attribute_keys) { ["foo.bar"] }
+  let(:state) { "start" }
+  let(:chef_environment_object) { double(set_override_attribute: nil, delete_override_attribute: nil, save: nil) }
+
+  describe "#set_environment_attribute" do
+
+    before do
+      dynamic_service.stub(:get_chef_environment).and_return(chef_environment_object)
+    end
+
+    let(:set_environment_attribute) { dynamic_service.set_environment_attribute(job, environment, attribute_keys, state) }
 
     it "sets a chef attribute on the environment" do
       expect(chef_environment_object).to receive(:set_override_attribute).with('foo.bar', 'start')
@@ -103,8 +116,22 @@ describe MB::Gear::DynamicService do
     end
   end
 
+  describe "#unset_environment_attribute" do
+    let(:unset_environment_attribute) { dynamic_service.unset_environment_attribute(job, environment, attribute_keys) }
+
+    before do
+      dynamic_service.stub(:get_chef_environment).and_return(chef_environment_object)
+    end
+
+    it "deletes a chef attribute on the environment" do
+      expect(chef_environment_object).to receive(:delete_override_attribute).with('foo.bar')
+      expect(chef_environment_object).to receive(:save)
+      unset_environment_attribute
+    end
+  end
+
   describe "#set_node_attributes" do
-    let(:set_node_attribute) { dynamic_service.set_node_attributes(job, nodes, attribute_key, state) }
+    let(:set_node_attribute) { dynamic_service.set_node_attributes(job, nodes, attribute_keys, state) }
 
     it "sets a chef attribute on the node" do
       expect(node1).to receive(:set_chef_attribute).with("foo.bar", "start")
