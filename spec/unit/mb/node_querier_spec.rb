@@ -79,10 +79,26 @@ describe MB::NodeQuerier do
     subject(:node_name) { node_querier.node_name(host) }
 
     let(:node) { "my_node" }
+    let(:response) { Ridley::HostConnector::Response.new(host, exit_code: 0, stdout: "#{node}\n") }
+    let(:error_response) { Ridley::HostConnector::Response.new(host, exit_code: 123, stderr: "This is an error") }
 
     it "calls ruby_script with node_name and returns a response" do
       node_querier.should_receive(:ruby_script).with('node_name', host, {}).and_return(node)
       node_name.should eq(node)
+    end
+
+    it "falls back to hostname -f if ruby does not exist on the node" do
+      node_querier.should_receive(:ruby_script).with('node_name', host, {}).and_raise MB::RemoteScriptError.new("bash: /opt/chef/embedded/bin/ruby: No such file or directory")
+      node_querier.stub_chain(:chef_connection, :node, execute_platform_specific_command: response)
+
+      node_name.should eq(node)
+    end
+
+    it "returns nil if hostname -f fails" do
+      node_querier.should_receive(:ruby_script).with('node_name', host, {}).and_raise MB::RemoteScriptError.new("bash: /opt/chef/embedded/bin/ruby: No such file or directory")
+      node_querier.stub_chain(:chef_connection, :node, execute_platform_specific_command: error_response)
+
+      node_name.should be_nil
     end
 
     context "with a remote script error" do
