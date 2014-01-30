@@ -179,6 +179,12 @@ module MotherBrain
 
                   CliClient.new(job).display
                 end
+
+                desc("attributes", "View available attributes for plugin.")
+                define_method(:attributes) do 
+                  ui.say "TEST"
+                  #CliClient.new(job).display
+                end
               end
             end
 
