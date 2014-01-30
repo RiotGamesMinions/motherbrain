@@ -203,6 +203,10 @@ module MotherBrain
       end
     end
 
+    def get_service(name)
+      get_gear(MB::Gear::Service, name)
+    end
+
     def to_s
       "#{name}: #{description}"
     end
