@@ -232,7 +232,8 @@ module MotherBrain
       "environment",
       "plugin",
       "template",
-      "purge"
+      "purge",
+      "disable"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [
@@ -329,6 +330,12 @@ module MotherBrain
     desc "purge HOST", "Remove Chef from node and purge it's data from the Chef server"
     def purge(hostname)
       job = node_querier.async_purge(hostname, options.to_hash.symbolize_keys)
+      CliClient.new(job).display
+    end
+
+    desc "disable HOST", "Stop services on HOST and prevent chef-client from running until reenabled."
+    def disable(hostname)
+      job = node_querier.async_disable(hostname)
       CliClient.new(job).display
     end
 

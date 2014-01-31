@@ -148,6 +148,20 @@ module MotherBrain
     error_code(1011)
   end
 
+  # TODO plugin error
+  class ServiceRunListNotFound < InternalError
+    
+    def initialize(services)
+      if services.respond_to?(:join)
+        services = services.join(", ")
+      end
+      
+      super("Service run list not found for the following services: #{services})")
+    end
+
+    error_code(1013)
+  end
+
   # Plugin loading errors
   class PluginSyntaxError < MBError
     exit_code(100)
@@ -646,6 +660,20 @@ module MotherBrain
 
     def message
       "An environment named '#{name}' already exists in the Chef Server."
+    end
+  end
+
+  class NodeSaveFailed < ChefError
+    error_code(9007)
+
+    attr_reader :name
+    
+    def initialize(name)
+      @name = name
+    end
+
+    def message
+      "Saving #{node.name} failed. Node is not tagged as disabled in it's run list."
     end
   end
 end

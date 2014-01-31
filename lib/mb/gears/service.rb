@@ -47,8 +47,8 @@ module MotherBrain
       # @raise [ActionNotFound] if there is no action of the given name defined
       #
       # @return [Gear::Action]
-      def action(name)
-        action = get_action(name)
+      def action!(name)
+        action = action(name)
 
         unless action
           raise ActionNotFound, "#{self.class.keyword} '#{_attributes_[:name]}' does not have the action '#{name}'"
@@ -57,13 +57,31 @@ module MotherBrain
         action
       end
 
+      # Find and return the given action
+      #
+      # @param [String] name
+      #
+      # @raise [ActionNotFound] if there is no action of the given name defined
+      #
+      # @return [Gear::Action]
+      def action(name)
+        actions.find { |action| action.name == name }
+      end
+
+      # Find and return the stop action
+      #
+      # @return [Gear::Action]
+      def stop_action
+        action(:stop)
+      end
+
       # Add a new action to this Service
       #
       # @param [Service::Action] new_action
       #
       # @return [Set<Action>]
       def add_action(new_action)
-        if get_action(new_action.name)
+        if action(new_action.name)
           raise DuplicateAction, "Action '#{new_action.name}' already defined on service '#{_attributes_[:name]}'"
         end
 
@@ -88,11 +106,6 @@ module MotherBrain
           CleanRoom.new(self).instance_eval do
             instance_eval(&block)
           end
-        end
-
-        # @param [String] name
-        def get_action(name)
-          actions.find { |action| action.name == name }
         end
 
         # @api private

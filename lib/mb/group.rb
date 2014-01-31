@@ -94,6 +94,17 @@ module MotherBrain
       self.roles.collect { |role| "role[#{role}]" } +
         self.recipes.collect { |recipe| "recipe[#{recipe}]" }
     end
+    
+    # Checks the run_list to see if @run_list_entry is included either
+    # directly or in a role.
+    # 
+    # @param run_list_entry String
+    #
+    # @return [TrueClass, FalseClass]
+    def includes_recipe?(run_list_entry)
+      self.recipes.include? run_list_entry
+      # TODO expand roles
+    end
 
     private
 

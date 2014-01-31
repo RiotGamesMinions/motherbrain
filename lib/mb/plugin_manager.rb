@@ -185,6 +185,28 @@ module MotherBrain
       abort ex
     end
 
+    # Finds the plugin for the cookbook specified in the run list entry
+    #
+    # @param [String] run_list_entry
+    #   Chef standard run list entry
+    # @param [String] environment
+    #   name of the environment
+    #
+    # @return [MB::Plugin]
+    def for_run_list_entry(run_list_entry, environment = nil)
+      item = MotherBrain::Chef::RunListItem.new(run_list_entry)
+      if item.version
+        # version will be defined in run list entries such as
+        # recipe[foo::server@1.1.2], which takes precidence over the
+        # environment.
+        find(item.cookbook_name, item.version)
+      elsif !environment.nil?
+        for_environment(item.cookbook_name, environment)
+      else
+        find(item.cookbook_name)
+      end
+    end
+
     # @param [String] name
     #   name of the plugin
     # @param [#to_s] version

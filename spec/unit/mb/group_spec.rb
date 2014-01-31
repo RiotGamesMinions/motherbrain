@@ -253,4 +253,28 @@ describe MB::Group do
       end
     end
   end
+
+  describe "#includes_recipe?" do
+    subject do
+      MB::Group.new("test-group") do
+        role "role_one"
+        role "role_two"
+        recipe "test::default"
+        recipe "test::special"
+      end
+    end
+
+    it "should return true when the recipe is included directly" do
+      expect(subject.includes_recipe?("test::default")).to be_true
+    end
+
+    it "should return true when the recipe is included in a role" do
+      pending "stub role expansion"
+      expect(subject.includes_recipe?("role_one_recipe::default")).to be_true
+    end
+
+    it "should return false when the recipe is not included" do
+      expect(subject.includes_recipe?("test::doesnt_exist")).to be_false
+    end
+  end
 end

@@ -2,6 +2,9 @@ require 'net/sftp'
 
 module MotherBrain
   class NodeQuerier
+
+    DISABLED_RUN_LIST_ENTRY = "recipe[disabled]"
+
     class << self
       # @raise [Celluloid::DeadActorError] if Node Querier has not been started
       #
@@ -176,8 +179,8 @@ module MotherBrain
     # @return [Ridley::HostConnector::Response]
     def put_secret(host, options = {})
       options = options.reverse_merge(
-        secret: Application.config.chef.encrypted_data_bag_secret_path
-      )
+                                      secret: Application.config.chef.encrypted_data_bag_secret_path
+                                      )
 
       if options[:secret].nil? || !File.exists?(options[:secret])
         return nil
@@ -269,6 +272,19 @@ module MotherBrain
       job.ticket
     end
 
+    # Asynchronously disable a node to stop services @host and prevent
+    # chef-client from being run on @host until @host is reenabled
+    #
+    # @param [String] host
+    #   public hostname of the target node
+    #
+    # @return [MB::JobTicket]
+    def async_disable(host)
+      job = Job.new(:disable_node)
+      async(:disable, job, host)
+      job.ticket
+    end
+
     # Remove Chef from a target host and purge it's client and node object from the Chef
     # server.
     #
@@ -303,56 +319,129 @@ module MotherBrain
       job.terminate if job && job.alive?
     end
 
+    # Stop services on @host and prevent chef-client from being run on
+    # @host until @host is reenabled
+    #
+    # @param [MB::Job] job
+    # @param [String] host
+    #   public hostname of the target node
+    def disable(job, host)
+      job.report_running("Discovering host's registered node name")
+
+      node_name = registered_as(host)
+      if !node_name
+        job.set_status("Could not discover the host's node name. The host may not be" +
+                       "registered with Chef or the embedded Ruby used to identify the" +
+                       "node name may not be available.\n\n #{host} was not disabled!")
+        abort NodeNotFound.new(host)
+      end
+
+      job.set_status("Host registered as #{node_name}.")
+      
+      node = chef_connection.node.find(node_name)
+      stop_actions = find_stop_actions(job, node)
+
+      stop_actions.each do |action|
+        # TODO parallel?
+        action.run(job, "", [node], false)
+      end      
+      chef_run(host)
+
+      node.run_list = [DISABLED_RUN_LIST_ENTRY] + node.run_list
+      if node.save
+        job.set_status "#{node.name} disabled successfully."
+      else
+        abort NodeSaveFailed.new(node.name)
+      end
+      job.report_success
+    ensure
+      job.terminate if job && job.alive?
+    end
+
     private
 
-      def finalize_callback
-        log.debug { "Node Querier stopping..." }
+    def finalize_callback
+      log.debug { "Node Querier stopping..." }
+    end
+
+    # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
+    # that are located in the Mother Brain scripts directory can be used and they should
+    # be identified just by their filename minus the extension
+    #
+    # @example
+    #   node_querier.ruby_script('node_name', '33.33.33.10') => 'vagrant.localhost'
+    #
+    # @param [String] name
+    #   name of the script to run on the target node
+    # @param [String] host
+    #   hostname of the target node
+    #   the MotherBrain scripts directory
+    # @option options [String] :user
+    #   a shell user that will login to each node and perform the bootstrap command on (required)
+    # @option options [String] :password
+    #   the password for the shell user that will perform the bootstrap
+    # @option options [Array, String] :keys
+    #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
+    # @option options [Float] :timeout (10.0)
+    #   timeout value for SSH bootstrap
+    # @option options [Boolean] :sudo (true)
+    #   bootstrap with sudo
+    #
+    # @raise [RemoteScriptError] if there was an error in execution
+    # @raise [RuntimeError] if an unknown response is returned from Ridley
+    #
+    # @note
+    #   Use {#_ruby_script_} if the caller of this function is same actor as the receiver. You will
+    #   not be able to rescue from the RemoteScriptError thrown by {#ruby_script} but you will
+    #   be able to rescue from {#_ruby_script_}.
+    #
+    # @return [String]
+    def ruby_script(name, host, options = {})
+      name    = name.split('.rb')[0]
+      lines   = File.readlines(MB.scripts.join("#{name}.rb"))
+      command_lines = lines.collect { |line| line.gsub('"', "'").strip.chomp }
+
+      response = chef_connection.node.ruby_script(host, command_lines)
+
+      if response.error?
+        raise RemoteScriptError.new(response.stderr.chomp)
       end
 
-      # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
-      # that are located in the Mother Brain scripts directory can be used and they should
-      # be identified just by their filename minus the extension
-      #
-      # @example
-      #   node_querier.ruby_script('node_name', '33.33.33.10') => 'vagrant.localhost'
-      #
-      # @param [String] name
-      #   name of the script to run on the target node
-      # @param [String] host
-      #   hostname of the target node
-      #   the MotherBrain scripts directory
-      # @option options [String] :user
-      #   a shell user that will login to each node and perform the bootstrap command on (required)
-      # @option options [String] :password
-      #   the password for the shell user that will perform the bootstrap
-      # @option options [Array, String] :keys
-      #   an array of keys (or a single key) to authenticate the ssh user with instead of a password
-      # @option options [Float] :timeout (10.0)
-      #   timeout value for SSH bootstrap
-      # @option options [Boolean] :sudo (true)
-      #   bootstrap with sudo
-      #
-      # @raise [RemoteScriptError] if there was an error in execution
-      # @raise [RuntimeError] if an unknown response is returned from Ridley
-      #
-      # @note
-      #   Use {#_ruby_script_} if the caller of this function is same actor as the receiver. You will
-      #   not be able to rescue from the RemoteScriptError thrown by {#ruby_script} but you will
-      #   be able to rescue from {#_ruby_script_}.
-      #
-      # @return [String]
-      def ruby_script(name, host, options = {})
-        name    = name.split('.rb')[0]
-        lines   = File.readlines(MB.scripts.join("#{name}.rb"))
-        command_lines = lines.collect { |line| line.gsub('"', "'").strip.chomp }
+      response.stdout.chomp
+    end
 
-        response = chef_connection.node.ruby_script(host, command_lines)
-
-        if response.error?
-          raise RemoteScriptError.new(response.stderr.chomp)
+    # @return [Array<Gear::Action>]
+    def find_stop_actions(job, node)
+      [].tap do |stop_actions|
+        node.run_list.each do |run_list_entry|
+          plugin = plugin_manager.for_run_list_entry(run_list_entry)
+          if plugin.nil?
+            # TODO test
+            job.set_status("Could not find plugin for #{run_list_entry}. Skipping. Associated" +
+                           "services must be stopped manually.")
+            next
+          end
+          plugin.components.each do |component|
+            services = component.gears(MB::Gear::Service)
+            services.each do |service|
+              group = service.service_group
+              if group.nil?
+                job.set_status("Motherbrain service \"#{service.name}\" does not provide a" +
+                               "service group. Cannot automatically detect if this service " +
+                               "need to be stopped on #{node.name}.")
+              elsif group.includes_recipe? run_list_entry
+                stop = service.stop_action
+                if stop.nil?
+                  job.set_status("Motherbrain service \"#{service.name}\" does not provide a " +
+                                 "stop action. This service must be stopped manually")
+                else
+                  stop_actions << stop
+                end
+              end
+            end
+          end
         end
-
-        response.stdout.chomp
       end
+    end
   end
 end
