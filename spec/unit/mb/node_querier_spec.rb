@@ -254,6 +254,116 @@ describe MB::NodeQuerier do
     end
   end
 
+  describe "#async_enable" do
+    let(:host) { "192.168.1.1" }
+    let(:options) { Hash.new }
+
+    it "creates a Job and delegates to #disable" do
+      ticket = double('ticket')
+      job    = double('job', ticket: ticket)
+      MB::Job.should_receive(:new).and_return(job)
+      subject.should_receive(:async).with(:enable, job, host)
+
+      subject.async_enable(host)
+    end
+
+    it "returns a JobTicket" do
+      expect(subject.async_enable(host)).to be_a(MB::JobRecord)
+    end
+  end
+
+
+  describe "#enable" do
+    let(:host) { "192.168.1.1" }
+    let(:job) { MB::Job.new(:disable) }
+    let(:future_stub) { double(Celluloid::Future, value: nil) }
+    let(:node_stub) { 
+      double(Ridley::NodeObject,
+             run_list: ["recipe[disabled]", "recipe[foo::server]", "recipe[foo::database]"])
+    }
+
+    before do
+      subject.stub(:registered_as).with(host).and_return(nil)
+    end
+
+    it "terminates the job" do
+      begin
+        subject.enable(job, host)
+      rescue MB::NodeNotFound
+        # Don't care
+      end
+      expect(job).to_not be_alive
+    end
+
+    context "when the node is not registered" do
+      it "displays a warning" do
+        subject.should_receive(:abort).with(kind_of(MB::NodeNotFound)).and_return { raise MB::NodeNotFound.new(host) }
+        expect {subject.enable(job, host) }.to raise_error(MB::NodeNotFound)
+      end
+    end
+
+    # TODO test version in run list entry
+    # TODO test env version
+    # TODO test no version
+
+    context "when the node is registered" do
+      # let(:node_name)     { "foo.riotgames.com" }
+      # let(:run_list)      { ["recipe[foo::server]", "recipe[bar::server]"] }
+      # let(:service_recipe) { "recipe[foo::service]" }
+      # let(:foo_group)     { double(MB::Group,
+      #                              recipes: ["foo::server"]) }
+      # let(:dynamic_foo_service) { double(MB::Gear::DynamicService) }
+      # let(:foo_service)   { double(MB::Gear::Service,
+      #                              name: "foo_service",
+      #                              service_group: foo_group,
+      #                              service_recipe: service_recipe,
+      #                              to_dynamic_service: dynamic_foo_service) }
+      # let(:foo_component) { double(MB::Component,
+      #                              name: "foo_component") }
+      # let(:foo_plugin)    { double(MB::Plugin,
+      #                              components: [foo_component]) }
+      # let(:node)          { double(Ridley::NodeObject,
+      #                              run_list: run_list,
+      #                              name: node_name,
+      #                              save: true) }
+
+      before do
+        # subject.should_receive(:registered_as).with(host).and_return(node_name)
+        # subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)
+        # MotherBrain::PluginManager.any_instance.should_receive(:for_run_list_entry).with(run_list[0]).and_return(foo_plugin)
+        # MotherBrain::PluginManager.any_instance.should_receive(:for_run_list_entry).with(run_list[1]).and_return(nil)
+        # foo_component.should_receive(:gears).with(MB::Gear::Service).and_return([foo_service])
+        # subject.should_receive(:bulk_chef_run).with(job, [node], [service_recipe])
+        # foo_group.should_receive(:includes_recipe?).with(run_list[0]).and_return(true)
+        # node.should_receive(:run_list=).with([MB::NodeQuerier::DISABLED_RUN_LIST_ENTRY] + run_list)
+        # dynamic_foo_service.should_receive(:node_state_change).with(job, foo_plugin, node, MB::Gear::DynamicService::STOP, false)
+        # foo_service.stub(:dynamic_service?).and_return(true)
+      end
+
+      it "enables the node" do
+        subject.enable(job, host)
+      end
+    end
+  end
+
+  describe "#async_purge" do
+    let(:host) { "192.168.1.1" }
+    let(:options) { Hash.new }
+
+    it "creates a Job and delegates to #purge" do
+      ticket = double('ticket')
+      job    = double('job', ticket: ticket)
+      MB::Job.should_receive(:new).and_return(job)
+      subject.should_receive(:purge).with(job, host, options)
+
+      subject.async_purge(host, options)
+    end
+
+    it "returns a JobTicket" do
+      expect(subject.async_purge(host, options)).to be_a(MB::JobRecord)
+    end
+  end
+
   describe "#async_disable" do
     let(:host) { "192.168.1.1" }
     let(:options) { Hash.new }
@@ -308,17 +418,18 @@ describe MB::NodeQuerier do
     context "when the node is registered" do
       let(:node_name)     { "foo.riotgames.com" }
       let(:run_list)      { ["recipe[foo::server]", "recipe[bar::server]"] }
-      let(:stop_foo_action) { double(MotherBrain::Gear::Service::Action,
-                                     name: :stop) }
-      let(:foo_group)     { double(MotherBrain::Group,
+      let(:service_recipe) { "recipe[foo::service]" }
+      let(:foo_group)     { double(MB::Group,
                                    recipes: ["foo::server"]) }
-      let(:foo_service)   { double(MotherBrain::Gear::Service,
+      let(:dynamic_foo_service) { double(MB::Gear::DynamicService) }
+      let(:foo_service)   { double(MB::Gear::Service,
                                    name: "foo_service",
-                                   stop_action: stop_foo_action,
-                                   service_group: foo_group) }
-      let(:foo_component) { double(MotherBrain::Component,
+                                   service_group: foo_group,
+                                   service_recipe: service_recipe,
+                                   to_dynamic_service: dynamic_foo_service) }
+      let(:foo_component) { double(MB::Component,
                                    name: "foo_component") }
-      let(:foo_plugin)    { double(MotherBrain::Plugin,
+      let(:foo_plugin)    { double(MB::Plugin,
                                    components: [foo_component]) }
       let(:node)          { double(Ridley::NodeObject,
                                    run_list: run_list,
@@ -331,19 +442,14 @@ describe MB::NodeQuerier do
         MotherBrain::PluginManager.any_instance.should_receive(:for_run_list_entry).with(run_list[0]).and_return(foo_plugin)
         MotherBrain::PluginManager.any_instance.should_receive(:for_run_list_entry).with(run_list[1]).and_return(nil)
         foo_component.should_receive(:gears).with(MB::Gear::Service).and_return([foo_service])
-        stop_foo_action.should_receive(:run).with(job, "", [node], false)
-        subject.should_receive(:chef_run).with(host)
+        subject.should_receive(:bulk_chef_run).with(job, [node], [service_recipe])
         foo_group.should_receive(:includes_recipe?).with(run_list[0]).and_return(true)
         node.should_receive(:run_list=).with([MB::NodeQuerier::DISABLED_RUN_LIST_ENTRY] + run_list)
+        dynamic_foo_service.should_receive(:node_state_change).with(job, foo_plugin, node, MB::Gear::DynamicService::STOP, false)
+        foo_service.stub(:dynamic_service?).and_return(true)
       end
 
-      it "stops the services" do
-        # stub service disable
-        subject.disable(job, host)
-      end
-
-      it "adds the disabled recipe to the beginning of the run list" do
-        # stub run list modification
+      it "disables the node" do
         subject.disable(job, host)
       end
     end

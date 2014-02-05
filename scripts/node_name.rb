@@ -1,4 +1,6 @@
 require "chef/client"
+require 'rbconfig'
+
 if File.exists?("/etc/chef/client.rb")
   Chef::Config.from_file("/etc/chef/client.rb")
 end

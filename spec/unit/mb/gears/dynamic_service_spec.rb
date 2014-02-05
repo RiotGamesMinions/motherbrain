@@ -22,7 +22,7 @@ describe MB::Gear::DynamicService do
     describe "::change_service_state" do
       let(:change_service_state) { MB::Gear::DynamicService.change_service_state(service, plugin, environment, state) }
 
-      it "splits the service on a period" do
+      it "splits the service on a period", focus: true do
         expect(MB::Gear::DynamicService).to receive(:new).with('webapp', 'tomcat').and_return(dynamic_service)
         change_service_state
       end

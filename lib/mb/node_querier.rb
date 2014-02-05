@@ -36,8 +36,8 @@ module MotherBrain
     # @param [Job] job
     # @param [Array(Ridley::NodeResource)] nodes
     #   The collection of nodes to run Chef on
-    # @param [String] override_recipe
-    #   A runlist entry that will override the node's current runlist
+    # @param [Array<String>] override_recipes
+    #   An array of run list entries that will override the node's current run list
     #
     # @raise [RemoteCommandError]
     def bulk_chef_run(job, nodes, override_recipes = nil)
@@ -87,8 +87,9 @@ module MotherBrain
     #
     # @return [String, nil]
     def node_name(host, options = {})
-      ruby_script('node_name', host, options)
+      ruby_script('node_name', host, options).split("\n").last
     rescue MB::RemoteScriptError
+      # TODO: catch auth error?
       nil
     end
 
@@ -250,7 +251,6 @@ module MotherBrain
       if (client_id = node_name(host)).nil?
         return nil
       end
-
       chef_connection.client.find(client_id).try(:name)
     end
 
@@ -282,6 +282,18 @@ module MotherBrain
     def async_disable(host)
       job = Job.new(:disable_node)
       async(:disable, job, host)
+      job.ticket
+    end
+
+    # Asynchronously enable a node
+    #
+    # @param [String] host
+    #   public hostname of the target node
+    #
+    # @return [MB::JobTicket]
+    def async_enable(host)
+      job = Job.new(:enable_node)
+      async(:enable, job, host)
       job.ticket
     end
 
@@ -319,6 +331,42 @@ module MotherBrain
       job.terminate if job && job.alive?
     end
 
+    def enable(job, host)
+      job.report_running("Discovering host's registered node name")
+
+      node_name = registered_as(host)
+      if !node_name
+        # TODO auth could fail and cause this to throw
+        job.report_failure("Could not discover the host's node name. The host may not be " +
+                           "registered with Chef or the embedded Ruby used to identify the " +
+                           "node name may not be available. #{host} was not disabled!")
+      end
+      
+      job.set_status("Host registered as #{node_name}.")
+      required_run_list = []
+      node = chef_connection.node.find(node_name)
+      if node.run_list.include?(DISABLED_RUN_LIST_ENTRY)
+        required_run_list = on_dynamic_services(job, node) do |dynamic_service, plugin|
+          dynamic_service.remove_node_state_change(job,
+                                                   plugin,
+                                                   node,
+                                                   false)
+        end
+        if !required_run_list.empty?
+          self.bulk_chef_run(job, [node], required_run_list.flatten.uniq) 
+        end
+        node.run_list = node.run_list.reject { |r| r == DISABLED_RUN_LIST_ENTRY }
+        
+        if node.save
+          job.report_success "#{node.name} enabled successfully."
+        else
+          job.report_failure "#{node.name} did not save! Disabled run_list entry was unable to be removed to the node."
+        end
+      else
+        job.report_success("#{node.name} is not disabled. No need to enable.")
+      end
+    end
+
     # Stop services on @host and prevent chef-client from being run on
     # @host until @host is reenabled
     #
@@ -330,30 +378,38 @@ module MotherBrain
 
       node_name = registered_as(host)
       if !node_name
-        job.set_status("Could not discover the host's node name. The host may not be" +
-                       "registered with Chef or the embedded Ruby used to identify the" +
-                       "node name may not be available.\n\n #{host} was not disabled!")
-        abort NodeNotFound.new(host)
+        # TODO auth could fail and cause this to throw
+        job.report_failure("Could not discover the host's node name. The host may not be " +
+                           "registered with Chef or the embedded Ruby used to identify the " +
+                           "node name may not be available. #{host} was not disabled!")
       end
-
+      
       job.set_status("Host registered as #{node_name}.")
       
       node = chef_connection.node.find(node_name)
-      stop_actions = find_stop_actions(job, node)
+      required_run_list = []
+      if node.run_list.include?(DISABLED_RUN_LIST_ENTRY)
+        job.report_success("#{node.name} is already disabled.")
+      else
+        required_run_list = on_dynamic_services(job, node) do |dynamic_service, plugin|
+          dynamic_service.node_state_change(job,
+                                            plugin,
+                                            node,
+                                            MB::Gear::DynamicService::STOP,
+                                            false)
+        end
+      end
 
-      stop_actions.each do |action|
-        # TODO parallel?
-        action.run(job, "", [node], false)
-      end      
-      chef_run(host)
+      required_run_list = required_run_list.flatten.uniq
+      job.set_status "Running chef with the following run list: #{required_run_list.inspect}"
+      self.bulk_chef_run(job, [node], required_run_list) if !required_run_list.empty?
 
       node.run_list = [DISABLED_RUN_LIST_ENTRY] + node.run_list
-      if node.save
-        job.set_status "#{node.name} disabled successfully."
+      if node.save # TODO reenable save
+        job.report_success "#{node.name} disabled successfully."
       else
-        abort NodeSaveFailed.new(node.name)
+        job.report_failure "#{node.name} did not save! Disabled run_list entry was unable to be added to the node."
       end
-      job.report_success
     ensure
       job.terminate if job && job.alive?
     end
@@ -402,40 +458,39 @@ module MotherBrain
       command_lines = lines.collect { |line| line.gsub('"', "'").strip.chomp }
 
       response = chef_connection.node.ruby_script(host, command_lines)
-
+      
       if response.error?
         raise RemoteScriptError.new(response.stderr.chomp)
       end
-
       response.stdout.chomp
     end
 
-    # @return [Array<Gear::Action>]
-    def find_stop_actions(job, node)
-      [].tap do |stop_actions|
+    def on_dynamic_services(job, node)
+      [].tap do |required_run_list|
         node.run_list.each do |run_list_entry|
-          plugin = plugin_manager.for_run_list_entry(run_list_entry)
+          next if run_list_entry == DISABLED_RUN_LIST_ENTRY
+          # TODO: Should this be configurable? remote
+          plugin = plugin_manager.for_run_list_entry(run_list_entry, node.chef_environment, remote: true)
           if plugin.nil?
             # TODO test
-            job.set_status("Could not find plugin for #{run_list_entry}. Skipping. Associated" +
-                           "services must be stopped manually.")
-            next
+            job.report_failure("Could not find plugin for #{run_list_entry}.") # TODO -f
           end
           plugin.components.each do |component|
             services = component.gears(MB::Gear::Service)
             services.each do |service|
-              group = service.service_group
-              if group.nil?
-                job.set_status("Motherbrain service \"#{service.name}\" does not provide a" +
-                               "service group. Cannot automatically detect if this service " +
-                               "need to be stopped on #{node.name}.")
-              elsif group.includes_recipe? run_list_entry
-                stop = service.stop_action
-                if stop.nil?
-                  job.set_status("Motherbrain service \"#{service.name}\" does not provide a " +
-                                 "stop action. This service must be stopped manually")
+              if service.dynamic_service?
+                if component.group(service.service_group).includes_recipe? run_list_entry
+                  dynamic_service = service.to_dynamic_service
+                  yield(dynamic_service, plugin)
+                  required_run_list << service.service_recipe
+                end
+              else
+                message = "Service #{component.name}.#{service.name} is not a dynamic service;" +
+                  " MotherBrain cannot stop services on this box automatically."
+                if true || false # TODO: -f --force
+                  job.set_status(message + " Disabling anyway due to force flag being set.")
                 else
-                  stop_actions << stop
+                  job.report_failure(message + " Aborting disable command.")
                 end
               end
             end

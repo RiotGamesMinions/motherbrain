@@ -673,7 +673,21 @@ module MotherBrain
     end
 
     def message
-      "Saving #{node.name} failed. Node is not tagged as disabled in it's run list."
+      "Saving #{@name} failed. Node is not tagged as disabled in it's run list."
+    end
+  end
+
+  class NodeDisabled < ChefError
+    error_code(9008)
+
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def message
+      "#{@name} is disabled."
     end
   end
 end

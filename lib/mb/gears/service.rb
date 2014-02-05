@@ -100,12 +100,33 @@ module MotherBrain
         @service_attribute = attribute
       end
 
+      def to_dynamic_service
+        log {
+          "Service '#{self.name}' does not appear to by a dynamic service. It does not define the following fields which are required for dynamic services: #{self.missing_fields_for_dynamic_service.join(",")}"
+        } unless dynamic_service?
+
+        MotherBrain::Gear::DynamicService.new(component, name)
+      end
+
+      # Indicates whether this service conforms to the dyanamic service pattern
+      # 
+      # @return TrueClass, FalseClass
+      def dynamic_service?
+        missing_fields_for_dynamic_service.empty?
+      end
+
       private
 
         def dsl_eval(&block)
           CleanRoom.new(self).instance_eval do
             instance_eval(&block)
           end
+        end
+
+        def missing_fields_for_dynamic_service
+          %w[service_group service_recipe service_attribute].collect do |field|
+            field if self.instance_variable_get("@#{field}").nil?
+          end.compact
         end
 
         # @api private

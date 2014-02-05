@@ -193,17 +193,17 @@ module MotherBrain
     #   name of the environment
     #
     # @return [MB::Plugin]
-    def for_run_list_entry(run_list_entry, environment = nil)
+    def for_run_list_entry(run_list_entry, environment = nil, options = {})
       item = MotherBrain::Chef::RunListItem.new(run_list_entry)
       if item.version
         # version will be defined in run list entries such as
         # recipe[foo::server@1.1.2], which takes precidence over the
         # environment.
-        find(item.cookbook_name, item.version)
+        find(item.cookbook_name, item.version, options)
       elsif !environment.nil?
-        for_environment(item.cookbook_name, environment)
+        for_environment(item.cookbook_name, environment, options)
       else
-        find(item.cookbook_name)
+        find(item.cookbook_name, nil, options)
       end
     end
 
