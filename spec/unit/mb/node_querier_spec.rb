@@ -322,14 +322,14 @@ describe MB::NodeQuerier do
       #                              name: "foo_component") }
       # let(:foo_plugin)    { double(MB::Plugin,
       #                              components: [foo_component]) }
-      # let(:node)          { double(Ridley::NodeObject,
-      #                              run_list: run_list,
-      #                              name: node_name,
-      #                              save: true) }
+      let(:node)          { double(Ridley::NodeObject,
+                                    run_list: run_list,
+                                    name: node_name,
+                                    save: true) }
 
       before do
-        # subject.should_receive(:registered_as).with(host).and_return(node_name)
-        # subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)
+        subject.should_receive(:registered_as).with(host).and_return(node_name)
+        subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)
         # MotherBrain::PluginManager.any_instance.should_receive(:for_run_list_entry).with(run_list[0]).and_return(foo_plugin)
         # MotherBrain::PluginManager.any_instance.should_receive(:for_run_list_entry).with(run_list[1]).and_return(nil)
         # foo_component.should_receive(:gears).with(MB::Gear::Service).and_return([foo_service])
@@ -339,8 +339,50 @@ describe MB::NodeQuerier do
         # dynamic_foo_service.should_receive(:node_state_change).with(job, foo_plugin, node, MB::Gear::DynamicService::STOP, false)
         # foo_service.stub(:dynamic_service?).and_return(true)
       end
+      let(:node_name)     { "foo.riotgames.com" }
+      let(:run_list)      { ["recipe[disabled]", "recipe[foo::server]", "recipe[bar::server]"] }
+      let(:node)          { double(Ridley::NodeObject,
+                                   name: node_name,
+                                   run_list: run_list,
+                                   save: true,
+                                   chef_environment: environment) }
+      let(:plugin_manager) { double(MB::PluginManager) }
+      
+      %w[foo bar].each do |x|
+        let(:"service_#{x}_recipe") { "recipe[#{x}::service]" }
 
+        let(:"#{x}_group")     { double(MB::Group,
+                                        recipes: ["#{x}::server"]) }
+        let(:"dynamic_#{x}_service") { double(MB::Gear::DynamicService) }
+        let(:"#{x}_service")   { double(MB::Gear::Service,
+                                        name: "#{x}_service",
+                                        service_group: send(:"#{x}_group"),
+                                        service_recipe: send(:"service_#{x}_recipe"),
+                                        to_dynamic_service: send(:"dynamic_#{x}_service")) }
+        let(:"#{x}_component") { double(MB::Component,
+                                        name: "#{x}_component",
+                                        group: send(:"#{x}_group")) }
+        let(:"#{x}_plugin")    { double(MB::Plugin,
+                                        components: [send(:"#{x}_component")]) }
+        let(:"environment")   { "theenv" }
+      end
+      
       it "enables the node" do
+        subject.stub(:plugin_manager).and_return(plugin_manager)
+        subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)
+        %w[foo bar].each_with_index do |x, i|
+          plugin_manager
+            .should_receive(:for_run_list_entry)
+            .with(run_list[i+1], environment, remote: true)
+            .and_return(send(:"#{x}_plugin"))
+          send(:"#{x}_component").should_receive(:gears).with(MB::Gear::Service).and_return([send(:"#{x}_service")])
+          send(:"#{x}_service").stub(:dynamic_service?).and_return(true)
+          send(:"#{x}_group").should_receive(:includes_recipe?).with(run_list[i+1]).and_return(true)
+          send(:"dynamic_#{x}_service").should_receive(:remove_node_state_change).with(job, send(:"#{x}_plugin"), node, false)
+          node.stub(:run_list=)
+        end
+        subject.should_receive(:bulk_chef_run).with(job, [node], %w[foo bar].collect { |x| send(:"service_#{x}_recipe") })
+
         subject.enable(job, host)
       end
     end

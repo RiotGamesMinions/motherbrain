@@ -17,7 +17,6 @@ module MotherBrain
         # @param options [Hash]
         # 
         # @return [MB::JobTicket]
-        # TODO come up with better name
         def change_service_state(service, plugin, environment, state, run_chef = true, options = {})
           job = Job.new(:dynamic_service_state_change)
 
@@ -61,7 +60,7 @@ module MotherBrain
       # Default behavior is to set a node attribute on each individual node serially
       # and then execute the chef run.
       #
-      # @param job [TODO]
+      # @param job [MB::Job]
       # @param plugin [MB::Plugin]
       #   the plugin currently in use
       # @param environment [String]
@@ -109,10 +108,12 @@ module MotherBrain
       end
 
       def remove_node_state_change(job, plugin, node, run_chef = true)
-        service = component.get_service(name)
+        component_object = plugin.component(self.component)
+        service = component_object.get_service(name)
+
         set_node_attributes(job, [node], service.service_attribute, nil)
         if run_chef
-          node_querier.bulk_chef_run(job, [node], service.service_recipe)
+          self.node_querier.bulk_chef_run(job, [node], service.service_recipe)
         end
       end
 

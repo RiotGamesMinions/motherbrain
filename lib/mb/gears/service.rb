@@ -100,6 +100,9 @@ module MotherBrain
         @service_attribute = attribute
       end
 
+      # Convert a Service to a DynamicService
+      #
+      # @return [MB::Gears::DynamicService]
       def to_dynamic_service
         log {
           "Service '#{self.name}' does not appear to by a dynamic service. It does not define the following fields which are required for dynamic services: #{self.missing_fields_for_dynamic_service.join(",")}"

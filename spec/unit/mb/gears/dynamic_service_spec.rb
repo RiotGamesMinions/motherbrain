@@ -86,6 +86,43 @@ describe MB::Gear::DynamicService do
     end
   end
 
+  describe "#remove_node_state_change" do
+    subject { MB::Gear::DynamicService.new(component_name, service_name) }
+    let(:service_name) { "foo_service" }
+    let(:service) { double(MB::Gear::Service,
+                           service_attribute: ["foo.service_attr"],
+                           service_recipe: service_recipe) }
+    let(:component_name) { "foo_component" }
+    let(:plugin) { double(MB::Plugin) }
+    let(:component) { double(MB::Component) }
+    let(:node_querier) { double(MB::NodeQuerier) }
+    let(:node) { double(Ridley::NodeObject) }
+    let(:service_recipe) { "recipe[foo::service]" }
+
+    before do
+      plugin.stub(:component).with(component_name).and_return(component)
+      component.stub(:get_service).with(service_name).and_return(service)
+      subject.stub(:node_querier).and_return(node_querier)
+      subject.stub(:set_node_attributes).with(job, [node], service.service_attribute, nil)
+      node_querier.stub(:bulk_chef_run).with(job, [node], service.service_recipe)
+    end
+    
+    it "should run chef by default" do
+      expect(node_querier).to receive(:bulk_chef_run).with(job, [node], service_recipe)
+      subject.remove_node_state_change(job, plugin, node)
+    end
+
+    it "should not run chef if told not to" do
+      expect(node_querier).not_to receive(:bulk_chef_run)
+      subject.remove_node_state_change(job, plugin, node, false)
+    end
+
+    it "should set the service node attributes to nil" do
+      expect(subject).to receive(:set_node_attributes).with(job, [node], service.service_attribute, nil)
+      subject.remove_node_state_change(job, plugin, node, false)
+    end
+  end
+
   describe "#get_chef_environment" do
     let(:get_chef_environment) { dynamic_service.get_chef_environment(environment) }
     let(:result) { double() }

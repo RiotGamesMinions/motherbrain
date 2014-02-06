@@ -333,7 +333,6 @@ module MotherBrain
 
     def enable(job, host)
       job.report_running("Discovering host's registered node name")
-
       node_name = registered_as(host)
       
       if !node_name
