@@ -182,8 +182,11 @@ module MotherBrain
 
                 desc("attributes", "View available attributes for plugin.")
                 define_method(:attributes) do 
-                  ui.say "TEST"
-                  #CliClient.new(job).display
+                  #plugin.metadata.long_description.delete
+                  ui.say "\n"
+                  ui.say "** listing attributes for #{plugin}:"
+                  ui.say "\n"
+                  ui.say plugin.metadata.to_yaml
                 end
               end
             end
