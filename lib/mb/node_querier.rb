@@ -3,7 +3,7 @@ require 'net/sftp'
 module MotherBrain
   class NodeQuerier
 
-    DISABLED_RUN_LIST_ENTRY = "recipe[disabled]"
+    DISABLED_RUN_LIST_ENTRY = "recipe[disabled]".freeze
 
     class << self
       # @raise [Celluloid::DeadActorError] if Node Querier has not been started
@@ -466,10 +466,8 @@ module MotherBrain
       [].tap do |required_run_list|
         node.run_list.each do |run_list_entry|
           next if run_list_entry == DISABLED_RUN_LIST_ENTRY
-          # TODO: Should this be configurable? remote
           plugin = plugin_manager.for_run_list_entry(run_list_entry, node.chef_environment, remote: true)
           if plugin.nil?
-            # TODO test
             job.report_failure("Could not find plugin for #{run_list_entry}.") # TODO -f
           end
           plugin.components.each do |component|
