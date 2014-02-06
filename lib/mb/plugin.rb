@@ -69,7 +69,6 @@ module MotherBrain
 
     # @param [MB::CookbookMetadata] metadata
     def initialize(metadata, &block)
-      puts metadata.inspect
       unless metadata.valid?
         raise InvalidCookbookMetadata.new(metadata.errors)
       end
