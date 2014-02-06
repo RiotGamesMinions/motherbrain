@@ -11,18 +11,19 @@ describe MB::Gear::DynamicService do
   let(:nodes) { [ node1, node2 ] }
   let(:node1) { double(name: nil, reload: nil, set_chef_attribute: nil, save: nil) }
   let(:node2) { double(name: nil, reload: nil, set_chef_attribute: nil, save: nil) }
-
+  let(:job) { MB::Job.new(:thejob) }
   describe "ClassMethods" do
     let(:service) { "webapp.tomcat" }
 
     before do
-      dynamic_service.stub(:async_state_change)
+      dynamic_service.stub(:state_change)
+      MB::Job.should_receive(:new).and_return(job)
     end
 
     describe "::change_service_state" do
       let(:change_service_state) { MB::Gear::DynamicService.change_service_state(service, plugin, environment, state) }
 
-      it "splits the service on a period", focus: true do
+      it "splits the service on a period" do
         expect(MB::Gear::DynamicService).to receive(:new).with('webapp', 'tomcat').and_return(dynamic_service)
         change_service_state
       end
@@ -31,7 +32,8 @@ describe MB::Gear::DynamicService do
         let(:service) { "foo" }
 
         it "raises an error" do
-          expect { change_service_state }.to raise_error(MB::InvalidDynamicService)
+          job.should_receive(:report_failure).with(kind_of(MB::InvalidDynamicService))
+          change_service_state
         end
       end
     end
@@ -39,8 +41,8 @@ describe MB::Gear::DynamicService do
 
   let(:job) { double(alive?: false, report_running: nil, set_status: nil, report_success: nil, ticket: nil) }
 
-  describe "#async_state_change" do
-    let(:async_state_change) { dynamic_service.async_state_change(plugin, environment, state, options) }
+  describe "#state_change" do
+    let(:state_change) { dynamic_service.state_change(job, plugin, environment, state, true, options) }
     let(:node_querier) { double(bulk_chef_run: nil) }
     let(:options) { Hash.new }
 
@@ -53,7 +55,7 @@ describe MB::Gear::DynamicService do
 
     it "starts a bulk chef run" do
       expect(node_querier).to receive(:bulk_chef_run).with(job, nodes, ["tomcat_stop"])
-      async_state_change
+      state_change
     end
 
     context "when you attempt to change to an unsupported state" do
@@ -66,7 +68,7 @@ describe MB::Gear::DynamicService do
 
       it "logs a warning" do
         expect(log).to receive(:warn)
-        async_state_change
+        state_change
       end
     end
 
@@ -79,7 +81,7 @@ describe MB::Gear::DynamicService do
 
       it "sets an attribute on the environment" do
         expect(dynamic_service).to receive(:set_environment_attribute)
-        async_state_change
+        state_change
       end
     end
   end

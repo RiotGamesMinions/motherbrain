@@ -98,9 +98,9 @@ module MotherBrain
     # Indicates whether the run list contains the recipe
     #
     # 
-    def includes_recipe?(run_list_entry)
+    def includes_recipe?(recipe)
       # todo expand roles?
-      self.run_list.include?(run_list_entry)
+      self.run_list.include?("recipe[#{recipe}]")
     end
 
     private

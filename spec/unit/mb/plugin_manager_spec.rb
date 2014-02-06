@@ -485,25 +485,25 @@ describe MotherBrain::PluginManager do
 
     describe "with run list version" do
       it "should use the run list version definition" do
-        subject.should_receive(:find).with(cookbook_name, version)
+        subject.should_receive(:find).with(cookbook_name, version, {})
         subject.for_run_list_entry(run_list_entry_with_version)
       end
 
       it "should use the run list version even if an environment is provided" do
-        subject.should_receive(:find).with(cookbook_name, version)
+        subject.should_receive(:find).with(cookbook_name, version, {})
         subject.for_run_list_entry(run_list_entry_with_version, environment)
       end
     end
 
     describe "with environment" do
       it "should use the environment version lock" do
-        subject.should_receive(:for_environment).with(cookbook_name, environment)
+        subject.should_receive(:for_environment).with(cookbook_name, environment, {})
         subject.for_run_list_entry(run_list_entry, environment)
       end
     end
 
     it "should find the plugin" do
-      subject.should_receive(:find).with(cookbook_name)
+      subject.should_receive(:find).with(cookbook_name, nil, {})
       subject.for_run_list_entry(run_list_entry)
     end
   end

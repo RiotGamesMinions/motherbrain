@@ -21,24 +21,16 @@ module MotherBrain
         def change_service_state(service, plugin, environment, state, run_chef = true, options = {})
           job = Job.new(:dynamic_service_state_change)
 
-          dynamic_service = dynamic_service_from_string!(service)
+          component, service_name = service.split('.')
+          raise InvalidDynamicService.new(component, service_name) unless component && service_name
+          dynamic_service = new(component, service_name)
           dynamic_service.state_change(job, plugin, environment, state, run_chef, options)
-
           job.report_success
           job.ticket
         rescue => ex
           job.report_failure(ex)
         ensure
           job.terminate if job && job.alive?
-        end
-
-        private
-        
-        def dynamic_service_from_string!(dynamic_service_string)
-          component, service_name = service.split('.')
-          raise InvalidDynamicService.new(component, service_name) unless component && service_name
-
-          new(component, service_name)
         end
       end
 
@@ -80,12 +72,15 @@ module MotherBrain
       #
       # @return [MB::JobTicket]
       def state_change(job, plugin, environment, state, run_chef = true, options = {})
+        log.warn { 
+          "Component's service state is being changed to #{state}, which is not one of #{COMMON_STATES}" 
+        } unless COMMON_STATES.include?(state)
+
         chef_synchronize(chef_environment: environment, force: options[:force]) do
-          component_object = plugin.component(component)
+          component_object = plugin.component(self.component)
           service_object = component_object.get_service(name)
           group = component_object.group(service_object.service_group)
           nodes = group.nodes(environment)
-
           job.report_running("preparing to change the #{name} service to #{state}")
 
           if options[:cluster_override]
@@ -104,7 +99,9 @@ module MotherBrain
         log.warn { 
           "Component's service state is being changed to #{state}, which is not one of #{COMMON_STATES}" 
         } unless COMMON_STATES.include?(state)
-        service = component.get_service(name)
+
+        component_object = plugin.component(self.component)
+        service = component_object.get_service(name)
         set_node_attributes(job, [node], service.service_attribute, state)
         if run_chef
           node_querier.bulk_chef_run(job, [node], service.service_recipe)

@@ -335,11 +335,12 @@ module MotherBrain
       job.report_running("Discovering host's registered node name")
 
       node_name = registered_as(host)
+      
       if !node_name
         # TODO auth could fail and cause this to throw
         job.report_failure("Could not discover the host's node name. The host may not be " +
                            "registered with Chef or the embedded Ruby used to identify the " +
-                           "node name may not be available. #{host} was not disabled!")
+                           "node name may not be available. #{host} was not enabled!")
       end
       
       job.set_status("Host registered as #{node_name}.")
@@ -365,6 +366,8 @@ module MotherBrain
       else
         job.report_success("#{node.name} is not disabled. No need to enable.")
       end
+    ensure
+      job.terminate if job && job.alive?
     end
 
     # Stop services on @host and prevent chef-client from being run on
@@ -375,7 +378,6 @@ module MotherBrain
     #   public hostname of the target node
     def disable(job, host)
       job.report_running("Discovering host's registered node name")
-
       node_name = registered_as(host)
       if !node_name
         # TODO auth could fail and cause this to throw
@@ -383,7 +385,6 @@ module MotherBrain
                            "registered with Chef or the embedded Ruby used to identify the " +
                            "node name may not be available. #{host} was not disabled!")
       end
-      
       job.set_status("Host registered as #{node_name}.")
       
       node = chef_connection.node.find(node_name)
@@ -399,13 +400,10 @@ module MotherBrain
                                             false)
         end
       end
-
-      required_run_list = required_run_list.flatten.uniq
       job.set_status "Running chef with the following run list: #{required_run_list.inspect}"
       self.bulk_chef_run(job, [node], required_run_list) if !required_run_list.empty?
-
-      node.run_list = [DISABLED_RUN_LIST_ENTRY] + node.run_list
-      if node.save # TODO reenable save
+      node.run_list = [DISABLED_RUN_LIST_ENTRY].concat(node.run_list)
+      if node.save
         job.report_success "#{node.name} disabled successfully."
       else
         job.report_failure "#{node.name} did not save! Disabled run_list entry was unable to be added to the node."
@@ -496,7 +494,7 @@ module MotherBrain
             end
           end
         end
-      end
+      end.flatten.uniq
     end
   end
 end

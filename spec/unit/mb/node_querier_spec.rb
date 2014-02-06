@@ -297,8 +297,8 @@ describe MB::NodeQuerier do
 
     context "when the node is not registered" do
       it "displays a warning" do
-        subject.should_receive(:abort).with(kind_of(MB::NodeNotFound)).and_return { raise MB::NodeNotFound.new(host) }
-        expect {subject.enable(job, host) }.to raise_error(MB::NodeNotFound)
+        job.should_receive(:report_failure)
+        subject.enable(job, host)
       end
     end
 
@@ -396,62 +396,77 @@ describe MB::NodeQuerier do
     end
 
     it "terminates the job" do
-      begin
-        subject.disable(job, host)
-      rescue MB::NodeNotFound
-        # Don't care
-      end
+      subject.disable(job, host) rescue nil
       expect(job).to_not be_alive
     end
 
     context "when the node is not registered" do
-      it "displays a warning" do
-        subject.should_receive(:abort).with(kind_of(MB::NodeNotFound)).and_return { raise MB::NodeNotFound.new(host) }
-        expect {subject.disable(job, host) }.to raise_error(MB::NodeNotFound)
+      it "reports failure" do
+        msg = "Could not discover the host's node name. The host may not be " +
+          "registered with Chef or the embedded Ruby used to identify the " +
+          "node name may not be available. #{host} was not disabled!"
+        job.should_receive(:report_failure).with(msg).and_return { raise "exit" }
+        begin
+          subject.disable(job, host)
+        rescue => e
+          e.message.should == "exit"
+        end
       end
     end
 
     # TODO test version in run list entry
     # TODO test env version
     # TODO test no version
-
+    
     context "when the node is registered" do
       let(:node_name)     { "foo.riotgames.com" }
       let(:run_list)      { ["recipe[foo::server]", "recipe[bar::server]"] }
-      let(:service_recipe) { "recipe[foo::service]" }
-      let(:foo_group)     { double(MB::Group,
-                                   recipes: ["foo::server"]) }
-      let(:dynamic_foo_service) { double(MB::Gear::DynamicService) }
-      let(:foo_service)   { double(MB::Gear::Service,
-                                   name: "foo_service",
-                                   service_group: foo_group,
-                                   service_recipe: service_recipe,
-                                   to_dynamic_service: dynamic_foo_service) }
-      let(:foo_component) { double(MB::Component,
-                                   name: "foo_component") }
-      let(:foo_plugin)    { double(MB::Plugin,
-                                   components: [foo_component]) }
       let(:node)          { double(Ridley::NodeObject,
-                                   run_list: run_list,
                                    name: node_name,
-                                   save: true) }
+                                   run_list: run_list,
+                                   save: true,
+                                   chef_environment: environment) }
+      let(:plugin_manager) { double(MB::PluginManager) }
+      
+      %w[foo bar].each do |x|
+        let(:"service_#{x}_recipe") { "recipe[#{x}::service]" }
 
-      before do
+        let(:"#{x}_group")     { double(MB::Group,
+                                        recipes: ["#{x}::server"]) }
+        let(:"dynamic_#{x}_service") { double(MB::Gear::DynamicService) }
+        let(:"#{x}_service")   { double(MB::Gear::Service,
+                                        name: "#{x}_service",
+                                        service_group: send(:"#{x}_group"),
+                                        service_recipe: send(:"service_#{x}_recipe"),
+                                        to_dynamic_service: send(:"dynamic_#{x}_service")) }
+        let(:"#{x}_component") { double(MB::Component,
+                                        name: "#{x}_component",
+                                        group: send(:"#{x}_group")) }
+        let(:"#{x}_plugin")    { double(MB::Plugin,
+                                        components: [send(:"#{x}_component")]) }
+        let(:"environment")   { "theenv" }
+      end
+      
+      it "disables the node" do
+        subject.stub(:plugin_manager).and_return(plugin_manager)
         subject.should_receive(:registered_as).with(host).and_return(node_name)
         subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)
-        MotherBrain::PluginManager.any_instance.should_receive(:for_run_list_entry).with(run_list[0]).and_return(foo_plugin)
-        MotherBrain::PluginManager.any_instance.should_receive(:for_run_list_entry).with(run_list[1]).and_return(nil)
-        foo_component.should_receive(:gears).with(MB::Gear::Service).and_return([foo_service])
-        subject.should_receive(:bulk_chef_run).with(job, [node], [service_recipe])
-        foo_group.should_receive(:includes_recipe?).with(run_list[0]).and_return(true)
-        node.should_receive(:run_list=).with([MB::NodeQuerier::DISABLED_RUN_LIST_ENTRY] + run_list)
-        dynamic_foo_service.should_receive(:node_state_change).with(job, foo_plugin, node, MB::Gear::DynamicService::STOP, false)
-        foo_service.stub(:dynamic_service?).and_return(true)
-      end
+        %w[foo bar].each_with_index do |x, i|
+          plugin_manager
+            .should_receive(:for_run_list_entry)
+            .with(run_list[i], environment, remote: true)
+            .and_return(send(:"#{x}_plugin"))
+          send(:"#{x}_component").should_receive(:gears).with(MB::Gear::Service).and_return([send(:"#{x}_service")])
+          send(:"#{x}_service").stub(:dynamic_service?).and_return(true)
+          send(:"#{x}_group").should_receive(:includes_recipe?).with(run_list[i]).and_return(true)
+          send(:"dynamic_#{x}_service").should_receive(:node_state_change).with(job, send(:"#{x}_plugin"), node, MB::Gear::DynamicService::STOP, false)
+          node.should_receive(:run_list).and_return(run_list)
+          node.stub(:run_list=)
+        end
+        subject.should_receive(:bulk_chef_run).with(job, [node], %w[foo bar].collect { |x| send(:"service_#{x}_recipe") })
 
-      it "disables the node" do
         subject.disable(job, host)
-      end
+       end
     end
   end
 
