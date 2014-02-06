@@ -76,7 +76,7 @@ module MotherBrain
         } unless COMMON_STATES.include?(state)
 
         chef_synchronize(chef_environment: environment, force: options[:force]) do
-          component_object = plugin.component(self.component)
+          component_object = plugin.component(component)
           service_object = component_object.get_service(name)
           group = component_object.group(service_object.service_group)
           nodes = group.nodes(environment)
@@ -99,7 +99,7 @@ module MotherBrain
           "Component's service state is being changed to #{state}, which is not one of #{COMMON_STATES}" 
         } unless COMMON_STATES.include?(state)
 
-        component_object = plugin.component(self.component)
+        component_object = plugin.component(component)
         service = component_object.get_service(name)
         set_node_attributes(job, [node], service.service_attribute, state)
         if run_chef
@@ -108,12 +108,12 @@ module MotherBrain
       end
 
       def remove_node_state_change(job, plugin, node, run_chef = true)
-        component_object = plugin.component(self.component)
+        component_object = plugin.component(component)
         service = component_object.get_service(name)
 
         set_node_attributes(job, [node], service.service_attribute, nil)
         if run_chef
-          self.node_querier.bulk_chef_run(job, [node], service.service_recipe)
+          node_querier.bulk_chef_run(job, [node], service.service_recipe)
         end
       end
 
