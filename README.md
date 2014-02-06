@@ -273,3 +273,4 @@ Thats all! You should now be able to explore the REST API of MB using Swagger.
 * Andrew Garson (<agarson@riotgames.com>)
 * Kyle Allan (<kallan@riotgames.com>)
 * Josiah Kiehl (<jkiehl@riotgames.com>)
+* Steve Rude (<srude@riotgames.com>)
