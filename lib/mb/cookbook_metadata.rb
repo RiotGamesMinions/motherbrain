@@ -51,12 +51,16 @@ module MotherBrain
 
     def initialize(&block)
       super
-
+      
       begin
         self.instance_eval(&block) if block_given?
       rescue => e
         raise MotherBrain::InvalidCookbookMetadata, e
       end
+    end
+
+    def version(data = nil)
+      @version = data.nil? ? @version : Solve::Version.new(data)
     end
 
     # TODO
