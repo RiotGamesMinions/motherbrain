@@ -1,5 +1,3 @@
-require 'ridley/mixin/params_validate'
-
 module MotherBrain
   class CookbookMetadata < ::Ridley::Chef::Cookbook::Metadata
 
@@ -49,6 +47,7 @@ module MotherBrain
         end
     end
 
+    # @param [Cookbook::Metadata]
     def initialize(&block)
       super
       
@@ -59,11 +58,14 @@ module MotherBrain
       end
     end
 
+    # Override the default version with [Solve::Version]
+    #
+    # @return [Solve::Version]
     def version(data = nil)
       @version = data.nil? ? @version : Solve::Version.new(data)
     end
 
-    # TODO
+    # @return [Boolean]
     def valid?
       true
     end
