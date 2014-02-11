@@ -95,7 +95,8 @@ describe MB::NodeQuerier do
   end
 
   describe "#chef_run" do
-    subject(:result) { node_querier.chef_run(host) }
+    subject(:result) { node_querier.chef_run(host, options) }
+    let(:options) { Hash.new }
 
     before { node_querier.stub_chain(:chef_connection, :node, :chef_run).and_return(response) }
 
@@ -128,6 +129,25 @@ describe MB::NodeQuerier do
 
       it "raises a RemoteCommandError" do
         expect { result }.to raise_error(MB::RemoteCommandError)
+      end
+    end
+
+    context "when there are override recipes" do
+      let(:node_object) { double(reload: nil, automatic_attributes: auto_attr, save: nil) }
+      let(:auto_attr) { double(recipes: nil, :recipes= => nil) }
+      let(:options) do
+        {
+          override_recipes: ["default::foo"],
+          node_object: node_object
+        }
+      end
+
+      before do
+        node_querier.stub_chain(:chef_connection, :node, :execute_command).and_return(response)
+      end
+
+      it "returns the ridley response" do
+        expect(result).to eql(response)
       end
     end
   end

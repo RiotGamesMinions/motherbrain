@@ -139,6 +139,30 @@ module MotherBrain
                   CliClient.new(job).display
                 end
 
+                method_option :cluster_override,
+                  type: :boolean,
+                  default: false,
+                  desc: "Sets the service operation to execute at the environment level"
+                method_option :force,
+                  type: :boolean,
+                  default: false,
+                  desc: "Perform service change even if the environment is locked",
+                  aliases: "-f"
+                desc("service [COMPONENT].[SERVICE] [STATE]", "Change the specified service to a new state")
+                define_method(:service) do |service, state|
+                  service_options = Hash.new.merge(options).deep_symbolize_keys
+
+                  job = MB::Gear::DynamicService.change_service_state(
+                    service.freeze,
+                    plugin.freeze,
+                    environment.freeze,
+                    state.freeze,
+                    service_options
+                  )
+
+                  CliClient.new(job).display
+                end
+
                 method_option :component_versions,
                   type: :hash,
                   desc: "The component versions to set with default attributes",

@@ -450,6 +450,20 @@ module MotherBrain
     end
   end
 
+  class InvalidDynamicService < MBError
+    error_code(3028)
+
+    def initialize(component, service_name)
+      @component = component
+      @service_name = service_name
+    end
+
+    def message
+      msg = "Both component: #{@component} and service name: #{@service_name} are required."
+      msg << "\nFormat should be in a dotted form - COMPONENT.SERVICE"
+    end
+  end
+
   # Bootstrap errors
   class BootstrapError < MBError
     exit_code(24)
