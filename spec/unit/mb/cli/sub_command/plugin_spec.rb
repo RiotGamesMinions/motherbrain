@@ -6,7 +6,6 @@ describe MB::Cli::SubCommand::Plugin do
 
     let(:metadata) do
       double('metadata',
-        valid?: true,
         name: "pvpnet",
         version: "1.2.3"
       )
