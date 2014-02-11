@@ -65,11 +65,6 @@ module MotherBrain
       @version = data.nil? ? @version : Solve::Version.new(data)
     end
 
-    # @return [Boolean]
-    def valid?
-      true
-    end
-
     private
 
       def method_missing(*args); nil end
