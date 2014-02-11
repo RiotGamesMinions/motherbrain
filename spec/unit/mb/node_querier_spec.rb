@@ -262,7 +262,7 @@ describe MB::NodeQuerier do
       ticket = double('ticket')
       job    = double('job', ticket: ticket)
       MB::Job.should_receive(:new).and_return(job)
-      subject.should_receive(:async).with(:enable, job, host)
+      subject.should_receive(:async).with(:enable, job, host, {})
 
       subject.async_enable(host)
     end
@@ -414,7 +414,7 @@ describe MB::NodeQuerier do
       ticket = double('ticket')
       job    = double('job', ticket: ticket)
       MB::Job.should_receive(:new).and_return(job)
-      subject.should_receive(:async).with(:disable, job, host)
+      subject.should_receive(:async).with(:disable, job, host, {})
 
       subject.async_disable(host)
     end

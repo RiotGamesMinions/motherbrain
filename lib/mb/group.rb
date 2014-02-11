@@ -100,7 +100,7 @@ module MotherBrain
     # @return [TrueClass, FalseClass]
     def includes_recipe?(recipe)
       # todo expand roles?
-      self.run_list.include?("recipe[#{recipe}]")
+      self.run_list.include?("#{recipe}")
     end
 
     private

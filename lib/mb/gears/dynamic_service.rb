@@ -110,8 +110,8 @@ module MotherBrain
       def remove_node_state_change(job, plugin, node, run_chef = true)
         component_object = plugin.component(component)
         service = component_object.get_service(name)
-
-        set_node_attributes(job, [node], service.service_attribute, nil)
+        
+        unset_node_attributes(job, [node], service.service_attribute)
         if run_chef
           node_querier.bulk_chef_run(job, [node], service.service_recipe)
         end
@@ -184,12 +184,35 @@ module MotherBrain
         nodes.concurrent_map do |node|
           node.reload
           attribute_keys.each do |attribute_key|
-            job.set_status("Setting node attribute '#{attribute_key}' to #{state.nil? ? 'nil' : state} on #{node.name}")
+            job.set_status(p("Setting node attribute '#{attribute_key}' to #{state.nil? ? 'nil' : state} on #{node.name}"))
             node.set_chef_attribute(attribute_key, state)
           end
           node.save
         end
       end
+
+      # Removes a default node attribute on the provided array
+      # of nodes.
+      #
+      # @param job [MB::Job]
+      #   the job to track status
+      # @param nodes [Array<Ridley::NodeObject>]
+      #   the nodes being operated on
+      # @param attribute_keys [Array<String>]
+      #   an array of dotted paths to attribute keys
+      #
+      # @return [Boolean]
+      def unset_node_attributes(job, nodes, attribute_keys)
+        nodes.concurrent_map do |node|
+          node.reload
+          attribute_keys.each do |attribute_key|
+            job.set_status("Unsetting node attribute '#{attribute_key}' to respect default and environment attributes.")
+            node.unset_chef_attribute(attribute_key)
+          end
+          node.save
+        end
+      end
+
     end
   end
 end

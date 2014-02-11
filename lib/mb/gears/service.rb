@@ -108,7 +108,7 @@ module MotherBrain
           "Service '#{self.name}' does not appear to by a dynamic service. It does not define the following fields which are required for dynamic services: #{self.missing_fields_for_dynamic_service.join(",")}"
         } unless dynamic_service?
 
-        MotherBrain::Gear::DynamicService.new(component, name)
+        MotherBrain::Gear::DynamicService.new(component.name, name)
       end
 
       # Indicates whether this service conforms to the dyanamic service pattern

@@ -87,23 +87,23 @@ describe MB::Gear::DynamicService do
   end
 
   describe "#remove_node_state_change" do
-    subject { MB::Gear::DynamicService.new(component_name, service_name) }
-    let(:service_name) { "foo_service" }
-    let(:service) { double(MB::Gear::Service,
-                           service_attribute: ["foo.service_attr"],
-                           service_recipe: service_recipe) }
+    subject              { MB::Gear::DynamicService.new(component_name, service_name) }
+    let(:service_name)   { "foo_service" }
+    let(:service)        { double(MB::Gear::Service,
+                                  service_attribute: ["foo.service_attr"],
+                                  service_recipe: service_recipe) }
     let(:component_name) { "foo_component" }
-    let(:plugin) { double(MB::Plugin) }
-    let(:component) { double(MB::Component) }
-    let(:node_querier) { double(MB::NodeQuerier) }
-    let(:node) { double(Ridley::NodeObject) }
+    let(:plugin)         { double(MB::Plugin) }
+    let(:component)      { double(MB::Component) }
+    let(:node_querier)   { double(MB::NodeQuerier) }
+    let(:node)           { double(Ridley::NodeObject) }
     let(:service_recipe) { "recipe[foo::service]" }
 
     before do
       plugin.stub(:component).with(component_name).and_return(component)
       component.stub(:get_service).with(service_name).and_return(service)
       subject.stub(:node_querier).and_return(node_querier)
-      subject.stub(:set_node_attributes).with(job, [node], service.service_attribute, nil)
+      subject.stub(:unset_node_attributes).with(job, [node], service.service_attribute)
       node_querier.stub(:bulk_chef_run).with(job, [node], service.service_recipe)
     end
     
@@ -118,7 +118,7 @@ describe MB::Gear::DynamicService do
     end
 
     it "should set the service node attributes to nil" do
-      expect(subject).to receive(:set_node_attributes).with(job, [node], service.service_attribute, nil)
+      expect(subject).to receive(:unset_node_attributes).with(job, [node], service.service_attribute)
       subject.remove_node_state_change(job, plugin, node, false)
     end
   end

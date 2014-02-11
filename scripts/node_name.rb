@@ -10,4 +10,5 @@ if Ohai::Config[:file]
 else
   client.ohai.all_plugins
 end
+puts ""
 puts client.node_name

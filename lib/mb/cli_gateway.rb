@@ -334,15 +334,25 @@ module MotherBrain
       CliClient.new(job).display
     end
 
+    method_option :force,
+      type: :boolean,
+      desc: "Remove the disabled run list entry to the node even if the services' service attributes cannot be automatically unset",
+      default: false,
+      aliases: "-f"
     desc "enable HOST", "Remove stop service attributes and 'disabled' run list entry from HOST's node."
     def enable(hostname)
-      job = node_querier.async_enable(hostname)
+      job = node_querier.async_enable(hostname, options.to_hash.symbolize_keys)
       CliClient.new(job).display
     end
 
+    method_option :force,
+      type: :boolean,
+      desc: "Apply the disabled run list entry to the node even if the services cannot be automatically stopped",
+      default: false,
+      aliases: "-f"
     desc "disable HOST", "Stop services on HOST and prevent chef-client from running until reenabled."
     def disable(hostname)
-      job = node_querier.async_disable(hostname)
+      job = node_querier.async_disable(hostname, options.to_hash.symbolize_keys)
       CliClient.new(job).display
     end
 
