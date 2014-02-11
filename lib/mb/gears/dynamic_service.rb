@@ -184,7 +184,7 @@ module MotherBrain
         nodes.concurrent_map do |node|
           node.reload
           attribute_keys.each do |attribute_key|
-            job.set_status(p("Setting node attribute '#{attribute_key}' to #{state.nil? ? 'nil' : state} on #{node.name}"))
+            job.set_status("Setting node attribute '#{attribute_key}' to #{state.nil? ? 'nil' : state} on #{node.name}")
             node.set_chef_attribute(attribute_key, state)
           end
           node.save
