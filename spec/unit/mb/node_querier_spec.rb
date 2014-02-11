@@ -302,43 +302,7 @@ describe MB::NodeQuerier do
       end
     end
 
-    # TODO test version in run list entry
-    # TODO test env version
-    # TODO test no version
-
     context "when the node is registered" do
-      # let(:node_name)     { "foo.riotgames.com" }
-      # let(:run_list)      { ["recipe[foo::server]", "recipe[bar::server]"] }
-      # let(:service_recipe) { "recipe[foo::service]" }
-      # let(:foo_group)     { double(MB::Group,
-      #                              recipes: ["foo::server"]) }
-      # let(:dynamic_foo_service) { double(MB::Gear::DynamicService) }
-      # let(:foo_service)   { double(MB::Gear::Service,
-      #                              name: "foo_service",
-      #                              service_group: foo_group,
-      #                              service_recipe: service_recipe,
-      #                              to_dynamic_service: dynamic_foo_service) }
-      # let(:foo_component) { double(MB::Component,
-      #                              name: "foo_component") }
-      # let(:foo_plugin)    { double(MB::Plugin,
-      #                              components: [foo_component]) }
-      let(:node)          { double(Ridley::NodeObject,
-                                    run_list: run_list,
-                                    name: node_name,
-                                    save: true) }
-
-      before do
-        subject.should_receive(:registered_as).with(host).and_return(node_name)
-        subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)
-        # MotherBrain::PluginManager.any_instance.should_receive(:for_run_list_entry).with(run_list[0]).and_return(foo_plugin)
-        # MotherBrain::PluginManager.any_instance.should_receive(:for_run_list_entry).with(run_list[1]).and_return(nil)
-        # foo_component.should_receive(:gears).with(MB::Gear::Service).and_return([foo_service])
-        # subject.should_receive(:bulk_chef_run).with(job, [node], [service_recipe])
-        # foo_group.should_receive(:includes_recipe?).with(run_list[0]).and_return(true)
-        # node.should_receive(:run_list=).with([MB::NodeQuerier::DISABLED_RUN_LIST_ENTRY] + run_list)
-        # dynamic_foo_service.should_receive(:node_state_change).with(job, foo_plugin, node, MB::Gear::DynamicService::STOP, false)
-        # foo_service.stub(:dynamic_service?).and_return(true)
-      end
       let(:node_name)     { "foo.riotgames.com" }
       let(:run_list)      { ["recipe[disabled]", "recipe[foo::server]", "recipe[bar::server]"] }
       let(:node)          { double(Ridley::NodeObject,
@@ -456,10 +420,6 @@ describe MB::NodeQuerier do
       end
     end
 
-    # TODO test version in run list entry
-    # TODO test env version
-    # TODO test no version
-    
     context "when the node is registered" do
       let(:node_name)     { "foo.riotgames.com" }
       let(:run_list)      { ["recipe[foo::server]", "recipe[bar::server]"] }
