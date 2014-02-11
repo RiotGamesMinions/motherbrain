@@ -206,7 +206,6 @@ module MotherBrain
 
                 desc("attributes", "View available attributes for plugin.")
                 define_method(:attributes) do 
-                  #plugin.metadata.long_description.delete
                   ui.say "\n"
                   ui.say "** listing attributes for #{plugin}:"
                   ui.say "\n"
