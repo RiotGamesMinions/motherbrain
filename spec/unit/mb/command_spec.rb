@@ -59,7 +59,6 @@ describe MB::Command do
 
   let(:metadata) do
     double('metadata',
-      valid?: true,
       name: "rspec-test",
       version: "1.2.3"
     )
