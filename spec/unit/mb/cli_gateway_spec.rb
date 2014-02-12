@@ -100,7 +100,6 @@ describe MB::CliGateway do
       let(:plugin) { MB::Plugin.new(metadata) }
       let(:metadata) do
         double('metadata',
-          valid?: true,
           name: name,
           description: description
         )

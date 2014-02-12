@@ -203,6 +203,14 @@ module MotherBrain
 
                   CliClient.new(job).display
                 end
+
+                desc("attributes", "View available attributes for plugin.")
+                define_method(:attributes) do 
+                  ui.say "\n"
+                  ui.say "** listing attributes for #{plugin}:"
+                  ui.say "\n"
+                  ui.say plugin.metadata.attributes.to_yaml
+                end
               end
             end
 

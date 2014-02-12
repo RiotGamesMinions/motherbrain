@@ -7,7 +7,6 @@ describe MB::Cli::SubCommand do
     context "given a MB::Plugin" do
       let(:metadata) do
         double('metadata',
-          valid?: true,
           name: "rspec-test"
         )
       end

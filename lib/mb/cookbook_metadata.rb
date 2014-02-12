@@ -1,9 +1,15 @@
 module MotherBrain
-  class CookbookMetadata
+  class CookbookMetadata < ::Ridley::Chef::Cookbook::Metadata
+
+    RUBY_FILENAME = 'metadata.rb'.freeze
+    JSON_FILENAME = 'metadata.json'.freeze
+
     class << self
       # @return [Cookbook::Metadata]
       def load(&block)
-        new(&block)
+        klass = new()
+        klass.instance_eval(&block) if block_given?
+        klass
       end
 
       # @param [#to_s] filepath
@@ -37,66 +43,31 @@ module MotherBrain
         end
 
         def from_json_file(filepath)
-          load {
-            json_metadata = JSON.parse(File.read(filepath))
-            json_metadata.each { |key, val| send(key.to_sym, val) }
-          }
+          load { from_json(File.read(filepath)) }
         end
     end
 
-    RUBY_FILENAME = 'metadata.rb'.freeze
-    JSON_FILENAME = 'metadata.json'.freeze
-
-    include VariaModel
-
-    attribute :name,
-      type: String
-
-    attribute :maintainer,
-      type: String
-
-    attribute :maintainer_email,
-      type: String
-
-    attribute :license,
-      type: String
-
-    attribute :description,
-      type: String
-
-    attribute :long_description,
-      type: String
-
-    attribute :version,
-      type: Solve::Version,
-      required: true,
-      coerce: lambda { |m|
-        Solve::Version.new(m)
-      }
-
+    # @param [Cookbook::Metadata]
     def initialize(&block)
-      dsl_eval(&block) if block_given?
+      super
+      
+      begin
+        self.instance_eval(&block) if block_given?
+      rescue => e
+        raise MotherBrain::InvalidCookbookMetadata, e
+      end
+    end
+
+    # Override the default version with [Solve::Version]
+    #
+    # @return [Solve::Version]
+    def version(data = nil)
+      @version = data.nil? ? @version : Solve::Version.new(data)
     end
 
     private
 
-      def dsl_eval(&block)
-        CleanRoom.new(self).instance_eval(&block)
-      end
+      def method_missing(*args); nil end
 
-    # @api private
-    class CleanRoom < CleanRoomBase
-      dsl_attr_writer :name
-      dsl_attr_writer :maintainer
-      dsl_attr_writer :maintainer_email
-      dsl_attr_writer :license
-      dsl_attr_writer :description
-      dsl_attr_writer :long_description
-      dsl_attr_writer :version
-
-      private
-
-        def method_missing(*args); nil end
-    end
   end
 end
