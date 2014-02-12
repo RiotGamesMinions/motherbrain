@@ -121,19 +121,4 @@ describe MB::Gear::Service do
     end
   end
 
-  describe "#stop_actions_for" do
-    subject do
-      MB::Gear::Service.new("activemq", component) do
-        action :start do
-          node_attribute("key.one", true)
-        end
-        action :stop do
-          node_attribute("key.one", false)
-        end
-      end
-    end
-
-    it "should return the stop actions for " do
-    end
-  end
 end
