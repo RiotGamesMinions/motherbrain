@@ -336,7 +336,7 @@ module MotherBrain
 
     method_option :force,
       type: :boolean,
-      desc: "Remove the disabled run list entry to the node even if the services' service attributes cannot be automatically unset",
+      desc: "Perform HOST enable even if the environment is locked",
       default: false,
       aliases: "-f"
     desc "enable HOST", "Remove stop service attributes and 'disabled' run list entry from HOST's node."
@@ -347,7 +347,7 @@ module MotherBrain
 
     method_option :force,
       type: :boolean,
-      desc: "Apply the disabled run list entry to the node even if the services cannot be automatically stopped",
+      desc: "Perform HOST disable even if the environment is locked",
       default: false,
       aliases: "-f"
     desc "disable HOST", "Stop services on HOST and prevent chef-client from running until reenabled."

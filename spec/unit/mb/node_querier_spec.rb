@@ -330,7 +330,11 @@ describe MB::NodeQuerier do
                                         components: [send(:"#{x}_component")]) }
         let(:"environment")   { "theenv" }
       end
-      
+
+      before do
+        subject.stub(:registered_as).and_return(node_name)
+      end
+
       it "enables the node" do
         subject.stub(:plugin_manager).and_return(plugin_manager)
         subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)

@@ -17,6 +17,7 @@ module MotherBrain
     extend Forwardable
     include Celluloid
     include MB::Logging
+    include MB::Mixin::Locks
     include MB::Mixin::Services
 
     finalizer :finalize_callback
@@ -277,6 +278,9 @@ module MotherBrain
     #
     # @param [String] host
     #   public hostname of the target node
+    # @param [Hash] options
+    #
+    # @option options [Boolean] :force (false) Ignore environment lock and execute anyway.
     #
     # @return [MB::JobTicket]
     def async_disable(host, options = {})
@@ -289,7 +293,10 @@ module MotherBrain
     #
     # @param [String] host
     #   public hostname of the target node
+    # @param [Hash] options
     #
+    # @option options [Boolean] :force (false) Ignore environment lock and execute anyway.
+    # 
     # @return [MB::JobTicket]
     def async_enable(host, options = {})
       job = Job.new(:enable_node)
@@ -339,9 +346,7 @@ module MotherBrain
     #   public hostname of the target node
     # @param [Hash] options
     #
-    # @option options [Boolean] :force (false) Remove the disabled run
-    #   list entry even if services' attributes cannot be removed from
-    #   the node object.
+    # @option options [Boolean] :force (false) Ignore environment lock and execute anyway.
     # 
     def enable(job, host, options = {})
       job.report_running("Discovering host's registered node name")
@@ -355,30 +360,35 @@ module MotherBrain
       end
       
       job.set_status("Host registered as #{node_name}.")
-      required_run_list = []
       node = chef_connection.node.find(node_name)
-      if node.run_list.include?(DISABLED_RUN_LIST_ENTRY)
-        required_run_list = on_dynamic_services(job, node, options) do |dynamic_service, plugin|
-          dynamic_service.remove_node_state_change(job,
-                                                   plugin,
-                                                   node,
-                                                   false)
 
-        end
-        if !required_run_list.empty?
-          self.bulk_chef_run(job, [node], required_run_list.flatten.uniq) 
-        end
+      required_run_list = []
+      chef_synchronize(chef_environment: node.chef_environment, force: options[:force], job: job) do
+        if node.run_list.include?(DISABLED_RUN_LIST_ENTRY)
+          required_run_list = on_dynamic_services(job, node) do |dynamic_service, plugin|
+            dynamic_service.remove_node_state_change(job,
+                                                     plugin,
+                                                     node,
+                                                     false)
 
-        node.run_list = node.run_list.reject { |r| r == DISABLED_RUN_LIST_ENTRY }
-        
-        if node.save
-          job.report_success "#{node.name} enabled successfully."
+          end
+          if !required_run_list.empty?
+            self.bulk_chef_run(job, [node], required_run_list.flatten.uniq) 
+          end
+
+          node.run_list = node.run_list.reject { |r| r == DISABLED_RUN_LIST_ENTRY }
+          
+          if node.save
+            job.report_success "#{node.name} enabled successfully."
+          else
+            job.report_failure "#{node.name} did not save! Disabled run_list entry was unable to be removed to the node."
+          end
         else
-          job.report_failure "#{node.name} did not save! Disabled run_list entry was unable to be removed to the node."
+          job.report_success("#{node.name} is not disabled. No need to enable.")
         end
-      else
-        job.report_success("#{node.name} is not disabled. No need to enable.")
       end
+    rescue MotherBrain::ResourceLocked => e
+      job.report_failure e.message
     ensure
       job.terminate if job && job.alive?
     end
@@ -391,8 +401,7 @@ module MotherBrain
     #   public hostname of the target node
     # @param [Hash] options
     #
-    # @option options [Boolean] :force (false)
-    #   Add the disabled run list entry even if the services cannot be automatically stopped
+    # @option options [Boolean] :force (false) Ignore environment lock and execute anyway.
     # 
     def disable(job, host, options = {})
       job.report_running("Discovering host's registered node name")
@@ -406,30 +415,34 @@ module MotherBrain
       job.set_status("Host registered as #{node_name}.")
       node = chef_connection.node.find(node_name)
       required_run_list = []
-      if node.run_list.include?(DISABLED_RUN_LIST_ENTRY)
-        job.report_success("#{node.name} is already disabled.")
-      else
-        required_run_list = on_dynamic_services(job, node, options) do |dynamic_service, plugin|
-          dynamic_service.node_state_change(job,
-                                            plugin,
-                                            node,
-                                            MB::Gear::DynamicService::STOP,
-                                            false)
+      chef_synchronize(chef_environment: node.chef_environment, force: options[:force], job: job) do
+        if node.run_list.include?(DISABLED_RUN_LIST_ENTRY)
+          job.report_success("#{node.name} is already disabled.")
+        else
+          required_run_list = on_dynamic_services(job, node) do |dynamic_service, plugin|
+            dynamic_service.node_state_change(job,
+                                              plugin,
+                                              node,
+                                              MB::Gear::DynamicService::STOP,
+                                              false)
+          end
+        end
+        if !required_run_list.empty?
+          job.set_status "Running chef with the following run list: #{required_run_list.inspect}"
+          self.bulk_chef_run(job, [node], required_run_list)
+        else
+          job.set_status "No recipes required to run."
+        end
+
+        node.run_list = [DISABLED_RUN_LIST_ENTRY].concat(node.run_list)
+        if node.save
+          job.report_success "#{node.name} disabled."
+        else
+          job.report_failure "#{node.name} did not save! Disabled run_list entry was unable to be added to the node."
         end
       end
-      if !required_run_list.empty?
-        job.set_status "Running chef with the following run list: #{required_run_list.inspect}"
-        self.bulk_chef_run(job, [node], required_run_list)
-      else
-        job.set_status "No recipes required to run."
-      end
-
-      node.run_list = [DISABLED_RUN_LIST_ENTRY].concat(node.run_list)
-      if node.save
-        job.report_success "#{node.name} disabled."
-      else
-        job.report_failure "#{node.name} did not save! Disabled run_list entry was unable to be added to the node."
-      end
+    rescue MotherBrain::ResourceLocked => e
+      job.report_failure e.message
     ensure
       job.terminate if job && job.alive?
     end
@@ -485,18 +498,13 @@ module MotherBrain
       response.stdout.chomp
     end
 
-    def on_dynamic_services(job, node, options = {})
+    def on_dynamic_services(job, node)
       [].tap do |required_run_list|
         node.run_list.each do |run_list_entry|
           next if run_list_entry == DISABLED_RUN_LIST_ENTRY
           plugin = plugin_manager.for_run_list_entry(run_list_entry, node.chef_environment, remote: true)
           if plugin.nil?
-            message = "Could not find plugin for #{run_list_entry}."
-            if options[:force]
-              job.set_status(message + "Skipping service stop, but continuing due to force flag being set. Intended service state added manually.")
-            else
-              job.report_failure(message. + " Aborting command. Set --force to continue this command when this occurs.")
-            end
+            job.report_failure("Could not find plugin for #{run_list_entry}. Aborting command.")
           end
           plugin.components.each do |component|
             services = component.gears(MB::Gear::Service)
@@ -508,13 +516,9 @@ module MotherBrain
                   required_run_list << service.service_recipe
                 end
               else
-                message = "Service #{component.name}.#{service.name} is not a dynamic service;" +
-                  " MotherBrain cannot set the state of this service automatically."
-                if options[:force]
-                  job.set_status(message + " Continuing anyway due to force flag being set.")
-                else
-                  job.report_failure(message + " Aborting command. Set --force to continue in this situation.")
-                end
+                job.report_failure("Service #{component.name}.#{service.name} is not a dynamic service;" +
+                                   " MotherBrain cannot set the state of this service automatically." +
+                                   " Aborting command.")
               end
             end
           end
