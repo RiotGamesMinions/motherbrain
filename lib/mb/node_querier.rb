@@ -180,9 +180,7 @@ module MotherBrain
     #
     # @return [Ridley::HostConnector::Response]
     def put_secret(host, options = {})
-      options = options.reverse_merge(
-                                      secret: Application.config.chef.encrypted_data_bag_secret_path
-                                      )
+      options = options.reverse_merge(secret: Application.config.chef.encrypted_data_bag_secret_path)
 
       if options[:secret].nil? || !File.exists?(options[:secret])
         return nil
