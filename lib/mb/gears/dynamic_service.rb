@@ -17,12 +17,19 @@ module MotherBrain
         # @param options [Hash]
         # 
         # @return [MB::JobTicket]
-        def change_service_state(service, plugin, environment, state, options = {})
+        def change_service_state(service, plugin, environment, state, run_chef = true, options = {})
+          job = Job.new(:dynamic_service_state_change)
+
           component, service_name = service.split('.')
           raise InvalidDynamicService.new(component, service_name) unless component && service_name
-
           dynamic_service = new(component, service_name)
-          dynamic_service.async_state_change(plugin, environment, state, options)
+          dynamic_service.state_change(job, plugin, environment, state, run_chef, options)
+          job.report_success
+          job.ticket
+        rescue => ex
+          job.report_failure(ex)
+        ensure
+          job.terminate if job && job.alive?
         end
       end
 
@@ -30,10 +37,13 @@ module MotherBrain
       include MB::Mixin::Locks
       include MB::Logging
 
+      START   = "start".freeze
+      STOP    = "stop".freeze
+      RESTART = "restart".freeze
       COMMON_STATES = [
-        "start",
-        "stop",
-        "restart"
+        START,
+        STOP,
+        RESTART
       ].freeze
 
       # @return [String]
@@ -50,6 +60,7 @@ module MotherBrain
       # Default behavior is to set a node attribute on each individual node serially
       # and then execute the chef run.
       #
+      # @param job [MB::Job]
       # @param plugin [MB::Plugin]
       #   the plugin currently in use
       # @param environment [String]
@@ -59,17 +70,16 @@ module MotherBrain
       # @param options [Hash]
       #
       # @return [MB::JobTicket]
-      def async_state_change(plugin, environment, state, options = {})
-        job = Job.new(:dynamic_service_state_change)
-
-        log.warn { "Component's service state is being changed to #{state}, which is not one of #{COMMON_STATES}" } unless COMMON_STATES.include?(state)
+      def state_change(job, plugin, environment, state, run_chef = true, options = {})
+        log.warn { 
+          "Component's service state is being changed to #{state}, which is not one of #{COMMON_STATES}" 
+        } unless COMMON_STATES.include?(state)
 
         chef_synchronize(chef_environment: environment, force: options[:force]) do
           component_object = plugin.component(component)
           service_object = component_object.get_service(name)
           group = component_object.group(service_object.service_group)
           nodes = group.nodes(environment)
-
           job.report_running("preparing to change the #{name} service to #{state}")
 
           if options[:cluster_override]
@@ -78,15 +88,33 @@ module MotherBrain
             unset_environment_attribute(job, environment, service_object.service_attribute)
             set_node_attributes(job, nodes, service_object.service_attribute, state)
           end
-          node_querier.bulk_chef_run(job, nodes, service_object.service_recipe)
+          if run_chef
+            node_querier.bulk_chef_run(job, nodes, service_object.service_recipe)
+          end
         end
+      end
 
-        job.report_success
-        job.ticket
-      rescue => ex
-        job.report_failure(ex)
-      ensure
-        job.terminate if job && job.alive?
+      def node_state_change(job, plugin, node, state, run_chef = true)
+        log.warn { 
+          "Component's service state is being changed to #{state}, which is not one of #{COMMON_STATES}" 
+        } unless COMMON_STATES.include?(state)
+
+        component_object = plugin.component(component)
+        service = component_object.get_service(name)
+        set_node_attributes(job, [node], service.service_attribute, state)
+        if run_chef
+          node_querier.bulk_chef_run(job, [node], service.service_recipe)
+        end
+      end
+
+      def remove_node_state_change(job, plugin, node, run_chef = true)
+        component_object = plugin.component(component)
+        service = component_object.get_service(name)
+        
+        unset_node_attributes(job, [node], service.service_attribute)
+        if run_chef
+          node_querier.bulk_chef_run(job, [node], service.service_recipe)
+        end
       end
 
       # Finds the environment object, sets an attribute at the
@@ -155,14 +183,36 @@ module MotherBrain
       def set_node_attributes(job, nodes, attribute_keys, state)
         nodes.concurrent_map do |node|
           node.reload
-
           attribute_keys.each do |attribute_key|
-            job.set_status("Setting node attribute '#{attribute_key}' to #{state} on #{node.name}")
+            job.set_status("Setting node attribute '#{attribute_key}' to #{state.nil? ? 'nil' : state} on #{node.name}")
             node.set_chef_attribute(attribute_key, state)
           end
           node.save
         end
       end
+
+      # Removes a default node attribute on the provided array
+      # of nodes.
+      #
+      # @param job [MB::Job]
+      #   the job to track status
+      # @param nodes [Array<Ridley::NodeObject>]
+      #   the nodes being operated on
+      # @param attribute_keys [Array<String>]
+      #   an array of dotted paths to attribute keys
+      #
+      # @return [Boolean]
+      def unset_node_attributes(job, nodes, attribute_keys)
+        nodes.concurrent_map do |node|
+          node.reload
+          attribute_keys.each do |attribute_key|
+            job.set_status("Unsetting node attribute '#{attribute_key}' to respect default and environment attributes.")
+            node.unset_chef_attribute(attribute_key)
+          end
+          node.save
+        end
+      end
+
     end
   end
 end

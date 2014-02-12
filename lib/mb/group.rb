@@ -95,6 +95,14 @@ module MotherBrain
         self.recipes.collect { |recipe| "recipe[#{recipe}]" }
     end
 
+    # Indicates whether the run list contains the recipe
+    #
+    # @return [TrueClass, FalseClass]
+    def includes_recipe?(recipe)
+      # todo expand roles?
+      self.run_list.include?("#{recipe}")
+    end
+
     private
 
       def dsl_eval(&block)

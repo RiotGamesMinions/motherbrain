@@ -113,3 +113,20 @@ describe MB::GroupBootstrapError do
   its(:host_errors) { should have(2).item }
   its(:message) { should be_a(String) }
 end
+
+describe MB::ServiceRunListNotFound do
+  describe "with string" do
+    subject { described_class.new("abc") }
+    
+    it "should use the string" do
+      expect(subject.message).to match(/abc/)
+    end
+  end
+  describe "with array" do
+    subject { described_class.new(["a", "b", "c"]) }
+
+    it "should join the array and use the resulting string" do
+      expect(subject.message).to match(/a, b, c/)
+    end
+  end
+end

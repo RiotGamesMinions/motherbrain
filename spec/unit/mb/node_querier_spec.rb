@@ -254,6 +254,228 @@ describe MB::NodeQuerier do
     end
   end
 
+  describe "#async_enable" do
+    let(:host) { "192.168.1.1" }
+    let(:options) { Hash.new }
+
+    it "creates a Job and delegates to #disable" do
+      ticket = double('ticket')
+      job    = double('job', ticket: ticket)
+      MB::Job.should_receive(:new).and_return(job)
+      subject.should_receive(:async).with(:enable, job, host, {})
+
+      subject.async_enable(host)
+    end
+
+    it "returns a JobTicket" do
+      expect(subject.async_enable(host)).to be_a(MB::JobRecord)
+    end
+  end
+
+
+  describe "#enable" do
+    let(:host) { "192.168.1.1" }
+    let(:job) { MB::Job.new(:disable) }
+    let(:future_stub) { double(Celluloid::Future, value: nil) }
+    let(:node_stub) { 
+      double(Ridley::NodeObject,
+             run_list: ["recipe[disabled]", "recipe[foo::server]", "recipe[foo::database]"])
+    }
+
+    before do
+      subject.stub(:registered_as).with(host).and_return(nil)
+    end
+
+    it "terminates the job" do
+      begin
+        subject.enable(job, host)
+      rescue MB::NodeNotFound
+        # Don't care
+      end
+      expect(job).to_not be_alive
+    end
+
+    context "when the node is not registered" do
+      it "displays a warning" do
+        job.should_receive(:report_failure)
+        subject.enable(job, host)
+      end
+    end
+
+    context "when the node is registered" do
+      let(:node_name)     { "foo.riotgames.com" }
+      let(:run_list)      { ["recipe[disabled]", "recipe[foo::server]", "recipe[bar::server]"] }
+      let(:node)          { double(Ridley::NodeObject,
+                                   name: node_name,
+                                   run_list: run_list,
+                                   save: true,
+                                   chef_environment: environment) }
+      let(:plugin_manager) { double(MB::PluginManager) }
+      
+      %w[foo bar].each do |x|
+        let(:"service_#{x}_recipe") { "recipe[#{x}::service]" }
+
+        let(:"#{x}_group")     { double(MB::Group,
+                                        recipes: ["#{x}::server"]) }
+        let(:"dynamic_#{x}_service") { double(MB::Gear::DynamicService) }
+        let(:"#{x}_service")   { double(MB::Gear::Service,
+                                        name: "#{x}_service",
+                                        service_group: send(:"#{x}_group"),
+                                        service_recipe: send(:"service_#{x}_recipe"),
+                                        to_dynamic_service: send(:"dynamic_#{x}_service")) }
+        let(:"#{x}_component") { double(MB::Component,
+                                        name: "#{x}_component",
+                                        group: send(:"#{x}_group")) }
+        let(:"#{x}_plugin")    { double(MB::Plugin,
+                                        components: [send(:"#{x}_component")]) }
+        let(:"environment")   { "theenv" }
+      end
+
+      before do
+        subject.stub(:registered_as).and_return(node_name)
+      end
+
+      it "enables the node" do
+        subject.stub(:plugin_manager).and_return(plugin_manager)
+        subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)
+        %w[foo bar].each_with_index do |x, i|
+          plugin_manager
+            .should_receive(:for_run_list_entry)
+            .with(run_list[i+1], environment, remote: true)
+            .and_return(send(:"#{x}_plugin"))
+          send(:"#{x}_component").should_receive(:gears).with(MB::Gear::Service).and_return([send(:"#{x}_service")])
+          send(:"#{x}_service").stub(:dynamic_service?).and_return(true)
+          send(:"#{x}_group").should_receive(:includes_recipe?).with(run_list[i+1]).and_return(true)
+          send(:"dynamic_#{x}_service").should_receive(:remove_node_state_change).with(job, send(:"#{x}_plugin"), node, false)
+          node.stub(:run_list=)
+        end
+        subject.should_receive(:bulk_chef_run).with(job, [node], %w[foo bar].collect { |x| send(:"service_#{x}_recipe") })
+
+        subject.enable(job, host)
+      end
+    end
+  end
+
+  describe "#async_purge" do
+    let(:host) { "192.168.1.1" }
+    let(:options) { Hash.new }
+
+    it "creates a Job and delegates to #purge" do
+      ticket = double('ticket')
+      job    = double('job', ticket: ticket)
+      MB::Job.should_receive(:new).and_return(job)
+      subject.should_receive(:purge).with(job, host, options)
+
+      subject.async_purge(host, options)
+    end
+
+    it "returns a JobTicket" do
+      expect(subject.async_purge(host, options)).to be_a(MB::JobRecord)
+    end
+  end
+
+  describe "#async_disable" do
+    let(:host) { "192.168.1.1" }
+    let(:options) { Hash.new }
+
+    it "creates a Job and delegates to #disable" do
+      ticket = double('ticket')
+      job    = double('job', ticket: ticket)
+      MB::Job.should_receive(:new).and_return(job)
+      subject.should_receive(:async).with(:disable, job, host, {})
+
+      subject.async_disable(host)
+    end
+
+    it "returns a JobTicket" do
+      expect(subject.async_disable(host)).to be_a(MB::JobRecord)
+    end
+  end
+
+  describe "#disable" do
+    let(:host) { "192.168.1.1" }
+    let(:job) { MB::Job.new(:disable) }
+    let(:future_stub) { double(Celluloid::Future, value: nil) }
+    let(:node_stub) { 
+      double(Ridley::NodeObject,
+             run_list: ["recipe[foo::server]", "recipe[foo::database]"])
+    }
+
+    before do
+      subject.stub(:registered_as).with(host).and_return(nil)
+    end
+
+    it "terminates the job" do
+      subject.disable(job, host) rescue nil
+      expect(job).to_not be_alive
+    end
+
+    context "when the node is not registered" do
+      it "reports failure" do
+        msg = "Could not discover the host's node name. The host may not be " +
+          "registered with Chef or the embedded Ruby used to identify the " +
+          "node name may not be available. #{host} was not disabled!"
+        job.should_receive(:report_failure).with(msg).and_return { raise "exit" }
+        begin
+          subject.disable(job, host)
+        rescue => e
+          e.message.should == "exit"
+        end
+      end
+    end
+
+    context "when the node is registered" do
+      let(:node_name)     { "foo.riotgames.com" }
+      let(:run_list)      { ["recipe[foo::server]", "recipe[bar::server]"] }
+      let(:node)          { double(Ridley::NodeObject,
+                                   name: node_name,
+                                   run_list: run_list,
+                                   save: true,
+                                   chef_environment: environment) }
+      let(:plugin_manager) { double(MB::PluginManager) }
+      
+      %w[foo bar].each do |x|
+        let(:"service_#{x}_recipe") { "recipe[#{x}::service]" }
+
+        let(:"#{x}_group")     { double(MB::Group,
+                                        recipes: ["#{x}::server"]) }
+        let(:"dynamic_#{x}_service") { double(MB::Gear::DynamicService) }
+        let(:"#{x}_service")   { double(MB::Gear::Service,
+                                        name: "#{x}_service",
+                                        service_group: send(:"#{x}_group"),
+                                        service_recipe: send(:"service_#{x}_recipe"),
+                                        to_dynamic_service: send(:"dynamic_#{x}_service")) }
+        let(:"#{x}_component") { double(MB::Component,
+                                        name: "#{x}_component",
+                                        group: send(:"#{x}_group")) }
+        let(:"#{x}_plugin")    { double(MB::Plugin,
+                                        components: [send(:"#{x}_component")]) }
+        let(:"environment")   { "theenv" }
+      end
+      
+      it "disables the node" do
+        subject.stub(:plugin_manager).and_return(plugin_manager)
+        subject.should_receive(:registered_as).with(host).and_return(node_name)
+        subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)
+        %w[foo bar].each_with_index do |x, i|
+          plugin_manager
+            .should_receive(:for_run_list_entry)
+            .with(run_list[i], environment, remote: true)
+            .and_return(send(:"#{x}_plugin"))
+          send(:"#{x}_component").should_receive(:gears).with(MB::Gear::Service).and_return([send(:"#{x}_service")])
+          send(:"#{x}_service").stub(:dynamic_service?).and_return(true)
+          send(:"#{x}_group").should_receive(:includes_recipe?).with(run_list[i]).and_return(true)
+          send(:"dynamic_#{x}_service").should_receive(:node_state_change).with(job, send(:"#{x}_plugin"), node, MB::Gear::DynamicService::STOP, false)
+          node.should_receive(:run_list).and_return(run_list)
+          node.stub(:run_list=)
+        end
+        subject.should_receive(:bulk_chef_run).with(job, [node], %w[foo bar].collect { |x| send(:"service_#{x}_recipe") })
+
+        subject.disable(job, host)
+       end
+    end
+  end
+
   describe "#async_purge" do
     let(:host) { "192.168.1.1" }
     let(:options) { Hash.new }

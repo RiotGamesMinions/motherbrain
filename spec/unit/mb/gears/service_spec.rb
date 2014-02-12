@@ -52,6 +52,28 @@ describe MB::Gear::Service do
     end
   end
 
+  describe "#action!" do
+    subject do
+      MB::Gear::Service.new("activemq", component) do
+        action :start do
+          node_attribute("key.one", true)
+        end
+      end
+    end
+
+    it "returns a Gear::Service::Action" do
+      subject.action!(:start).should be_a(MB::Gear::Service::Action)
+    end
+
+    context "given an action that does not exist" do
+      it "raises an ActionNotFound error" do
+        lambda {
+          subject.action!(:stop)
+        }.should raise_error(MB::ActionNotFound)
+      end
+    end
+  end
+
   describe "#action" do
     subject do
       MB::Gear::Service.new("activemq", component) do
@@ -66,10 +88,14 @@ describe MB::Gear::Service do
     end
 
     context "given an action that does not exist" do
-      it "raises an ActionNotFound error" do
+      it "returns nil" do
+        expect(subject.action(:stop)).to be_nil
+      end
+
+      it "does not raise an ActionNotFound error" do
         lambda {
           subject.action(:stop)
-        }.should raise_error(MB::ActionNotFound)
+        }.should_not raise_error
       end
     end
   end
@@ -82,7 +108,7 @@ describe MB::Gear::Service do
       subject.add_action(action_1)
 
       subject.actions.should have(1).item
-      subject.action("start").should eql(action_1)
+      subject.action!("start").should eql(action_1)
     end
 
     context "when an action of the given name has already been defined" do
@@ -94,4 +120,5 @@ describe MB::Gear::Service do
       end
     end
   end
+
 end

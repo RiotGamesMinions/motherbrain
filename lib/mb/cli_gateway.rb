@@ -232,7 +232,9 @@ module MotherBrain
       "environment",
       "plugin",
       "template",
-      "purge"
+      "purge",
+      "disable",
+      "enable"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [
@@ -329,6 +331,28 @@ module MotherBrain
     desc "purge HOST", "Remove Chef from node and purge it's data from the Chef server"
     def purge(hostname)
       job = node_querier.async_purge(hostname, options.to_hash.symbolize_keys)
+      CliClient.new(job).display
+    end
+
+    method_option :force,
+      type: :boolean,
+      desc: "Perform HOST enable even if the environment is locked",
+      default: false,
+      aliases: "-f"
+    desc "enable HOST", "Remove stop service attributes and 'disabled' run list entry from HOST's node."
+    def enable(hostname)
+      job = node_querier.async_enable(hostname, options.to_hash.symbolize_keys)
+      CliClient.new(job).display
+    end
+
+    method_option :force,
+      type: :boolean,
+      desc: "Perform HOST disable even if the environment is locked",
+      default: false,
+      aliases: "-f"
+    desc "disable HOST", "Stop services on HOST and prevent chef-client from running until reenabled."
+    def disable(hostname)
+      job = node_querier.async_disable(hostname, options.to_hash.symbolize_keys)
       CliClient.new(job).display
     end
 
