@@ -6,8 +6,6 @@ if File.exists?('Gemfile.local') then
   eval File.read('Gemfile.local'), nil, 'Gemfile.local'
 end
 
-gem 'ef-rest', git: 'git@github.com:RiotGames/ef-rest.git'
-
 platforms :ruby do
   gem 'mysql2'
 end

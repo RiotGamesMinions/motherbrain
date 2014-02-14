@@ -1,0 +1,32 @@
+{
+  "chef": {
+    "api_url": "https://chef.las1.riotgames.com/organizations/danger_zone",
+    "api_client": "kallan",
+    "api_key": "/app/keys/kallan.pem",
+    "validator_client": "riot-validator",
+    "validator_path": "/app/keys/riot-validator.pem",
+    "encrypted_data_bag_secret_path": "/app/keys/encrypted_data_bag_key"
+  },
+  "ssh": {
+    "user": "root",
+    "sudo": true,
+    "timeout": 15.0
+  },
+  "winrm": {
+    "user": "motherbrain",
+    "password": ""
+  },
+  "ssl": {
+    "verify": false
+  },
+  "log": {
+    "level": "DEBUG"
+  },
+  "plugin_manager": {
+    "eager_loading": false,
+    "async_loading": false
+  },
+  "rest_gateway": {
+    "enable": true
+  }
+}

@@ -29,9 +29,11 @@ module MotherBrain
 
     include MB::Logging
 
+    DEFAULT_PORT = ENV["PORT"].to_i || 26100
+
     DEFAULT_OPTIONS = {
       host: '0.0.0.0',
-      port: 26100,
+      port: DEFAULT_PORT,
       quiet: false
     }.freeze
 
