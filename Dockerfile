@@ -12,9 +12,15 @@ RUN ruby-build $RUBY_VERSION $RUBY_ROOT
 RUN yum install mysql-devel mysql-libs -y
 
 RUN gem install bundler
+RUN gem install ridley-connectors -v 1.4.0
+RUN gem install grape -v 0.6.1
+RUN gem install fog -v 1.10.1
 
 ADD . /app
-WORKDIR /app
-RUN bundle update
+RUN cd /app && bundle install --without development test
 
-# CMD bundle exec bin/mbsrv
+WORKDIR /app
+
+ENTRYPOINT /app/bin/boot
+
+CMD bundle exec bin/mbsrv -c /app/config.json
