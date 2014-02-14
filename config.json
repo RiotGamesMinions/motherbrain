@@ -19,6 +19,9 @@
   "ssl": {
     "verify": false
   },
+  "log": {
+    "level": "DEBUG"
+  },
   "plugin_manager": {
     "eager_loading": false,
     "async_loading": false

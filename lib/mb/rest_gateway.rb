@@ -29,7 +29,7 @@ module MotherBrain
 
     include MB::Logging
 
-    DEFAULT_PORT = ENV["PORT"] || 26100
+    DEFAULT_PORT = ENV["PORT"].to_i || 26100
 
     DEFAULT_OPTIONS = {
       host: '0.0.0.0',
