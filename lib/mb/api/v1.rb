@@ -34,6 +34,7 @@ module MotherBrain::API
     before do
       header['Access-Control-Allow-Origin'] = '*'
       header['Access-Control-Request-Method'] = '*'
+      header.delete('Transfer-Encoding')
     end
 
     mount V1::ConfigEndpoint
