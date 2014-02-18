@@ -6,7 +6,7 @@ describe MB::Bootstrap::Manifest do
 
   let(:attributes) {
     {
-      nodes: [
+      node_groups: [
         {
           groups: ["activemq::master"],
           hosts: ["amq1.riotgames.com"]
@@ -24,7 +24,7 @@ describe MB::Bootstrap::Manifest do
 
     let(:group) { "activemq::master" }
 
-    it { should == manifest[:nodes].first[:hosts] }
+    it { should == manifest[:node_groups].first[:hosts] }
   end
 
   describe "#validate!" do
@@ -59,7 +59,7 @@ describe MB::Bootstrap::Manifest do
     context "when manifest contains a node group that is not part of the plugin" do
       let(:attributes) {
         {
-          nodes: [
+          node_groups: [
             {
               groups: ["not::defined"],
               hosts: ["one.riotgames.com"]
@@ -81,7 +81,7 @@ describe MB::Bootstrap::Manifest do
     context "when a key is not in proper node group format: '{component}::{group}'" do
       let(:attributes) {
       {
-        nodes: [
+        node_groups: [
           {
             groups: ["activemq"],
             hosts: ["amq1.riotgames.com"]
@@ -149,7 +149,7 @@ describe MB::Bootstrap::Manifest do
               password: "secret"
             }
           },
-          nodes: [
+          node_groups: [
             {
               type: "m1.large",
               count: 1,
@@ -170,11 +170,11 @@ describe MB::Bootstrap::Manifest do
     it { should be_a(MB::Bootstrap::Manifest) }
 
     it "has a 'nodes' key" do
-      subject.should have_key(:nodes)
+      subject.should have_key(:node_groups)
     end
 
     it "has a node group for each node group in the provisioner manifest" do
-      subject.node_groups.should have(provisioner_manifest[:nodes].length).items
+      subject.node_groups.should have(provisioner_manifest[:node_groups].length).items
     end
 
     it "each node group contains two keys: 'groups' and 'hosts'" do
@@ -186,7 +186,7 @@ describe MB::Bootstrap::Manifest do
     end
 
     it "has an appropriate number of hosts for the desired count" do
-      subject[:nodes].should =~ [
+      subject[:node_groups].should =~ [
         {
           groups: ["activemq::master"],
           hosts: [
@@ -232,7 +232,7 @@ describe MB::Bootstrap::Manifest do
 
       let(:provisioner_manifest) do
         MB::Provisioner::Manifest.new(
-          nodes: [
+          node_groups: [
             {
               type: "m1.large",
               count: 1,
@@ -252,7 +252,7 @@ describe MB::Bootstrap::Manifest do
       end
 
       it "has an appropriate number of hosts for the desired count" do
-        subject[:nodes].should =~ [
+        subject[:node_groups].should =~ [
           {
             groups: ["activemq::master"],
             hosts: [
@@ -291,7 +291,7 @@ describe MB::Bootstrap::Manifest do
       let(:provisioner_manifest) do
         MB::Provisioner::Manifest.new(
           {
-            nodes: [
+            node_groups: [
               {
                 type: "m1.large",
                 groups: ["activemq::master", "activemq::slave"],

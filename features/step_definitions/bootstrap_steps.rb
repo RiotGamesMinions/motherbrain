@@ -5,7 +5,7 @@ Given /^a cookbook "(.*?)" at version "(.*?)" with a plugin that can bootstrap$/
   File.open(@bootstrap_manifest, "w+") do |file|
     file.write %Q|
 {
-  "nodes": [
+  "node_groups": [
     {
       "groups": ["#{name}::server"],
       "hosts": ["#{name}01.fake.cloud.riotgames.com"]

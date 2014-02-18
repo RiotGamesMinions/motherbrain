@@ -138,7 +138,7 @@ describe MB::Provisioner::Base do
       it "does not raise an error if the number of nodes in the response matches the expected in manifest" do
         manifest = MB::Provisioner::Manifest.new.from_json(
           {
-            nodes: [
+            node_groups: [
               {
                 type: "x1.large",
                 count: 2,
@@ -174,7 +174,7 @@ describe MB::Provisioner::Base do
 
       it "raises an error if there are less nodes than the manifest expects" do
         manifest = MB::Provisioner::Manifest.new.from_json({
-          nodes: [
+          node_groups: [
             {
               type: "x1.large",
               count: 2,
@@ -201,7 +201,7 @@ describe MB::Provisioner::Base do
 
       it "raises an error if there are more nodes than the manifest expects" do
         manifest = MB::Provisioner::Manifest.new.from_json({
-          nodes: [
+          node_groups: [
             {
               type: "x1.large",
               components: ["activemq::master"]

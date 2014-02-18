@@ -192,7 +192,7 @@ describe MB::Bootstrap::Manager do
       end
 
       let(:manifest) do
-        MB::Bootstrap::Manifest.new(nodes: [
+        MB::Bootstrap::Manifest.new(node_groups: [
           {
             groups: ["activemq::master"],
             hosts: [ host_one, host_two ]
@@ -234,7 +234,7 @@ describe MB::Bootstrap::Manager do
       end
 
       let(:manifest) do
-        MB::Bootstrap::Manifest.new(nodes: [
+        MB::Bootstrap::Manifest.new(node_groups: [
           {
             groups: ["activemq::master"],
             hosts: [ host_one, host_two ]

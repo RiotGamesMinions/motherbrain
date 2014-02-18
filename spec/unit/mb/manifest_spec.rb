@@ -7,7 +7,7 @@ describe MB::Manifest do
   let(:valid_json) do
     <<-JSON
       {
-        "nodes": [
+        "node_groups": [
           {
             "type": "m1.large",
             "groups": ["activemq::master"]
@@ -28,7 +28,7 @@ describe MB::Manifest do
 
   let(:valid_hash) {
     {
-      nodes: [
+      node_groups: [
         {
           type: "m1.large",
           groups: ["activemq::master"]
@@ -49,7 +49,7 @@ describe MB::Manifest do
   let(:attributes) { valid_hash }
 
   it { should == valid_hash }
-  it { should have_key(:nodes) }
+  it { should have_key(:node_groups) }
 
   its(:node_count) { should == 4 }
 
@@ -59,11 +59,11 @@ describe MB::Manifest do
     it { should be_empty }
   end
 
-  describe "#[:nodes]" do
-    subject { manifest[:nodes] }
+  describe "#[:node_groups]" do
+    subject { manifest[:node_groups] }
 
     it { should have(3).items }
-    it { should =~ valid_hash[:nodes] }
+    it { should =~ valid_hash[:node_groups] }
   end
 
   describe ".from_file" do
