@@ -30,13 +30,11 @@ class Default < Thor
       exit 1
     end
 
-    gem_host = "http://gems.riotgames.com/"
     gem_location = File.join(source_root, "pkg", "motherbrain-#{MotherBrain::VERSION}.gem")
 
     tag_version do
       build
-      run "bundle exec gem sources -a #{gem_host}"
-      run "bundle exec gem inabox #{gem_location} -g #{gem_host}"
+      run "bundle exec gem nexus #{gem_location}"
     end
   end
 
