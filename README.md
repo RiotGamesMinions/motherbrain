@@ -314,4 +314,4 @@ Thats all! You should now be able to explore the REST API of MB using Swagger.
 * Josiah Kiehl (<jkiehl@riotgames.com>)
 * Steve Rude (<srude@riotgames.com>)
 
-If you'd like to contribute, please see our [contribution guidelines](https://github.com/motherbrain/berkshelf/blob/master/CONTRIBUTING.md) first.
+If you'd like to contribute, please see our [contribution guidelines](https://github.com/RiotGames/motherbrain/blob/master/CONTRIBUTING.md) first.
