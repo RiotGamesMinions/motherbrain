@@ -40,6 +40,17 @@ module MotherBrain
       def key_for(name, version)
         "#{name}-#{version}".to_sym
       end
+
+      def validate(plugin_path)
+        plugin_contents = File.read(plugin_path)
+        metadata = CookbookMetadata.new do |data|
+          version "1.0.0"
+        end
+
+        load(metadata) { eval(plugin_contents, binding, plugin_path, 1) }
+        rescue PluginSyntaxError => ex
+          raise PluginSyntaxError, ErrorHandler.new(ex, file_path: plugin_path).message
+      end
     end
 
     NODE_GROUP_ID_REGX = /^(.+)::(.+)$/.freeze
