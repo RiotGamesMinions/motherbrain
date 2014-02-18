@@ -25,19 +25,7 @@ class Default < Thor
 
   desc "release", "Create tag v#{MotherBrain::VERSION} and build and push motherbrain-#{MotherBrain::VERSION}.gem to gem in a box"
   def release
-    unless clean?
-      say "There are files that need to be committed first.", :red
-      exit 1
-    end
-
-    gem_host = "http://gems.riotgames.com/"
-    gem_location = File.join(source_root, "pkg", "motherbrain-#{MotherBrain::VERSION}.gem")
-
-    tag_version do
-      build
-      run "bundle exec gem sources -a #{gem_host}"
-      run "bundle exec gem inabox #{gem_location} -g #{gem_host}"
-    end
+    Rake::Task["release"].execute
   end
 
   desc "ci", "Run all tests"
