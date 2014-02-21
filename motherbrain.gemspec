@@ -50,8 +50,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'multi_json'
   s.add_dependency 'fog', '~> 1.10.0'
   s.add_dependency 'json', '>= 1.8.0'
-  s.add_dependency 'pry'
-  s.add_dependency 'pry-nav'
   s.add_dependency 'buff-config', '~> 0.3'
   s.add_dependency 'buff-extensions', '~> 0.5'
   s.add_dependency 'buff-platform', '~> 0.1'
