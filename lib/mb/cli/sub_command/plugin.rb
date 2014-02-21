@@ -157,6 +157,7 @@ module MotherBrain
                     plugin.freeze,
                     environment.freeze,
                     state.freeze,
+                    true,
                     service_options
                   )
 
