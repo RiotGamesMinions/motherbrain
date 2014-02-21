@@ -13,7 +13,7 @@ motherbrain to create and control an entire application environment.
 
 ## Requirements
 
-* Ruby 1.9.3+
+* Ruby 2.0.0+
 * Chef Server 10 or 11, or Hosted Chef
 
 ## Installation
