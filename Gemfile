@@ -21,6 +21,7 @@ group :development do
   gem 'geminabox'
   gem 'ronn', platforms: :ruby
   gem 'chef-zero', '~> 1.5.0'
+  gem 'pry-nav'
 end
 
 group :test do
