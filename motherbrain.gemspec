@@ -33,7 +33,7 @@ Gem::Specification.new do |s|
   s.name          = "motherbrain"
   s.require_paths = ["lib"]
   s.version       = MotherBrain::VERSION
-  s.required_ruby_version = ">= 1.9.3"
+  s.required_ruby_version = ">= 2.0.0"
 
   s.add_dependency 'celluloid', '~> 0.15'
   # s.add_dependency 'dcell', '~> 0.14.0'
