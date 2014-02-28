@@ -185,11 +185,18 @@ module MotherBrain
                   default: false,
                   desc: "Perform upgrade even if the environment is locked",
                   aliases: "-f"
+                method_option :concurrency,
+                  type: :numeric,
+                  desc: "The max number of nodes to upgrade concurrently.",
+                  aliases: "-C"
+                method_option :stack_order,
+                  type: :boolean,
+                  desc: "The upgrade will be constrained to the order defined in the plugin's stack_order."
                 desc("upgrade", "Upgrade an environment to the specified versions")
                 define_method(:upgrade) do
                   upgrade_options = Hash.new.merge(options).deep_symbolize_keys
 
-                  requires_one_of [
+                   [
                     :component_versions,
                     :cookbook_versions,
                     :environment_attributes,
@@ -206,7 +213,7 @@ module MotherBrain
                 end
 
                 desc("attributes", "View available attributes for plugin.")
-                define_method(:attributes) do 
+                define_method(:attributes) do
                   ui.say "\n"
                   ui.say "** listing attributes for #{plugin}:"
                   ui.say "\n"

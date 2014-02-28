@@ -117,32 +117,121 @@ module MotherBrain
           options[:environment_attributes_file]
         end
 
+        def max_concurrency
+          options[:concurrency]
+        end
+
+        def upgrade_in_stack_order?
+          options[:stack_order] == true
+        end
+
         # @return [Array<String>]
         def nodes
-          return @nodes if @nodes
+          @nodes ||= begin
+            job.set_status("Looking for nodes")
+            
+            nodes = plugin.nodes(environment_name)
+            nodes.each do |component_name, group|
+              group.each do |group_name, nodes|
+                group[group_name] = nodes.map(&:public_hostname)
+              end
+            end
 
-          job.set_status("Looking for nodes")
+            log.info("Found nodes #{nodes.inspect}")
+            nodes = bucket(nodes)
+            log.info("Bucketed nodes #{nodes.inspect}")
+            nodes = slice_for_concurrency(nodes)
+            log.info("Sliced nodes #{nodes.inspect}")
 
-          @nodes = plugin.nodes(environment_name).collect { |component, groups|
-            groups.collect { |group, nodes|
-              nodes.collect(&:public_hostname)
-            }
-          }.flatten.compact.uniq
+            unless nodes.any?
+              log.info "No nodes in environment '#{environment_name}'"
+            end
 
-          unless @nodes.any?
-            log.info "No nodes in environment '#{environment_name}'"
+            nodes
           end
+        end
 
-          @nodes
+        # Places hosts into buckets. The buckets depend on whether the 
+        # stack_order option is true. If it is true then the plugin
+        # is consulted to obtain the stack_order tasks and a bucket is
+        # created for each group in the bootstrap order. If the stack_order
+        # option is not true then one bucket will be created with all the 
+        # nodes. If more than one group specifies the same host the duplicates
+        # will be removed. If the stack_order is true and more than one group
+        # specifies the same host it will appear in the bucket for the 
+        # first group it is found in and will be removed from all others.
+        #
+        # @example
+        #   stack_order do
+        #     bootstrap('some_component::db')
+        #     bootstrap('some_component::app')
+        #   end
+        #  
+        #   And given:
+        #   { 
+        #     some_component => {
+        #       db => ['db1', 'db2', 'db3'],
+        #       app => ['app1', 'app2', 'app3']
+        #     }
+        #   }
+        #   
+        #  Then with stack_order == true
+        #
+        #    [['db1', 'db2', 'db3'],['app1','app2','app3']]
+        #
+        #  With stack_order == false
+        #
+        #    [['db1', 'db2', 'db3', 'app1','app2','app3']]
+        #
+        def bucket(nodes)
+          if upgrade_in_stack_order?
+            task_queue = plugin.bootstrap_routine.task_queue
+
+            seen = []
+            task_queue.collect do |task|
+              component_name, group_name = task.group_name.split('::')
+              group_nodes = nodes[component_name][group_name]
+              group_nodes = group_nodes - seen
+              seen += group_nodes
+              group_nodes
+            end
+          else
+            [] << nodes.collect do |component, groups|
+              groups.collect do |group, nodes|
+                nodes
+              end
+            end.flatten.compact.uniq
+          end
+        end
+
+        # Takes an array of buckets and slices the buckets based on the 
+        # value of max_concurrency.
+        #
+        # @example
+        #
+        #   With a max_concurrency of two and an input of
+        #     [['db1', 'db2', 'db3'],['app1','app2','app3']]
+        #   
+        #   Returns 
+        #     [['db1', 'db2'], ['db3'], ['app1','app2'], ['app3']]
+        def slice_for_concurrency(nodes)
+          if max_concurrency
+            nodes.inject([]) { |buckets, g| buckets += g.each_slice(max_concurrency).to_a }
+          else
+            nodes
+          end
         end
 
         def run_chef
           log.info "Running Chef on #{nodes}"
           job.set_status("Running Chef on nodes")
 
-          nodes.concurrent_map { |node|
-            node_querier.chef_run(node)
-          }
+          nodes.map do |group|
+            log.info("Running chef concurrently on nodes #{group.inspect}")
+            group.concurrent_map do |node|
+              node_querier.chef_run(node)
+            end
+          end
         end
     end
   end

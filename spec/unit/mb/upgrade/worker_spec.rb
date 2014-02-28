@@ -194,13 +194,80 @@ describe MB::Upgrade::Worker do
   end
 
   describe "#nodes" do
-    pending "This should not be the responsibility of MB::Upgrade"
+    # pending "This should not be the responsibility of MB::Upgrade"
+
+    let(:nodes) { 
+      {
+        'some_component' => { 
+          'app' => [
+            Hashie::Mash.new({public_hostname: 'app1'}), 
+            Hashie::Mash.new({public_hostname: 'app2'}),
+            Hashie::Mash.new({public_hostname: 'app3'}),
+            Hashie::Mash.new({public_hostname: 'db1'})],
+          'db' => [
+            Hashie::Mash.new({public_hostname: 'db1'}),
+            Hashie::Mash.new({public_hostname: 'db2'}),
+            Hashie::Mash.new({public_hostname: 'db3'})]
+        }
+      } 
+    }
+
+    let(:db_task) { double MB::Bootstrap::Routine::Task, group_name: 'some_component::db'}
+    let(:app_task) { double MB::Bootstrap::Routine::Task, group_name: 'some_component::app'}
+    let(:tasks) { [db_task, app_task] }
+    let(:bootstrap_routine) { double MB::Bootstrap::Routine, task_queue: tasks }
+
+    before do
+      worker.unstub :nodes
+      plugin.stub(:bootstrap_routine).and_return(bootstrap_routine)
+      plugin.stub(:nodes).with(environment_name).and_return { nodes }
+    end
+
+    subject { worker.send(:nodes) }
+
+    context "when neither the stack_order or concurrency options are given" do
+      it "should create one concurrency bucket with all of the nodes" do
+        subject.should == [['app1', 'app2', 'app3', 'db1', 'db2', 'db3']]
+      end
+    end
+
+    context "when the stack_order option is given" do
+      before { options[:stack_order] = true }
+      it "should create a bucket for each group in the stack_order" do
+        subject.should == [['db1', 'db2', 'db3'],['app1', 'app2', 'app3']]
+      end
+    end
+
+    context "when the max_concurrency option is given" do
+      before { options[:max_concurrency] = 2 }
+      it "should create buckets of max_concurrency size" do
+        subject.should == [["app1", "app2"], ["app3", "db1"], ["db2", "db3"]]
+      end
+
+      context "when the max_concurrency option is 1" do
+        before { options[:max_concurrency] = 1 }
+        it "should create buckets of max_concurrency size" do
+          subject.should == [["app1"], ["app2"], ["app3"], ["db1"], ["db2"], ["db3"]]
+        end
+      end
+    end
+
+    context "when the stack_order and max_concurrency option is given" do
+      before do
+        options[:stack_order] = true 
+        options[:max_concurrency] = 2
+      end
+
+      it "should create buckets of max_concurrency size and the stack_order is maintained" do
+        subject.should == [['db1', 'db2'], ['db3'], ['app1', 'app2'], ['app3']]
+      end
+    end
   end
 
   describe "#run_chef" do
     subject(:run_chef) { worker.send :run_chef }
 
-    let(:nodes) { %w[node1 node2 node3] }
+    let(:nodes) { [['node1', 'node2', 'node3']] }
 
     before do
       worker.unstub :run_chef
@@ -209,8 +276,10 @@ describe MB::Upgrade::Worker do
     end
 
     it "runs chef on the nodes" do
-      nodes.each do |node|
-        MB::Application.node_querier.should_receive(:chef_run).with(node)
+      nodes.each do |group|
+        group.each do |node|
+          MB::Application.node_querier.should_receive(:chef_run).with(node)
+        end
       end
 
       run_chef
