@@ -196,7 +196,7 @@ module MotherBrain
                 define_method(:upgrade) do
                   upgrade_options = Hash.new.merge(options).deep_symbolize_keys
 
-                   [
+                  requires_one_of [
                     :component_versions,
                     :cookbook_versions,
                     :environment_attributes,
