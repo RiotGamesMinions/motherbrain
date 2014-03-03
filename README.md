@@ -256,9 +256,9 @@ component "app" do
   versioned
 
   service "app" do
-    service\_group "app"
-    service\_recipe "myface::service"
-    service\_attribute "myface.app.state"
+    service_group "app"
+    service_recipe "myface::service"
+    service_attribute "myface.app.state"
   end
 
   group "app" do
