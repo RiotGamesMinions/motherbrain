@@ -4,4 +4,4 @@ rvm:
 env:
   - TEST_SUITE=unit CI=true
   - TEST_SUITE=acceptance CI=true
-script: 'bundle exec thor specc:$TEST_SUITE'
+script: 'bundle exec thor spec:$TEST_SUITE'
