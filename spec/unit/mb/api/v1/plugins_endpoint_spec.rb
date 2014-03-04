@@ -97,9 +97,7 @@ describe MB::API::V1::PluginsEndpoint do
     it "returns the latest plugin version" do
       response = JSON.parse(last_response.body)
       response["name"].should eql("apple")
-      response["version"]["major"].should eql(2)
-      response["version"]["minor"].should eql(0)
-      response["version"]["patch"].should eql(0)
+      response["version"].should eql("2.0.0")
     end
   end
 
