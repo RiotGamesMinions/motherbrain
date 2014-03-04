@@ -1,6 +1,7 @@
 # motherbrain
 
 [![Build Status](https://travis-ci.org/RiotGames/motherbrain.png?branch=master)](https://travis-ci.org/RiotGames/motherbrain)
+stupid stupid stupid
 
 motherbrain is an orchestration framework for Chef. In the same way that you
 would use Chef's Knife command to create a single node, you can use
