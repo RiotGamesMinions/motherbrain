@@ -107,6 +107,10 @@ describe MB::Plugin do
       it "returns a MB::Plugin from the given directory" do
         subject.should be_a(MB::Plugin)
       end
+
+      it "sets the cookbook_versions from the Berksfile.lock" do
+        subject.cookbook_versions.should == {'cookbook1' => '2.0.1', 'cookbook2' => '1.0.13'}
+      end
     end
   end
 

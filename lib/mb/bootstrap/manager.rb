@@ -76,7 +76,6 @@ module MotherBrain
       # @see {#async_bootstrap} for options
       def bootstrap(job, environment, manifest, plugin, options = {})
         options = options.reverse_merge(
-          cookbook_versions: Hash.new,
           component_versions: Hash.new,
           environment_attributes: Hash.new,
           hints: Hash.new,
@@ -104,9 +103,10 @@ module MotherBrain
             set_component_versions(environment, plugin, options[:component_versions])
           end
 
-          if options[:cookbook_versions].any?
+          cookbook_versions = options[:cookbook_versions] || plugin.cookbook_versions
+          if cookbook_versions.any?
             job.set_status("Setting cookbook versions")
-            set_cookbook_versions(environment, options[:cookbook_versions])
+            set_cookbook_versions(environment, cookbook_versions)
           end
 
           if options[:environment_attributes].any?

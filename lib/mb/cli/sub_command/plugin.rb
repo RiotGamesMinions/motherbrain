@@ -61,6 +61,7 @@ module MotherBrain
                   aliases: "--components"
                 method_option :cookbook_versions,
                   type: :hash,
+                  hidden: true,
                   desc: "The cookbook versions to set on the environment",
                   aliases: "--cookbooks"
                 method_option :environment_attributes,
@@ -84,6 +85,8 @@ module MotherBrain
                   boot_options = Hash.new.merge(options).deep_symbolize_keys
                   manifest     = MB::Bootstrap::Manifest.from_file(manifest_file)
 
+                  cookbooks_option_deprecated(options)
+
                   job = bootstrapper.async_bootstrap(
                     environment.freeze,
                     manifest.freeze,
@@ -103,6 +106,7 @@ module MotherBrain
                   aliases: "--components"
                 method_option :cookbook_versions,
                   type: :hash,
+                  hidden: true,
                   desc: "The cookbook versions to set on the environment",
                   aliases: "--cookbooks"
                 method_option :environment_attributes,
@@ -128,6 +132,8 @@ module MotherBrain
                 define_method(:provision) do |manifest_file|
                   prov_options = Hash.new.merge(options).deep_symbolize_keys
                   manifest     = Provisioner::Manifest.from_file(manifest_file)
+
+                  cookbooks_option_deprecated(options)
 
                   job = provisioner.async_provision(
                     environment.freeze,
@@ -170,6 +176,7 @@ module MotherBrain
                   aliases: "--components"
                 method_option :cookbook_versions,
                   type: :hash,
+                  hide: true,
                   desc: "The cookbook versions to set on the environment",
                   aliases: "--cookbooks"
                 method_option :environment_attributes,
@@ -189,12 +196,7 @@ module MotherBrain
                 define_method(:upgrade) do
                   upgrade_options = Hash.new.merge(options).deep_symbolize_keys
 
-                  requires_one_of [
-                    :component_versions,
-                    :cookbook_versions,
-                    :environment_attributes,
-                    :environment_attributes_file
-                  ]
+                  cookbooks_option_deprecated(options)
 
                   job = upgrade_manager.async_upgrade(
                     environment.freeze,
@@ -206,11 +208,19 @@ module MotherBrain
                 end
 
                 desc("attributes", "View available attributes for plugin.")
-                define_method(:attributes) do 
+                define_method(:attributes) do
                   ui.say "\n"
                   ui.say "** listing attributes for #{plugin}:"
                   ui.say "\n"
                   ui.say plugin.metadata.attributes.to_yaml
+                end
+              end
+
+              no_commands do
+                def cookbooks_option_deprecated(options)
+                  if options[:cookbook_versions]
+                    ui.deprecated "--cookbooks option is deprecated in favor of loading versions from Berksfile.lock"
+                  end
                 end
               end
             end

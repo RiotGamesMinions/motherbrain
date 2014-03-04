@@ -104,7 +104,7 @@ module MotherBrain
 
         # @return [Hash]
         def cookbook_versions
-          options[:cookbook_versions] || {}
+          options[:cookbook_versions] || plugin.cookbook_versions
         end
 
         # @return [Hash]

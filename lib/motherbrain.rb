@@ -20,6 +20,7 @@ require 'mb/core_ext'
 require 'mb/grape_ext'
 require 'mb/ridley_ext'
 require 'mb/thor_ext'
+require 'berkshelf'
 
 module MotherBrain
   autoload :API, 'mb/api'
