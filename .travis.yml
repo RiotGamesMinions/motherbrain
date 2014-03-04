@@ -1,7 +1,7 @@
+script: "bundle exec thor spec:$TEST_SUITE"
 language: ruby
+env:
+  - TEST_SUITE=unit
+  - TEST_SUITE=acceptance
 rvm:
   - 2.0.0
-env:
-  - TEST_SUITE=unit CI=true
-  - TEST_SUITE=acceptance CI=true
-script: 'bundle exec thor spec:$TEST_SUITE'
