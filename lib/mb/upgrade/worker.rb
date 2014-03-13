@@ -129,7 +129,7 @@ module MotherBrain
         def nodes
           @nodes ||= begin
             job.set_status("Looking for nodes")
-            
+
             nodes = plugin.nodes(environment_name)
             nodes.each do |component_name, group|
               group.each do |group_name, nodes|
@@ -139,9 +139,9 @@ module MotherBrain
 
             log.info("Found nodes #{nodes.inspect}")
             nodes = bucket(nodes)
-            log.info("Bucketed nodes #{nodes.inspect}")
             nodes = slice_for_concurrency(nodes)
-            log.info("Sliced nodes #{nodes.inspect}")
+
+            log.info("Sliced nodes into concurrency buckets #{nodes.inspect}")
 
             unless nodes.any?
               log.info "No nodes in environment '#{environment_name}'"
@@ -151,14 +151,14 @@ module MotherBrain
           end
         end
 
-        # Places hosts into buckets. The buckets depend on whether the 
+        # Places hosts into buckets. The buckets depend on whether the
         # stack_order option is true. If it is true then the plugin
         # is consulted to obtain the stack_order tasks and a bucket is
         # created for each group in the bootstrap order. If the stack_order
-        # option is not true then one bucket will be created with all the 
+        # option is not true then one bucket will be created with all the
         # nodes. If more than one group specifies the same host the duplicates
         # will be removed. If the stack_order is true and more than one group
-        # specifies the same host it will appear in the bucket for the 
+        # specifies the same host it will appear in the bucket for the
         # first group it is found in and will be removed from all others.
         #
         # @example
@@ -166,15 +166,15 @@ module MotherBrain
         #     bootstrap('some_component::db')
         #     bootstrap('some_component::app')
         #   end
-        #  
+        #
         #   And given:
-        #   { 
+        #   {
         #     some_component => {
         #       db => ['db1', 'db2', 'db3'],
         #       app => ['app1', 'app2', 'app3']
         #     }
         #   }
-        #   
+        #
         #  Then with stack_order == true
         #
         #    [['db1', 'db2', 'db3'],['app1','app2','app3']]
@@ -204,15 +204,15 @@ module MotherBrain
           end
         end
 
-        # Takes an array of buckets and slices the buckets based on the 
+        # Takes an array of buckets and slices the buckets based on the
         # value of max_concurrency.
         #
         # @example
         #
         #   With a max_concurrency of two and an input of
         #     [['db1', 'db2', 'db3'],['app1','app2','app3']]
-        #   
-        #   Returns 
+        #
+        #   Returns
         #     [['db1', 'db2'], ['db3'], ['app1','app2'], ['app3']]
         def slice_for_concurrency(nodes)
           if max_concurrency

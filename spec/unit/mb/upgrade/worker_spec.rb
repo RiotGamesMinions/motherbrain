@@ -196,11 +196,11 @@ describe MB::Upgrade::Worker do
   describe "#nodes" do
     # pending "This should not be the responsibility of MB::Upgrade"
 
-    let(:nodes) { 
+    let(:nodes) {
       {
-        'some_component' => { 
+        'some_component' => {
           'app' => [
-            Hashie::Mash.new({public_hostname: 'app1'}), 
+            Hashie::Mash.new({public_hostname: 'app1'}),
             Hashie::Mash.new({public_hostname: 'app2'}),
             Hashie::Mash.new({public_hostname: 'app3'}),
             Hashie::Mash.new({public_hostname: 'db1'})],
@@ -209,7 +209,7 @@ describe MB::Upgrade::Worker do
             Hashie::Mash.new({public_hostname: 'db2'}),
             Hashie::Mash.new({public_hostname: 'db3'})]
         }
-      } 
+      }
     }
 
     let(:db_task) { double MB::Bootstrap::Routine::Task, group_name: 'some_component::db'}
@@ -239,13 +239,13 @@ describe MB::Upgrade::Worker do
     end
 
     context "when the max_concurrency option is given" do
-      before { options[:max_concurrency] = 2 }
+      before { options[:concurrency] = 2 }
       it "should create buckets of max_concurrency size" do
         subject.should == [["app1", "app2"], ["app3", "db1"], ["db2", "db3"]]
       end
 
       context "when the max_concurrency option is 1" do
-        before { options[:max_concurrency] = 1 }
+        before { options[:concurrency] = 1 }
         it "should create buckets of max_concurrency size" do
           subject.should == [["app1"], ["app2"], ["app3"], ["db1"], ["db2"], ["db3"]]
         end
@@ -254,8 +254,8 @@ describe MB::Upgrade::Worker do
 
     context "when the stack_order and max_concurrency option is given" do
       before do
-        options[:stack_order] = true 
-        options[:max_concurrency] = 2
+        options[:stack_order] = true
+        options[:concurrency] = 2
       end
 
       it "should create buckets of max_concurrency size and the stack_order is maintained" do
