@@ -1,17 +1,19 @@
 #!/usr/bin/env ruby
 
 require 'ruby-prof'
+
+out_path = File.join(File.expand_path("../../profile", __FILE__), Time.now.strftime("#{([$PROGRAM_NAME.split("/").last].concat ARGV).join("_")}-%Y-%m-%d_%I:%M:%S"))
+
 RubyProf.start
-$:.push File.expand_path("../../lib", __FILE__)
-require 'motherbrain'
 
-MB::Cli::Runner.new(ARGV).execute!
+begin 
+  $:.push File.expand_path("../../lib", __FILE__)
+  require 'motherbrain'
+  
+  MB::Cli::Runner.new(ARGV).execute!
+ensure
+  printer = RubyProf::MultiPrinter.new(RubyProf.stop)
 
-data = RubyProf.stop
-
-printer = RubyProf::MultiPrinter.new(data)
-
-out_path = File.join(File.expand_path("../../profile", __FILE__), Time.now.strftime("%Y-%m-%d"))
-FileUtils.mkdir_p(out_path)
-
-printer.print(path: out_path)
+  FileUtils.mkdir_p(out_path)
+  printer.print(path: out_path)
+end
