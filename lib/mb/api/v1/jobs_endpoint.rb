@@ -10,7 +10,7 @@ module MotherBrain::API
       namespace 'jobs' do
         desc "list all jobs (completed and active)"
         get do
-          job_manager.list
+          job_manager.list.to_a
         end
 
         desc "list all active jobs"

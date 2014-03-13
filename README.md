@@ -1,5 +1,7 @@
 # motherbrain
- 
+
+[![Build Status](https://travis-ci.org/RiotGames/motherbrain.png?branch=master)](https://travis-ci.org/RiotGames/motherbrain)
+
 motherbrain is an orchestration framework for Chef. In the same way that you
 would use Chef's Knife command to create a single node, you can use
 motherbrain to create and control an entire application environment.
@@ -256,9 +258,9 @@ component "app" do
   versioned
 
   service "app" do
-    service\_group "app"
-    service\_recipe "myface::service"
-    service\_attribute "myface.app.state"
+    service_group "app"
+    service_recipe "myface::service"
+    service_attribute "myface.app.state"
   end
 
   group "app" do
