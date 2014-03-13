@@ -22,6 +22,7 @@ group :development do
   gem 'ronn', platforms: :ruby
   gem 'chef-zero', '~> 1.5.0'
   gem 'pry-nav'
+  gem 'ruby-prof'
 end
 
 group :test do
