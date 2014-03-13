@@ -10,4 +10,8 @@ MB::Cli::Runner.new(ARGV).execute!
 data = RubyProf.stop
 
 printer = RubyProf::MultiPrinter.new(data)
-printer.print({path: File.join(File.expand_path("../../profile", __FILE__), Time.now.to_s, $PROGRAM_NAME + ".html"})
+
+out_path = File.join(File.expand_path("../../profile", __FILE__), Time.now.strftime("%Y-%m-%d"))
+FileUtils.mkdir_p(out_path)
+
+printer.print(path: out_path)
