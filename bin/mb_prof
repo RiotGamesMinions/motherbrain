@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'ruby-prof'
+RubyProf.start
+$:.push File.expand_path("../../lib", __FILE__)
+require 'motherbrain'
+
+MB::Cli::Runner.new(ARGV).execute!
+
+data = RubyProf.stop
+
+printer = RubyProf::MultiPrinter.new(data)
+printer.print({path: File.join(File.expand_path("../../profile", __FILE__), Time.now.to_s, $PROGRAM_NAME + ".html"})
