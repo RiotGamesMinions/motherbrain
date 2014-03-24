@@ -13,6 +13,7 @@ require 'motherbrain'
 require 'chef_zero/server'
 
 def setup_rspec
+  require File.expand_path('../../spec/support/berkshelf.rb', __FILE__)
   Dir[File.join(File.expand_path("../../spec/support/**/*.rb", __FILE__))].each { |f| require f }
 
   RSpec.configure do |config|
