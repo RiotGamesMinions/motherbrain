@@ -57,8 +57,8 @@ module MotherBrain
         "#{attribute_escape(key)}:#{value}"
       end
 
-      items += roles.collect { |role| "roles:#{solr_escape(role)}" }
-      items += recipes.collect { |recipe| "recipes:#{solr_escape(recipe)}" }
+      items += roles.collect { |role| "run_list:#{solr_escape('role['+role+']')}" }
+      items += recipes.collect { |recipe| "run_list:#{solr_escape('recipe['+recipe+']')}" }
 
       items.join(' AND ')
     end
