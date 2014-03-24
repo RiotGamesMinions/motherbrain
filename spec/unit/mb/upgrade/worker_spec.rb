@@ -15,7 +15,8 @@ describe MB::Upgrade::Worker do
   let(:job) { job_double }
   let(:options) { Hash.new }
   let(:nodes) { %w[node1 node2 node3] }
-  let(:plugin) { double MB::Plugin, name: plugin_name }
+  let(:locked_versions) { {} }
+  let(:plugin) { double MB::Plugin, name: plugin_name, cookbook_versions: locked_versions }
   let(:plugin_name) { "plugin_name" }
 
   before do
@@ -59,6 +60,15 @@ describe MB::Upgrade::Worker do
         job.should_receive(:report_failure)
         run
       end
+    end
+
+    context "when cookbooks are found in the Berksfile.lock" do
+      let(:locked_versions) { {'foo' => '1.2.3', 'bar' => '4.5.6'} }
+      it "updates the cookbook versions from the lockfile" do
+        worker.should_receive(:set_cookbook_versions).with(environment_name, locked_versions)
+        run
+      end
+
     end
 
     context "when only cookbook_versions is passed as an option" do

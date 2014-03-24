@@ -8,8 +8,10 @@ describe MB::Bootstrap::Manager do
     MB::CookbookMetadata.from_file(fixtures_path.join('cb_metadata.rb'))
   }
 
+  let(:cookbook_versions) { {} }
+
   let(:plugin) {
-    MB::Plugin.new(cookbook_metadata) do
+    MB::Plugin.new(cookbook_metadata, cookbook_versions) do
       component "activemq" do
         group "master"
         group "slave"
@@ -128,6 +130,15 @@ describe MB::Bootstrap::Manager do
         manager.should_not_receive(:chef_synchronize)
         job.should_receive(:report_failure)
 
+        run
+      end
+    end
+
+    context "when the plugin has cookbook version dependencies set" do
+      let(:cookbook_versions) { {'cookbook1' => '1.2.3', 'cookbook2' => '4.5.6'} }
+
+      it "should set the cookbook versions on the environment" do
+        manager.should_receive(:set_cookbook_versions).with(environment, cookbook_versions)
         run
       end
     end

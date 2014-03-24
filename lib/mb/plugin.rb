@@ -4,17 +4,23 @@ module MotherBrain
       # Create a new plugin instance from the given content
       #
       # @param [MB::CookbookMetadata] metadata
+      # @param [Hash<String, String>] cookbook_versions
+      #   The cookbook dependencies which this plugin depends on. Key is
+      #   the cookbook name and the value is the version of the cookbook.
       #
       # @raise [PluginLoadError]
       #
       # @yieldreturn [MotherBrain::Plugin]
-      def load(metadata, &block)
-        new(metadata, &block).validate!
+      def load(metadata, cookbook_versions = {}, &block)
+        new(metadata, cookbook_versions, &block).validate!
       rescue PluginSyntaxError => ex
         ErrorHandler.wrap(ex)
       end
 
       # Load the contents of a directory into an instance of MB::Plugin
+      #
+      # The cookbook dependencies of this plugin will be loaded from the
+      # Berksfile.lock if it is found.
       #
       # @param [#to_s] path
       #   a path to a directory containing a motherbrain plugin file and cookbook
@@ -31,8 +37,9 @@ module MotherBrain
         plugin_filename = File.join(path, PLUGIN_FILENAME)
         plugin_contents = File.read(plugin_filename)
         metadata        = CookbookMetadata.from_path(path)
+        berksfile_lock  = Berkshelf::Lockfile.from_path(path)
 
-        load(metadata) { eval(plugin_contents, binding, plugin_filename, 1) }
+        load(metadata, berksfile_lock.locked_versions) { eval(plugin_contents, binding, plugin_filename, 1) }
       rescue PluginSyntaxError => ex
         raise PluginSyntaxError, ErrorHandler.new(ex, file_path: plugin_filename).message
       end
@@ -58,6 +65,8 @@ module MotherBrain
     attr_reader :components
     # @return [Set<MB::Command>]
     attr_reader :commands
+    # @return [Hash<String, String>]
+    attr_reader :cookbook_versions
 
     def_delegator :metadata, :name
     def_delegator :metadata, :maintainer
@@ -68,10 +77,14 @@ module MotherBrain
     def_delegator :metadata, :version
 
     # @param [MB::CookbookMetadata] metadata
-    def initialize(metadata, &block)
-      @metadata     = metadata
-      @components   = Set.new
-      @commands     = Set.new
+    # @param [Hash<String, String>] cookbook_versions
+    #   The cookbook dependencies which this plugin depends on. Key is
+    #   the cookbook name and the value is the version of the cookbook.
+    def initialize(metadata, cookbook_versions = {}, &block)
+      @metadata          = metadata
+      @cookbook_versions = cookbook_versions
+      @components        = Set.new
+      @commands          = Set.new
 
       if block_given?
         dsl_eval(&block)

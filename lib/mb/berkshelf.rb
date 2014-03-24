@@ -46,5 +46,36 @@ module MotherBrain
         Pathname.new(Application.config.berkshelf.path || default_path)
       end
     end
+
+    # A wrapper around the berkshelf's Berkshelf::Lockfile
+    class Lockfile
+      include MB::Logging
+
+      BERKSFILE_LOCK = 'Berksfile.lock'.freeze
+
+      class << self
+        def from_path(root_path)
+          new(File.join(root_path, BERKSFILE_LOCK))
+        end
+      end
+
+      attr_reader :berksfile_lock
+
+      def initialize(berksfile_lock_path)
+        @berksfile_lock = ::Berkshelf::Lockfile.from_file(berksfile_lock_path)
+      end
+
+      # Return a hash of all of the cookbook versions found in the Berksfile.lock
+      # The key is the name of the cookbook and the value is the version as a
+      # String. If there is no lockfile an empty hash is returned.
+      #
+      # @return [Hash]
+      def locked_versions
+        berksfile_lock.graph.locks.inject({}) do |hash, (name, dependency)|
+          hash[name] = dependency.locked_version.to_s
+          hash
+        end
+      end
+    end
   end
 end

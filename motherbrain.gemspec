@@ -55,4 +55,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'buff-platform', '~> 0.1'
   s.add_dependency 'buff-ruby_engine', '~> 0.1'
   s.add_dependency 'grape-swagger', '~> 0.6.0'
+  s.add_dependency 'berkshelf', '~> 3.0.0.beta7'
 end
