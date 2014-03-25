@@ -189,7 +189,7 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        expect(subject).to eql("chef_environment:#{environment} AND recipes:pvpnet\\:\\:default AND recipes:pvpnet\\:\\:database")
+        expect(subject).to eql("chef_environment:#{environment} AND run_list:recipe\\[pvpnet\\:\\:default\\] AND run_list:recipe\\[pvpnet\\:\\:database\\]")
       end
     end
 
@@ -201,7 +201,7 @@ describe MB::Group do
       end
 
       it "does not escape the dash" do
-        expect(subject).to eql("chef_environment:#{environment} AND recipes:build-essential")
+        expect(subject).to eql("chef_environment:#{environment} AND run_list:recipe\\[build-essential\\]")
       end
     end
 
@@ -214,7 +214,7 @@ describe MB::Group do
       end
 
       it "returns them escaped and joined together by AND" do
-        expect(subject).to eql("chef_environment:#{environment} AND roles:app_server AND roles:database_server")
+        expect(subject).to eql("chef_environment:#{environment} AND run_list:role\\[app_server\\] AND run_list:role\\[database_server\\]")
       end
     end
   end

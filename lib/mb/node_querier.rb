@@ -50,7 +50,7 @@ module MotherBrain
       node_failures_count  = 0
       node_failures = Array.new
 
-      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, node_object: node, override_recipes: override_recipes) }
+      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, override_recipes: override_recipes) }
 
       futures.each do |future|
         begin
@@ -125,20 +125,11 @@ module MotherBrain
       end
 
       response = if options[:override_recipes]
-          node = options[:node_object]
-          node.reload
-          old_recipes = node.automatic_attributes.recipes
           override_recipes = options[:override_recipes]
 
           cmd_recipe_syntax = override_recipes.join(',') { |recipe| "recipe[#{recipe}]" }
           log.info { "Running Chef client with override runlist '#{cmd_recipe_syntax}' on: #{host}" }
           chef_run_response = chef_connection.node.execute_command(host, "chef-client --override-runlist #{cmd_recipe_syntax}")
-
-          # reset the run list
-          node.reload
-          log.info { "Resetting node's recipes attribute back to #{old_recipes}" }
-          node.automatic_attributes.recipes = old_recipes
-          node.save
 
           chef_run_response
         else
