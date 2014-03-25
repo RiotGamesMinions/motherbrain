@@ -108,7 +108,7 @@ module MotherBrain
         desc "create ENVIRONMENT", "Create an empty environment"
         def create(environment)
           ui.say "Creating empty environment #{environment}"
-          
+
           begin
             environment_manager.create(environment)
           rescue => e
