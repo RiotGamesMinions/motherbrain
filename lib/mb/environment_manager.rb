@@ -102,6 +102,34 @@ module MotherBrain
     ensure
       job.terminate if job && job.alive?
     end
+    
+    
+    def async_examine_nodes(id, options = {})
+      job = Job.new(:examine_nodes)
+      async(:examine_nodes, job, id, options)
+
+      job.ticket
+    end
+    
+    def examine_nodes(job, id, options = {})
+      environment = find(id)
+      job.report_running("Finding environment #{environment.name}")
+      nodes = nodes_for_environment(environment.name)
+
+      job.set_status("Examining #{nodes.length} nodes")
+      futures = nodes.collect do |node|
+        log.debug "About to execute on #{node.public_hostname}"
+        node_querier.future(:execute_command, node.public_hostname, "time /t")
+      end
+      log.debug "Got mah futures"
+      futures.each do |future|
+        begin
+          future.value
+        rescue RemoteCommandError => error
+          log.warn "Examine command on #{error.host} failed"
+        end
+      end
+    end
 
     # Find an environment on the remote Chef server
     #
