@@ -105,12 +105,7 @@ module MotherBrain
         super(MB::Application.registry)
 
         supervise_as(:config_manager, MB::ConfigManager, config)
-        conn_pool_size = (ENV['MB_CONN_POOL_SIZE'] || 1).to_i
-        if conn_pool_size > 1
-          pool(Ridley::Client, size: conn_pool_size, args: [config.to_ridley], as: :ridley)
-        else
-          supervise_as(:ridley, Ridley::Client, config.to_ridley)
-        end
+        supervise_as(:ridley, Ridley::Client, config.to_ridley)
         supervise_as(:job_manager, MB::JobManager)
         supervise_as(:lock_manager, MB::LockManager)
         supervise_as(:plugin_manager, MB::PluginManager)

@@ -214,7 +214,7 @@ module MotherBrain
     #
     # @return [Array(Ridley::NodeObject)]
     def nodes_for_environment(name)
-      ridley.partial_search(:node, "chef_environment:#{name}", ["fqdn","cloud.public_hostname","name"])
+      ridley.partial_search(:node, "chef_environment:#{name}", ["fqdn", "cloud.public_hostname", "name"])
     end
 
     private
