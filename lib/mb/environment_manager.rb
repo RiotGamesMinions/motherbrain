@@ -118,17 +118,20 @@ module MotherBrain
 
       job.set_status("Examining #{nodes.length} nodes")
       futures = nodes.collect do |node|
-        log.debug "About to execute on #{node.public_hostname}"
-        node_querier.future(:execute_command, node.public_hostname, "time /t")
+        log.info "About to execute on #{node.public_hostname}"
+        node_querier.future(:execute_command, node.public_hostname, "echo %time%")
       end
-      log.debug "Got mah futures"
+      log.info "Got mah futures"
       futures.each do |future|
         begin
-          future.value
+          response = future.value
         rescue RemoteCommandError => error
           log.warn "Examine command on #{error.host} failed"
         end
       end
+      job.report_success("Huzzah! Completed executing commands on #{nodes.length} nodes.")
+    ensure
+      job.terminate if job && job.alive?
     end
 
     # Find an environment on the remote Chef server
@@ -211,7 +214,7 @@ module MotherBrain
     #
     # @return [Array(Ridley::NodeObject)]
     def nodes_for_environment(name)
-      ridley.search(:node, "chef_environment:#{name}")
+      ridley.partial_search(:node, "chef_environment:#{name}", ["fqdn","cloud.public_hostname","name"])
     end
 
     private

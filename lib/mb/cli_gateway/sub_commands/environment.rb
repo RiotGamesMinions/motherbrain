@@ -116,14 +116,14 @@ module MotherBrain
             exit(1)
           end
         end
+
+        desc "examine ENVIRONMENT", "Examine nodes in a Chef environment"
+        def examine(environment)
+          job = environment_manager.async_examine_nodes(environment)
+
+          CliClient.new(job).display
+        end
       end
-    end
-
-    desc "examine ENVIRONMENT", "Examine nodes in a Chef environment"
-    def examine(environment)
-      job = environment_manager.async_examine_nodes(environment)
-
-      CliClient.new(job).display
     end
 
     register(SubCommand::Environment, :environment, "environment", "Environment level commands")
