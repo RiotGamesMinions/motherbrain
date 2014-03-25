@@ -1,3 +1,13 @@
+# 0.14.5
+
+* Use run_list instead of roles/recipes
+
+# 0.14.4
+
+* Use newer ridley-connectors
+* Profiling options
+* Issue #665 - Use cookbook versions found Berksfile.lock if found
+
 # 0.13.1
 
 * Depend on faraday < 0.9
