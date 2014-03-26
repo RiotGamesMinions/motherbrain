@@ -102,34 +102,32 @@ module MotherBrain
     ensure
       job.terminate if job && job.alive?
     end
-    
-    
+
+
     def async_examine_nodes(id, options = {})
       job = Job.new(:examine_nodes)
       async(:examine_nodes, job, id, options)
 
       job.ticket
     end
-    
+
     def examine_nodes(job, id, options = {})
       environment = find(id)
       job.report_running("Finding environment #{environment.name}")
       nodes = nodes_for_environment(environment.name)
 
       job.set_status("Examining #{nodes.length} nodes")
-      futures = nodes.collect do |node|
-        log.info "About to execute on #{node.public_hostname}"
+      nodes.collect do |node|
+        log.debug "About to execute on #{node.public_hostname}"
         node_querier.future(:execute_command, node.public_hostname, "echo %time%")
-      end
-      log.info "Got mah futures"
-      futures.each do |future|
+      end.each do |future|
         begin
           response = future.value
         rescue RemoteCommandError => error
           log.warn "Examine command on #{error.host} failed"
         end
       end
-      job.report_success("Huzzah! Completed executing commands on #{nodes.length} nodes.")
+      job.report_success("Completed on #{nodes.length} nodes.")
     ensure
       job.terminate if job && job.alive?
     end
