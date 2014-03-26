@@ -121,6 +121,10 @@ module MotherBrain
       default: true,
       type: Boolean
 
+    attribute 'ridley.connector_pool_size',
+      default: 25,
+      type: Integer
+
     attribute 'log.level',
       default: 'INFO',
       type: String,
@@ -254,6 +258,7 @@ module MotherBrain
         ridley_opts[:ssl] = {
           verify: self.ssl.verify
         }
+        ridley_opts[:connector_pool_size] = self.ridley.connector_pool_size
         ridley_opts[:ssh][:verbose] = ridley_opts[:ssh][:verbose].to_sym if ridley_opts[:ssh][:verbose]
       end
     end
