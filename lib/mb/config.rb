@@ -258,7 +258,12 @@ module MotherBrain
         ridley_opts[:ssl] = {
           verify: self.ssl.verify
         }
-        ridley_opts[:connector_pool_size] = self.ridley.connector_pool_size
+
+        ridley_opts[:connector_pool_size] = if ENV.has_key?('MB_CONNECTOR_POOL')
+                                              ENV['MB_CONNECTOR_POOL'].to_i
+                                            else
+                                              ridley.connector_pool_size
+                                            end
         ridley_opts[:ssh][:verbose] = ridley_opts[:ssh][:verbose].to_sym if ridley_opts[:ssh][:verbose]
       end
     end
