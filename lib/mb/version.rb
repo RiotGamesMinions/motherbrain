@@ -1,3 +1,3 @@
 module MotherBrain
-  VERSION = '0.14.5'
+  VERSION = '1.0.0'
 end

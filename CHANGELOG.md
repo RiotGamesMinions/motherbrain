@@ -1,3 +1,9 @@
+# 1.0.0
+
+* Call it 1.0 since it's in use in production
+* Integrate with Ridley's connectors pool. Set $MB\_CONNECTOR\_POOL or
+  `ridley.connector_pool_size` in the config file. Default is 25.
+
 # 0.14.5
 
 * Use run_list instead of roles/recipes
