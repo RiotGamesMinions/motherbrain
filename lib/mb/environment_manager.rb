@@ -103,6 +103,35 @@ module MotherBrain
       job.terminate if job && job.alive?
     end
 
+
+    def async_examine_nodes(id, options = {})
+      job = Job.new(:examine_nodes)
+      async(:examine_nodes, job, id, options)
+
+      job.ticket
+    end
+
+    def examine_nodes(job, id, options = {})
+      environment = find(id)
+      job.report_running("Finding environment #{environment.name}")
+      nodes = nodes_for_environment(environment.name)
+
+      job.set_status("Examining #{nodes.length} nodes")
+      nodes.collect do |node|
+        log.debug "About to execute on #{node.public_hostname}"
+        node_querier.future(:execute_command, node.public_hostname, "echo %time%")
+      end.each do |future|
+        begin
+          response = future.value
+        rescue RemoteCommandError => error
+          log.warn "Examine command on #{error.host} failed"
+        end
+      end
+      job.report_success("Completed on #{nodes.length} nodes.")
+    ensure
+      job.terminate if job && job.alive?
+    end
+
     # Find an environment on the remote Chef server
     #
     # @param [#to_s] id
@@ -183,7 +212,7 @@ module MotherBrain
     #
     # @return [Array(Ridley::NodeObject)]
     def nodes_for_environment(name)
-      ridley.search(:node, "chef_environment:#{name}")
+      ridley.partial_search(:node, "chef_environment:#{name}", ["fqdn", "cloud.public_hostname", "name"])
     end
 
     private

@@ -33,7 +33,6 @@ Gem::Specification.new do |s|
   s.name          = "motherbrain"
   s.require_paths = ["lib"]
   s.version       = MotherBrain::VERSION
-  s.required_ruby_version = ">= 2.0.0"
 
   s.add_dependency 'celluloid', '~> 0.15'
   # s.add_dependency 'dcell', '~> 0.14.0'
@@ -43,7 +42,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'net-ssh'
   s.add_dependency 'net-sftp'
   s.add_dependency 'solve', '>= 0.4.4'
-  s.add_dependency 'ridley-connectors', '~> 1.5.0'
+  s.add_dependency 'ridley-connectors', '~> 1.6.0'
   s.add_dependency 'thor', '~> 0.18.0'
   s.add_dependency 'faraday', '< 0.9.0'
   s.add_dependency 'faraday_middleware'

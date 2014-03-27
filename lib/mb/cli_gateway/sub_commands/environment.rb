@@ -108,13 +108,20 @@ module MotherBrain
         desc "create ENVIRONMENT", "Create an empty environment"
         def create(environment)
           ui.say "Creating empty environment #{environment}"
-          
+
           begin
             environment_manager.create(environment)
           rescue => e
             ui.error e.message
             exit(1)
           end
+        end
+
+        desc "examine ENVIRONMENT", "Examine nodes in a Chef environment"
+        def examine(environment)
+          job = environment_manager.async_examine_nodes(environment)
+
+          CliClient.new(job).display
         end
       end
     end
