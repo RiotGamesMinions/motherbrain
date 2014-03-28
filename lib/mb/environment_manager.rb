@@ -117,14 +117,16 @@ module MotherBrain
       nodes = nodes_for_environment(environment.name)
 
       job.set_status("Examining #{nodes.length} nodes")
+
       nodes.collect do |node|
-        log.debug "About to execute on #{node.public_hostname}"
+        log.debug "About to execute on: \"#{node.public_hostname}\""
         node_querier.future(:execute_command, node.public_hostname, "echo %time%")
       end.each do |future|
         begin
           response = future.value
         rescue RemoteCommandError => error
-          log.warn "Examine command on #{error.host} failed"
+          log.warn "Examine command failed on: \"#{error.host}\""
+          log.warn "  " + error.message
         end
       end
       job.report_success("Completed on #{nodes.length} nodes.")

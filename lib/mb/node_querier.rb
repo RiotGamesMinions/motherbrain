@@ -177,6 +177,10 @@ module MotherBrain
         return nil
       end
 
+      unless host.present?
+        abort RemoteCommandError.new("cannot put_secret without a hostname or ipaddress")
+      end
+
       response = chef_connection.node.put_secret(host)
 
       if response.error?
@@ -196,6 +200,11 @@ module MotherBrain
     #
     # @return [Ridley::HostConnection::Response]
     def execute_command(host, command)
+
+      unless host.present?
+        abort RemoteCommandError.new("cannot execute command without a hostname or ipaddress")
+      end
+
       response = chef_connection.node.execute_command(host, command)
 
       if response.error?
@@ -478,6 +487,10 @@ module MotherBrain
       name    = name.split('.rb')[0]
       lines   = File.readlines(MB.scripts.join("#{name}.rb"))
       command_lines = lines.collect { |line| line.gsub('"', "'").strip.chomp }
+
+      unless host.present?
+        abort RemoteCommandError.new("cannot execute a ruby_script without a hostname or ipaddress")
+      end
 
       response = chef_connection.node.ruby_script(host, command_lines)
       
