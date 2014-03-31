@@ -79,22 +79,22 @@
 \fBmb\fR \fBplugin\fR help [COMMAND]
 .
 .br
-\fBmb\fR \fB<plugin>\fR :nodes
+\fBmb\fR \fB<plugin>\fR nodes
 .
 .br
-\fBmb\fR \fB<plugin>\fR :bootstrap MANIFEST
+\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST
 .
 .br
-\fBmb\fR \fB<plugin>\fR :provision MANIFEST
+\fBmb\fR \fB<plugin>\fR provision MANIFEST
 .
 .br
-\fBmb\fR \fB<plugin>\fR :service [COMPONENT]\.[SERVICE] [STATE]
+\fBmb\fR \fB<plugin>\fR service [COMPONENT]\.[SERVICE] [STATE]
 .
 .br
-\fBmb\fR \fB<plugin>\fR :upgrade
+\fBmb\fR \fB<plugin>\fR upgrade
 .
 .br
-\fBmb\fR \fB<plugin>\fR :attributes
+\fBmb\fR \fB<plugin>\fR attributes
 .
 .br
 \fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR
@@ -384,13 +384,13 @@ The version of the plugin to install
 Describe subcommands or one specific subcommand
 .
 .P
-\fBmb\fR \fB<plugin>\fR :nodes
+\fBmb\fR \fB<plugin>\fR nodes
 .
 .br
 List all nodes grouped by Component and Group
 .
 .P
-\fBmb\fR \fB<plugin>\fR :bootstrap MANIFEST
+\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST
 .
 .br
 Bootstrap a manifest of node groups
@@ -445,7 +445,7 @@ Perform bootstrap even if the environment is locked
 
 .
 .P
-\fBmb\fR \fB<plugin>\fR :provision MANIFEST
+\fBmb\fR \fB<plugin>\fR provision MANIFEST
 .
 .br
 Create a cluster of nodes and add them to a Chef environment
@@ -507,7 +507,7 @@ Perform bootstrap even if the environment is locked
 
 .
 .P
-\fBmb\fR \fB<plugin>\fR :service [COMPONENT]\.[SERVICE] [STATE]
+\fBmb\fR \fB<plugin>\fR service [COMPONENT]\.[SERVICE] [STATE]
 .
 .br
 Change the specified service to a new state
@@ -534,7 +534,7 @@ Run command only on the given hostnames or IPs
 
 .
 .P
-\fBmb\fR \fB<plugin>\fR :upgrade
+\fBmb\fR \fB<plugin>\fR upgrade
 .
 .br
 Upgrade an environment to the specified versions
@@ -589,7 +589,7 @@ The upgrade will be constrained to the order defined in the plugin\'s stack_orde
 
 .
 .P
-\fBmb\fR \fB<plugin>\fR :attributes
+\fBmb\fR \fB<plugin>\fR attributes
 .
 .br
 View available attributes for plugin\.

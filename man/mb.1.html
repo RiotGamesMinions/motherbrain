@@ -99,12 +99,12 @@
 <code>mb</code> <code>plugin</code> show NAME<br />
 <code>mb</code> <code>plugin</code> uninstall NAME --version=VERSION<br />
 <code>mb</code> <code>plugin</code> help [COMMAND]<br />
-<code>mb</code> <code>&lt;plugin></code> :nodes<br />
-<code>mb</code> <code>&lt;plugin></code> :bootstrap MANIFEST<br />
-<code>mb</code> <code>&lt;plugin></code> :provision MANIFEST<br />
-<code>mb</code> <code>&lt;plugin></code> :service [COMPONENT].[SERVICE] [STATE]<br />
-<code>mb</code> <code>&lt;plugin></code> :upgrade<br />
-<code>mb</code> <code>&lt;plugin></code> :attributes<br />
+<code>mb</code> <code>&lt;plugin></code> nodes<br />
+<code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST<br />
+<code>mb</code> <code>&lt;plugin></code> provision MANIFEST<br />
+<code>mb</code> <code>&lt;plugin></code> service [COMPONENT].[SERVICE] [STATE]<br />
+<code>mb</code> <code>&lt;plugin></code> upgrade<br />
+<code>mb</code> <code>&lt;plugin></code> attributes<br />
 <code>mb</code> <code>&lt;plugin></code> <code>&lt;component></code> <code>&lt;command></code><br /></p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
@@ -266,10 +266,10 @@ Uninstall a plugin from your Berkshelf</p>
 <p><code>mb</code> <code>plugin</code> help [COMMAND]<br />
 Describe subcommands or one specific subcommand</p>
 
-<p><code>mb</code> <code>&lt;plugin></code> :nodes<br />
+<p><code>mb</code> <code>&lt;plugin></code> nodes<br />
 List all nodes grouped by Component and Group</p>
 
-<p><code>mb</code> <code>&lt;plugin></code> :bootstrap MANIFEST<br />
+<p><code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST<br />
 Bootstrap a manifest of node groups</p>
 
 <dl>
@@ -283,7 +283,7 @@ Bootstrap a manifest of node groups</p>
 </dl>
 
 
-<p><code>mb</code> <code>&lt;plugin></code> :provision MANIFEST<br />
+<p><code>mb</code> <code>&lt;plugin></code> provision MANIFEST<br />
 Create a cluster of nodes and add them to a Chef environment</p>
 
 <dl>
@@ -298,7 +298,7 @@ Create a cluster of nodes and add them to a Chef environment</p>
 </dl>
 
 
-<p><code>mb</code> <code>&lt;plugin></code> :service [COMPONENT].[SERVICE] [STATE]<br />
+<p><code>mb</code> <code>&lt;plugin></code> service [COMPONENT].[SERVICE] [STATE]<br />
 Change the specified service to a new state</p>
 
 <dl>
@@ -308,7 +308,7 @@ Change the specified service to a new state</p>
 </dl>
 
 
-<p><code>mb</code> <code>&lt;plugin></code> :upgrade<br />
+<p><code>mb</code> <code>&lt;plugin></code> upgrade<br />
 Upgrade an environment to the specified versions</p>
 
 <dl>
@@ -322,7 +322,7 @@ Upgrade an environment to the specified versions</p>
 </dl>
 
 
-<p><code>mb</code> <code>&lt;plugin></code> :attributes<br />
+<p><code>mb</code> <code>&lt;plugin></code> attributes<br />
 View available attributes for plugin.</p>
 
 <p><code>mb</code> <code>&lt;plugin></code> <code>&lt;component></code> <code>&lt;command></code><br />
