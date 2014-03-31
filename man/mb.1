@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "MB" "1" "September 2013" "" ""
+.TH "MB" "1" "March 2014" "" ""
 .
 .SH "NAME"
 \fBmb\fR \- command and control clusters of machines with Chef
@@ -14,6 +14,12 @@
 .
 .br
 \fBmb\fR purge HOST
+.
+.br
+\fBmb\fR enable HOST
+.
+.br
+\fBmb\fR disable HOST
 .
 .br
 \fBmb\fR version
@@ -43,7 +49,13 @@
 \fBmb\fR \fBenvironment\fR unlock ENVIRONMENT
 .
 .br
+\fBmb\fR \fBenvironment\fR from FILE
+.
+.br
 \fBmb\fR \fBenvironment\fR create ENVIRONMENT
+.
+.br
+\fBmb\fR \fBenvironment\fR examine ENVIRONMENT
 .
 .br
 \fBmb\fR \fBenvironment\fR help [COMMAND]
@@ -67,16 +79,22 @@
 \fBmb\fR \fBplugin\fR help [COMMAND]
 .
 .br
-\fBmb\fR \fB<plugin>\fR nodes
+\fBmb\fR \fB<plugin>\fR :nodes
 .
 .br
-\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST
+\fBmb\fR \fB<plugin>\fR :bootstrap MANIFEST
 .
 .br
-\fBmb\fR \fB<plugin>\fR provision MANIFEST
+\fBmb\fR \fB<plugin>\fR :provision MANIFEST
 .
 .br
-\fBmb\fR \fB<plugin>\fR upgrade
+\fBmb\fR \fB<plugin>\fR :service [COMPONENT]\.[SERVICE] [STATE]
+.
+.br
+\fBmb\fR \fB<plugin>\fR :upgrade
+.
+.br
+\fBmb\fR \fB<plugin>\fR :attributes
 .
 .br
 \fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR
@@ -156,6 +174,32 @@ Skip removing the Chef installation from the node
 
 .
 .P
+\fBmb\fR enable HOST
+.
+.br
+Remove stop service attributes and \'disabled\' run list entry from HOST\'s node\.
+.
+.TP
+\-f, \-\-force
+Perform HOST enable even if the environment is locked
+.
+.br
+
+.
+.P
+\fBmb\fR disable HOST
+.
+.br
+Stop services on HOST and prevent chef\-client from running until reenabled\.
+.
+.TP
+\-f, \-\-force
+Perform HOST disable even if the environment is locked
+.
+.br
+
+.
+.P
 \fBmb\fR version
 .
 .br
@@ -188,6 +232,13 @@ configure a Chef environment
 .TP
 \-f, \-\-force
 perform the configuration even if the environment is locked
+.
+.br
+
+.
+.TP
+\-o, \-\-only=one two three
+Run command only on the given hostnames or IPs
 .
 .br
 
@@ -238,10 +289,22 @@ Lock an environment
 Unlock an environment
 .
 .P
+\fBmb\fR \fBenvironment\fR from FILE
+.
+.br
+Create an environment from JSON in a file
+.
+.P
 \fBmb\fR \fBenvironment\fR create ENVIRONMENT
 .
 .br
 Create an empty environment
+.
+.P
+\fBmb\fR \fBenvironment\fR examine ENVIRONMENT
+.
+.br
+Examine nodes in a Chef environment
 .
 .P
 \fBmb\fR \fBenvironment\fR help [COMMAND]
@@ -321,13 +384,13 @@ The version of the plugin to install
 Describe subcommands or one specific subcommand
 .
 .P
-\fBmb\fR \fB<plugin>\fR nodes
+\fBmb\fR \fB<plugin>\fR :nodes
 .
 .br
 List all nodes grouped by Component and Group
 .
 .P
-\fBmb\fR \fB<plugin>\fR bootstrap MANIFEST
+\fBmb\fR \fB<plugin>\fR :bootstrap MANIFEST
 .
 .br
 Bootstrap a manifest of node groups
@@ -382,7 +445,7 @@ Perform bootstrap even if the environment is locked
 
 .
 .P
-\fBmb\fR \fB<plugin>\fR provision MANIFEST
+\fBmb\fR \fB<plugin>\fR :provision MANIFEST
 .
 .br
 Create a cluster of nodes and add them to a Chef environment
@@ -444,7 +507,34 @@ Perform bootstrap even if the environment is locked
 
 .
 .P
-\fBmb\fR \fB<plugin>\fR upgrade
+\fBmb\fR \fB<plugin>\fR :service [COMPONENT]\.[SERVICE] [STATE]
+.
+.br
+Change the specified service to a new state
+.
+.TP
+\-\-cluster\-override
+Sets the service operation to execute at the environment level
+.
+.br
+
+.
+.TP
+\-f, \-\-force
+Perform service change even if the environment is locked
+.
+.br
+
+.
+.TP
+\-o, \-\-only=one two three
+Run command only on the given hostnames or IPs
+.
+.br
+
+.
+.P
+\fBmb\fR \fB<plugin>\fR :upgrade
 .
 .br
 Upgrade an environment to the specified versions
@@ -483,6 +573,26 @@ Perform upgrade even if the environment is locked
 .
 .br
 
+.
+.TP
+\-C, \-\-concurrency=N
+The max number of nodes to upgrade concurrently\.
+.
+.br
+
+.
+.TP
+\-\-stack\-order
+The upgrade will be constrained to the order defined in the plugin\'s stack_order\.
+.
+.br
+
+.
+.P
+\fBmb\fR \fB<plugin>\fR :attributes
+.
+.br
+View available attributes for plugin\.
 .
 .P
 \fBmb\fR \fB<plugin>\fR \fB<component>\fR \fB<command>\fR
