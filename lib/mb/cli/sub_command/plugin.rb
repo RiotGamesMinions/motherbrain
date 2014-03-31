@@ -154,9 +154,15 @@ module MotherBrain
                   default: false,
                   desc: "Perform service change even if the environment is locked",
                   aliases: "-f"
+                method_option :only,
+                  type: :array,
+                  default: nil,
+                  desc: "Run command only on the given hostnames or IPs",
+                  aliases: "-o"
                 desc("service [COMPONENT].[SERVICE] [STATE]", "Change the specified service to a new state")
                 define_method(:service) do |service, state|
                   service_options = Hash.new.merge(options).deep_symbolize_keys
+                  service_options[:node_filter] = service_options.delete(:only)
 
                   job = MB::Gear::DynamicService.change_service_state(
                     service.freeze,
