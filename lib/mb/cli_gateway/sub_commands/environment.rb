@@ -9,6 +9,12 @@ module MotherBrain
           default: false,
           desc: "perform the configuration even if the environment is locked",
           aliases: "-f"
+        method_option :only,
+          type: :array,
+          default: nil,
+          desc: "Run command only on the given hostnames or IPs",
+          aliases: "-o",
+          hide: true
         desc "configure ENVIRONMENT FILE", "configure a Chef environment"
         def configure(environment, attributes_file)
           attributes_file = File.expand_path(attributes_file)
@@ -28,7 +34,7 @@ module MotherBrain
             exit(1)
           end
 
-          job = environment_manager.async_configure(environment, attributes: attributes, force: options[:force])
+          job = environment_manager.async_configure(environment, attributes: attributes, force: options[:force], node_filter: options[:only])
 
           CliClient.new(job).display
         end

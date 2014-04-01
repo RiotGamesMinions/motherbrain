@@ -82,7 +82,7 @@ module MotherBrain
                 environment: environment,
                 arguments: task_args,
                 force: options[:force],
-		            node_filter: options[:only]
+                node_filter: options[:only]
               )
 
               display_job(job)

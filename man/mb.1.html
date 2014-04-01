@@ -78,6 +78,8 @@
 <p><code>mb</code> configure<br />
 <code>mb</code> console<br />
 <code>mb</code> purge HOST<br />
+<code>mb</code> enable HOST<br />
+<code>mb</code> disable HOST<br />
 <code>mb</code> version<br />
 <code>mb</code> template NAME PATH_OR_URL<br />
 <code>mb</code> environment<br />
@@ -87,7 +89,9 @@
 <code>mb</code> <code>environment</code> list<br />
 <code>mb</code> <code>environment</code> lock ENVIRONMENT<br />
 <code>mb</code> <code>environment</code> unlock ENVIRONMENT<br />
+<code>mb</code> <code>environment</code> from FILE<br />
 <code>mb</code> <code>environment</code> create ENVIRONMENT<br />
+<code>mb</code> <code>environment</code> examine ENVIRONMENT<br />
 <code>mb</code> <code>environment</code> help [COMMAND]<br />
 <code>mb</code> <code>plugin</code> init [PATH]<br />
 <code>mb</code> <code>plugin</code> install NAME<br />
@@ -98,7 +102,9 @@
 <code>mb</code> <code>&lt;plugin></code> nodes<br />
 <code>mb</code> <code>&lt;plugin></code> bootstrap MANIFEST<br />
 <code>mb</code> <code>&lt;plugin></code> provision MANIFEST<br />
+<code>mb</code> <code>&lt;plugin></code> service [COMPONENT].[SERVICE] [STATE]<br />
 <code>mb</code> <code>&lt;plugin></code> upgrade<br />
+<code>mb</code> <code>&lt;plugin></code> attributes<br />
 <code>mb</code> <code>&lt;plugin></code> <code>&lt;component></code> <code>&lt;command></code><br /></p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
@@ -153,6 +159,22 @@ Remove Chef from node and purge it's data from the Chef server</p>
 </dl>
 
 
+<p><code>mb</code> enable HOST<br />
+Remove stop service attributes and 'disabled' run list entry from HOST's node.</p>
+
+<dl>
+<dt>-f, --force</dt><dd>Perform HOST enable even if the environment is locked<br /></dd>
+</dl>
+
+
+<p><code>mb</code> disable HOST<br />
+Stop services on HOST and prevent chef-client from running until reenabled.</p>
+
+<dl>
+<dt>-f, --force</dt><dd>Perform HOST disable even if the environment is locked<br /></dd>
+</dl>
+
+
 <p><code>mb</code> version<br />
 Display version and license information</p>
 
@@ -170,6 +192,7 @@ configure a Chef environment</p>
 
 <dl>
 <dt>-f, --force</dt><dd>perform the configuration even if the environment is locked<br /></dd>
+<dt>-o, --only=one two three</dt><dd>Run command only on the given hostnames or IPs<br /></dd>
 </dl>
 
 
@@ -192,8 +215,14 @@ Lock an environment</p>
 <p><code>mb</code> <code>environment</code> unlock ENVIRONMENT<br />
 Unlock an environment</p>
 
+<p><code>mb</code> <code>environment</code> from FILE<br />
+Create an environment from JSON in a file</p>
+
 <p><code>mb</code> <code>environment</code> create ENVIRONMENT<br />
 Create an empty environment</p>
+
+<p><code>mb</code> <code>environment</code> examine ENVIRONMENT<br />
+Examine nodes in a Chef environment</p>
 
 <p><code>mb</code> <code>environment</code> help [COMMAND]<br />
 Describe subcommands or one specific subcommand</p>
@@ -269,6 +298,16 @@ Create a cluster of nodes and add them to a Chef environment</p>
 </dl>
 
 
+<p><code>mb</code> <code>&lt;plugin></code> service [COMPONENT].[SERVICE] [STATE]<br />
+Change the specified service to a new state</p>
+
+<dl>
+<dt>--cluster-override</dt><dd>Sets the service operation to execute at the environment level<br /></dd>
+<dt>-f, --force</dt><dd>Perform service change even if the environment is locked<br /></dd>
+<dt>-o, --only=one two three</dt><dd>Run command only on the given hostnames or IPs<br /></dd>
+</dl>
+
+
 <p><code>mb</code> <code>&lt;plugin></code> upgrade<br />
 Upgrade an environment to the specified versions</p>
 
@@ -278,8 +317,13 @@ Upgrade an environment to the specified versions</p>
 <dt>--attributes, --environment-attributes=key:value</dt><dd>Any additional attributes to set on the environment<br /></dd>
 <dt>--attributes-file, --environment-attributes-file=ENVIRONMENT_ATTRIBUTES_FILE</dt><dd>Any additional attributes to set on the environment via a json file.<br /></dd>
 <dt>-f, --force</dt><dd>Perform upgrade even if the environment is locked<br /></dd>
+<dt>-C, --concurrency=N</dt><dd>The max number of nodes to upgrade concurrently.<br /></dd>
+<dt>--stack-order</dt><dd>The upgrade will be constrained to the order defined in the plugin's stack_order.<br /></dd>
 </dl>
 
+
+<p><code>mb</code> <code>&lt;plugin></code> attributes<br />
+View available attributes for plugin.</p>
 
 <p><code>mb</code> <code>&lt;plugin></code> <code>&lt;component></code> <code>&lt;command></code><br />
 Run a command defined in a component in the specified plugin. Options and usage are plugin-defined.</p>
@@ -291,7 +335,7 @@ Run a command defined in a component in the specified plugin. Options and usage 
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>September 2013</li>
+    <li class='tc'>March 2014</li>
     <li class='tr'>mb(1)</li>
   </ol>
 

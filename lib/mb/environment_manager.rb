@@ -52,7 +52,8 @@ module MotherBrain
     #   a hash of attributes to merge with the existing attributes of an environment
     # @option options [Boolean] :force (false)
     #   force configure even if the environment is locked
-    #
+    # @option options [String] :node_filter
+    #   limit chef-run to certain nodes - NOT RECOMMENDED
     # @api private
     def configure(job, id, options = {})
       options = options.reverse_merge(
@@ -76,6 +77,7 @@ module MotherBrain
 
         job.set_status("Searching for nodes in the environment")
         nodes = nodes_for_environment(environment.name)
+        nodes = MB::NodeFilter.filter(options[:node_filter], nodes) if options[:node_filter]
 
         job.set_status("Performing a chef client run on #{nodes.length} nodes")
         nodes.collect do |node|
