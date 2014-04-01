@@ -1,3 +1,8 @@
+# 1.1.0
+
+* Node filtering can be done on more commands
+* Get some additional fixed from ridley-connectors
+
 # 1.0.0
 
 * Call it 1.0 since it's in use in production
