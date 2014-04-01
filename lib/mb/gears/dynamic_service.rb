@@ -76,14 +76,12 @@ module MotherBrain
           "Component's service state is being changed to #{state}, which is not one of #{COMMON_STATES}"
         } unless COMMON_STATES.include?(state)
 
-        node_filter = options.delete(:node_filter)
-
         chef_synchronize(chef_environment: environment, force: options[:force]) do
           component_object = plugin.component(component)
           service_object = component_object.get_service(name)
           group = component_object.group(service_object.service_group)
           nodes = group.nodes(environment)
-          nodes = MB::NodeFilter.filter(node_filter, nodes) if node_filter
+          nodes = MB::NodeFilter.filter(options[:node_filter], nodes) if options[:node_filter]
 
           job.report_running("preparing to change the #{name} service to #{state}")
 

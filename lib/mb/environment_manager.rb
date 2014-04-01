@@ -56,8 +56,6 @@ module MotherBrain
     #   limit chef-run to certain nodes - NOT RECOMMENDED
     # @api private
     def configure(job, id, options = {})
-      node_filter = options.delete(:node_filter)
-
       options = options.reverse_merge(
         attributes: Hash.new,
         force: false
@@ -79,7 +77,7 @@ module MotherBrain
 
         job.set_status("Searching for nodes in the environment")
         nodes = nodes_for_environment(environment.name)
-        nodes = MB::NodeFilter.filter(node_filter, nodes) if node_filter
+        nodes = MB::NodeFilter.filter(options[:node_filter], nodes) if options[:node_filter]
 
         job.set_status("Performing a chef client run on #{nodes.length} nodes")
         nodes.collect do |node|
