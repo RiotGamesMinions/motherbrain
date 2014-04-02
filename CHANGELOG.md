@@ -1,3 +1,7 @@
+# 1.1.1
+
+* Lock tighter on http gem
+
 # 1.1.0
 
 * Node filtering can be done on more commands
