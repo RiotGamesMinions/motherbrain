@@ -498,6 +498,9 @@ module MotherBrain
         raise RemoteScriptError.new(response.stderr.chomp)
       end
       response.stdout.chomp
+    rescue Ridley::Errors::ConnectorsError => ex
+      log.info { "Failed ruby script execution on: #{host}" }
+      abort RemoteCommandError.new(ex, host)
     end
 
     def on_dynamic_services(job, node)
