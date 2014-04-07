@@ -42,7 +42,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'grape', '~> 0.6.0'
   s.add_dependency 'net-ssh'
   s.add_dependency 'net-sftp'
-  s.add_dependency 'solve', '>= 0.4.4'
+  s.add_dependency 'solve', '>= 1.0.0.rc1'
   s.add_dependency 'ridley-connectors', '~> 2.0'
   s.add_dependency 'thor', '~> 0.18.0'
   s.add_dependency 'faraday', '~> 0.9'
@@ -55,4 +55,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'buff-ruby_engine', '~> 0.1'
   s.add_dependency 'grape-swagger', '~> 0.6.0'
   s.add_dependency 'berkshelf', '~> 3.0'
+  s.add_dependency 'semverse', '~> 1.1.0'
 end

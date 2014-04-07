@@ -412,7 +412,7 @@ module MotherBrain
     #
     # @param [String] plugin_name
     #   name of the plugin
-    # @param [String, Solve::Constraint] constraint
+    # @param [String, Semverse::Constraint] constraint
     #   constraint to satisfy
     #
     # @option options [Boolean] :remote (false)
@@ -424,7 +424,7 @@ module MotherBrain
     # @return [MB::Plugin]
     def satisfy(plugin_name, constraint, options = {})
       options    = options.reverse_merge(remote: false)
-      constraint = Solve::Constraint.new(constraint)
+      constraint = Semverse::Constraint.new(constraint)
 
       # Optimize for equality operator. Don't need to find all of the versions if
       # we only care about one.
@@ -444,7 +444,7 @@ module MotherBrain
         # calling versions() and including a {remote: true} option.
         find(plugin_name, version, remote: false)
       end
-    rescue Solve::Errors::NoSolutionError
+    rescue Semverse::Errors::NoSolutionError
       abort PluginNotFound.new(plugin_name, constraint)
     end
 
