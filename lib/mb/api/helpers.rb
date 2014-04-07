@@ -31,7 +31,7 @@ module MotherBrain::API
       return nil if version.nil?
 
       ver_string = version.gsub('_', '.')
-      Solve::Version.split(ver_string)
+      Semverse::Version.split(ver_string)
       ver_string
     end
   end

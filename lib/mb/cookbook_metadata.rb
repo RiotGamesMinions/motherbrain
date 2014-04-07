@@ -58,11 +58,11 @@ module MotherBrain
       end
     end
 
-    # Override the default version with [Solve::Version]
+    # Override the default version with [Semverse::Version]
     #
-    # @return [Solve::Version]
+    # @return [Semverse::Version]
     def version(data = nil)
-      @version = data.nil? ? @version : Solve::Version.new(data)
+      @version = data.nil? ? @version : Semverse::Version.new(data)
     end
 
     private
