@@ -17,7 +17,7 @@ module MB
 
       metadata = MB::CookbookMetadata.new
       metadata.name = "plugin"
-      metadata.version = Solve::Version.new("1.0.0")
+      metadata.version = Semverse::Version.new("1.0.0")
 
       plugin = MB::Plugin.new(metadata)
 

@@ -53,8 +53,8 @@ describe MotherBrain::CookbookMetadata do
           subject.long_description.should eql("Installs/Configures motherbrain")
         end
 
-        it "sets a Solve::Version value for 'version'" do
-          subject.version.should be_a(Solve::Version)
+        it "sets a Semverse::Version value for 'version'" do
+          subject.version.should be_a(Semverse::Version)
           subject.version.to_s.should eql("0.1.0")
         end
 
