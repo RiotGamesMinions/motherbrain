@@ -2,6 +2,9 @@ source "https://rubygems.org"
 
 gemspec
 
+gem 'ridley', path: '/Users/kallan/src/ridley'
+gem 'ridley-connectors', path: '/Users/kallan/src/ridley-connectors'
+
 if File.exists?('Gemfile.local') then
   eval File.read('Gemfile.local'), nil, 'Gemfile.local'
 end

@@ -93,11 +93,7 @@ module MotherBrain
       # @return [Hash]
       def run(address, options = {})
         host = Host.new(address)
-        if host.full_bootstrap?
-          full_bootstrap(host, options)
-        else
-          partial_bootstrap(host, options.slice(:attributes, :run_list))
-        end
+        chef_connection.node.bootstrap(host.hostname, options)
       end
 
       # Perform a bootstrap on a group of nodes which have not yet been registered with the Chef server
