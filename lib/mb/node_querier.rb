@@ -449,13 +449,20 @@ module MotherBrain
         if node.run_list.include?(DISABLED_RUN_LIST_ENTRY)
           job.set_status("#{node.name} is already disabled.")
           success = true
-        else
+        elsif not options[:offline]
           required_run_list = on_dynamic_services(job, node) do |dynamic_service, plugin|
             dynamic_service.node_state_change(job,
                                               plugin,
                                               node,
                                               MB::Gear::DynamicService::STOP,
                                               false)
+          end
+
+          if !required_run_list.empty?
+            job.set_status "Running chef with the following run list: #{required_run_list.inspect}"
+            bulk_chef_run(job, [node], required_run_list)
+          else
+            job.set_status "No recipes required to run."
           end
         end
 
