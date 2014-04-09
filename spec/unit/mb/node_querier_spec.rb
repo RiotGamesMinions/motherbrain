@@ -495,6 +495,12 @@ describe MB::NodeQuerier do
         job.should_receive(:report_success).with("#{node.name} disabled.")
         subject.disable(job, node_name, offline: true)
       end
+
+      it "reports failure when unable to disable the node" do
+        node.should_receive(:save).and_return false
+        job.should_receive(:report_failure).with("#{node.name} did not save! Disabled run_list entry was unable to be added to the node due to node save failure.")
+        subject.disable(job, node_name, offline: true)
+      end
     end
   end
 
