@@ -423,17 +423,23 @@ module MotherBrain
     # @param [Hash] options
     #
     # @option options [Boolean] :force (false) Ignore environment lock and execute anyway.
+    # @option options [Boolean] :offline (false) Do not attempt to connect to the node. Assume it is offline.
     # 
     def disable(job, host, options = {})
-      job.report_running("Discovering host's registered node name")
-      node_name = registered_as(host)
-      if !node_name
-        # TODO auth could fail and cause this to throw
-        job.report_failure("Could not discover the host's node name. The host may not be " +
-                           "registered with Chef or the embedded Ruby used to identify the " +
-                           "node name may not be available. #{host} was not disabled!")
-      end
-      job.set_status("Host registered as #{node_name}.")
+      node_name = if options[:offline]
+                    host
+                  else
+                    job.report_running("Discovering host's registered node name")
+                    discovered_name = registered_as(host)
+                    if !node_name
+                      # TODO auth could fail and cause this to throw
+                      job.report_failure("Could not discover the host's node name. The host may not be " +
+                                         "registered with Chef or the embedded Ruby used to identify the " +
+                                         "node name may not be available. #{host} was not disabled!")
+                    end
+                    job.set_status("Host registered as #{discovered_name}.")
+                    discovered_name
+                  end
 
       node = fetch_node(job, node_name)
 
