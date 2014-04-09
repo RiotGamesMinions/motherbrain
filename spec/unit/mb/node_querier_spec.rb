@@ -258,7 +258,7 @@ describe MB::NodeQuerier do
     let(:host) { "192.168.1.1" }
     let(:options) { Hash.new }
 
-    it "creates a Job and delegates to #disable" do
+    it "creates a Job and delegates to #enable" do
       ticket = double('ticket')
       job    = double('job', ticket: ticket)
       MB::Job.should_receive(:new).and_return(job)
@@ -275,7 +275,7 @@ describe MB::NodeQuerier do
 
   describe "#enable" do
     let(:host) { "192.168.1.1" }
-    let(:job) { MB::Job.new(:disable) }
+    let(:job) { MB::Job.new(:enable) }
     let(:future_stub) { double(Celluloid::Future, value: nil) }
     let(:node_stub) { 
       double(Ridley::NodeObject,
