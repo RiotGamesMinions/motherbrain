@@ -422,6 +422,17 @@ describe MB::NodeQuerier do
           e.message.should == "exit"
         end
       end
+
+      it "reports failure when using --offline", focus: true do
+        subject.should_not_receive(:registered_as)
+        job.should_receive(:report_failure).with("The node #{host} is not registered with the Chef server.").and_return { raise "exit" }
+        subject.stub_chain("chef_connection.node.find").and_return { raise Ridley::Errors::ResourceNotFound }
+        begin
+          subject.disable(job, host, offline: true)
+        rescue => e
+          e.message.should == "exit"
+        end
+      end
     end
 
     context "when the node is registered" do
