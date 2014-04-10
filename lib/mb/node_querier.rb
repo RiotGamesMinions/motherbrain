@@ -361,6 +361,7 @@ module MotherBrain
       node = chef_connection.node.find(node_name)
 
       required_run_list = []
+      success = false
       chef_synchronize(chef_environment: node.chef_environment, force: options[:force], job: job) do
         if node.run_list.include?(DISABLED_RUN_LIST_ENTRY)
           required_run_list = on_dynamic_services(job, node) do |dynamic_service, plugin|
@@ -377,14 +378,18 @@ module MotherBrain
           node.run_list = node.run_list.reject { |r| r == DISABLED_RUN_LIST_ENTRY }
           
           if node.save
-            job.report_success "#{node.name} enabled successfully."
+            job.set_status "#{node.name} enabled successfully."
+            success = true
           else
-            job.report_failure "#{node.name} did not save! Disabled run_list entry was unable to be removed to the node."
+            job.set_status "#{node.name} did not save! Disabled run_list entry was unable to be removed to the node."
           end
         else
-          job.report_success("#{node.name} is not disabled. No need to enable.")
+          job.set_status("#{node.name} is not disabled. No need to enable.")
+          success = true
         end
       end
+
+      job.report_boolean(success)
     rescue MotherBrain::ResourceLocked => e
       job.report_failure e.message
     ensure
