@@ -125,17 +125,17 @@ module MotherBrain
       end
 
       response = if options[:override_recipes]
-          override_recipes = options[:override_recipes]
+        override_recipes = options[:override_recipes]
 
-          cmd_recipe_syntax = override_recipes.join(',') { |recipe| "recipe[#{recipe}]" }
-          log.info { "Running Chef client with override runlist '#{cmd_recipe_syntax}' on: #{host}" }
-          chef_run_response = chef_connection.node.execute_command(host, "chef-client --override-runlist #{cmd_recipe_syntax}")
+        cmd_recipe_syntax = override_recipes.join(',') { |recipe| "recipe[#{recipe}]" }
+        log.info { "Running Chef client with override runlist '#{cmd_recipe_syntax}' on: #{host}" }
+        chef_run_response = chef_connection.node.execute_command(host, "chef-client --override-runlist #{cmd_recipe_syntax}")
 
-          chef_run_response
-        else
-          log.info { "Running Chef client on: #{host}" }
-          chef_connection.node.chef_run(host)
-        end
+        chef_run_response
+      else
+        log.info { "Running Chef client on: #{host}" }
+        chef_connection.node.chef_run(host)
+      end
 
       if response.error?
         log.info { "Failed Chef client run on: #{host}" }
@@ -144,7 +144,7 @@ module MotherBrain
 
       log.info { "Completed Chef client run on: #{host}" }
       response
-    rescue Ridley::Errors::HostConnectionError => ex
+    rescue RemoteCommandError => ex
       log.info { "Failed Chef client run on: #{host}" }
       abort RemoteCommandError.new(ex, host)
     end
@@ -205,7 +205,7 @@ module MotherBrain
         abort RemoteCommandError.new("cannot execute command without a hostname or ipaddress")
       end
 
-      response = chef_connection.node.execute_command(host, command)
+      response = safe_remote { chef_connection.node.execute_command(host, command) }
 
       if response.error?
         log.info { "Failed to execute command on: #{host}" }
@@ -526,6 +526,16 @@ module MotherBrain
           end
         end
       end.flatten.uniq
+    end
+    
+    def safe_remote(host=nil)
+      yield
+    rescue Exception => e
+      msg = "#{e.class}: #{e.message}"
+      msg = "[#{host}] #{msg}" if host
+      log.warn { msg }
+      log.debug { e.backtrace.join("\n") }
+      abort RemoteCommandError.new(msg, host)
     end
   end
 end
