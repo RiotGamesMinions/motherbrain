@@ -129,12 +129,12 @@ module MotherBrain
 
         cmd_recipe_syntax = override_recipes.join(',') { |recipe| "recipe[#{recipe}]" }
         log.info { "Running Chef client with override runlist '#{cmd_recipe_syntax}' on: #{host}" }
-        chef_run_response = safe_remote { chef_connection.node.execute_command(host, "chef-client --override-runlist #{cmd_recipe_syntax}") }
+        chef_run_response = safe_remote(host) { chef_connection.node.execute_command(host, "chef-client --override-runlist #{cmd_recipe_syntax}") }
 
         chef_run_response
       else
         log.info { "Running Chef client on: #{host}" }
-        safe_remote { chef_connection.node.chef_run(host) }
+        safe_remote(host) { chef_connection.node.chef_run(host) }
       end
 
       if response.error?
@@ -181,7 +181,7 @@ module MotherBrain
         abort RemoteCommandError.new("cannot put_secret without a hostname or ipaddress")
       end
 
-      response = safe_remote { chef_connection.node.put_secret(host) }
+      response = safe_remote(host) { chef_connection.node.put_secret(host) }
 
       if response.error?
         log.info { "Failed to put secret file on: #{host}" }
@@ -205,7 +205,7 @@ module MotherBrain
         abort RemoteCommandError.new("cannot execute command without a hostname or ipaddress")
       end
 
-      response = safe_remote { chef_connection.node.execute_command(host, command) }
+      response = safe_remote(host) { chef_connection.node.execute_command(host, command) }
 
       if response.error?
         log.info { "Failed to execute command on: #{host}" }
@@ -250,7 +250,7 @@ module MotherBrain
       if (client_id = node_name(host)).nil?
         return nil
       end
-      safe_remote { chef_connection.client.find(client_id).try(:name) }
+      safe_remote(host) { chef_connection.client.find(client_id).try(:name) }
     end
 
     # Asynchronously remove Chef from a target host and purge it's client and node object from the
@@ -331,7 +331,7 @@ module MotherBrain
       futures << chef_connection.node.future(:uninstall_chef, host, options.slice(:skip_chef))
 
       begin
-        safe_remote { futures.map(&:value) }
+        safe_remote(host) { futures.map(&:value) }
       rescue RemoteCommandError => e
         job.report_failure
       end
@@ -500,7 +500,7 @@ module MotherBrain
         abort RemoteCommandError.new("cannot execute a ruby_script without a hostname or ipaddress")
       end
 
-      response = safe_remote { chef_connection.node.ruby_script(host, command_lines) }
+      response = safe_remote(host) { chef_connection.node.ruby_script(host, command_lines) }
       
       if response.error?
         raise RemoteScriptError.new(response.stderr.chomp)
@@ -537,15 +537,15 @@ module MotherBrain
     end
 
     def fetch_node(node_name)
-      node = safe_remote { chef_connection.node.find(node_name) }
+      node = safe_remote(node_name) { chef_connection.node.find(node_name) }
     rescue RemoteCommandError => e
       job.report_failure("Encountered error retrieving the node object.")
     end
     
-    def safe_remote(host=nil)
+    def safe_remote(host = nil)
       yield
     rescue Exception => e
-      msg = "#{e.class}: #{e.message}"
+      msg = "Unhandled Exception: [#{e.class}] #{e.message}"
       msg = "[#{host}] #{msg}" if host
       log.warn { msg }
       log.debug { e.backtrace.join("\n") }
