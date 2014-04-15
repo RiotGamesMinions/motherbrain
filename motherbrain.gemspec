@@ -42,7 +42,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'grape', '~> 0.6.0'
   s.add_dependency 'net-ssh'
   s.add_dependency 'net-sftp'
-  s.add_dependency 'solve', '~> 1.1.0'
+  s.add_dependency 'solve', '~> 1.0.0.rc3'
   s.add_dependency 'ridley-connectors', '< 2.0.0'
   s.add_dependency 'thor', '~> 0.18.0'
   s.add_dependency 'faraday'
