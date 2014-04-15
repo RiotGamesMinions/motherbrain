@@ -444,7 +444,7 @@ module MotherBrain
         # calling versions() and including a {remote: true} option.
         find(plugin_name, version, remote: false)
       end
-    rescue Semverse::Errors::NoSolutionError
+    rescue Semverse::NoSolutionError
       abort PluginNotFound.new(plugin_name, constraint)
     end
 

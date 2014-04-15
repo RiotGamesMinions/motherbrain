@@ -11,7 +11,7 @@ module MotherBrain::API::Validators
       ver_string = params[attr_name].gsub('_', '.')
       Semverse::Version.split(ver_string)
       params[attr_name] = ver_string
-    rescue Semverse::Errors::InvalidVersionFormat => ex
+    rescue Semverse::InvalidVersionFormat => ex
       throw :error, status: 400, message: ex.to_s
     end
   end
