@@ -1,5 +1,3 @@
-require 'faraday_middleware/response/follow_redirects'
-
 module MotherBrain
   module Bootstrap
     class Template
@@ -24,7 +22,7 @@ module MotherBrain
               uri = URI.parse(filename_or_url)
               begin
                 conn = Faraday.new do |b|
-                  b.use FaradayMiddleware::FollowRedirects
+                  b.use Ridley::Middleware::FollowRedirects
                   b.adapter :net_http
                 end
                 response = conn.get filename_or_url
