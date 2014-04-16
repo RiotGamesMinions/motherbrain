@@ -45,7 +45,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'solve', '>= 0.4.4'
   s.add_dependency 'ridley-connectors', '~> 2.0'
   s.add_dependency 'thor', '~> 0.18.0'
-  s.add_dependency 'faraday', '~> 0.9.0'
+  s.add_dependency 'faraday', '~> 0.9'
   s.add_dependency 'multi_json'
   s.add_dependency 'fog', '~> 1.10.0'
   s.add_dependency 'json', '>= 1.8.0'

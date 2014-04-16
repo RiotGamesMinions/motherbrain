@@ -258,7 +258,7 @@ module MotherBrain
 
       potentials = list(name: name, remote: false).map(&:version)
       potentials += remote_cookbook_versions(name) if options[:remote]
-      potentials = potentials.collect { |version| Solve::Version.new(version) }.uniq.sort.reverse
+      potentials = potentials.collect { |version| Semverse::Version.new(version) }.uniq.sort.reverse
 
       potentials.find do |version|
         found = find(name, version.to_s, options.slice(:remote))

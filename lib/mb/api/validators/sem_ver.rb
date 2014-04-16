@@ -9,7 +9,7 @@ module MotherBrain::API::Validators
       return nil if params[attr_name].nil?
 
       ver_string = params[attr_name].gsub('_', '.')
-      Solve::Version.split(ver_string)
+      Semverse::Version.split(ver_string)
       params[attr_name] = ver_string
     rescue Solve::Errors::InvalidVersionFormat => ex
       throw :error, status: 400, message: ex.to_s
