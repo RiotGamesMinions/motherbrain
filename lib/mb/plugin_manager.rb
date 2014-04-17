@@ -435,7 +435,7 @@ module MotherBrain
       else
         graph = Solve::Graph.new
         versions(plugin_name, options[:remote]).each do |version|
-          graph.artifacts(plugin_name, version)
+          graph.artifact(plugin_name, version)
         end
 
         solution = Solve.it!(graph, [[plugin_name, constraint]])
