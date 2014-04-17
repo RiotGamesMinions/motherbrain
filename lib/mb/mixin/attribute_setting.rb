@@ -237,7 +237,7 @@ module MotherBrain
           end
 
           Hash[expanded]
-        rescue Semverse::Errors::InvalidConstraintFormat => ex
+        rescue Semverse::InvalidConstraintFormat => ex
           raise ArgumentError, ex
         end
 
