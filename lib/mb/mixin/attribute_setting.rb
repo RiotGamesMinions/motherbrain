@@ -233,11 +233,11 @@ module MotherBrain
         # @return [Hash]
         def expand_constraints(cookbook_versions)
           expanded = cookbook_versions.collect do |name, constraint|
-            [name, Solve::Constraint.new(constraint).to_s]
+            [name, Semverse::Constraint.new(constraint).to_s]
           end
 
           Hash[expanded]
-        rescue Solve::Errors::InvalidConstraintFormat => ex
+        rescue Semverse::InvalidConstraintFormat => ex
           raise ArgumentError, ex
         end
 

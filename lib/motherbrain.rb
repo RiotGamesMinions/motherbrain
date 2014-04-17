@@ -21,6 +21,7 @@ require 'mb/grape_ext'
 require 'mb/ridley_ext'
 require 'mb/thor_ext'
 require 'berkshelf'
+require 'semverse'
 
 module MotherBrain
   autoload :API, 'mb/api'
