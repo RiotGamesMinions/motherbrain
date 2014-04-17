@@ -34,7 +34,8 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.version       = MotherBrain::VERSION
 
-  s.add_dependency 'celluloid', '~> 0.15'
+  s.add_dependency 'celluloid', '~> 0.16.pre'
+  s.add_dependency 'celluloid-io', '~> 0.16.pre'
   # s.add_dependency 'dcell', '~> 0.14.0'
   s.add_dependency 'reel', '~> 0.4.0'
   s.add_dependency 'reel-rack'
