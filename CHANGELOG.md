@@ -1,3 +1,7 @@
+# 1.1.3
+
+* [#694](https://github.com/RiotGames/motherbrain/pull/694) Upgrade to reel 0.5.0
+
 # 1.1.2
 
 * [#691](https://github.com/RiotGames/motherbrain/pull/691) Add some extra error handling to NodeQuerier in order to prevent it from crashing
