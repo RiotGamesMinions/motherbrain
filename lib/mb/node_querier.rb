@@ -364,7 +364,7 @@ module MotherBrain
       
       job.set_status("Host registered as #{node_name}.")
 
-      node = fetch_node(node_name)
+      node = fetch_node(job, node_name)
 
       required_run_list = []
       chef_synchronize(chef_environment: node.chef_environment, force: options[:force], job: job) do
@@ -418,7 +418,7 @@ module MotherBrain
       end
       job.set_status("Host registered as #{node_name}.")
 
-      node = fetch_node(node_name)
+      node = fetch_node(job, node_name)
 
       required_run_list = []
       chef_synchronize(chef_environment: node.chef_environment, force: options[:force], job: job) do
@@ -536,7 +536,7 @@ module MotherBrain
       end.flatten.uniq
     end
 
-    def fetch_node(node_name)
+    def fetch_node(job, node_name)
       node = safe_remote(node_name) { chef_connection.node.find(node_name) }
     rescue RemoteCommandError => e
       job.report_failure("Encountered error retrieving the node object.")
