@@ -1,3 +1,10 @@
+# 1.1.2
+
+* [#691](https://github.com/RiotGames/motherbrain/pull/691) Add some extra error handling to NodeQuerier in order to prevent it from crashing
+* [#692](https://github.com/RiotGames/motherbrain/pull/692) Fix a bug preventing Job reporting from causing the unlock to fail during enabling/disabling
+* [#690](https://github.com/RiotGames/motherbrain/pull/690) More updates to gemspec to get bundler working appropriately
+* [#689](https://github.com/RiotGames/motherbrain/pull/689) Update to newer versions of berkshelf, ridley, celluloid, and others
+
 # 1.1.1
 
 * Lock tighter on http gem
