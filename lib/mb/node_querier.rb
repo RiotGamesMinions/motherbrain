@@ -418,9 +418,11 @@ module MotherBrain
       job.set_status("Host registered as #{node_name}.")
       node = chef_connection.node.find(node_name)
       required_run_list = []
+      success = false
       chef_synchronize(chef_environment: node.chef_environment, force: options[:force], job: job) do
         if node.run_list.include?(DISABLED_RUN_LIST_ENTRY)
-          job.report_success("#{node.name} is already disabled.")
+          job.set_status("#{node.name} is already disabled.")
+          success = true
         else
           required_run_list = on_dynamic_services(job, node) do |dynamic_service, plugin|
             dynamic_service.node_state_change(job,
@@ -430,20 +432,25 @@ module MotherBrain
                                               false)
           end
         end
-        if !required_run_list.empty?
-          job.set_status "Running chef with the following run list: #{required_run_list.inspect}"
-          self.bulk_chef_run(job, [node], required_run_list)
-        else
-          job.set_status "No recipes required to run."
-        end
 
-        node.run_list = [DISABLED_RUN_LIST_ENTRY].concat(node.run_list)
-        if node.save
-          job.report_success "#{node.name} disabled."
-        else
-          job.report_failure "#{node.name} did not save! Disabled run_list entry was unable to be added to the node."
+        if !success
+          if !required_run_list.empty?
+            job.set_status "Running chef with the following run list: #{required_run_list.inspect}"
+            self.bulk_chef_run(job, [node], required_run_list)
+          else
+            job.set_status "No recipes required to run."
+          end
+
+          node.run_list = [DISABLED_RUN_LIST_ENTRY].concat(node.run_list)
+          if node.save
+            job.set_status "#{node.name} disabled."
+            success = true
+          else
+            job.set_status "#{node.name} did not save! Disabled run_list entry was unable to be added to the node."
+          end
         end
       end
+      job.report_boolean(success)
     rescue MotherBrain::ResourceLocked => e
       job.report_failure e.message
     ensure
