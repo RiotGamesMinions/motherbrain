@@ -50,7 +50,7 @@ module MotherBrain
       node_failures_count  = 0
       node_failures = Array.new
 
-      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, override_recipes: override_recipes) }
+      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, override_recipes: override_recipes, hint: node.chef_attributes.os) }
 
       futures.each do |future|
         begin
@@ -129,16 +129,16 @@ module MotherBrain
 
         cmd_recipe_syntax = override_recipes.join(',') { |recipe| "recipe[#{recipe}]" }
         log.info { "Running Chef client with override runlist '#{cmd_recipe_syntax}' on: #{host}" }
-        chef_run_response = safe_remote(host) { chef_connection.node.execute_command(host, "chef-client --override-runlist #{cmd_recipe_syntax}") }
+        chef_run_response = safe_remote(host) { chef_connection.node.execute_command(host, "chef-client --override-runlist #{cmd_recipe_syntax}", hint: options[:hint]) }
 
         chef_run_response
       else
         log.info { "Running Chef client on: #{host}" }
-        safe_remote(host) { chef_connection.node.chef_run(host) }
+        safe_remote(host) { chef_connection.node.chef_run(host, hint: options[:hint]) }
       end
 
       if response.error?
-        log.info { "Failed Chef client run on: #{host}" }
+        log.info { "Failed Chef client run on: #{host} - #{response.stderr.chomp}" }
         abort RemoteCommandError.new(response.stderr.chomp, host)
       end
 
