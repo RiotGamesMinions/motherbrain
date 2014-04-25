@@ -50,7 +50,7 @@ module MotherBrain
       node_failures_count  = 0
       node_failures = Array.new
 
-      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, override_recipes: override_recipes, hint: node.chef_attributes.os) }
+      futures = nodes.map { |node| node_querier.future(:chef_run, node.public_hostname, override_recipes: override_recipes, connector: connector_for_os(node.chef_attributes.os)) }
 
       futures.each do |future|
         begin
@@ -112,6 +112,8 @@ module MotherBrain
     #   a recipe that will override the nodes current run list
     # @option options [Ridley::NodeObject] :node
     #   the actual node object
+    # @option options [String] :connector
+    #   a connector type for the chef connection to prefer
     #
     # @raise [RemoteCommandError] if an execution error occurs in the remote command
     # @raise [RemoteCommandError] if given a blank or nil hostname
@@ -129,12 +131,12 @@ module MotherBrain
 
         cmd_recipe_syntax = override_recipes.join(',') { |recipe| "recipe[#{recipe}]" }
         log.info { "Running Chef client with override runlist '#{cmd_recipe_syntax}' on: #{host}" }
-        chef_run_response = safe_remote(host) { chef_connection.node.execute_command(host, "chef-client --override-runlist #{cmd_recipe_syntax}", hint: options[:hint]) }
+        chef_run_response = safe_remote(host) { chef_connection.node.execute_command(host, "chef-client --override-runlist #{cmd_recipe_syntax}", connector: options[:connector]) }
 
         chef_run_response
       else
         log.info { "Running Chef client on: #{host}" }
-        safe_remote(host) { chef_connection.node.chef_run(host, hint: options[:hint]) }
+        safe_remote(host) { chef_connection.node.chef_run(host, connector: options[:connector]) }
       end
 
       if response.error?
@@ -181,7 +183,7 @@ module MotherBrain
         abort RemoteCommandError.new("cannot put_secret without a hostname or ipaddress")
       end
 
-      response = safe_remote(host) { chef_connection.node.put_secret(host) }
+      response = safe_remote(host) { chef_connection.node.put_secret(host, connector: options[:connector]) }
 
       if response.error?
         log.info { "Failed to put secret file on: #{host}" }
@@ -205,7 +207,7 @@ module MotherBrain
         abort RemoteCommandError.new("cannot execute command without a hostname or ipaddress")
       end
 
-      response = safe_remote(host) { chef_connection.node.execute_command(host, command) }
+      response = safe_remote(host) { chef_connection.node.execute_command(host, command, connector: options[:connector]) }
 
       if response.error?
         log.info { "Failed to execute command on: #{host}" }
@@ -328,7 +330,7 @@ module MotherBrain
       end
 
       job.set_status("Cleaning up the host's file system.")
-      futures << chef_connection.node.future(:uninstall_chef, host, options.slice(:skip_chef))
+      futures << chef_connection.node.future(:uninstall_chef, host, options.slice(:skip_chef, :connector))
 
       begin
         safe_remote(host) { futures.map(&:value) }
@@ -471,6 +473,24 @@ module MotherBrain
       log.debug { "Node Querier stopping..." }
     end
 
+    # Returns a String representing the best connector
+    # type to use when communicating with a given node
+    #
+    # @param os [String]
+    #   the operating system
+    #
+    # @return [String]
+    def connector_for_os(os)
+      case os
+      when "windows"
+        Ridley::HostCommander::DEFAULT_WINDOWS_CONNECTOR
+      when "linux"
+        Ridley::HostCommander::DEFAULT_LINUX_CONNECTOR
+      else
+        nil
+      end
+    end
+
     # Run a Ruby script on the target host and return the result of STDOUT. Only scripts
     # that are located in the Mother Brain scripts directory can be used and they should
     # be identified just by their filename minus the extension
@@ -512,7 +532,7 @@ module MotherBrain
         abort RemoteCommandError.new("cannot execute a ruby_script without a hostname or ipaddress")
       end
 
-      response = safe_remote(host) { chef_connection.node.ruby_script(host, command_lines) }
+      response = safe_remote(host) { chef_connection.node.ruby_script(host, command_lines, connector: options[:connector]) }
       
       if response.error?
         raise RemoteScriptError.new(response.stderr.chomp)
