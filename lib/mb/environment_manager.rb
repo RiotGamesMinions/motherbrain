@@ -81,7 +81,7 @@ module MotherBrain
 
         job.set_status("Performing a chef client run on #{nodes.length} nodes")
         nodes.collect do |node|
-          node_querier.future(:chef_run, node.public_hostname, hint: node.chef_attributes.os)
+          node_querier.future(:chef_run, node.public_hostname, connector: node.chef_attributes.os)
         end.each do |future|
           begin
             response = future.value
