@@ -40,7 +40,6 @@ group :test do
   gem 'guard-cucumber'
   gem 'guard-rspec'
   gem 'guard-spork'
-  gem 'guard-yard'
 
   require 'rbconfig'
 
