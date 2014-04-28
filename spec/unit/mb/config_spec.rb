@@ -33,12 +33,19 @@ describe MB::Config do
 
   subject do
     MB::Config.new.tap do |o|
-      o.chef.api_url = "https://api.opscode.com/organizations/vialstudio"
+      o.chef.api_url    = "https://api.opscode.com/organizations/vialstudio"
       o.chef.api_client = "reset"
-      o.chef.api_key = "/Users/reset/.chef/reset.pem"
-      o.ssh.user = "root"
-      o.ssh.password = "something"
+      o.chef.api_key    = "/Users/reset/.chef/reset.pem"
+      o.ssh.password    = "something"
     end
+  end
+
+  it "uses the currently logged in user as the default ssh user" do
+    expect(subject.ssh.user).to eql(ENV['USER'])
+  end
+
+  it "uses the currently logged in user as the default winrm user" do
+    expect(subject.winrm.user).to eql(ENV['USER'])
   end
 
   describe "#log.level" do
