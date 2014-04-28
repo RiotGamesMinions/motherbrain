@@ -87,6 +87,7 @@ module MotherBrain
       type: String
 
     attribute 'ssh.user',
+      default: ENV['USER'],
       type: String
 
     attribute 'ssh.password',
@@ -108,6 +109,7 @@ module MotherBrain
       type: String
 
     attribute 'winrm.user',
+      default: ENV['USER'],
       type: String
 
     attribute 'winrm.password',
