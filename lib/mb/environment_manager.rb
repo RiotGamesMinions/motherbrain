@@ -81,7 +81,7 @@ module MotherBrain
 
         job.set_status("Performing a chef client run on #{nodes.length} nodes")
         nodes.collect do |node|
-          node_querier.future(:chef_run, node.public_hostname)
+          node_querier.future(:chef_run, node.public_hostname, connector: node.chef_attributes.os)
         end.each do |future|
           begin
             response = future.value
@@ -216,7 +216,7 @@ module MotherBrain
     #
     # @return [Array(Ridley::NodeObject)]
     def nodes_for_environment(name)
-      ridley.partial_search(:node, "chef_environment:#{name}", ["fqdn", "cloud.public_hostname", "name"])
+      ridley.partial_search(:node, "chef_environment:#{name}", ["fqdn", "cloud.public_hostname", "name", "os"])
     end
 
     private
