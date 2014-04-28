@@ -25,3 +25,4 @@ man/mb.1.ronn
 *~
 \#*
 .DS_store
+.ruby-version
