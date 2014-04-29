@@ -63,6 +63,10 @@ module MotherBrain
       # @param [MB::Config] config
       def run!(config)
         Celluloid.boot
+        Celluloid.exception_handler do |ex|
+          log.fatal { "Application received unhandled exception: #{ex.class} - #{ex.message}" }
+          log.fatal { ex.backtrace.join("\n\t") }
+        end
         log.info { "motherbrain starting..." }
         setup
         @instance = Application::SupervisionGroup.new(config)
