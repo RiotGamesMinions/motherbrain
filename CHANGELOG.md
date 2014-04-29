@@ -1,3 +1,11 @@
+# 1.2.0
+
+* [#701](https://github.com/RiotGames/motherbrain/pull/701) Pass OS hints through to ridley-connectors for smarter connector picking
+* [#700](https://github.com/RiotGames/motherbrain/pull/700) Fix for rspec-guard syntax
+* [#699](https://github.com/RiotGames/motherbrain/pull/699) Use the currently logged in user as a default in SSH / WinRM config
+* [#698](https://github.com/RiotGames/motherbrain/pull/698) Removing the .ruby-version file because it makes dev a pain
+* [#695](https://github.com/RiotGames/motherbrain/pull/695) Add a better lock on ridley-connectors
+
 # 1.1.3
 
 * [#694](https://github.com/RiotGames/motherbrain/pull/694) Upgrade to reel 0.5.0
