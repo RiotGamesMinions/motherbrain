@@ -20,9 +20,9 @@ module MotherBrain
         def change_service_state(service, plugin, environment, state, run_chef = true, options = {})
           job = Job.new(:dynamic_service_state_change)
 
-          component, service_name = service.split('.')
-          raise InvalidDynamicService.new(component, service_name) unless component && service_name
-          dynamic_service = new(component, service_name)
+          component_name, service_name = service.split('.')
+          raise InvalidDynamicService.new(component_name, service_name) unless valid_dynamic_service?(plugin, component_name, service_name)
+          dynamic_service = new(component_name, service_name)
           dynamic_service.state_change(job, plugin, environment, state, run_chef, options)
           job.report_success
           job.ticket
@@ -30,6 +30,28 @@ module MotherBrain
           job.report_failure(ex)
         ensure
           job.terminate if job && job.alive?
+        end
+
+        # Returns whether the component name and service name comprises a valid service contained in the plugin
+        #
+        # @param [MB::Plugin] plugin
+        #   the plugin to check for components
+        # @param [String] component_name
+        #   the component that contains the service
+        # @param [String] service_name
+        #   the service to check for existence
+        # 
+        # @return [Boolean]
+        def valid_dynamic_service?(plugin, component_name, service_name)
+          return false if plugin.nil? or component_name.nil? or service_name.nil?
+
+          component = plugin.component(component_name)
+          return false if component.nil?
+
+          service = component.get_service(service_name)
+          return false if service.nil?
+
+          true
         end
       end
 

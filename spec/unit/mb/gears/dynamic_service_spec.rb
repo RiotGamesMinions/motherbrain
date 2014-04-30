@@ -184,4 +184,47 @@ describe MB::Gear::DynamicService do
       set_node_attribute
     end
   end
+
+  describe "::valid_dynamic_service?" do
+    let(:plugin)         { double(MB::Plugin)                                   }
+    let(:component_name) { "component_name"                                     }
+    let(:component)      { double(MB::Component, name: component_name)          }
+    let(:service_name)   { "service_name"                                       }
+    let(:service)        { double(MB::Gear::DynamicService, name: service_name) }
+
+    let(:check) { described_class.valid_dynamic_service?(plugin, component_name, service_name) }
+    
+    before do
+      
+    end
+
+    it "should return false when the plugin is nil" do
+      expect(described_class.valid_dynamic_service?(nil, component_name, service_name)).to be_false
+    end
+
+    it "should return false when the component_name is nil" do
+      expect(described_class.valid_dynamic_service?(plugin, nil, service_name)).to be_false
+    end
+
+    it "should return false when the service_name is nil" do
+      expect(described_class.valid_dynamic_service?(plugin, component_name, nil)).to be_false
+    end
+
+    it "should return false when the component cannot be found in the plugin" do
+      plugin.stub(:component).with(component_name).and_return nil
+      expect(check).to be_false
+    end
+
+    it "should return false when the service cannot be found in the plugin" do
+      plugin.stub(:component).with(component_name).and_return component
+      component.stub(:get_service).with(service_name).and_return nil
+      expect(check).to be_false
+    end
+
+    it "should return true when the service can be found in the component" do
+      plugin.stub(:component).with(component_name).and_return component
+      component.stub(:get_service).with(service_name).and_return service
+      expect(check).to be_true
+    end
+  end
 end
