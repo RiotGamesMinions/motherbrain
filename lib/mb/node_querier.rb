@@ -477,12 +477,6 @@ module MotherBrain
       job.terminate if job && job.alive?
     end
 
-    private
-
-    def finalize_callback
-      log.debug { "Node Querier stopping..." }
-    end
-
     # Returns a String representing the best connector
     # type to use when communicating with a given node
     #
@@ -499,6 +493,12 @@ module MotherBrain
       else
         nil
       end
+    end
+
+    private
+
+    def finalize_callback
+      log.debug { "Node Querier stopping..." }
     end
 
     # Run a Ruby script on the target host and return the result of STDOUT. Only scripts

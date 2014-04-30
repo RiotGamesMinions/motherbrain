@@ -529,4 +529,32 @@ describe MB::NodeQuerier do
       end
     end
   end
+
+  describe "#connector_for_os" do
+    let(:connector_for_os) { subject.connector_for_os(os) }
+
+    context "when the os is windows" do
+      let(:os) { "windows" }
+
+      it "returns winrm" do
+        expect(connector_for_os).to eql("winrm")
+      end
+    end
+
+    context "when the os is linux" do
+      let(:os) { "linux" }
+
+      it "returns ssh" do
+        expect(connector_for_os).to eql("ssh")
+      end
+    end
+
+    context "when the os is not windows or linux" do
+      let(:os) { "solaris" }
+
+      it "returns nil" do
+        expect(connector_for_os).to be_nil
+      end
+    end
+  end
 end
