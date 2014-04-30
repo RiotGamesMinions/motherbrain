@@ -164,7 +164,7 @@ module MotherBrain
                   service_options = Hash.new.merge(options).deep_symbolize_keys
                   service_options[:node_filter] = service_options.delete(:only)
 
-                  job = MB::Gear::DynamicService.change_service_state(
+                  job = plugin_manager.async_change_service_state(
                     service.freeze,
                     plugin.freeze,
                     environment.freeze,
@@ -172,7 +172,6 @@ module MotherBrain
                     true,
                     service_options
                   )
-
                   CliClient.new(job).display
                 end
 
