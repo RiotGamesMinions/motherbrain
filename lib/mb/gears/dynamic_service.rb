@@ -214,7 +214,6 @@ module MotherBrain
           component = plugin.component(@component)
           return false if component.nil?
 
-
           service = component.get_service(@name)
           return false if service.nil?
 
