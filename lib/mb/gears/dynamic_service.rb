@@ -209,7 +209,7 @@ module MotherBrain
         # 
         # @return [Boolean]
         def valid_dynamic_service?(plugin)
-          return false if plugin.nil? or component_name.nil? or service_name.nil?
+          return false if plugin.nil? or @component.nil? or @name.nil?
 
           component = plugin.component(@component)
           return false if component.nil?

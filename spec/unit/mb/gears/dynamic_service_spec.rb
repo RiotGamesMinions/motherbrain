@@ -185,29 +185,31 @@ describe MB::Gear::DynamicService do
     end
   end
 
-  describe "::valid_dynamic_service?" do
-    let(:plugin)         { double(MB::Plugin)                                   }
-    let(:component_name) { "component_name"                                     }
-    let(:component)      { double(MB::Component, name: component_name)          }
-    let(:service_name)   { "service_name"                                       }
-    let(:service)        { double(MB::Gear::DynamicService, name: service_name) }
+  describe "#valid_dynamic_service?" do
+    let(:plugin)         { double(MB::Plugin)                                         }
+    let(:component_name) { "component_name"                                           }
+    let(:component)      { double(MB::Component, name: component_name)                }
+    let(:service_name)   { "service_name"                                             }
+    let(:service)        { double(MB::Gear::DynamicService, name: service_name)       }
 
-    let(:check) { described_class.valid_dynamic_service?(plugin, component_name, service_name) }
+    let(:check)          { subject.send(:valid_dynamic_service?, plugin)              }
     
-    before do
-      
-    end
-
+    subject              { MB::Gear::DynamicService.new(component_name, service_name) }
+    
     it "should return false when the plugin is nil" do
-      expect(described_class.valid_dynamic_service?(nil, component_name, service_name)).to be_false
+      expect(subject.send(:valid_dynamic_service?, nil)).to be_false
     end
 
-    it "should return false when the component_name is nil" do
-      expect(described_class.valid_dynamic_service?(plugin, nil, service_name)).to be_false
+    context "should return false when the component_name is nil" do
+      let(:component_name) { nil }
+
+      it { expect(subject.send(:valid_dynamic_service?, plugin)).to be_false }
     end
 
-    it "should return false when the service_name is nil" do
-      expect(described_class.valid_dynamic_service?(plugin, component_name, nil)).to be_false
+    context "should return false when the service_name is nil" do
+      let(:service_name) { nil }
+
+      it { expect(subject.send(:valid_dynamic_service?, plugin)).to be_false }
     end
 
     it "should return false when the component cannot be found in the plugin" do
