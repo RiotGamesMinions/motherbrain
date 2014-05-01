@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe MB::Gear::DynamicService, focus: true do
+describe MB::Gear::DynamicService do
   let(:dynamic_service) { described_class.new('webapp', 'tomcat') }
   let(:plugin) { double(MB::Plugin, name: "MyPlugin", component: component) }
   let(:environment) { "prod" }

@@ -729,7 +729,7 @@ describe MotherBrain::PluginManager do
     let(:plugin)         { double(MB::Plugin) }
     let(:environment)    { "environment"      }
 
-    it "should split the service compound name into the component and service names", focus: true do
+    it "should split the service compound name into the component and service names" do
       dynamic_service = double(MB::Gear::DynamicService)
       dynamic_service.stub(:state_change)
 
