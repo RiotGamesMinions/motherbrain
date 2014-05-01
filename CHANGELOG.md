@@ -1,3 +1,9 @@
+# 1.2.1
+
+* [#705](https://github.com/RiotGames/motherbrain/pull/705) Make connector_for_os public and ensure it is used for environment upgrades
+* [#704](https://github.com/RiotGames/motherbrain/pull/704) Ensure the component and service exist before attempting to execute the service state change
+* [#702](https://github.com/RiotGames/motherbrain/pull/702) Add a global error handler to help log unexpected, uncaught exceptions
+
 # 1.2.0
 
 * [#701](https://github.com/RiotGames/motherbrain/pull/701) Pass OS hints through to ridley-connectors for smarter connector picking
