@@ -94,8 +94,6 @@ module MotherBrain
     rescue MB::RemoteScriptError
       # TODO: catch auth error?
       nil
-    rescue => e
-      debug_error e
     end
 
     # Run Chef-Client on the target host
@@ -353,8 +351,6 @@ module MotherBrain
       end
 
       job.report_success
-    rescue => e
-      debug_error e
     ensure
       job.terminate if job && job.alive?
     end
@@ -416,8 +412,6 @@ module MotherBrain
       job.report_boolean(success)
     rescue MotherBrain::ResourceLocked => e
       job.report_failure e.message
-    rescue => e
-      debug_error e
     ensure
       job.terminate if job && job.alive?
     end
@@ -507,8 +501,6 @@ module MotherBrain
       job.report_boolean(success)
     rescue MotherBrain::ResourceLocked => e
       job.report_failure e.message
-    rescue => e
-      debug_error e
     ensure
       job.terminate if job && job.alive?
     end
@@ -630,15 +622,6 @@ module MotherBrain
       log.warn { msg }
       log.debug { e.backtrace.join("\n") }
       abort RemoteCommandError.new(msg, host)
-    end
-
-    def debug_error(e)
-      log.debug { "#{e.class}: #{e.message}" }
-      e.backtrace.each do |line|
-        log.debug { line }
-      end
-
-      abort e
     end
   end
 end
