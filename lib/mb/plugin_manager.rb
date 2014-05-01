@@ -509,6 +509,46 @@ module MotherBrain
       []
     end
 
+    # Runs #change_service_state asynchronously
+    #
+    # @param service [String]
+    #   a dotted string "component.service_name"
+    # @param plugin [MB::Plugin]
+    #   the plugin currently in use
+    # @param environment [String]
+    #   the environment to operate on
+    # @param state [String]
+    #   the state of the service to change to
+    # @param options [Hash]
+    #
+    # @return [MB::JobTicket]
+    def async_change_service_state(service, plugin, environment, state, run_chef = true, options = {})
+      job = Job.new(:dynamic_service_state_change)
+      async(:change_service_state, job, service, plugin, environment, state, run_chef, options)
+      job.ticket
+    end
+
+    # Parses a service, creates a new instance of DynamicService
+    # and executes a Chef run to change the state of the service.
+    #
+    # @param job [MB::Job]
+    #   the job to report status on
+    # @param service [String]
+    #   a dotted string "component.service_name"
+    # @param plugin [MB::Plugin]
+    #   the plugin currently in use
+    # @param environment [String]
+    #   the environment to operate on
+    # @param state [String]
+    #   the state of the service to change to
+    # @param options [Hash]
+    def change_service_state(job, service, plugin, environment, state, run_chef = true, options = {})
+      component_name, service_name = service.split('.')
+      dynamic_service = MB::Gear::DynamicService.new(component_name, service_name)
+      dynamic_service.state_change(job, plugin, environment, state, run_chef, options)
+    end
+
+
     protected
 
       def reconfigure(_msg, config)

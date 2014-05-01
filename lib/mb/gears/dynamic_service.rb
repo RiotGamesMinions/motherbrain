@@ -3,34 +3,6 @@ module MotherBrain
     class DynamicService < Gear::Base
       class << self
 
-        # Parses a service, creates a new instance of DynamicService
-        # and executes a Chef run to change the state of the service.
-        #
-        # @param service [String]
-        #   a dotted string "component.service_name"
-        # @param plugin [MB::Plugin]
-        #   the plugin currently in use
-        # @param environment [String]
-        #   the environment to operate on
-        # @param state [String]
-        #   the state of the service to change to
-        # @param options [Hash]
-        #
-        # @return [MB::JobTicket]
-        def change_service_state(service, plugin, environment, state, run_chef = true, options = {})
-          job = Job.new(:dynamic_service_state_change)
-
-          component, service_name = service.split('.')
-          raise InvalidDynamicService.new(component, service_name) unless component && service_name
-          dynamic_service = new(component, service_name)
-          dynamic_service.state_change(job, plugin, environment, state, run_chef, options)
-          job.report_success
-          job.ticket
-        rescue => ex
-          job.report_failure(ex)
-        ensure
-          job.terminate if job && job.alive?
-        end
       end
 
       include MB::Mixin::Services
@@ -72,18 +44,23 @@ module MotherBrain
       #
       # @return [MB::JobTicket]
       def state_change(job, plugin, environment, state, run_chef = true, options = {})
+        job.report_running
+        job.set_status("Transitioning #{@component}.#{@name} to #{state}...")
         log.warn {
           "Component's service state is being changed to #{state}, which is not one of #{COMMON_STATES}"
         } unless COMMON_STATES.include?(state)
 
         chef_synchronize(chef_environment: environment, force: options[:force]) do
-          component_object = plugin.component(component)
+          unless valid_dynamic_service?(plugin)
+            job.report_failure("#{@component}.#{@name} is not a valid service in #{plugin.name}")
+            return job
+          end
+
+         component_object = plugin.component(component)
           service_object = component_object.get_service(name)
           group = component_object.group(service_object.service_group)
           nodes = group.nodes(environment)
           nodes = MB::NodeFilter.filter(options[:node_filter], nodes) if options[:node_filter]
-
-          job.report_running("preparing to change the #{name} service to #{state}")
 
           if options[:cluster_override]
             set_environment_attribute(job, environment, service_object.service_attribute, state)
@@ -95,6 +72,13 @@ module MotherBrain
             node_querier.bulk_chef_run(job, nodes, service_object.service_recipe)
           end
         end
+        job.set_status("Finished transitioning #{@component}.#{@name} to #{state}!")
+        job.report_success
+        job.ticket
+      rescue => ex
+        job.report_failure(ex)
+      ensure
+        job.terminate if job && job.alive?
       end
 
       def node_state_change(job, plugin, node, state, run_chef = true)
@@ -216,6 +200,25 @@ module MotherBrain
         end
       end
 
+      private
+
+        # Returns whether the component name and service name comprises a valid service contained in the plugin
+        #
+        # @param [MB::Plugin] plugin
+        #   the plugin to check for components
+        # 
+        # @return [Boolean]
+        def valid_dynamic_service?(plugin)
+          return false if plugin.nil? or @component.nil? or @name.nil?
+
+          component = plugin.component(@component)
+          return false if component.nil?
+
+          service = component.get_service(@name)
+          return false if service.nil?
+
+          true
+        end
     end
   end
 end

@@ -11,34 +11,6 @@ describe MB::Gear::DynamicService do
   let(:nodes) { [ node1, node2 ] }
   let(:node1) { double(name: nil, reload: nil, set_chef_attribute: nil, save: nil) }
   let(:node2) { double(name: nil, reload: nil, set_chef_attribute: nil, save: nil) }
-  let(:job) { MB::Job.new(:thejob) }
-  describe "ClassMethods" do
-    let(:service) { "webapp.tomcat" }
-
-    before do
-      dynamic_service.stub(:state_change)
-      MB::Job.should_receive(:new).and_return(job)
-    end
-
-    describe "::change_service_state" do
-      let(:change_service_state) { MB::Gear::DynamicService.change_service_state(service, plugin, environment, state) }
-
-      it "splits the service on a period" do
-        expect(MB::Gear::DynamicService).to receive(:new).with('webapp', 'tomcat').and_return(dynamic_service)
-        change_service_state
-      end
-
-      context "when the service is not formatted as 'COMPONENT.SERVICE'" do
-        let(:service) { "foo" }
-
-        it "raises an error" do
-          job.should_receive(:report_failure).with(kind_of(MB::InvalidDynamicService))
-          change_service_state
-        end
-      end
-    end
-  end
-
   let(:job) { double(alive?: false, report_running: nil, set_status: nil, report_success: nil, ticket: nil) }
 
   describe "#state_change" do
@@ -182,6 +154,51 @@ describe MB::Gear::DynamicService do
       expect(node1).to receive(:save)
       expect(node2).to receive(:save)
       set_node_attribute
+    end
+  end
+
+  describe "#valid_dynamic_service?" do
+    let(:plugin)         { double(MB::Plugin)                                         }
+    let(:component_name) { "component_name"                                           }
+    let(:component)      { double(MB::Component, name: component_name)                }
+    let(:service_name)   { "service_name"                                             }
+    let(:service)        { double(MB::Gear::DynamicService, name: service_name)       }
+
+    let(:check)          { subject.send(:valid_dynamic_service?, plugin)              }
+    
+    subject              { MB::Gear::DynamicService.new(component_name, service_name) }
+    
+    it "should return false when the plugin is nil" do
+      expect(subject.send(:valid_dynamic_service?, nil)).to be_false
+    end
+
+    context "should return false when the component_name is nil" do
+      let(:component_name) { nil }
+
+      it { expect(subject.send(:valid_dynamic_service?, plugin)).to be_false }
+    end
+
+    context "should return false when the service_name is nil" do
+      let(:service_name) { nil }
+
+      it { expect(subject.send(:valid_dynamic_service?, plugin)).to be_false }
+    end
+
+    it "should return false when the component cannot be found in the plugin" do
+      plugin.stub(:component).with(component_name).and_return nil
+      expect(check).to be_false
+    end
+
+    it "should return false when the service cannot be found in the plugin" do
+      plugin.stub(:component).with(component_name).and_return component
+      component.stub(:get_service).with(service_name).and_return nil
+      expect(check).to be_false
+    end
+
+    it "should return true when the service can be found in the component" do
+      plugin.stub(:component).with(component_name).and_return component
+      component.stub(:get_service).with(service_name).and_return service
+      expect(check).to be_true
     end
   end
 end

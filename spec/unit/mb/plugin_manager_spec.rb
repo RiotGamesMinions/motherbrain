@@ -721,4 +721,21 @@ describe MotherBrain::PluginManager do
       end
     end
   end
+
+  describe "#change_service_state" do
+    let(:component_name) { "component_name"   }
+    let(:service_name)   { "service_name"     }
+    let(:job)            { double(MB::Job)    }
+    let(:plugin)         { double(MB::Plugin) }
+    let(:environment)    { "environment"      }
+
+    it "should split the service compound name into the component and service names" do
+      dynamic_service = double(MB::Gear::DynamicService)
+      dynamic_service.stub(:state_change)
+
+      MB::Gear::DynamicService.should_receive(:new).with(component_name, service_name).and_return dynamic_service
+
+      subject.change_service_state(job, "#{component_name}.#{service_name}", plugin, environment, "start")
+    end
+  end
 end
