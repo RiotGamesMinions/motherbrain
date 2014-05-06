@@ -7,7 +7,7 @@ describe MB::CommandRunner do
     described_class.new(job, environment, scope, command_block, node_filter)
   }
 
-  let(:scope) { MB::Plugin.new(double(valid?: true)) }
+  let(:scope) { MB::Plugin.new(double(valid?: true, name: 'cookbook')) }
 
   let(:action_1) { double('action_1', name: "action 1", run: nil) }
   let(:action_2) { double('action_2', name: "action 2", run: nil) }
@@ -39,6 +39,7 @@ describe MB::CommandRunner do
     MB::CommandRunner::CleanRoom.stub_chain(:new, :actions).and_return(actions)
 
     scope.stub(:group!).with("master_group").and_return(master_group)
+    scope.stub(:group!).with("slave_group").and_return(slave_group)
   end
 
   describe "#on" do
@@ -122,6 +123,20 @@ describe MB::CommandRunner do
           action.should_receive(:run).with(job, environment, [anything()], true)
         end
 
+        command_runner
+      end
+    end
+
+    context "when a group's nodes are filtered to 0" do
+      let(:node_filter)   { "c.riotgames.com" }
+      let(:command_block) {
+        proc {
+          on("master_group") {}
+          on("slave_group")  {}
+        }
+      }
+
+      it "skips groups that have all their nodes filtered out" do
         command_runner
       end
     end

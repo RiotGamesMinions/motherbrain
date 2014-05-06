@@ -124,9 +124,9 @@ module MotherBrain
         group.nodes(environment)
       end.uniq
 
-      return unless nodes.any?
-
       nodes = MB::NodeFilter.filter(node_filter, nodes) if node_filter
+
+      return unless nodes.any?
 
       if options[:any]
         nodes = nodes.sample(options[:any])
