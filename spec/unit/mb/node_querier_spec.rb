@@ -374,7 +374,7 @@ describe MB::NodeQuerier do
     end
   end
 
-  describe "#async_upgrade_omnibus"re do
+  describe "#async_upgrade_omnibus" do
     let(:host) { "192.168.1.1" }
     let(:nodes) { [Ridley::NodeObject.new(host, automatic: { fqdn: host })] }
     let(:version) { "11.12.4" }
