@@ -234,7 +234,8 @@ module MotherBrain
       "template",
       "purge",
       "disable",
-      "enable"
+      "enable",
+      "upgrade_omnibus"
     ].freeze
 
     CREATE_ENVIRONMENT_TASKS = [
@@ -332,6 +333,34 @@ module MotherBrain
     def purge(hostname)
       job = node_querier.async_purge(hostname, options.to_hash.symbolize_keys)
       CliClient.new(job).display
+    end
+
+    method_option :host,
+      type: :string,
+      desc: "A hostname for the node to be upgraded"
+    method_option :prerelease,
+      type: :boolean,
+      desc: "Boolean to install a prerelease version of Chef",
+      default: false
+    method_option :direct_url,
+      type: :string,
+      desc: "A URL pointing directly to a Chef package to install"
+    desc "upgrade_omnibus VERSION", "Upgrades the Omnibus Chef installation on a Chef Environment of nodes to a specified VERSION."
+    def upgrade_omnibus(version)
+      nodes = nil
+      if options["host"]
+        host = options["host"]
+        node_object = Ridley::NodeObject.new(host, automatic: { fqdn: host })
+        nodes = [node_object]
+      elsif options["environment"]
+        nodes = environment_manager.nodes_for_environment(options["environment"])
+      end
+      if nodes.nil?
+        ui.error "Error - you need to either define a host (--host) or an environment (-e) to operate on."
+      else
+        job = node_querier.async_upgrade_omnibus(version, nodes, options.to_hash.symbolize_keys)
+        CliClient.new(job).display
+      end
     end
 
     method_option :force,

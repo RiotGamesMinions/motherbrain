@@ -279,6 +279,26 @@ module MotherBrain
       job.ticket
     end
 
+    # Asynchronously upgrade the Omnibus installation of Chef on the given nodes
+    # to a specific version.
+    #
+    # @param [String] version
+    #   the version of Chef to upgrade to
+    # @param [Array<Ridley::NodeObject>] nodes
+    #   the node(s) to upgrade omnibus on
+    #
+    # @option options [Boolean] :prerelease
+    #   whether or not to use a prerelease version of Chef
+    # @option options [String] :direct_url
+    #   a URL pointing directly to a Chef package to install
+    #
+    # @return [Mb::JobTicket]
+    def async_upgrade_omnibus(version, nodes, options = {})
+      job = Job.new(:upgrade_omnibus)
+      async(:upgrade_omnibus, job, version, nodes, options)
+      job.ticket
+    end
+
     # Asynchronously disable a node to stop services @host and prevent
     # chef-client from being run on @host until @host is reenabled
     #
@@ -344,6 +364,43 @@ module MotherBrain
 
       begin
         safe_remote(host) { futures.map(&:value) }
+      rescue RemoteCommandError => e
+        job.report_failure
+      end
+
+      job.report_success
+    ensure
+      job.terminate if job && job.alive?
+    end
+
+    # Upgrades the Omnibus installation of Chef on a specific node(s) to
+    # a specific version.
+    #
+    # @param [MB::Job] job
+    # @param [String] version
+    #   the version of Chef to upgrade to
+    # @param [Array<Ridley::NodeObject>] nodes
+    #   the node(s) to upgrade omnibus on
+    #
+    # @option options [Boolean] :prerelease
+    #   whether or not to use a prerelease version of Chef
+    # @option options [String] :direct_url
+    #   a URL pointing directly to a Chef package to install
+    #
+    # @return [MB::Job]
+    def upgrade_omnibus(job, version, nodes, options = {})
+      futures = Array.new
+      options = options.merge(chef_version: version)
+
+      hostnames = nodes.collect(&:public_hostname)
+      job.report_running("Upgrading Omnibus Chef installation on #{hostnames}")
+
+      hostnames.each do |hostname|
+        futures << chef_connection.node.future(:update_omnibus, hostname, options)
+      end
+
+      begin
+        safe_remote { futures.map(&:value) }
       rescue RemoteCommandError => e
         job.report_failure
       end
