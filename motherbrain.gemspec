@@ -44,7 +44,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'net-ssh'
   s.add_dependency 'net-sftp'
   s.add_dependency 'solve', '~> 1.1'
-  s.add_dependency 'ridley-connectors', '~> 2.1'
+  s.add_dependency 'ridley-connectors', '~> 2.2'
   s.add_dependency 'thor', '~> 0.18.0'
   s.add_dependency 'faraday', '~> 0.9'
   s.add_dependency 'multi_json'

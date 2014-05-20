@@ -6,6 +6,7 @@ module MotherBrain::API
     require_relative 'v1/environments_endpoint'
     require_relative 'v1/jobs_endpoint'
     require_relative 'v1/plugins_endpoint'
+    require_relative 'v1/chef_endpoint'
 
     version 'v1', using: :header, vendor: 'motherbrain'
     format :json
@@ -41,6 +42,7 @@ module MotherBrain::API
     mount V1::JobsEndpoint
     mount V1::EnvironmentsEndpoint
     mount V1::PluginsEndpoint
+    mount V1::ChefEndpoint
     add_swagger_documentation
 
     if MB.testing?

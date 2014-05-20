@@ -374,6 +374,58 @@ describe MB::NodeQuerier do
     end
   end
 
+  describe "#async_upgrade_omnibus" do
+    let(:host) { "192.168.1.1" }
+    let(:nodes) { [Ridley::NodeObject.new(host, automatic: { fqdn: host })] }
+    let(:version) { "11.12.4" }
+    let(:options) { Hash.new }
+
+    it "creates a Job and delegates to #upgrade_omnibus" do
+      ticket = double('ticket')
+      job    = double('job', ticket: ticket)
+      MB::Job.should_receive(:new).and_return(job)
+      subject.should_receive(:upgrade_omnibus).with(job, version, nodes, options)
+
+      subject.async_upgrade_omnibus(version, nodes, options)
+    end
+
+    it "returns a JobTicket" do
+      expect(subject.async_purge(host, options)).to be_a(MB::JobRecord)
+    end
+  end
+
+  describe "#upgrade_omnibus" do
+    let(:host) { "192.168.1.1" }
+    let(:nodes) { [Ridley::NodeObject.new(host, automatic: { fqdn: host })] }
+    let(:version) { "11.12.4" }
+    let(:options) do
+      {
+        chef_version: version
+      }
+    end
+    let(:job) { MB::Job.new(:upgrade_omnibus) }
+    let(:future_stub) { double(Celluloid::Future, value: nil) }
+
+    before do
+      subject.chef_connection.
+        stub_chain(:node, :future).
+        with(:update_omnibus, host, options).
+        and_return(future_stub)
+    end
+
+    context "when there are no errors" do
+      it "reports success" do
+        job.should_receive(:report_success)
+        subject.upgrade_omnibus(job, version, nodes, options)
+      end
+    end
+
+    it "terminates the job" do
+      subject.upgrade_omnibus(job, version, nodes, options)
+      expect(job).to_not be_alive
+    end
+  end
+
   describe "#async_disable" do
     let(:host) { "192.168.1.1" }
     let(:options) { Hash.new }
