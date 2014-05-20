@@ -691,5 +691,8 @@ module MotherBrain
     end
   end
 
-  class OmnibusUpgradeError < MBError; end;
+  class OmnibusUpgradeError < MBError
+    exit_code(25)
+    error_code(3029)
+  end
 end
