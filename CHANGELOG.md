@@ -1,3 +1,8 @@
+# 1.3.0
+
+* [#711](https://github.com/RiotGames/motherbrain/pull/711) Implement a new command for upgrading a node or environment's Omnibus Chef installation
+* [#708](https://github.com/RiotGames/motherbrain/pull/708) Fix a bug when node filtering would reduce the nodes to 0
+
 # 1.2.1
 
 * [#705](https://github.com/RiotGames/motherbrain/pull/705) Make connector_for_os public and ensure it is used for environment upgrades
