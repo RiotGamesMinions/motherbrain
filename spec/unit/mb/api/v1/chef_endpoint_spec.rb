@@ -8,7 +8,7 @@ describe MB::API::V1::ChefEndpoint do
   let(:app) { MB::RestGateway.instance.app }
   let(:job) { MB::Job.new(:test) }
 
-  describe "POST /chef/purge", focus: true do
+  describe "POST /chef/purge" do
     let(:hostname) { "foo.bar.com" }
 
     it "returns 201" do
@@ -19,7 +19,7 @@ describe MB::API::V1::ChefEndpoint do
     end
   end
 
-  describe "POST /chef/upgrade", focus: true do
+  describe "POST /chef/upgrade" do
     let(:version) { "1.2.3" }
     let(:environment_id) { "rpsec_test" }
     let(:host) { "1.1.1.1" }
