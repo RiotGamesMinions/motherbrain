@@ -10,4 +10,12 @@ describe MB::RestGateway do
       subject.app.should be_a(MB::API::Application)
     end
   end
+
+  describe "constants" do
+    it "should set DEFAULT_PORT to 26100 if $PORT is not set" do
+      ENV.delete("PORT")
+      load File.join(File.dirname(__FILE__), "..", "..", "..", "lib", "mb", "rest_gateway.rb")
+      expect(MB::RestGateway::DEFAULT_PORT).to eq(26100)
+    end
+  end
 end
