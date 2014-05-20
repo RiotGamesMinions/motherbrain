@@ -690,4 +690,6 @@ module MotherBrain
       "#{@name} is disabled."
     end
   end
+
+  class OmnibusUpgradeError < MBError; end;
 end
