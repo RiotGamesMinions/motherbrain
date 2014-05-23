@@ -59,7 +59,12 @@ module MotherBrain
       options[:Port] = options[:port]
 
       log.info { "REST Gateway listening on #{options[:host]}:#{options[:port]}" }
-      super(app, options)
+      
+      begin
+        super(app, options)
+      rescue Errno::EADDRINUSE
+        log.fatal { "Port #{options[:port]} is already in use. Unable to start rest gateway." }
+      end
     end
 
     private
