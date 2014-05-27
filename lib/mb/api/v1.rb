@@ -15,13 +15,13 @@ module MotherBrain::API
 
     JSON_CONTENT_TYPE = {"Content-type" => "application/json"}
 
-    rescue_from Grape::Exceptions::Validation do |e|
+    rescue_from Grape::Exceptions::Validation do |ex|
       body = MultiJson.encode(
-        status: e.status,
-        message: e.message,
-        param: e.param
+        status: ex.status,
+        message: ex.message,
+        param: ex.param
       )
-      rack_response(body, e.status, JSON_CONTENT_TYPE)
+      rack_response(body, ex.status, JSON_CONTENT_TYPE)
     end
 
     rescue_from MB::ApplicationPaused do |ex|
