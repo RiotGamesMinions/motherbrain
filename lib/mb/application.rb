@@ -97,6 +97,23 @@ module MotherBrain
       def stop
         instance.terminate
       end
+
+      # Set the application state to paused. This allows actors to
+      # continue processing, but causes the RestGateway not to accept
+      # new requests.
+      #
+      # See: MotherBrain::API::V1 L51, 'before' block
+      def pause
+        @paused = true
+      end
+
+      def resume
+        @paused = false
+      end
+
+      def paused?
+        @paused ||= false
+      end
     end
 
     class SupervisionGroup < ::Celluloid::SupervisionGroup
