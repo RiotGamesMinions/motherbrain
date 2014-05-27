@@ -15,5 +15,19 @@ describe MB::Application do
         subject.config.should be_a(MB::Config)
       end
     end
+
+    describe "::pause" do
+      it "should pause" do
+        subject.pause
+        expect(subject.paused?).to eq(true)
+      end
+    end
+
+    describe "::resume" do
+      it "should resume" do
+        subject.resume
+        expect(subject.paused?).to eq(false)
+      end
+    end
   end
 end

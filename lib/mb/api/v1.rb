@@ -7,10 +7,13 @@ module MotherBrain::API
     require_relative 'v1/jobs_endpoint'
     require_relative 'v1/plugins_endpoint'
     require_relative 'v1/chef_endpoint'
+    require_relative 'v1/server_control_endpoint'
 
     version 'v1', using: :header, vendor: 'motherbrain'
     format :json
     default_format :json
+
+    JSON_CONTENT_TYPE = {"Content-type" => "application/json"}
 
     rescue_from Grape::Exceptions::Validation do |e|
       body = MultiJson.encode(
@@ -18,7 +21,11 @@ module MotherBrain::API
         message: e.message,
         param: e.param
       )
-      rack_response(body, e.status, "Content-type" => "application/json")
+      rack_response(body, e.status, JSON_CONTENT_TYPE)
+    end
+
+    rescue_from MB::ApplicationPaused do |ex|
+      rack_response(ex.to_json, 503, JSON_CONTENT_TYPE)
     end
 
     rescue_from :all do |ex|
@@ -29,13 +36,31 @@ module MotherBrain::API
         MultiJson.encode(code: -1, message: ex.message)
       end
 
-      rack_response(body, 500, "Content-type" => "application/json")
+      http_status_code = if ex.is_a?(MB::APIError)
+        ex.http_status_code
+      else
+        500
+      end
+
+      rack_response(body, http_status_code, JSON_CONTENT_TYPE)
     end
 
     before do
       header['Access-Control-Allow-Origin'] = '*'
       header['Access-Control-Request-Method'] = '*'
       header.delete('Transfer-Encoding')
+
+      server_control_endpoint = false
+      MB::API::V1::ServerControlEndpoint.endpoints.each do |endpoint|
+        endpoint.routes.each do |route|
+          if request.path =~ route.route_compiled
+            server_control_endpoint = true
+            break
+          end
+        end
+      end
+      
+      raise MB::ApplicationPaused.new if MB::Application.paused? && !server_control_endpoint
     end
 
     mount V1::ConfigEndpoint
@@ -43,6 +68,7 @@ module MotherBrain::API
     mount V1::EnvironmentsEndpoint
     mount V1::PluginsEndpoint
     mount V1::ChefEndpoint
+    mount V1::ServerControlEndpoint
     add_swagger_documentation
 
     if MB.testing?

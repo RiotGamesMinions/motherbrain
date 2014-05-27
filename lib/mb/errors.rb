@@ -89,6 +89,19 @@ module MotherBrain
     end
   end
 
+  class APIError < MBError
+    DEFAULT_HTTP_STATUS_CODE = 500
+
+    class << self
+      # @param [Integer] code
+      #
+      # @return [Integer]
+      def http_status_code(code = DEFAULT_HTTP_STATUS_CODE)
+        @exit_code ||= code
+      end
+    end
+  end
+
   # Internal errors
   class InternalError < MBError
     exit_code(99)
@@ -694,5 +707,14 @@ module MotherBrain
   class OmnibusUpgradeError < MBError
     exit_code(25)
     error_code(3029)
+  end
+
+  class ApplicationPaused < APIError
+    error_code(3330)
+    http_status_code(503)
+
+    def message
+      "MotherBrain is paused. It will not accept new requests until it is resumed."
+    end
   end
 end
