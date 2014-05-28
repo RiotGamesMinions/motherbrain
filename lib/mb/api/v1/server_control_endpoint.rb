@@ -22,7 +22,7 @@ module MotherBrain::API
 
       helpers do
         def server_status
-          {server_status: MB::Application.paused? ? "paused" : "running"}
+          {server_status: MB::Application.status}
         end
       end
     end
