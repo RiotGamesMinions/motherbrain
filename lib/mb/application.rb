@@ -28,6 +28,12 @@ module MotherBrain
   # @example running the application in the background
   #   MB::Application.run!(config)
   module Application
+    module Status
+      RUNNING = :running
+      PAUSED = :paused
+      STOPPING = :stopping
+    end
+    
     class << self
       extend Forwardable
       include MB::Mixin::Services
@@ -95,7 +101,8 @@ module MotherBrain
 
       # Stop the running application
       def stop
-        instance.terminate
+        instance.async_interrupt(3)
+        @status = Status::STOPPING
       end
 
       # Set the application state to paused. This allows actors to
@@ -104,15 +111,19 @@ module MotherBrain
       #
       # See: MotherBrain::API::V1 L51, 'before' block
       def pause
-        @paused = true
+        @status = Status::PAUSED
       end
 
       def resume
-        @paused = false
+        @status = Status::RUNNING
       end
 
       def paused?
-        @paused ||= false
+        status == Status::PAUSED
+      end
+
+      def status
+        @status ||= Status::RUNNING
       end
     end
 
@@ -152,7 +163,12 @@ module MotherBrain
         @registry[:ridley].async.configure(new_config.to_ridley)
       end
 
-      def interrupt
+      def async_interrupt(delay = 0)
+        future.interrupt(delay)
+      end
+
+      def interrupt(delay = 0)
+        Celluloid.sleep(delay) if delay > 0
         interrupt_mutex.synchronize do
           unless interrupted
             @interrupted = true
