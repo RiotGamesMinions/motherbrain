@@ -100,6 +100,10 @@ module MotherBrain
         @exit_code ||= code
       end
     end
+
+    def http_status_code
+      self.class.http_status_code
+    end
   end
 
   # Internal errors
