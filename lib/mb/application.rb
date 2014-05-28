@@ -28,6 +28,12 @@ module MotherBrain
   # @example running the application in the background
   #   MB::Application.run!(config)
   module Application
+    module Status
+      RUNNING = :running
+      PAUSED = :paused
+      STOPPING = :stopping
+    end
+    
     class << self
       extend Forwardable
       include MB::Mixin::Services
@@ -95,6 +101,7 @@ module MotherBrain
 
       # Stop the running application
       def stop
+        @status = Status::STOPPING
         instance.terminate
       end
 
@@ -104,15 +111,19 @@ module MotherBrain
       #
       # See: MotherBrain::API::V1 L51, 'before' block
       def pause
-        @paused = true
+        @status = Status::PAUSED
       end
 
       def resume
-        @paused = false
+        @status = Status::RUNNING
       end
 
       def paused?
-        @paused ||= false
+        status == Status::PAUSED
+      end
+
+      def status
+        @status ||= Status::RUNNING
       end
     end
 
