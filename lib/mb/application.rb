@@ -101,8 +101,8 @@ module MotherBrain
 
       # Stop the running application
       def stop
+        instance.future.terminate
         @status = Status::STOPPING
-        instance.terminate
       end
 
       # Set the application state to paused. This allows actors to

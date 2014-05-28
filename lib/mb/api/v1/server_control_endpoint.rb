@@ -15,6 +15,13 @@ module MotherBrain::API
         server_status
       end
 
+      desc "stop the server"
+      put 'stop' do
+        MB::Application.stop
+        status(202)
+        server_status
+      end
+
       desc "get the server status"
       get 'status' do
         server_status
