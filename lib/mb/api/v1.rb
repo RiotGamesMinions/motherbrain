@@ -24,10 +24,6 @@ module MotherBrain::API
       rack_response(body, ex.status, JSON_CONTENT_TYPE)
     end
 
-    rescue_from MB::ApplicationPaused do |ex|
-      rack_response(ex.to_json, 503, JSON_CONTENT_TYPE)
-    end
-
     rescue_from :all do |ex|
       body = if ex.is_a?(MB::MBError)
         ex.to_json
