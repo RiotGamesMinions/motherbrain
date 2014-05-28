@@ -101,7 +101,7 @@ module MotherBrain
 
       # Stop the running application
       def stop
-        instance.future.terminate
+        instance.async_interrupt(3)
         @status = Status::STOPPING
       end
 
@@ -163,7 +163,12 @@ module MotherBrain
         @registry[:ridley].async.configure(new_config.to_ridley)
       end
 
-      def interrupt
+      def async_interrupt(delay = 0)
+        future.interrupt(delay)
+      end
+
+      def interrupt(delay = 0)
+        Celluloid.sleep(delay) if delay > 0
         interrupt_mutex.synchronize do
           unless interrupted
             @interrupted = true

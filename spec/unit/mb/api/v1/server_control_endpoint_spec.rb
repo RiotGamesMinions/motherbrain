@@ -45,6 +45,7 @@ describe MB::API::V1::ServerControlEndpoint do
 
   describe "PUT /stop" do
     it "stops the server" do
+      MB::Application.instance.should_receive(:async_interrupt).with(3)
       put '/stop'
       last_response.status.should == 202
       JSON.parse(last_response.body).should eq("server_status" => "stopping")
