@@ -63,6 +63,8 @@ module MotherBrain
 
       def initialize(berksfile_lock_path)
         @berksfile_lock = ::Berkshelf::Lockfile.from_file(berksfile_lock_path)
+      rescue ::Berkshelf::LockfileParserError
+        log.warn "Unable to parse Berksfile.lock - maybe it's an old format?"
       end
 
       # Return a hash of all of the cookbook versions found in the Berksfile.lock
