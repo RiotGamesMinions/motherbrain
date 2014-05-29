@@ -322,11 +322,16 @@ module MotherBrain
         scratch_dir   = FileSystem.tmpdir("cbplugin")
         metadata_path = File.join(scratch_dir, CookbookMetadata::JSON_FILENAME)
         plugin_path   = File.join(scratch_dir, Plugin::PLUGIN_FILENAME)
+        lockfile_path = File.join(scratch_dir, Berkshelf::Lockfile::BERKSFILE_LOCK)
 
         File.write(metadata_path, resource.metadata.to_json)
 
         unless resource.download_file(:root_file, Plugin::PLUGIN_FILENAME, plugin_path)
           raise PluginLoadError, "failure downloading plugin file for #{resource.name}"
+        end
+
+        unless resource.download_file(:root_file, Berkshelf::Lockfile::BERKSFILE_LOCK, lockfile_path)
+          log.info "No Berksfile.lock found for #{resource.name} - won't be able to use cookbook versions from lockfile"
         end
 
         load_file(scratch_dir, options)
