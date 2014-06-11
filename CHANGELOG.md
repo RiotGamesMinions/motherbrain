@@ -1,3 +1,12 @@
+# 1.4.0
+
+* [#717](https://github.com/RiotGames/motherbrain/pull/717) Download Berksfile.lock if it's available when pulling remote plugins
+* [#716](https://github.com/RiotGames/motherbrain/pull/716) Fix #http_status_code on MB::APIError and remove extraneous special case
+* [#715](https://github.com/RiotGames/motherbrain/pull/715) Add a /stop endpoint to the REST API
+* [#714](https://github.com/RiotGames/motherbrain/pull/714) Add a /pause endpoint to the REST API
+* [#713](https://github.com/RiotGames/motherbrain/pull/713) Print out a friendly error message if RestGateway fails to bind to the port specified
+* [#712](https://github.com/RiotGames/motherbrain/pull/712) Fix some bad nil.to_i logic
+
 # 1.3.0
 
 * [#711](https://github.com/RiotGames/motherbrain/pull/711) Implement a new command for upgrading a node or environment's Omnibus Chef installation
