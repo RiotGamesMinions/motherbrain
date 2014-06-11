@@ -1,3 +1,7 @@
+# 1.5.0
+
+* [#719](https://github.com/RiotGames/motherbrain/pull/719) fix gemspec and references for buff-config / buff-extensions
+
 # 1.4.0
 
 * [#717](https://github.com/RiotGames/motherbrain/pull/717) Download Berksfile.lock if it's available when pulling remote plugins
