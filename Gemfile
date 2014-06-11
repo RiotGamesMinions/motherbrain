@@ -28,7 +28,7 @@ end
 group :test do
   gem 'rack-test'
   gem 'rake', '>= 0.9.2.2'
-  gem 'rspec'
+  gem 'rspec', '< 2.99.0'
   gem 'webmock'
   gem 'spork'
   gem 'aruba'
