@@ -99,7 +99,7 @@ module MotherBrain
 
     attribute 'ssh.sudo',
       default: true,
-      type: Boolean
+      type: Buff::Boolean
 
     attribute 'ssh.timeout',
       default: 10.0,
@@ -121,7 +121,7 @@ module MotherBrain
 
     attribute 'ssl.verify',
       default: true,
-      type: Boolean
+      type: Buff::Boolean
 
     attribute 'ridley.connector_pool_size',
       default: 25,
@@ -165,7 +165,7 @@ module MotherBrain
 
     attribute 'server.daemonize',
       default: false,
-      type: Boolean
+      type: Buff::Boolean
 
     attribute 'server.pid',
       default: "/var/run/motherbrain/mb.pid",
@@ -173,7 +173,7 @@ module MotherBrain
 
     attribute 'rest_gateway.enable',
       default: false,
-      type: Boolean
+      type: Buff::Boolean
 
     attribute 'rest_gateway.host',
       default: RestGateway::DEFAULT_OPTIONS[:host],
@@ -187,7 +187,7 @@ module MotherBrain
     # from cookbooks present on the remote Chef server that contain plugins
     attribute 'plugin_manager.eager_loading',
       default: false,
-      type: Boolean
+      type: Buff::Boolean
 
     # How long the plugin manager will wait before polling the Chef Server to eagerly
     # load any new plugins
@@ -198,7 +198,7 @@ module MotherBrain
     # Allows the plugin manager load it's plugins asynchronously in the background during startup
     attribute 'plugin_manager.async_loading',
       default: false,
-      type: Boolean
+      type: Buff::Boolean
 
     attribute 'ef.api_url',
       type: String
