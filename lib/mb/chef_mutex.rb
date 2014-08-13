@@ -150,13 +150,14 @@ module MotherBrain
 
       unlock
     rescue => ex
-      ex = ex.respond_to?(:cause) ? ex.cause : ex
+      cause = ex.respond_to?(:cause) ? ex.cause : ex
+      cause ||= ex
 
-      unless ex.is_a?(ResourceLocked)
+      unless cause.is_a?(ResourceLocked)
         unlock if unlock_on_failure
       end
 
-      abort(ex)
+      abort(cause)
     end
 
     # Attempts to unlock the lock. Fails if the lock doesn't exist, or if it is
