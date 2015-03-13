@@ -290,7 +290,7 @@ with your services.
 When running as a server, MB mounts various enpoinds using the Grape library. For convenience, the tool Swagger has
 also been integrated into MB's REST API.
 
-First, clone the Swagger UI project from here https://github.com/wordnik/swagger-ui.
+First, clone the [Swagger UI project](https://github.com/swagger-api/swagger-ui).
 
 Next, start your MB server. The only requirement here is a properly defined configuration file:
 
