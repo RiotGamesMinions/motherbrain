@@ -296,12 +296,12 @@ Next, start your MB server. The only requirement here is a properly defined conf
 
 `bundle exec bin/mbsrv`
 
-Next, open up the index.html in the dist/ directory of your cloned swagger-ui. In the top menu bar, paste
-in your MB server's address (and port) plus swagger_doc.json and click Explore.
+Next, open up `dist/index.html` in your clone of swagger-ui. In the top menu bar, paste
+in your MB server's address (and port) plus `swagger_doc.json` and click Explore.
 
 For a local server, running on the default port, the URL would look like "http://localhost:26100/swagger_doc.json".
 
-Thats all! You should now be able to explore the REST API of MB using Swagger.
+That's all! You should now be able to explore the REST API of MB using Swagger.
 
 # Authors
 
