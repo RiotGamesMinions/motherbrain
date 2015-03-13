@@ -32,7 +32,7 @@ We don't recommend including motherbrain in your Gemfile.
 Before using motherbrain, you'll need to create a configuration file with `mb
 configure`:
 
-```
+```text
 Enter a Chef API URL:
 Enter a Chef API Client:
 Enter the path to the client's Chef API Key:
@@ -44,11 +44,10 @@ Config written to: '~/.mb/config.json'
 You can verify that motherbrain is installed correctly and pointing to a Chef
 server by running `mb plugin list --remote`:
 
-```
+```sh
 $ mb plugin list --remote
 
 ** listing installed and remote plugins...
-
 ```
 
 ## Getting Started
@@ -57,7 +56,7 @@ motherbrain comes with an `init` command to help you get started quickly. Let's
 pretend we have an app called MyFace, our hot new social network. We'll
 be using the myface cookbook for this tutorial:
 
-```
+```sh
 $ git clone https://github.com/reset/myface-cookbook
 $ cd myface
 myface$
@@ -65,7 +64,7 @@ myface$
 
 We'll generate a new plugin for the cookbook we're developing:
 
-```
+```sh
 myface$ mb plugin init
       create  bootstrap.json
       create  motherbrain.rb
@@ -92,7 +91,7 @@ from any cookbook on our Chef server.
 
 Lets take a look at all of the commands we can run on a plugin:
 
-```
+```sh
 myface$ mb myface
 using myface (1.1.8)
 
@@ -161,7 +160,7 @@ Edit `bootstrap.json` and fill in a hostname to bootstrap:
 
 And then we'll bootstrap our plugin to that node:
 
-```
+```sh
 myface-cookbook$ knife environment create motherbrain_tutorial
 myface-cookbook$ mb myface bootstrap bootstrap.json -e motherbrain_tutorial
 
@@ -177,7 +176,7 @@ using myface (0.4.1)
 That's it! But that's not much different from using `knife bootstrap`, and it
 took a lot more work.
 
-```
+```sh
 myface-cookbook$ ls recipes/
 database.rb     default.rb      webserver.rb
 myface-cookbook$ cat recipes/default.rb
@@ -232,7 +231,7 @@ And then change our bootstrap manifest to bootstrap 2 nodes instead of 1:
 
 And then run the bootstrap again:
 
-```
+```sh
 myface-cookbook$ mb myface bootstrap bootstrap.json -e motherbrain_tutorial
 
 using myface (0.4.1)
@@ -252,7 +251,7 @@ That's it! We now have our application deployed to 2 nodes.
 If your cookbook is written using the "service orchestration" pattern,
 motherbrain can make your plugin even simpler.
 
-```
+```rb
 component "app" do
   description "Myface Application"
   versioned
@@ -271,8 +270,8 @@ end
 
 To start the service, you would run `mb myface service app.app start`.
 This would set the `myface.app.state` attribute to 'start' and then do
-a partial chef run on all nodes that have "myface::app" in their
-default runlist, using an override runlist of "myface::app_service".
+a partial chef run on all nodes that have `myface::app` in their
+default runlist, using an override runlist of `myface::app_service`.
 The same command could be used to stop, restart, or change to any
 other state that your service recipe supports.
 
