@@ -1,6 +1,6 @@
 # motherbrain
 
-[![Build Status](https://travis-ci.org/RiotGames/motherbrain.png?branch=master)](https://travis-ci.org/RiotGames/motherbrain)
+[![Build Status](https://travis-ci.org/RiotGamesMinions/motherbrain.png?branch=master)](https://travis-ci.org/RiotGamesMinions/motherbrain)
 
 motherbrain is an orchestration framework for Chef. In the same way that you
 would use Chef's Knife command to create a single node, you can use
@@ -32,7 +32,7 @@ We don't recommend including motherbrain in your Gemfile.
 Before using motherbrain, you'll need to create a configuration file with `mb
 configure`:
 
-```
+```text
 Enter a Chef API URL:
 Enter a Chef API Client:
 Enter the path to the client's Chef API Key:
@@ -44,11 +44,10 @@ Config written to: '~/.mb/config.json'
 You can verify that motherbrain is installed correctly and pointing to a Chef
 server by running `mb plugin list --remote`:
 
-```
+```sh
 $ mb plugin list --remote
 
 ** listing installed and remote plugins...
-
 ```
 
 ## Getting Started
@@ -57,7 +56,7 @@ motherbrain comes with an `init` command to help you get started quickly. Let's
 pretend we have an app called MyFace, our hot new social network. We'll
 be using the myface cookbook for this tutorial:
 
-```
+```sh
 $ git clone https://github.com/reset/myface-cookbook
 $ cd myface
 myface$
@@ -65,7 +64,7 @@ myface$
 
 We'll generate a new plugin for the cookbook we're developing:
 
-```
+```sh
 myface$ mb plugin init
       create  bootstrap.json
       create  motherbrain.rb
@@ -92,7 +91,7 @@ from any cookbook on our Chef server.
 
 Lets take a look at all of the commands we can run on a plugin:
 
-```
+```sh
 myface$ mb myface
 using myface (1.1.8)
 
@@ -161,7 +160,7 @@ Edit `bootstrap.json` and fill in a hostname to bootstrap:
 
 And then we'll bootstrap our plugin to that node:
 
-```
+```sh
 myface-cookbook$ knife environment create motherbrain_tutorial
 myface-cookbook$ mb myface bootstrap bootstrap.json -e motherbrain_tutorial
 
@@ -177,7 +176,7 @@ using myface (0.4.1)
 That's it! But that's not much different from using `knife bootstrap`, and it
 took a lot more work.
 
-```
+```sh
 myface-cookbook$ ls recipes/
 database.rb     default.rb      webserver.rb
 myface-cookbook$ cat recipes/default.rb
@@ -232,7 +231,7 @@ And then change our bootstrap manifest to bootstrap 2 nodes instead of 1:
 
 And then run the bootstrap again:
 
-```
+```sh
 myface-cookbook$ mb myface bootstrap bootstrap.json -e motherbrain_tutorial
 
 using myface (0.4.1)
@@ -252,7 +251,7 @@ That's it! We now have our application deployed to 2 nodes.
 If your cookbook is written using the "service orchestration" pattern,
 motherbrain can make your plugin even simpler.
 
-```
+```rb
 component "app" do
   description "Myface Application"
   versioned
@@ -271,8 +270,8 @@ end
 
 To start the service, you would run `mb myface service app.app start`.
 This would set the `myface.app.state` attribute to 'start' and then do
-a partial chef run on all nodes that have "myface::app" in their
-default runlist, using an override runlist of "myface::app_service".
+a partial chef run on all nodes that have `myface::app` in their
+default runlist, using an override runlist of `myface::app_service`.
 The same command could be used to stop, restart, or change to any
 other state that your service recipe supports.
 
@@ -291,18 +290,18 @@ with your services.
 When running as a server, MB mounts various enpoinds using the Grape library. For convenience, the tool Swagger has
 also been integrated into MB's REST API.
 
-First, clone the Swagger UI project from here https://github.com/wordnik/swagger-ui.
+First, clone the [Swagger UI project](https://github.com/swagger-api/swagger-ui).
 
 Next, start your MB server. The only requirement here is a properly defined configuration file:
 
 `bundle exec bin/mbsrv`
 
-Next, open up the index.html in the dist/ directory of your cloned swagger-ui. In the top menu bar, paste
-in your MB server's address (and port) plus swagger_doc.json and click Explore.
+Next, open up `dist/index.html` in your clone of swagger-ui. In the top menu bar, paste
+in your MB server's address (and port) plus `swagger_doc.json` and click Explore.
 
 For a local server, running on the default port, the URL would look like "http://localhost:26100/swagger_doc.json".
 
-Thats all! You should now be able to explore the REST API of MB using Swagger.
+That's all! You should now be able to explore the REST API of MB using Swagger.
 
 # Authors
 
