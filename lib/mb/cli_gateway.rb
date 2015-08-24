@@ -379,6 +379,10 @@ module MotherBrain
       desc: "Perform HOST disable even if the environment is locked",
       default: false,
       aliases: "-f"
+    method_option :offline,
+      type: :boolean,
+      desc: "Do not attempt to connect to the node to disable services. Assume it is offline.",
+      default: false
     desc "disable HOST", "Stop services on HOST and prevent chef-client from running until reenabled."
     def disable(hostname)
       job = node_querier.async_disable(hostname, options.to_hash.symbolize_keys)

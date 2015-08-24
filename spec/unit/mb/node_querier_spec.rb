@@ -258,7 +258,7 @@ describe MB::NodeQuerier do
     let(:host) { "192.168.1.1" }
     let(:options) { Hash.new }
 
-    it "creates a Job and delegates to #disable" do
+    it "creates a Job and delegates to #enable" do
       ticket = double('ticket')
       job    = double('job', ticket: ticket)
       MB::Job.should_receive(:new).and_return(job)
@@ -275,7 +275,7 @@ describe MB::NodeQuerier do
 
   describe "#enable" do
     let(:host) { "192.168.1.1" }
-    let(:job) { MB::Job.new(:disable) }
+    let(:job) { MB::Job.new(:enable) }
     let(:future_stub) { double(Celluloid::Future, value: nil) }
     let(:node_stub) { 
       double(Ridley::NodeObject,
@@ -474,6 +474,17 @@ describe MB::NodeQuerier do
           e.message.should == "exit"
         end
       end
+
+      it "reports failure when using --offline" do
+        subject.should_not_receive(:registered_as)
+        job.should_receive(:report_failure).with("The node #{host} is not registered with the Chef server.").and_return { raise "exit" }
+        subject.stub_chain("chef_connection.node.find").and_return { raise Ridley::Errors::ResourceNotFound }
+        begin
+          subject.disable(job, host, offline: true)
+        rescue => e
+          e.message.should == "exit"
+        end
+      end
     end
 
     context "when the node is registered" do
@@ -504,11 +515,16 @@ describe MB::NodeQuerier do
                                         components: [send(:"#{x}_component")]) }
         let(:"environment")   { "theenv" }
       end
+
+      before do
+        subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)
+        node.should_receive(:run_list).and_return(run_list)
+        node.stub(:run_list=)
+      end
       
       it "disables the node" do
         subject.stub(:plugin_manager).and_return(plugin_manager)
         subject.should_receive(:registered_as).with(host).and_return(node_name)
-        subject.stub_chain(:chef_connection, :node, :find).with(node_name).and_return(node)
         %w[foo bar].each_with_index do |x, i|
           plugin_manager
             .should_receive(:for_run_list_entry)
@@ -518,13 +534,25 @@ describe MB::NodeQuerier do
           send(:"#{x}_service").stub(:dynamic_service?).and_return(true)
           send(:"#{x}_group").should_receive(:includes_recipe?).with(run_list[i]).and_return(true)
           send(:"dynamic_#{x}_service").should_receive(:node_state_change).with(job, send(:"#{x}_plugin"), node, MB::Gear::DynamicService::STOP, false)
-          node.should_receive(:run_list).and_return(run_list)
-          node.stub(:run_list=)
         end
         subject.should_receive(:bulk_chef_run).with(job, [node], %w[foo bar].collect { |x| send(:"service_#{x}_recipe") })
 
         subject.disable(job, host)
        end
+
+      it "disables the node without running the service command when provided --offline" do
+        subject.should_not_receive(:on_dynamic_services)
+        subject.should_not_receive(:bulk_chef_run)
+        node.should_receive(:save).and_return true
+        job.should_receive(:report_success).with("#{node.name} disabled.")
+        subject.disable(job, node_name, offline: true)
+      end
+
+      it "reports failure when unable to disable the node" do
+        node.should_receive(:save).and_return false
+        job.should_receive(:report_failure).with("#{node.name} did not save! Disabled run_list entry was unable to be added to the node due to node save failure.")
+        subject.disable(job, node_name, offline: true)
+      end
     end
   end
 

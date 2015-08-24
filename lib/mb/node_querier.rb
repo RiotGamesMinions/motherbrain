@@ -307,6 +307,8 @@ module MotherBrain
     # @param [Hash] options
     #
     # @option options [Boolean] :force (false) Ignore environment lock and execute anyway.
+    # @option options [Boolean] :offline (false) Do not attempt to connect to the node to 
+    #                                            disable services. Assume it is offline.
     #
     # @return [MB::JobTicket]
     def async_disable(host, options = {})
@@ -480,17 +482,25 @@ module MotherBrain
     # @param [Hash] options
     #
     # @option options [Boolean] :force (false) Ignore environment lock and execute anyway.
+    # @option options [Boolean] :offline (false) Do not attempt to connect to the node to 
+    #                                            disable services. Assume it is offline.
     # 
     def disable(job, host, options = {})
-      job.report_running("Discovering host's registered node name")
-      node_name = registered_as(host)
-      if !node_name
-        # TODO auth could fail and cause this to throw
-        job.report_failure("Could not discover the host's node name. The host may not be " +
-                           "registered with Chef or the embedded Ruby used to identify the " +
-                           "node name may not be available. #{host} was not disabled!")
-      end
-      job.set_status("Host registered as #{node_name}.")
+      node_name = if options[:offline]
+                    job.report_running("Using #{host} as node name as --offline was passed")
+                    host
+                  else
+                    job.report_running("Discovering host's registered node name")
+                    discovered_name = registered_as(host)
+                    if !node_name
+                      # TODO auth could fail and cause this to throw
+                      job.report_failure("Could not discover the host's node name. The host may not be " +
+                                         "registered with Chef or the embedded Ruby used to identify the " +
+                                         "node name may not be available. #{host} was not disabled!")
+                    end
+                    job.set_status("Host registered as #{discovered_name}.")
+                    discovered_name
+                  end
 
       node = fetch_node(job, node_name)
 
@@ -501,12 +511,30 @@ module MotherBrain
           job.set_status("#{node.name} is already disabled.")
           success = true
         else
-          required_run_list = on_dynamic_services(job, node) do |dynamic_service, plugin|
-            dynamic_service.node_state_change(job,
-                                              plugin,
-                                              node,
-                                              MB::Gear::DynamicService::STOP,
-                                              false)
+          required_run_list = []
+          unless options[:offline]
+            required_run_list = on_dynamic_services(job, node) do |dynamic_service, plugin|
+              dynamic_service.node_state_change(job,
+                                                plugin,
+                                                node,
+                                                MB::Gear::DynamicService::STOP,
+                                                false)
+            end
+            if !required_run_list.empty?
+              job.set_status "Running chef with the following run list: #{required_run_list.inspect}"
+              bulk_chef_run(job, [node], required_run_list)
+            else
+              job.set_status "No recipes required to run."
+            end
+          end
+
+          node.run_list = [DISABLED_RUN_LIST_ENTRY].concat(node.run_list)
+
+          if node.save
+            job.set_status "#{node.name} disabled."
+            success = true
+          else
+            job.set_status "#{node.name} did not save! Disabled run_list entry was unable to be added to the node due to node save failure."
           end
         end
 
