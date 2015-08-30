@@ -20,7 +20,7 @@ module MotherBrain
 
           @environment_attributes = Array.new
           @node_attributes        = Array.new
-          @toggle_callbacks       = Array.new
+          @toggle_callbacks       = Hash.new
 
           if block_given?
             dsl_eval(&block)
@@ -28,7 +28,9 @@ module MotherBrain
         end
 
         def reset(job)
-          toggle_callbacks.concurrent_map { |callback| callback.call(job) }
+          toggle_callbacks.keys.concurrent_map do |chunk|
+            toggle_callbacks[chunk].map { |callback| callback.call(job) }
+          end
         end
 
         def run(job)
@@ -94,12 +96,13 @@ module MotherBrain
             unless env_chef_object = ridley.environment.find(environment)
               raise MB::EnvironmentNotFound.new(environment)
             end
+            toggle_callbacks[environment] ||= []
 
             environment_attributes.each do |attribute|
               key, value, options = attribute[:key], attribute[:value], attribute[:options]
 
               if options[:toggle]
-                toggle_callbacks << ->(job) {
+                toggle_callbacks[environment] << ->(job) {
                   message = "Toggling (removing) environment attribute '#{key}' on #{environment}"
                   job.set_status(message)
                   env_chef_object.delete_default_attribute(key)
@@ -126,6 +129,7 @@ module MotherBrain
 
             nodes.concurrent_map do |node|
               node.reload
+              toggle_callbacks[node.name] ||= []
 
               node_attributes.each do |attribute|
                 key, value, options = attribute[:key], attribute[:value], attribute[:options]
@@ -133,7 +137,7 @@ module MotherBrain
                 if options[:toggle]
                   original_value = node.chef_attributes.dig(key)
 
-                  toggle_callbacks << ->(job) {
+                  toggle_callbacks[node.name] << ->(job) {
                     message = if original_value.nil?
                       "Toggling off node attribute '#{key}' on #{node.name}"
                     elsif !options[:force_value_to].nil?
